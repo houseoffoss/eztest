@@ -2,6 +2,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -17,23 +21,17 @@ export default async function Home() {
       <header className="border-b border-white/20 bg-white/70 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">🧪</span>
               <span className="text-xl font-bold text-[#033977]">EZTest</span>
-            </div>
+            </Link>
             <div className="flex items-center gap-4">
-              <Link
-                href="/auth/login"
-                className="text-[#656c79] hover:text-[#033977] font-medium text-sm transition-colors"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/auth/register"
-                className="bg-[#f34923] text-white px-6 py-2.5 rounded-lg hover:bg-[#d63f1f] transition-all font-medium text-sm shadow-lg shadow-[#f34923]/20"
-              >
-                Get started
-              </Link>
+              <Button variant="ghost" asChild>
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button variant="accent" asChild>
+                <Link href="/auth/register">Get started</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -45,89 +43,99 @@ export default async function Home() {
           {/* Simple Gradient Orb */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#033977]/5 rounded-full blur-3xl -z-10"></div>
 
-          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-            <span className="text-sm font-medium text-[#033977]">✨ Open Source & Self-Hosted</span>
-          </div>
+          <Badge className="mb-8">
+            <span>✨ Open Source & Self-Hosted</span>
+          </Badge>
+
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight leading-tight">
             Test Management,
             <br />
             <span className="text-[#033977]">Made Simple</span>
           </h1>
-          <p className="text-xl text-[#656c79] mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
             Lightweight, powerful test management platform that runs on minimal hardware.
             Perfect for teams who want control without complexity.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link
-              href="/auth/register"
-              className="bg-[#f34923] text-white px-8 py-4 rounded-xl hover:bg-[#d63f1f] transition-all font-semibold text-base shadow-xl shadow-[#f34923]/30 hover:shadow-2xl hover:shadow-[#f34923]/40 hover:scale-105 transform"
-            >
-              Start Testing 🚀
-            </Link>
-            <Link
-              href="/auth/login"
-              className="bg-white/70 backdrop-blur-sm text-[#656c79] px-8 py-4 rounded-xl hover:bg-white transition-all font-semibold text-base border border-white/20 shadow-lg"
-            >
-              Sign In
-            </Link>
+            <Button variant="accent" size="lg" asChild>
+              <Link href="/auth/register">
+                Start Testing 🚀
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/auth/login">
+                Sign In
+              </Link>
+            </Button>
           </div>
         </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📊</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Multi-Project Support</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Manage multiple projects with role-based access control. Keep everything organized in one place.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">📊</div>
+              <CardTitle>Multi-Project Support</CardTitle>
+              <CardDescription>
+                Manage multiple projects with role-based access control. Keep everything organized in one place.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🗂️</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Hierarchical Tests</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Organize tests in hierarchical suites. Create detailed test cases with steps and expected results.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🗂️</div>
+              <CardTitle>Hierarchical Tests</CardTitle>
+              <CardDescription>
+                Organize tests in hierarchical suites. Create detailed test cases with steps and expected results.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">▶️</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Test Execution</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Run tests and track results in real-time. Monitor progress with comprehensive dashboards.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">▶️</div>
+              <CardTitle>Test Execution</CardTitle>
+              <CardDescription>
+                Run tests and track results in real-time. Monitor progress with comprehensive dashboards.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🔗</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Traceability</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Link test cases to requirements. Ensure complete coverage and maintain audit trails.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🔗</div>
+              <CardTitle>Traceability</CardTitle>
+              <CardDescription>
+                Link test cases to requirements. Ensure complete coverage and maintain audit trails.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">💬</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Collaboration</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Add comments, attach files, and collaborate with your team. Everything in context.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">💬</div>
+              <CardTitle>Collaboration</CardTitle>
+              <CardDescription>
+                Add comments, attach files, and collaborate with your team. Everything in context.
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="group bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/80 hover:shadow-xl hover:scale-105 transition-all duration-300">
-            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚡</div>
-            <h3 className="text-lg font-semibold text-[#033977] mb-2">Lightweight</h3>
-            <p className="text-[#656c79] text-sm leading-relaxed">
-              Runs efficiently on minimal hardware. 1 core, 2GB RAM is all you need to get started.
-            </p>
-          </div>
+          <Card className="group hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">⚡</div>
+              <CardTitle>Lightweight</CardTitle>
+              <CardDescription>
+                Runs efficiently on minimal hardware. 1 core, 2GB RAM is all you need to get started.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Stats Section with Simple Gradient */}
-        <div className="relative rounded-3xl p-12 md:p-16 text-white text-center overflow-hidden bg-gradient-to-br from-[#033977] to-[#044a99]">
-          {/* Content */}
-          <div className="relative z-10">
+        {/* Stats Section */}
+        <Card className="relative overflow-hidden bg-gradient-to-br from-[#033977] to-[#044a99] border-none text-white">
+          <CardContent className="p-12 md:p-16 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose EZTest? 🤔</h2>
             <p className="text-white/90 text-lg mb-12 max-w-2xl mx-auto">
               Built for teams who value simplicity, control, and open-source freedom
@@ -146,21 +154,124 @@ export default async function Home() {
                 <div className="text-white/80 text-sm">Projects & Users</div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Footer with Glass Effect */}
-      <footer className="border-t border-white/20 bg-white/60 backdrop-blur-md mt-24">
+      {/* Footer */}
+      <footer className="border-t border-white/20 bg-white/70 backdrop-blur-md mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🧪</span>
-              <span className="font-semibold text-[#033977]">EZTest</span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand Column */}
+            <div className="space-y-4">
+              <Link href="/" className="flex items-center gap-2">
+                <span className="text-2xl">🧪</span>
+                <span className="text-xl font-bold text-[#033977]">EZTest</span>
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                Self-hostable test management platform for modern teams.
+              </p>
             </div>
-            <p className="text-sm text-[#656c79]">
-              Self-hostable test management platform
+
+            {/* Product Column */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-[#033977]">Product</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/ui" className="text-muted-foreground hover:text-primary transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Changelog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources Column */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-[#033977]">Resources</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    GitHub
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Community
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Support
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Status
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company Column */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-[#033977]">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Careers
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <Separator className="my-8" />
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} EZTest. All rights reserved.
             </p>
+            <div className="flex items-center gap-6 text-sm">
+              <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                License
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

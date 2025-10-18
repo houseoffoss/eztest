@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -82,108 +87,103 @@ export default function LoginPage() {
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-8">
-            <div className="mb-8">
+          <Card>
+            <CardHeader>
               <div className="flex items-center gap-2 mb-2 lg:hidden">
                 <span className="text-2xl">🧪</span>
                 <span className="text-xl font-bold text-[#033977]">EZTest</span>
               </div>
-              <h1 className="text-2xl font-bold text-[#033977]">Sign in</h1>
-              <p className="text-[#656c79] mt-1">Access your test management workspace</p>
-            </div>
+              <CardTitle className="text-2xl">Sign in</CardTitle>
+              <CardDescription>Access your test management workspace</CardDescription>
+            </CardHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
-                  <span>❌</span>
-                  <span className="text-sm">{error}</span>
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-[#033977] mb-2"
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                  placeholder="you@company.com"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-[#033977] mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-[#f34923] text-white py-3 px-4 rounded-xl hover:bg-[#d63f1f] focus:outline-none focus:ring-2 focus:ring-[#f34923] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-lg shadow-[#f34923]/30 hover:shadow-xl hover:shadow-[#f34923]/40"
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    Signing in...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Sign in
-                    <span>→</span>
-                  </span>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription className="flex items-center gap-2">
+                      <span>❌</span>
+                      <span>{error}</span>
+                    </AlertDescription>
+                  </Alert>
                 )}
-              </button>
-            </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-[#656c79]">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="you@company.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="accent"
+                  disabled={isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="animate-spin">⏳</span>
+                      Signing in...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      Sign in
+                      <span>→</span>
+                    </span>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+
+            <CardFooter className="flex-col gap-4">
+              <p className="text-sm text-center text-muted-foreground">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/register"
-                  className="text-[#033977] hover:text-[#f34923] font-semibold transition-colors"
+                  className="text-primary hover:text-accent font-semibold transition-colors"
                 >
                   Sign up for free
                 </Link>
               </p>
-            </div>
-          </div>
+            </CardFooter>
+          </Card>
 
           {/* Demo credentials hint */}
-          <div className="mt-6 p-4 bg-white/60 backdrop-blur-sm border border-white/30 rounded-xl">
-            <div className="flex items-start gap-2">
-              <span className="text-lg">💡</span>
-              <div>
-                <p className="text-sm font-medium text-[#033977] mb-1">Try it out!</p>
-                <p className="text-xs text-[#656c79] font-mono">
-                  admin@eztest.local / Admin@123456
-                </p>
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">💡</span>
+                <div>
+                  <p className="text-sm font-medium text-primary mb-1">Try it out!</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    admin@eztest.local / Admin@123456
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

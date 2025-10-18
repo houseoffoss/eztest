@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -77,126 +82,155 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f9ff] to-white px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-8">
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2 mb-4 group">
-              <span className="text-3xl">🧪</span>
-              <h1 className="text-3xl font-bold text-[#033977] group-hover:scale-105 transition-transform">EZTest</h1>
-            </Link>
-            <p className="text-[#656c79] mt-2">Create your account</p>
-          </div>
+    <div className="min-h-screen flex bg-gradient-to-br from-[#f0f9ff] to-white">
+      {/* Left Side - Branding & Features */}
+      <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 bg-gradient-to-br from-[#033977] to-[#044a99] text-white relative overflow-hidden">
+        {/* Glass effect overlay */}
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
-                <span>❌</span>
-                <span className="text-sm">{error}</span>
+        <div className="relative z-10">
+          <Link href="/" className="flex items-center gap-2 mb-12 group">
+            <span className="text-3xl">🧪</span>
+            <span className="text-2xl font-bold group-hover:scale-105 transition-transform">EZTest</span>
+          </Link>
+          <h2 className="text-4xl font-bold mb-4">
+            Start Testing Smarter 🚀
+          </h2>
+          <p className="text-white/80 text-lg leading-relaxed">
+            Join teams who have simplified their test management. No credit card required, start for free today.
+          </p>
+        </div>
+        <div className="space-y-4 relative z-10">
+          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <span className="text-2xl">🎯</span>
+            <div>
+              <h3 className="font-semibold mb-1">Complete Control</h3>
+              <p className="text-white/70 text-sm">Self-host on your infrastructure, own your data completely</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <span className="text-2xl">⚡</span>
+            <div>
+              <h3 className="font-semibold mb-1">Lightweight & Fast</h3>
+              <p className="text-white/70 text-sm">Runs on minimal resources, no complex setup required</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <span className="text-2xl">🔓</span>
+            <div>
+              <h3 className="font-semibold mb-1">100% Open Source</h3>
+              <p className="text-white/70 text-sm">Free forever, transparent code, community-driven</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Registration Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-2 lg:hidden">
+                <span className="text-2xl">🧪</span>
+                <span className="text-xl font-bold text-[#033977]">EZTest</span>
               </div>
-            )}
+              <CardTitle className="text-2xl">Create your account</CardTitle>
+              <CardDescription>Get started with EZTest for free</CardDescription>
+            </CardHeader>
 
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-[#033977] mb-2"
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription className="flex items-center gap-2">
+                    <span>❌</span>
+                    <span>{error}</span>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder="••••••••"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Minimum 8 characters
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({ ...formData, confirmPassword: e.target.value })
+                  }
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                variant="accent"
+                disabled={isLoading}
+                className="w-full"
               >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                placeholder="John Doe"
-              />
-            </div>
+                {isLoading ? 'Creating account...' : 'Create account'}
+              </Button>
+            </form>
+          </CardContent>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[#033977] mb-2"
+          <CardFooter className="flex-col gap-4">
+            <p className="text-sm text-center text-muted-foreground">
+              Already have an account?{' '}
+              <Link
+                href="/auth/login"
+                className="text-primary hover:text-accent font-semibold transition-colors"
               >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[#033977] mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                placeholder="••••••••"
-              />
-              <p className="text-xs text-[#656c79] mt-1">
-                Minimum 8 characters
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-[#033977] mb-2"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-white/50 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#033977] focus:border-transparent transition-all text-gray-900 placeholder:text-[#656c79]/50"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#f34923] text-white py-3 px-4 rounded-xl hover:bg-[#d63f1f] focus:outline-none focus:ring-2 focus:ring-[#f34923] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-lg shadow-[#f34923]/30 hover:shadow-xl hover:shadow-[#f34923]/40"
-            >
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-[#656c79]">
-            Already have an account?{' '}
-            <Link
-              href="/auth/login"
-              className="text-[#033977] hover:text-[#f34923] font-semibold transition-colors"
-            >
-              Sign in
-            </Link>
-          </div>
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
         </div>
       </div>
     </div>

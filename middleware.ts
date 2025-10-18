@@ -15,7 +15,8 @@ export default withAuth(
         if (
           pathname.startsWith('/auth/') ||
           pathname.startsWith('/api/auth/') ||
-          pathname === '/'
+          pathname === '/' ||
+          pathname === '/ui'
         ) {
           return true;
         }
