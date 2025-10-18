@@ -12,9 +12,9 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Port 5432 exposed only to internal network, not to host
-    expose:
-      - "5432"
+    # Port 5432 mapped to 5433 on host for local development (avoiding conflict with local PostgreSQL)
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U eztest -d eztest"]
       interval: 10s
@@ -46,6 +46,9 @@ services:
       - APP_URL=http://localhost:3000
       - NEXTAUTH_SECRET=aK7QkrZ8aOycVXiZDpxhCuLTsZh4KAG6uDZ4YKKDwoQ=
       - NEXTAUTH_URL=http://localhost:3000
+      - ADMIN_EMAIL=admin@eztest.local
+      - ADMIN_PASSWORD=Admin@123456
+      - ADMIN_NAME=System Administrator
       - MAX_FILE_SIZE=10485760
       - UPLOAD_DIR=/app/uploads
     volumes:
