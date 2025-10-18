@@ -1,0 +1,30 @@
+# Development Dockerfile for Next.js with hot reloading
+FROM node:20-alpine
+
+# Install dependencies for Prisma
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
+
+# Install ALL dependencies (including dev dependencies)
+RUN npm ci && \
+    npm cache clean --force
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Create upload directory
+RUN mkdir -p /app/uploads
+
+# Expose port 3000
+EXPOSE 3000
+
+# The app directory will be mounted as a volume in docker-compose
+# So we don't need to copy the source code here
+
+# Run Prisma migrations and start dev server
+CMD sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"

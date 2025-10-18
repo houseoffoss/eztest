@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: eztest-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: eztest
+      POSTGRES_PASSWORD: eztest_dev_password
+      POSTGRES_DB: eztest
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"  # Different port to avoid conflicts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eztest -d eztest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - eztest-network-dev
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: eztest-app-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://eztest:eztest_dev_password@postgres:5432/eztest?schema=public
+      - NODE_ENV=development
+      - APP_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=dev-secret-change-in-production
+      - NEXTAUTH_URL=http://localhost:3000
+      - ADMIN_EMAIL=admin@eztest.local
+      - ADMIN_PASSWORD=Admin@123456
+      - ADMIN_NAME=System Administrator
+      - MAX_FILE_SIZE=10485760
+      - UPLOAD_DIR=/app/uploads
+      - WATCHPACK_POLLING=true  # Enable polling for better file watching in containers
+    volumes:
+      # Mount source code for hot reloading
+      - .:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+      - /app/.next
+      # Mount uploads directory
+      - uploads_dev:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eztest-network-dev
+
+volumes:
+  postgres_data_dev:
+    driver: local
+  uploads_dev:
+    driver: local
+
+networks:
+  eztest-network-dev:
+    driver: bridge

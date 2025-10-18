@@ -2,7 +2,50 @@
 
 EzTest is a lightweight, self-hostable Test Management Application built with Next.js, Tailwind CSS, ShadCN UI, and PostgreSQL. It's designed to run efficiently on minimal hardware (1 core, 2GB RAM).
 
-## Quick Start
+## 🔧 Development vs Production
+
+EZTest provides **two separate Docker setups**:
+
+### Development Setup (`docker-compose.dev.yml`)
+- ✅ Hot reloading enabled
+- ✅ Source code mounted as volumes
+- ✅ Instant code changes without rebuild
+- ✅ All dev dependencies included
+- ✅ Separate database (port 5434)
+- 🎯 **Best for**: Local development
+
+### Production Setup (`docker-compose.yml`)
+- ✅ Optimized multi-stage build
+- ✅ Minimal image size
+- ✅ Production dependencies only
+- ✅ Better performance
+- ✅ Security hardened
+- 🎯 **Best for**: Deployment
+
+---
+
+## 🚀 Quick Start (Development)
+
+For local development with hot reloading:
+
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up -d
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f app
+
+# Stop development environment
+docker-compose -f docker-compose.dev.yml down
+```
+
+**Development URLs:**
+- App: `http://localhost:3000`
+- Database: `localhost:5434`
+
+---
+
+## 🏭 Quick Start (Production)
 
 ### Prerequisites
 - Docker Engine 20.10+
@@ -337,21 +380,100 @@ Solutions:
 5. **Backups** - Regular automated backups
 6. **Environment Variables** - Never commit `.env` to version control
 
-## Development vs Production
+## 🔄 Switching Between Environments
 
-### Development
+### From Development to Production
 ```bash
-# Use .env with localhost settings
-DATABASE_URL="postgresql://eztest:eztest_password@localhost:5432/eztest?schema=public"
-NODE_ENV="development"
+# Stop development
+docker-compose -f docker-compose.dev.yml down
+
+# Start production
+docker-compose up -d
 ```
 
-### Production
+### From Production to Development
 ```bash
-# Use .env with production settings
+# Stop production
+docker-compose down
+
+# Start development
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+---
+
+## 🛠️ Development-Specific Commands
+
+### Install New Dependencies
+When you add new npm packages, rebuild the development image:
+```bash
+docker-compose -f docker-compose.dev.yml build app
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+### Run Database Migrations (Dev)
+```bash
+docker-compose -f docker-compose.dev.yml exec app npx prisma migrate dev
+```
+
+### Seed Development Database
+```bash
+docker-compose -f docker-compose.dev.yml exec app npm run db:seed
+```
+
+### Access Development Database
+```bash
+docker-compose -f docker-compose.dev.yml exec postgres psql -U eztest -d eztest
+```
+
+### Shell into Development Container
+```bash
+docker-compose -f docker-compose.dev.yml exec app sh
+```
+
+### Clear Development Data
+```bash
+# Remove all containers and volumes
+docker-compose -f docker-compose.dev.yml down -v
+
+# Restart fresh
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+---
+
+## 📊 Comparison Table
+
+| Feature | Development | Production |
+|---------|-------------|------------|
+| Hot Reloading | ✅ Yes | ❌ No |
+| Code Mounting | ✅ Yes | ❌ No |
+| Build Time | Fast (no build) | Slower (full build) |
+| Image Size | ~800MB | ~200MB |
+| Dependencies | All (dev + prod) | Production only |
+| Database Port | 5434 | 5433 |
+| Node Environment | development | production |
+| Performance | Moderate | Optimized |
+| Best For | Development | Deployment |
+
+---
+
+## 📝 Environment Variables
+
+### Development (`.env.development`)
+```bash
+DATABASE_URL="postgresql://eztest:eztest_dev_password@localhost:5434/eztest?schema=public"
+NODE_ENV="development"
+NEXTAUTH_SECRET="dev-secret-change-in-production"
+```
+
+### Production (`.env`)
+```bash
 DATABASE_URL="postgresql://eztest:STRONG_PASSWORD@postgres:5432/eztest?schema=public"
 NODE_ENV="production"
 NEXTAUTH_SECRET="generate-a-secure-random-string"
+APP_URL="https://your-domain.com"
+NEXTAUTH_URL="https://your-domain.com"
 ```
 
 ## Support
