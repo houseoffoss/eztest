@@ -108,7 +108,7 @@ export default async function Home() {
 
           <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
-              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">�</div>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">💬</div>
               <CardTitle>Collaboration</CardTitle>
               <CardDescription>
                 Add comments, attach files, and collaborate with your team. Everything in context.
