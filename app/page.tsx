@@ -72,7 +72,7 @@ export default async function Home() {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">📊</div>
               <CardTitle>Multi-Project Support</CardTitle>
@@ -82,7 +82,7 @@ export default async function Home() {
             </CardHeader>
           </Card>
 
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🗂️</div>
               <CardTitle>Hierarchical Tests</CardTitle>
@@ -92,7 +92,7 @@ export default async function Home() {
             </CardHeader>
           </Card>
 
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">▶️</div>
               <CardTitle>Test Execution</CardTitle>
@@ -102,7 +102,7 @@ export default async function Home() {
             </CardHeader>
           </Card>
 
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🔗</div>
               <CardTitle>Traceability</CardTitle>
@@ -112,9 +112,9 @@ export default async function Home() {
             </CardHeader>
           </Card>
 
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
-              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">💬</div>
+              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">�</div>
               <CardTitle>Collaboration</CardTitle>
               <CardDescription>
                 Add comments, attach files, and collaborate with your team. Everything in context.
@@ -122,7 +122,7 @@ export default async function Home() {
             </CardHeader>
           </Card>
 
-          <Card className="glass group hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] group hover:shadow-xl hover:scale-105 transition-all duration-300">
             <CardHeader>
               <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">⚡</div>
               <CardTitle>Lightweight</CardTitle>
@@ -134,7 +134,7 @@ export default async function Home() {
         </div>
 
         {/* Stats Section */}
-        <Card className="glass relative overflow-hidden text-white border-none">
+        <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] relative overflow-hidden text-white">
           <CardContent className="p-12 md:p-16 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose EZTest? 🤔</h2>
             <p className="text-white/90 text-lg mb-12 max-w-2xl mx-auto">

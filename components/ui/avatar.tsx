@@ -13,7 +13,8 @@ function Avatar({
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        // Glass gradient background for avatar root (used when image transparent or fallback)
+  "relative flex size-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-primary/50 via-primary/30 to-accent/50 ring-1 ring-inset ring-white/15 backdrop-blur-sm",
         className
       )}
       {...props}
@@ -42,7 +43,8 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "bg-muted flex size-full items-center justify-center rounded-full",
+        // Fallback gets a slightly more opaque gradient for readability behind initials
+  "flex size-full items-center justify-center rounded-full bg-gradient-to-br from-primary/50 via-primary/30 to-accent/50 text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]",
         className
       )}
       {...props}

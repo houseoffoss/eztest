@@ -25,9 +25,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a1628] min-h-screen text-white relative`}
       >
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_#1a2e4a_0%,_#0a1628_50%)] pointer-events-none z-0"></div>
+        <div className="relative z-10">
         {children}
+        </div>
       </body>
     </html>
   );

@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="glass p-6">
+        <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6">
           <h1 className="text-3xl font-bold text-foreground mb-4">Welcome to EZTest</h1>
           <div className="space-y-5">
             <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+// removed unused next-auth imports
 import Link from 'next/link';
 
 interface Profile {
@@ -99,7 +98,7 @@ export default function ProfileSettingsPage() {
     return (
       <div className="min-h-screen py-12">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="glass p-8">
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
             <div className="space-y-4">
               <div className="h-8 bg-primary/10 rounded animate-pulse"></div>
               <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
@@ -118,7 +117,7 @@ export default function ProfileSettingsPage() {
           <p className="text-muted-foreground">Manage your account information</p>
         </div>
 
-        <div className="glass">
+        <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
           <div className="p-8">
             {error && (
               <div className="mb-6 p-4 rounded-md border border-red-500/40 bg-red-500/10">
@@ -143,7 +142,7 @@ export default function ProfileSettingsPage() {
                     type="email"
                     value={profile.email}
                     disabled
-                    className="w-full px-4 py-2 rounded-lg bg-secondary/40 text-muted-foreground cursor-not-allowed border border-border"
+                    className="w-full px-4 py-2 rounded-[10px] bg-secondary/40 text-muted-foreground cursor-not-allowed border border-border"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Email cannot be changed. <Link href="/settings/account" className="text-primary hover:underline">Contact support</Link> for assistance.
@@ -161,7 +160,7 @@ export default function ProfileSettingsPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -176,7 +175,7 @@ export default function ProfileSettingsPage() {
                     value={formData.bio}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                     placeholder="Tell us about yourself"
                   />
                 </div>
@@ -191,7 +190,7 @@ export default function ProfileSettingsPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Your phone number"
                   />
                 </div>
@@ -206,7 +205,7 @@ export default function ProfileSettingsPage() {
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="City, Country"
                   />
                 </div>

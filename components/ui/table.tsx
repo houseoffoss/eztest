@@ -4,18 +4,31 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+type TableContainerProps = React.HTMLAttributes<HTMLDivElement> & {
+  variant?: "default" | "glass"
+}
+
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+  return (
+    <table
+      data-slot="table"
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function TableContainer({ className, variant = "default", ...props }: TableContainerProps) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
+      className={cn(
+        "relative w-full overflow-x-auto rounded-2xl",
+        variant === "glass" && "border border-white/10 bg-white/5 backdrop-blur-xl",
+        className
+      )}
+      {...props}
+    />
   )
 }
 
@@ -52,12 +65,14 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+type TableRowProps = React.ComponentProps<"tr"> & { variant?: "default" | "glass" }
+function TableRow({ className, variant = "default", ...props }: TableRowProps) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-all cursor-pointer",
+        "border-b transition-all cursor-pointer",
+        variant === "glass" ? "hover:bg-accent/20 data-[state=selected]:bg-accent/30" : "hover:bg-accent/15 data-[state=selected]:bg-accent/25",
         className
       )}
       {...props}
@@ -105,6 +120,7 @@ function TableCaption({
 }
 
 export {
+  TableContainer,
   Table,
   TableHeader,
   TableBody,

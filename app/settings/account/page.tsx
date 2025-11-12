@@ -144,7 +144,7 @@ export default function AccountSettingsPage() {
     return (
       <div className="min-h-screen py-12">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="glass p-8">
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
             <div className="space-y-4">
               <div className="h-8 bg-primary/10 rounded animate-pulse"></div>
               <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
@@ -176,7 +176,7 @@ export default function AccountSettingsPage() {
         )}
 
         {/* Change Password Section */}
-        <div className="glass mb-6">
+        <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] mb-6">
           <div className="p-8">
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -202,7 +202,7 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter your current password"
                   />
                 </div>
@@ -222,7 +222,7 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter new password (min 8 characters)"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Confirm your new password"
                   />
                 </div>
@@ -260,7 +260,7 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={changingPassword}
-                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors"
+                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-medium py-2 px-4 rounded-[10px] transition-colors"
                   >
                     {changingPassword ? 'Changing Password...' : 'Change Password'}
                   </button>
@@ -274,7 +274,7 @@ export default function AccountSettingsPage() {
                         confirmPassword: '',
                       });
                     }}
-                    className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 px-4 rounded-lg transition-colors"
+                    className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 px-4 rounded-[10px] transition-colors"
                   >
                     Cancel
                   </button>
@@ -283,7 +283,7 @@ export default function AccountSettingsPage() {
             ) : (
               <button
                 onClick={() => setChangePasswordForm(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-[10px] transition-colors"
               >
                 Change Password
               </button>
@@ -292,7 +292,7 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Account Deletion Section */}
-        <div className="glass border border-red-500/30">
+        <div className="bg-white/[0.02] border-red-500/30 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
           <div className="p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-foreground mb-2">Delete Account</h2>
@@ -354,7 +354,7 @@ export default function AccountSettingsPage() {
 
       {/* Delete Account Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="max-w-md glass">
+        <DialogContent className="max-w-md bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
           <DialogHeader>
             <DialogTitle>Delete Account?</DialogTitle>
             <DialogDescription>
@@ -373,7 +373,7 @@ export default function AccountSettingsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full px-4 py-2 rounded-lg border border-border bg-transparent focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && password.trim()) {
                     handleDeleteAccount();
@@ -395,14 +395,14 @@ export default function AccountSettingsPage() {
                   setPassword('');
                   setError(null);
                 }}
-                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 px-4 rounded-[10px] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleting || !password.trim()}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-muted text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-red-600 hover:bg-red-700 disabled:bg-muted text-white font-medium py-2 px-4 rounded-[10px] transition-colors"
               >
                 {deleting ? 'Deleting...' : 'Delete Account'}
               </button>

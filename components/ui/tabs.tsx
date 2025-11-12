@@ -48,9 +48,11 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all outline-none cursor-pointer",
-        "text-muted-foreground hover:text-foreground",
-        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md",
+  "inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all outline-none cursor-pointer",
+  // Non-active: subtle text, on hover introduce faint accent tint matching glass-accent 20-30% transparency guidance
+  "text-muted-foreground hover:bg-accent/15 hover:text-foreground",
+  // Active: use semi-transparent accent background similar to glass-accent button (accent/25) and maintain readable foreground
+  "data-[state=active]:bg-accent/25 data-[state=active]:text-accent-foreground data-[state=active]:shadow-md",
         "focus-visible:ring-2 focus-visible:ring-ring/30",
         "disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
