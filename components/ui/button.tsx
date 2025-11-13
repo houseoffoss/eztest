@@ -20,11 +20,20 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Glass variants tuned to screenshot (moderate pill radius)
+        glass:
+          "rounded-2xl backdrop-blur-xl border border-white/20 text-foreground bg-white/8 shadow-md hover:bg-white/10 active:bg-white/12",
+        "glass-primary":
+          "rounded-2xl backdrop-blur-xl border border-primary/40 text-primary-foreground bg-primary/20 shadow-md hover:bg-primary/25 active:bg-primary/30",
+        "glass-accent":
+          "rounded-2xl backdrop-blur-xl border border-accent/40 text-accent-foreground bg-accent/20 shadow-md hover:bg-accent/25 active:bg-accent/30",
+        "glass-destructive":
+          "rounded-2xl backdrop-blur-xl border border-red-400/40 text-red-50 bg-red-500/20 shadow-md hover:bg-red-500/30 active:bg-red-500/35",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 px-6 has-[>svg]:px-4",
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
@@ -51,6 +60,7 @@ function Button({
 
   return (
     <Comp
+      suppressHydrationWarning
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}

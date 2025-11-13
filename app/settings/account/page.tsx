@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/design/GlassPanel';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface AccountStatus {
   isMarkedForDeletion: boolean;
@@ -124,7 +126,7 @@ export default function AccountSettingsPage() {
         throw new Error(errorData.error || 'Failed to delete account');
       }
 
-      const data = await response.json();
+  await response.json(); // response consumed; no variable needed
       setSuccess('Account deletion initiated. Redirecting to login...');
       setPassword('');
       setShowDeleteDialog(false);
@@ -142,12 +144,12 @@ export default function AccountSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12">
+      <div className="min-h-screen py-12">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
             <div className="space-y-4">
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+              <div className="h-8 bg-primary/10 rounded animate-pulse"></div>
+              <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
             </div>
           </div>
         </div>
@@ -156,32 +158,31 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12">
+    <div className="min-h-screen py-12">
       <div className="max-w-2xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Account & Security</h1>
-          <p className="text-gray-600">Manage password, security settings, and account deletion</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Account & Security</h1>
+          <p className="text-muted-foreground">Manage password, security settings, and account deletion</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-6 p-4 rounded-md border border-red-500/40 bg-red-500/10">
+            <p className="text-red-300">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800">{success}</p>
+          <div className="mb-6 p-4 rounded-md border border-green-500/40 bg-green-500/10">
+            <p className="text-green-300">{success}</p>
           </div>
         )}
 
         {/* Change Password Section */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-          <div className="p-8">
+        <GlassPanel className="mb-6" contentClassName="p-8">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Password</h2>
-                <p className="text-gray-600 text-sm mt-1">Change your password to keep your account secure</p>
+                <h2 className="text-2xl font-bold text-foreground">Password</h2>
+                <p className="text-muted-foreground text-sm mt-1">Change your password to keep your account secure</p>
               </div>
             </div>
 
@@ -189,7 +190,7 @@ export default function AccountSettingsPage() {
               <form onSubmit={handleChangePassword} className="space-y-4">
                 {/* Current Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
                     Current Password
                   </label>
                   <input
@@ -202,14 +203,14 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter your current password"
                   />
                 </div>
 
                 {/* New Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
                     New Password
                   </label>
                   <input
@@ -222,14 +223,14 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter new password (min 8 characters)"
                   />
                 </div>
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">
                     Confirm New Password
                   </label>
                   <input
@@ -242,14 +243,14 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Confirm your new password"
                   />
                 </div>
 
-                <div className="bg-blue-50 p-3 rounded-lg text-sm text-gray-700">
-                  <p className="font-medium mb-2">Password requirements:</p>
-                  <ul className="list-disc list-inside space-y-1">
+                <div className="rounded-lg p-3 text-sm border border-primary/30 bg-primary/5">
+                  <p className="font-medium mb-2 text-foreground">Password requirements:</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     <li>At least 8 characters long</li>
                     <li>Must be different from current password</li>
                     <li>Must match in both new password fields</li>
@@ -257,14 +258,15 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <button
+                  <Button
                     type="submit"
                     disabled={changingPassword}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    variant="glass-primary"
+                    className="flex-1 rounded-[10px]"
                   >
                     {changingPassword ? 'Changing Password...' : 'Change Password'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => {
                       setChangePasswordForm(false);
@@ -274,37 +276,37 @@ export default function AccountSettingsPage() {
                         confirmPassword: '',
                       });
                     }}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+                    variant="glass"
+                    className="flex-1 rounded-[10px]"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
-              <button
+              <Button
                 onClick={() => setChangePasswordForm(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                variant="glass-primary"
+                className="rounded-[10px]"
               >
                 Change Password
-              </button>
+              </Button>
             )}
-          </div>
-        </div>
+        </GlassPanel>
 
         {/* Account Deletion Section */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-red-200">
-          <div className="p-8">
+  <GlassPanel className="border-red-500/30" contentClassName="p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Delete Account</h2>
-              <p className="text-gray-600 text-sm">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Delete Account</h2>
+              <p className="text-muted-foreground text-sm">
                 Permanently delete your account and all associated data
               </p>
             </div>
 
             {accountStatus?.isMarkedForDeletion ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="font-medium text-yellow-900 mb-2">Account Marked for Deletion</h3>
-                <p className="text-yellow-800 text-sm mb-2">
+              <div className="rounded-lg p-4 mb-6 border border-yellow-500/40 bg-yellow-500/10">
+                <h3 className="font-medium text-yellow-200 mb-2">Account Marked for Deletion</h3>
+                <p className="text-yellow-200/90 text-sm mb-2">
                   Your account is scheduled for permanent deletion on{' '}
                   <strong>
                     {new Date(accountStatus.permanentDeleteDate!).toLocaleDateString('en-US', {
@@ -314,18 +316,18 @@ export default function AccountSettingsPage() {
                     })}
                   </strong>
                 </p>
-                <p className="text-yellow-800 text-sm">
+                <p className="text-yellow-200/90 text-sm">
                   You have until then to{' '}
-                  <button className="font-medium text-yellow-900 hover:underline">
+                  <button className="font-medium underline underline-offset-2">
                     contact support to restore your account
                   </button>
                 </p>
               </div>
             ) : (
               <>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-red-900 mb-2">⚠️ Important Information</h4>
-                  <ul className="text-red-800 text-sm space-y-2 list-disc list-inside">
+                <div className="rounded-lg p-4 mb-6 border border-red-500/40 bg-red-500/10">
+                  <h4 className="font-medium text-red-200 mb-2">⚠️ Important Information</h4>
+                  <ul className="text-red-200/90 text-sm space-y-2 list-disc list-inside">
                     <li>Your account will be marked for deletion immediately</li>
                     <li>You will have 30 days to restore your account</li>
                     <li>After 30 days, all your data will be permanently deleted</li>
@@ -333,39 +335,39 @@ export default function AccountSettingsPage() {
                   </ul>
                 </div>
 
-                <button
+                <Button
                   onClick={() => setShowDeleteDialog(true)}
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  variant="glass-destructive"
+                  className="rounded-[10px]"
                 >
                   Delete My Account
-                </button>
+                </Button>
               </>
             )}
-          </div>
-        </div>
+        </GlassPanel>
 
         {/* Navigation */}
         <div className="mt-8 text-center">
-          <Link href="/settings/profile" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link href="/settings/profile" className="text-primary hover:text-primary/90 font-medium">
             Back to Profile Settings
           </Link>
         </div>
       </div>
 
       {/* Delete Account Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action will mark your account for deletion. You'll have 30 days to restore it before permanent deletion.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent variant="glass" className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Account?</DialogTitle>
+            <DialogDescription>
+              This action will mark your account for deletion. You&apos;ll have 30 days to restore it before permanent deletion.
+            </DialogDescription>
+          </DialogHeader>
 
           {/* Password Confirmation */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Enter your password to confirm
               </label>
               <input
@@ -373,7 +375,7 @@ export default function AccountSettingsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && password.trim()) {
                     handleDeleteAccount();
@@ -382,31 +384,36 @@ export default function AccountSettingsPage() {
               />
             </div>
 
-            <div className="bg-red-50 p-3 rounded-lg text-sm text-red-800">
-              Your account will be permanently deleted in 30 days. You won't be able to log in during this period.
+            <div className="rounded-lg p-3 text-sm border border-red-500/40 bg-red-500/10 text-red-200">
+              Your account will be permanently deleted in 30 days. You won&apos;t be able to log in during this period.
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end pt-4">
-            <AlertDialogCancel
-              onClick={() => {
-                setPassword('');
-                setError(null);
-              }}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={deleting || !password.trim()}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              {deleting ? 'Deleting...' : 'Delete Account'}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+          <DialogFooter className="justify-end pt-4">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setPassword('');
+                  setError(null);
+                }}
+                variant="glass"
+                className="rounded-[10px]"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                disabled={deleting || !password.trim()}
+                variant="glass-destructive"
+                className="rounded-[10px]"
+              >
+                {deleting ? 'Deleting...' : 'Delete Account'}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

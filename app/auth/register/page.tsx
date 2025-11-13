@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Navbar } from '@/components/design/Navbar';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -82,57 +83,74 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-[#f0f9ff] to-white">
-      {/* Left Side - Branding & Features */}
-      <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 bg-gradient-to-br from-[#033977] to-[#044a99] text-white relative overflow-hidden">
-        {/* Glass effect overlay */}
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
-
-        <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2 mb-12 group">
-            <span className="text-3xl">🧪</span>
-            <span className="text-2xl font-bold group-hover:scale-105 transition-transform">EZTest</span>
-          </Link>
-          <h2 className="text-4xl font-bold mb-4">
-            Start Testing Smarter 🚀
-          </h2>
-          <p className="text-white/80 text-lg leading-relaxed">
-            Join teams who have simplified their test management. No credit card required, start for free today.
-          </p>
+    <div className="min-h-screen bg-[#0a1628] flex flex-col">
+      <Navbar
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="glass" asChild>
+              <Link href="/auth/login">Sign in</Link>
+            </Button>
+          </div>
+        }
+      />
+      {/* Split container: Left content, Right form aligned to Navbar width */}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-8 gap-8">
+        {/* Left Side - Branding & Features (Glass Panel) */}
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-10 relative overflow-hidden">
+          <div className="absolute inset-0 -z-10 opacity-60" style={{background: 'radial-gradient(circle at 25% 30%, rgba(11,114,255,0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(255,122,24,0.25), transparent 55%)'}} />
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] h-full w-full p-10 flex flex-col justify-between">
+            <div>
+              <Link href="/" className="flex items-center gap-2 mb-12 group">
+                <span className="text-3xl">🧪</span>
+                <span className="text-2xl font-bold group-hover:scale-105 transition-transform text-primary">EZTest</span>
+              </Link>
+              <h2 className="text-4xl font-bold mb-4 text-white">
+                Start Testing Smarter 🚀
+              </h2>
+              <p className="text-white/80 text-lg leading-relaxed max-w-md">
+                Join teams who have simplified their test management. No credit card required, start for free today.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🎯</span>
+                  <div>
+                    <h3 className="font-semibold mb-1">Complete Control</h3>
+                    <p className="text-muted-foreground text-sm">Self-host on your infrastructure, own your data completely</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⚡</span>
+                  <div>
+                    <h3 className="font-semibold mb-1">Lightweight & Fast</h3>
+                    <p className="text-muted-foreground text-sm">Runs on minimal resources, no complex setup required</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🔓</span>
+                  <div>
+                    <h3 className="font-semibold mb-1">100% Open Source</h3>
+                    <p className="text-muted-foreground text-sm">Free forever,transparent and community-driven</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="space-y-4 relative z-10">
-          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <span className="text-2xl">🎯</span>
-            <div>
-              <h3 className="font-semibold mb-1">Complete Control</h3>
-              <p className="text-white/70 text-sm">Self-host on your infrastructure, own your data completely</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <span className="text-2xl">⚡</span>
-            <div>
-              <h3 className="font-semibold mb-1">Lightweight & Fast</h3>
-              <p className="text-white/70 text-sm">Runs on minimal resources, no complex setup required</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <span className="text-2xl">🔓</span>
-            <div>
-              <h3 className="font-semibold mb-1">100% Open Source</h3>
-              <p className="text-white/70 text-sm">Free forever, transparent code, community-driven</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Right Side - Registration Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <Card>
+        {/* Right Side - Registration Form */}
+        <div className="flex-1 flex items-center justify-center py-8">
+          <div className="w-full max-w-md">
+          <Card variant="glass">
             <CardHeader>
               <div className="flex items-center gap-2 mb-2 lg:hidden">
                 <span className="text-2xl">🧪</span>
-                <span className="text-xl font-bold text-[#033977]">EZTest</span>
+                <span className="text-xl font-bold text-primary">EZTest</span>
               </div>
               <CardTitle className="text-2xl">Create your account</CardTitle>
               <CardDescription>Get started with EZTest for free</CardDescription>
@@ -210,7 +228,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                variant="accent"
+                variant="glass-accent"
                 disabled={isLoading}
                 className="w-full"
               >
@@ -231,6 +249,7 @@ export default function RegisterPage() {
             </p>
           </CardFooter>
         </Card>
+          </div>
         </div>
       </div>
     </div>

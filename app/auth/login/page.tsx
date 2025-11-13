@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Navbar } from '@/components/design/Navbar';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,50 +49,65 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-[#f0f9ff] to-white">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 bg-gradient-to-br from-[#033977] to-[#044a99] text-white relative overflow-hidden">
-        {/* Glass effect overlay */}
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
-
-        <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2 mb-12 group">
-            <span className="text-3xl">🧪</span>
-            <span className="text-2xl font-bold group-hover:scale-105 transition-transform">EZTest</span>
-          </Link>
-          <h2 className="text-4xl font-bold mb-4">
-            Welcome back! 👋
-          </h2>
-          <p className="text-white/80 text-lg leading-relaxed">
-            Sign in to manage your test cases, track executions, and collaborate with your team.
-          </p>
-        </div>
-        <div className="space-y-4 relative z-10">
-          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <span className="text-2xl">✨</span>
+    <div className="min-h-screen bg-[#0a1628] flex flex-col">
+      <Navbar
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="glass" asChild>
+              <Link href="/auth/register">Sign up</Link>
+            </Button>
+          </div>
+        }
+      />
+      {/* Split container: Left content, Right form aligned to Navbar width */}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-8 gap-8">
+        {/* Left Side - Branding (Glass Panel) */}
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-10 relative overflow-hidden">
+          <div className="absolute inset-0 -z-10 opacity-60" style={{background: 'radial-gradient(circle at 25% 30%, rgba(11,114,255,0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(255,122,24,0.25), transparent 55%)'}} />
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] h-full w-full p-10 flex flex-col justify-between">
             <div>
-              <h3 className="font-semibold mb-1">Simple & Powerful</h3>
-              <p className="text-white/70 text-sm">Everything you need for test management in one place</p>
+              <Link href="/" className="flex items-center gap-2 mb-12 group">
+                <span className="text-3xl">🧪</span>
+                <span className="text-2xl font-bold group-hover:scale-105 transition-transform text-primary">EZTest</span>
+              </Link>
+              <h2 className="text-4xl font-bold mb-4 text-white">
+                Welcome back! 👋
+              </h2>
+              <p className="text-white/80 text-lg leading-relaxed max-w-md">
+                Sign in to manage test cases, track executions, and collaborate with your team.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">✨</span>
+                  <div>
+                    <h3 className="font-semibold mb-1">Simple & Powerful</h3>
+                    <p className="text-muted-foreground text-sm">All essentials in one place</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🚀</span>
+                  <div>
+                    <h3 className="font-semibold mb-1">Self-Hosted</h3>
+                    <p className="text-muted-foreground text-sm">Your data, your control</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <span className="text-2xl">🚀</span>
-            <div>
-              <h3 className="font-semibold mb-1">Self-Hosted</h3>
-              <p className="text-white/70 text-sm">Your data stays with you, always</p>
-            </div>
-          </div>
         </div>
-      </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <Card>
+        {/* Right Side - Login Form */}
+        <div className="flex-1 flex items-center justify-center py-8">
+          <div className="w-full max-w-md">
+          <Card variant="glass">
             <CardHeader>
               <div className="flex items-center gap-2 mb-2 lg:hidden">
                 <span className="text-2xl">🧪</span>
-                <span className="text-xl font-bold text-[#033977]">EZTest</span>
+                <span className="text-xl font-bold text-primary">EZTest</span>
               </div>
               <CardTitle className="text-2xl">Sign in</CardTitle>
               <CardDescription>Access your test management workspace</CardDescription>
@@ -113,6 +129,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
                     required
                     value={formData.email}
                     onChange={(e) =>
@@ -127,6 +144,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="current-password"
                     required
                     value={formData.password}
                     onChange={(e) =>
@@ -138,7 +156,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  variant="accent"
+                  variant="glass-accent"
                   disabled={isLoading}
                   className="w-full"
                 >
@@ -171,19 +189,23 @@ export default function LoginPage() {
           </Card>
 
           {/* Demo credentials hint */}
-          <Card className="mt-6">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-2">
-                <span className="text-lg">💡</span>
-                <div>
-                  <p className="text-sm font-medium text-primary mb-1">Try it out!</p>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    admin@eztest.local / Admin@123456
-                  </p>
+            <Card variant="glass" className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] mt-6">
+              <CardContent className="pt-5">
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">💡</span>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-primary tracking-wide">Try it out!</p>
+                    <p className="text-xs font-mono bg-black/30 rounded px-2 py-1 text-accent-foreground">
+                      <span className="text-accent">admin@eztest.local</span>
+                      <span className="px-1 text-muted-foreground">/</span>
+                      <span className="text-accent">Admin@123456</span>
+                    </p>
+                    {/* <p className="text-[10px] text-muted-foreground">Change the default admin password after first login.</p> */}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
