@@ -14,6 +14,10 @@ interface AccountStatus {
 }
 
 export default function AccountSettingsPage() {
+  useEffect(() => {
+    document.title = 'Account Settings | EZTest';
+  }, []);
+
   const router = useRouter();
   const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [loading, setLoading] = useState(true);

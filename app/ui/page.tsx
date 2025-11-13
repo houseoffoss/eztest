@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 // UI primitives
@@ -57,7 +58,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { GlassPanel, PageHeader, StatCard, StatusBadge, PriorityBadge, ProgressBar, FilterBar, Assignee, EmptyState, ConfirmDialog, Section } from "@/components/design";
 import { GlassFooter } from "@/components/design/GlassFooter";
 
-export default function UIShowcase() {
+export default function UIShowcasePage() {
+  useEffect(() => {
+    document.title = 'UI Components | EZTest';
+  }, []);
   return (
     <div className="min-h-screen bg-[#0a1628]">
       {/* Header */}

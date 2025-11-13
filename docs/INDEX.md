@@ -7,6 +7,7 @@ Welcome to the EZTest technical documentation. This directory contains comprehen
 ### Getting Started
 - **[Architecture Overview](./ARCHITECTURE.md)** - High-level system design and component structure
 - **[Project Structure](./PROJECT_STRUCTURE.md)** - Directory layout and file organization
+- **[Project Features](./PROJECT_FEATURES.md)** - Comprehensive guide to all project management features
 
 ### Core Systems
 - **[Database Schema](./DATABASE.md)** - Data models, relationships, and design patterns

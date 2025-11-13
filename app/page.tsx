@@ -11,9 +11,9 @@ import { GlassFooter } from '@/components/design/GlassFooter';
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect to projects
   if (session) {
-    redirect('/dashboard');
+    redirect('/projects');
   }
 
   return (

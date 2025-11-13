@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { GlassPanel } from '@/components/design/GlassPanel';
+import { GlassPanel } from '@/components/design';
 
 export default function ForgotPasswordPage() {
+  useEffect(() => {
+    document.title = 'Forgot Password | EZTest';
+  }, []);
+
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +66,7 @@ export default function ForgotPasswordPage() {
                 The link will expire in 1 hour for security reasons.
               </p>
               <p className="text-green-200/90 text-sm">
-                Didn't receive the email? Check your spam folder or{' '}
+                Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setSuccess(false)}
                   className="font-medium text-green-900 hover:underline"

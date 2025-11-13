@@ -17,6 +17,10 @@ interface Profile {
 }
 
 export default function ProfileSettingsPage() {
+  useEffect(() => {
+    document.title = 'Profile Settings | EZTest';
+  }, []);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +12,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Navbar } from '@/components/design/Navbar';
 
 export default function RegisterPage() {
+  useEffect(() => {
+    document.title = 'Register | EZTest';
+  }, []);
+
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
@@ -70,7 +74,7 @@ export default function RegisterPage() {
       });
 
       if (result?.ok) {
-        router.push('/dashboard');
+        router.push('/projects');
         router.refresh();
       } else {
         // Registration successful but login failed, redirect to login

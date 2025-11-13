@@ -238,12 +238,12 @@ export class ProjectController {
       }
 
       const body = await request.json();
-      const { userId: newUserId, role } = body;
+      const { userId: newUserId, email, role } = body;
 
-      // Validation
-      if (!newUserId) {
+      // Validation - require either email or userId
+      if (!email && !newUserId) {
         return NextResponse.json(
-          { error: 'userId is required' },
+          { error: 'Either email or userId is required' },
           { status: 400 }
         );
       }
@@ -261,6 +261,7 @@ export class ProjectController {
 
       const member = await projectService.addProjectMember(projectId, {
         userId: newUserId,
+        email,
         role,
       });
 
@@ -275,7 +276,10 @@ export class ProjectController {
         );
       }
 
-      if (error instanceof Error && error.message === 'User not found') {
+      if (error instanceof Error && (
+        error.message === 'User not found' || 
+        error.message === 'User with this email not found'
+      )) {
         return NextResponse.json(
           { error: error.message },
           { status: 404 }

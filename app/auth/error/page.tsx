@@ -4,9 +4,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 function ErrorContent() {
+  useEffect(() => {
+    document.title = 'Authentication Error | EZTest';
+  }, []);
+
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
 

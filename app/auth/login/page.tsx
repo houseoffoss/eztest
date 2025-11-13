@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +12,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Navbar } from '@/components/design/Navbar';
 
 export default function LoginPage() {
+  useEffect(() => {
+    document.title = 'Sign In | EZTest';
+  }, []);
+
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -39,7 +43,7 @@ export default function LoginPage() {
       }
 
       if (result?.ok) {
-        router.push('/dashboard');
+        router.push('/projects');
         router.refresh();
       }
     } catch {

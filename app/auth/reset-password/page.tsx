@@ -7,6 +7,10 @@ import { GlassPanel } from '@/components/design/GlassPanel';
 import Link from 'next/link';
 
 export default function ResetPasswordPage() {
+  useEffect(() => {
+    document.title = 'Reset Password | EZTest';
+  }, []);
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');

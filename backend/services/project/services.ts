@@ -14,7 +14,8 @@ interface UpdateProjectInput {
 }
 
 interface AddMemberInput {
-  userId: string;
+  userId?: string; // Optional, for backward compatibility
+  email?: string; // Email address of the user to add
   role?: ProjectRole; // Optional, defaults to TESTER
 }
 
@@ -26,6 +27,9 @@ export class ProjectService {
   async getAllProjects(userId: string, userRole: UserRole) {
     if (userRole === 'ADMIN') {
       return await prisma.project.findMany({
+        where: {
+          isDeleted: false, // Only non-deleted projects
+        },
         include: {
           createdBy: {
             select: {
@@ -64,6 +68,7 @@ export class ProjectService {
     // Non-admins only see projects they're members of
     return await prisma.project.findMany({
       where: {
+        isDeleted: false, // Only non-deleted projects
         members: {
           some: {
             userId: userId,
@@ -109,13 +114,21 @@ export class ProjectService {
    * Create a new project
    */
   async createProject(data: CreateProjectInput) {
-    // Check if project key already exists
+    // Check if project key already exists (including soft-deleted projects)
     const existingProject = await prisma.project.findUnique({
       where: { key: data.key },
     });
 
-    if (existingProject) {
+    if (existingProject && !existingProject.isDeleted) {
       throw new Error('Project key already exists');
+    }
+
+    // If a soft-deleted project with this key exists, we could either:
+    // 1. Prevent creating a new one with the same key
+    // 2. Update the key to be unique (e.g., append timestamp)
+    // For now, we'll prevent it to maintain key uniqueness
+    if (existingProject && existingProject.isDeleted) {
+      throw new Error('Project key already exists (in deleted projects). Please choose a different key.');
     }
 
     // Create project and automatically add creator as OWNER
@@ -161,8 +174,11 @@ export class ProjectService {
    * Get project by ID with optional stats
    */
   async getProjectById(projectId: string, includeStats: boolean = false) {
-    return await prisma.project.findUnique({
-      where: { id: projectId },
+    return await prisma.project.findFirst({
+      where: { 
+        id: projectId,
+        isDeleted: false, // Only non-deleted projects
+      },
       include: {
         createdBy: {
           select: {
@@ -206,8 +222,22 @@ export class ProjectService {
    * Update project information
    */
   async updateProject(projectId: string, data: UpdateProjectInput) {
+    // First check if project exists and is not deleted
+    const project = await prisma.project.findFirst({
+      where: {
+        id: projectId,
+        isDeleted: false,
+      },
+    });
+
+    if (!project) {
+      throw new Error('Project not found or has been deleted');
+    }
+
     return await prisma.project.update({
-      where: { id: projectId },
+      where: { 
+        id: projectId,
+      },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
@@ -238,11 +268,14 @@ export class ProjectService {
   }
 
   /**
-   * Delete a project
+   * Soft delete a project (set isDeleted to true)
    */
   async deleteProject(projectId: string) {
-    return await prisma.project.delete({
+    return await prisma.project.update({
       where: { id: projectId },
+      data: {
+        isDeleted: true,
+      },
     });
   }
 
@@ -273,12 +306,37 @@ export class ProjectService {
    * Add member to project
    */
   async addProjectMember(projectId: string, data: AddMemberInput) {
+    // Find user by email or userId
+    let user;
+    
+    if (data.email) {
+      // Find user by email
+      user = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+      
+      if (!user) {
+        throw new Error('User with this email not found');
+      }
+    } else if (data.userId) {
+      // Find user by ID (fallback for backward compatibility)
+      user = await prisma.user.findUnique({
+        where: { id: data.userId },
+      });
+      
+      if (!user) {
+        throw new Error('User not found');
+      }
+    } else {
+      throw new Error('Either email or userId is required');
+    }
+
     // Check if member already exists
     const existingMember = await prisma.projectMember.findUnique({
       where: {
         projectId_userId: {
           projectId,
-          userId: data.userId,
+          userId: user.id,
         },
       },
     });
@@ -287,19 +345,10 @@ export class ProjectService {
       throw new Error('User is already a member of this project');
     }
 
-    // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { id: data.userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
     return await prisma.projectMember.create({
       data: {
         projectId,
-        userId: data.userId,
+        userId: user.id,
         role: data.role || 'TESTER', // Default to TESTER if not specified
       },
       include: {
@@ -352,16 +401,23 @@ export class ProjectService {
    * Check if user has access to project
    */
   async hasProjectAccess(projectId: string, userId: string, userRole: UserRole): Promise<boolean> {
-    // Admins have access to all projects
+    // Admins have access to all non-deleted projects
     if (userRole === 'ADMIN') {
-      return true;
+      const project = await prisma.project.findFirst({
+        where: { 
+          id: projectId,
+          isDeleted: false,
+        },
+      });
+      return !!project;
     }
 
-    const membership = await prisma.projectMember.findUnique({
+    const membership = await prisma.projectMember.findFirst({
       where: {
-        projectId_userId: {
-          projectId,
-          userId,
+        projectId,
+        userId,
+        project: {
+          isDeleted: false, // Only non-deleted projects
         },
       },
     });
@@ -373,11 +429,12 @@ export class ProjectService {
    * Get user's role in a project
    */
   async getUserProjectRole(projectId: string, userId: string): Promise<ProjectRole | null> {
-    const membership = await prisma.projectMember.findUnique({
+    const membership = await prisma.projectMember.findFirst({
       where: {
-        projectId_userId: {
-          projectId,
-          userId,
+        projectId,
+        userId,
+        project: {
+          isDeleted: false, // Only non-deleted projects
         },
       },
     });

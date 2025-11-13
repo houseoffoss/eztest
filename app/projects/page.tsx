@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, MoreVertical, Folder, TestTube2, Play, FileText, Settings, Trash2, Users } from 'lucide-react';
+import { Navbar } from '@/components/design/Navbar';
 
 interface Project {
   id: string;
@@ -47,6 +48,9 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     key: '',
@@ -54,6 +58,10 @@ export default function ProjectsPage() {
   });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    document.title = 'Projects | EZTest';
+  }, []);
 
   useEffect(() => {
     fetchProjects();
@@ -108,9 +116,7 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      return;
-    }
+    setDeleting(true);
 
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
@@ -119,15 +125,24 @@ export default function ProjectsPage() {
 
       if (response.ok) {
         setProjects(projects.filter(p => p.id !== projectId));
+        setDeleteDialogOpen(false);
+        setProjectToDelete(null);
       }
     } catch (error) {
       console.error('Failed to delete project:', error);
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const openDeleteDialog = (project: Project) => {
+    setProjectToDelete({ id: project.id, name: project.name });
+    setDeleteDialogOpen(true);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#f0f9ff] to-white p-8">
+      <div className="min-h-screen bg-[#0a1628] p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-lg text-muted-foreground">Loading projects...</div>
@@ -138,23 +153,36 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0f9ff] to-white">
-      {/* Header */}
-      <div className="border-b bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-[#033977] mb-2">Projects</h1>
-              <p className="text-muted-foreground">Manage your test projects and track progress</p>
-            </div>
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#033977] hover:bg-[#044a99] text-white gap-2">
-                  <Plus className="w-4 h-4" />
-                  New Project
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[525px]">
+    <div className="min-h-screen bg-[#0a1628]">
+      <Navbar
+        items={[
+          { label: 'Projects', href: '/projects' },
+          { label: 'Runs', href: '/runs' },
+        ]}
+        actions={
+          <form action="/api/auth/signout" method="POST">
+            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+              Sign Out
+            </Button>
+          </form>
+        }
+      />
+      
+      {/* Page Header */}
+      <div className="max-w-7xl mx-auto px-8 py-6 pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
+            <p className="text-white/70 text-sm">Manage your test projects and track progress</p>
+          </div>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="glass-primary" className="gap-2">
+                <Plus className="w-4 h-4" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[525px]">
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                   <DialogDescription>
@@ -185,7 +213,7 @@ export default function ProjectsPage() {
                       minLength={2}
                       maxLength={10}
                       pattern="[A-Z0-9]+"
-                      className="uppercase"
+                      className="uppercase backdrop-blur-none"
                     />
                     <p className="text-xs text-muted-foreground">
                       2-10 characters, letters and numbers only
@@ -209,7 +237,7 @@ export default function ProjectsPage() {
                   <div className="flex gap-3 justify-end">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="glass"
                       onClick={() => setCreateDialogOpen(false)}
                     >
                       Cancel
@@ -217,7 +245,7 @@ export default function ProjectsPage() {
                     <Button
                       type="submit"
                       disabled={creating}
-                      className="bg-[#033977] hover:bg-[#044a99]"
+                      variant="glass-primary"
                     >
                       {creating ? 'Creating...' : 'Create Project'}
                     </Button>
@@ -227,21 +255,20 @@ export default function ProjectsPage() {
             </Dialog>
           </div>
         </div>
-      </div>
 
       {/* Projects Grid */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 pb-8">
         {projects.length === 0 ? (
-          <Card className="border-dashed border-2">
+          <Card variant="glass" className="border-dashed border-2 border-white/20">
             <CardContent className="flex flex-col items-center justify-center py-16">
-              <Folder className="w-16 h-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
-              <p className="text-muted-foreground mb-6 text-center max-w-sm">
+              <Folder className="w-16 h-16 text-white/50 mb-4" />
+              <h3 className="text-xl font-semibold mb-2 text-white">No projects yet</h3>
+              <p className="text-white/60 mb-6 text-center max-w-sm">
                 Get started by creating your first project to organize test cases and track testing progress.
               </p>
               <Button
                 onClick={() => setCreateDialogOpen(true)}
-                className="bg-[#033977] hover:bg-[#044a99]"
+                variant="glass-primary"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Project
@@ -249,51 +276,52 @@ export default function ProjectsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer group border-l-4 border-l-[#033977]"
+                variant="glass"
+                className="hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer group border-l-4 border-l-primary/30"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
+                <CardHeader className="pb-1 pt-2.5 px-3.5">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0" onClick={() => router.push(`/projects/${project.id}`)}>
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="font-mono text-xs">
+                        <Badge variant="outline" className="font-mono text-xs px-2 py-0.5 border-primary/40 bg-primary/10 text-primary">
                           {project.key}
                         </Badge>
                       </div>
-                      <CardTitle className="text-xl mb-1 group-hover:text-[#033977] transition-colors line-clamp-1">
+                      <CardTitle className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1 text-white">
                         {project.name}
                       </CardTitle>
                       {project.description && (
-                        <CardDescription className="line-clamp-2">
+                        <CardDescription className="line-clamp-1 text-sm text-white/60">
                           {project.description}
                         </CardDescription>
                       )}
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1">
-                          <MoreVertical className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 shrink-0 hover:bg-white/10">
+                          <MoreVertical className="w-3.5 h-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}`)} className="hover:bg-white/10">
                           <Folder className="w-4 h-4 mr-2" />
                           Open Project
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/settings`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/settings`)} className="hover:bg-white/10">
                           <Settings className="w-4 h-4 mr-2" />
                           Settings
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/members`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}/members`)} className="hover:bg-white/10">
                           <Users className="w-4 h-4 mr-2" />
                           Manage Members
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleDeleteProject(project.id)}
-                          className="text-red-600"
+                          onClick={() => openDeleteDialog(project)}
+                          className="text-red-400 hover:bg-red-400/10"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete
@@ -302,61 +330,61 @@ export default function ProjectsPage() {
                     </DropdownMenu>
                   </div>
                 </CardHeader>
-                <CardContent onClick={() => router.push(`/projects/${project.id}`)}>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                <CardContent onClick={() => router.push(`/projects/${project.id}`)} className="py-2.5 px-3.5">
+                  <div className="grid grid-cols-3 gap-2.5 mb-2.5">
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <TestTube2 className="w-4 h-4 text-blue-600" />
+                        <TestTube2 className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="text-2xl font-bold text-[#033977]">
+                      <div className="text-2xl font-bold text-white">
                         {project._count?.testCases || 0}
                       </div>
-                      <div className="text-xs text-muted-foreground">Test Cases</div>
+                      <div className="text-xs text-white/60">Test Cases</div>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <Play className="w-4 h-4 text-green-600" />
+                        <Play className="w-4 h-4 text-accent" />
                       </div>
-                      <div className="text-2xl font-bold text-[#033977]">
+                      <div className="text-2xl font-bold text-white">
                         {project._count?.testRuns || 0}
                       </div>
-                      <div className="text-xs text-muted-foreground">Test Runs</div>
+                      <div className="text-xs text-white/60">Test Runs</div>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <FileText className="w-4 h-4 text-purple-600" />
+                        <FileText className="w-4 h-4 text-purple-400" />
                       </div>
-                      <div className="text-2xl font-bold text-[#033977]">
+                      <div className="text-2xl font-bold text-white">
                         {project._count?.testSuites || 0}
                       </div>
-                      <div className="text-xs text-muted-foreground">Test Suites</div>
+                      <div className="text-xs text-white/60">Test Suites</div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
                     <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
+                      <div className="flex -space-x-1.5">
                         {project.members.slice(0, 3).map((member) => (
                           <div
                             key={member.id}
-                            className="w-8 h-8 rounded-full bg-[#033977] text-white flex items-center justify-center text-xs font-semibold border-2 border-white"
+                            className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold border-2 border-background"
                             title={member.user.name}
                           >
                             {member.user.name.charAt(0).toUpperCase()}
                           </div>
                         ))}
                         {project.members.length > 3 && (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-semibold border-2 border-white">
+                          <div className="w-7 h-7 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-xs font-semibold border-2 border-background">
                             +{project.members.length - 3}
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {project.members.length} {project.members.length === 1 ? 'member' : 'members'}
+                      <span className="text-xs text-white/60">
+                        {project.members.length} member{project.members.length !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <span className="text-xs text-white/50">
                       Updated {new Date(project.updatedAt).toLocaleDateString()}
-                    </div>
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -364,6 +392,51 @@ export default function ProjectsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{projectToDelete?.name}&quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
+              <p className="font-semibold mb-2">This will permanently delete:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>All test cases</li>
+                <li>All test runs</li>
+                <li>All test suites</li>
+                <li>All requirements</li>
+                <li>All project data</li>
+              </ul>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="glass"
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setProjectToDelete(null);
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="glass-destructive"
+                onClick={() => projectToDelete && handleDeleteProject(projectToDelete.id)}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete Project'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
