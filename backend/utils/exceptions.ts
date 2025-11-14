@@ -46,6 +46,18 @@ export class NotFoundException extends Error {
   }
 }
 
+export class ConflictException extends Error {
+  statusCode: number;
+  data: unknown;
+
+  constructor(message: string, data?: unknown) {
+    super(message);
+    this.name = 'ConflictException';
+    this.statusCode = 409;
+    this.data = data;
+  }
+}
+
 export class ValidationException extends Error {
   statusCode: number;
   data: unknown;

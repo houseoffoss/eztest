@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
 import { projectService } from '@/backend/services/project/services';
-import { ProjectRole } from '@prisma/client';
 import { CustomRequest } from '@/backend/utils/interceptor';
+import { BadRequestException, ConflictException, NotFoundException, InternalServerException, ValidationException } from '@/backend/utils/exceptions';
+import { ProjectMessages, ProjectMemberMessages } from '@/backend/constants/static_messages';
+import { createProjectSchema, updateProjectSchema, addProjectMemberSchema } from '@/backend/validators';
 
 export class ProjectController {
   /**
@@ -9,19 +10,11 @@ export class ProjectController {
    * Scope-based filtering applied via request.scopeInfo
    */
   async listProjects(request: CustomRequest) {
-    try {
-      const projects = await projectService.getAllProjects(
-        request.userInfo.id,
-        request.scopeInfo.scope_name
-      );
-      return NextResponse.json({ data: projects });
-    } catch (error) {
-      console.error('List projects error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch projects' },
-        { status: 500 }
-      );
-    }
+    const projects = await projectService.getAllProjects(
+      request.userInfo.id,
+      request.scopeInfo.scope_name
+    );
+    return { data: projects };
   }
 
   /**
@@ -29,40 +22,20 @@ export class ProjectController {
    * Permission already checked by route wrapper
    */
   async createProject(request: CustomRequest) {
+    const body = await request.json();
+
+    // Validation with Zod
+    const validationResult = createProjectSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const { name, key, description } = validationResult.data;
+
     try {
-      const body = await request.json();
-      const { name, key, description } = body;
-
-      // Validation
-      if (!name || !key) {
-        return NextResponse.json(
-          { error: 'Name and key are required' },
-          { status: 400 }
-        );
-      }
-
-      if (name.length < 3 || name.length > 255) {
-        return NextResponse.json(
-          { error: 'Name must be between 3 and 255 characters' },
-          { status: 400 }
-        );
-      }
-
-      if (key.length < 2 || key.length > 10) {
-        return NextResponse.json(
-          { error: 'Key must be between 2 and 10 characters' },
-          { status: 400 }
-        );
-      }
-
-      // Key should only contain uppercase letters and numbers
-      if (!/^[A-Z0-9]+$/.test(key.toUpperCase())) {
-        return NextResponse.json(
-          { error: 'Key can only contain letters and numbers' },
-          { status: 400 }
-        );
-      }
-
       const project = await projectService.createProject({
         name,
         key,
@@ -70,21 +43,12 @@ export class ProjectController {
         createdById: request.userInfo.id,
       });
 
-      return NextResponse.json({ data: project }, { status: 201 });
+      return { data: project, statusCode: 201 };
     } catch (error) {
-      console.error('Create project error:', error);
-
       if (error instanceof Error && error.message === 'Project key already exists') {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 409 }
-        );
+        throw new ConflictException(ProjectMessages.ProjectKeyAlreadyExists);
       }
-
-      return NextResponse.json(
-        { error: 'Failed to create project' },
-        { status: 500 }
-      );
+      throw new InternalServerException(ProjectMessages.FailedToCreateProject);
     }
   }
 
@@ -93,29 +57,18 @@ export class ProjectController {
    * Access already checked by route wrapper
    */
   async getProject(request: CustomRequest, projectId: string, includeStats: boolean = false) {
-    try {
-      const project = await projectService.getProjectById(
-        projectId,
-        request.userInfo.id,
-        request.scopeInfo.scope_name,
-        includeStats
-      );
+    const project = await projectService.getProjectById(
+      projectId,
+      request.userInfo.id,
+      request.scopeInfo.scope_name,
+      includeStats
+    );
 
-      if (!project) {
-        return NextResponse.json(
-          { error: 'Project not found' },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({ data: project });
-    } catch (error) {
-      console.error('Get project error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch project' },
-        { status: 500 }
-      );
+    if (!project) {
+      throw new NotFoundException(ProjectMessages.ProjectNotFound);
     }
+
+    return { data: project };
   }
 
   /**
@@ -123,38 +76,31 @@ export class ProjectController {
    * Permission already checked by route wrapper
    */
   async updateProject(request: CustomRequest, projectId: string) {
+    const body = await request.json();
+
+    // Validation with Zod
+    const validationResult = updateProjectSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const { name, description } = validationResult.data;
+
     try {
-      const body = await request.json();
-      const { name, description } = body;
-
-      // Validation
-      if (name && (name.length < 3 || name.length > 255)) {
-        return NextResponse.json(
-          { error: 'Name must be between 3 and 255 characters' },
-          { status: 400 }
-        );
-      }
-
       const project = await projectService.updateProject(projectId, {
         name,
         description,
       });
 
-      return NextResponse.json({ data: project });
+      return { data: project };
     } catch (error) {
-      console.error('Update project error:', error);
-
       if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-        return NextResponse.json(
-          { error: 'Project not found' },
-          { status: 404 }
-        );
+        throw new NotFoundException(ProjectMessages.ProjectNotFound);
       }
-
-      return NextResponse.json(
-        { error: 'Failed to update project' },
-        { status: 500 }
-      );
+      throw new InternalServerException(ProjectMessages.FailedToUpdateProject);
     }
   }
 
@@ -170,21 +116,12 @@ export class ProjectController {
         request.scopeInfo.scope_name
       );
 
-      return NextResponse.json({ message: 'Project deleted successfully' });
+      return { message: ProjectMessages.ProjectDeletedSuccessfully };
     } catch (error) {
-      console.error('Delete project error:', error);
-
       if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-        return NextResponse.json(
-          { error: 'Project not found' },
-          { status: 404 }
-        );
+        throw new NotFoundException(ProjectMessages.ProjectNotFound);
       }
-
-      return NextResponse.json(
-        { error: 'Failed to delete project' },
-        { status: 500 }
-      );
+      throw new InternalServerException(ProjectMessages.FailedToDeleteProject);
     }
   }
 
@@ -193,17 +130,8 @@ export class ProjectController {
    * Access already checked by route wrapper
    */
   async getProjectMembers(request: CustomRequest, projectId: string) {
-    try {
-      const members = await projectService.getProjectMembers(projectId);
-
-      return NextResponse.json({ data: members });
-    } catch (error) {
-      console.error('Get project members error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch project members' },
-        { status: 500 }
-      );
-    }
+    const members = await projectService.getProjectMembers(projectId);
+    return { data: members };
   }
 
   /**
@@ -211,60 +139,41 @@ export class ProjectController {
    * Permission already checked by route wrapper
    */
   async addProjectMember(request: CustomRequest, projectId: string) {
+    const body = await request.json();
+
+    // Validation with Zod
+    const validationResult = addProjectMemberSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const { userId: newUserId, email, role } = validationResult.data;
+
     try {
-      const body = await request.json();
-      const { userId: newUserId, email, role } = body;
-
-      // Validation - require either email or userId
-      if (!email && !newUserId) {
-        return NextResponse.json(
-          { error: 'Either email or userId is required' },
-          { status: 400 }
-        );
-      }
-
-      // Validate role if provided, otherwise it will default to TESTER
-      if (role) {
-        const validRoles: ProjectRole[] = ['OWNER', 'ADMIN', 'TESTER', 'VIEWER'];
-        if (!validRoles.includes(role)) {
-          return NextResponse.json(
-            { error: 'Invalid role. Must be one of: OWNER, ADMIN, TESTER, VIEWER' },
-            { status: 400 }
-          );
-        }
-      }
-
       const member = await projectService.addProjectMember(projectId, {
         userId: newUserId,
         email,
         role,
       });
 
-      return NextResponse.json({ data: member }, { status: 201 });
+      return { data: member, statusCode: 201 };
     } catch (error) {
-      console.error('Add project member error:', error);
-
       if (error instanceof Error && error.message === 'User is already a member of this project') {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 409 }
-        );
+        throw new ConflictException(ProjectMemberMessages.UserAlreadyMember);
       }
 
-      if (error instanceof Error && (
-        error.message === 'User not found' || 
-        error.message === 'User with this email not found'
-      )) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 404 }
-        );
+      if (error instanceof Error && error.message === 'User not found') {
+        throw new NotFoundException(ProjectMemberMessages.UserNotFound);
       }
 
-      return NextResponse.json(
-        { error: 'Failed to add member to project' },
-        { status: 500 }
-      );
+      if (error instanceof Error && error.message === 'User with this email not found') {
+        throw new NotFoundException(ProjectMemberMessages.UserWithEmailNotFound);
+      }
+
+      throw new InternalServerException(ProjectMemberMessages.FailedToAddMember);
     }
   }
 
@@ -275,29 +184,17 @@ export class ProjectController {
   async removeProjectMember(request: CustomRequest, projectId: string, memberId: string) {
     try {
       await projectService.removeProjectMember(projectId, memberId);
-
-      return NextResponse.json({ message: 'Member removed successfully' });
+      return { message: ProjectMemberMessages.MemberRemovedSuccessfully };
     } catch (error) {
-      console.error('Remove project member error:', error);
-
       if (error instanceof Error && error.message === 'Member not found in this project') {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 404 }
-        );
+        throw new NotFoundException(ProjectMemberMessages.MemberNotFound);
       }
 
       if (error instanceof Error && error.message === 'Cannot remove the last owner of the project') {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 400 }
-        );
+        throw new BadRequestException(ProjectMemberMessages.CannotRemoveLastOwner);
       }
 
-      return NextResponse.json(
-        { error: 'Failed to remove member from project' },
-        { status: 500 }
-      );
+      throw new InternalServerException(ProjectMemberMessages.FailedToRemoveMember);
     }
   }
 }
