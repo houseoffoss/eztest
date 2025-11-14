@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
+import { Loader } from '@/components/ui/loader';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 
@@ -66,7 +67,7 @@ function ErrorContent() {
 
 export default function AuthErrorPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader fullScreen />}>
       <ErrorContent />
     </Suspense>
   );

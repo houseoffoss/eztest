@@ -269,13 +269,7 @@ export default function TestCaseDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen p-4 md:p-6 lg:p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading test case...</p>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading test case..." />;
   }
 
   if (!testCase) {

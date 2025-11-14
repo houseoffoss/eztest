@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Save, Trash2 } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/components/ui/loader';
 
 interface Project {
   id: string;
@@ -128,15 +129,7 @@ export default function ProjectSettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a1628] p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-muted-foreground">Loading project...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading project settings..." />;
   }
 
   if (!project) {

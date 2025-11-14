@@ -147,18 +147,7 @@ export default function AccountSettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen py-12">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
-            <div className="space-y-4">
-              <div className="h-8 bg-primary/10 rounded animate-pulse"></div>
-              <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading account settings..." />;
   }
 
   return (

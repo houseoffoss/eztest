@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Mail, Shield, Eye, Users } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/components/ui/loader';
 
 interface ProjectMember {
   id: string;
@@ -171,15 +172,7 @@ export default function ProjectMembersPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a1628] p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-muted-foreground">Loading members...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading team members..." />;
   }
 
   if (!project) {
