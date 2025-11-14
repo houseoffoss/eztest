@@ -1,25 +1,16 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { hasPermission } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { NotFoundException, BadRequestException } from '@/backend/utils/exceptions';
 
 /**
  * GET /api/users/profile
  * Get current user's profile
  */
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
+export const GET = hasPermission(
+  async (request) => {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: request.userInfo.id },
       select: {
         id: true,
         email: true,
@@ -35,58 +26,36 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      throw new NotFoundException('User not found');
     }
 
     return NextResponse.json({ data: user });
-  } catch (error) {
-    console.error('GET /api/users/profile error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  },
+  'usr', // users module
+  'r'    // read permission (own profile)
+);
 
 /**
  * PUT /api/users/profile
  * Update current user's profile
  */
-export async function PUT(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
+export const PUT = hasPermission(
+  async (request) => {
     const body = await request.json();
     const { name, bio, phone, location } = body;
 
     // Validate input
     if (name && name.length < 1) {
-      return NextResponse.json(
-        { error: 'Name must not be empty' },
-        { status: 400 }
-      );
+      throw new BadRequestException('Name must not be empty');
     }
 
     if (name && name.length > 255) {
-      return NextResponse.json(
-        { error: 'Name must be less than 255 characters' },
-        { status: 400 }
-      );
+      throw new BadRequestException('Name must be less than 255 characters');
     }
 
     // Update user profile
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: request.userInfo.id },
       data: {
         ...(name && { name }),
         ...(bio !== undefined && { bio: bio || null }),
@@ -107,11 +76,7 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json({ data: updatedUser });
-  } catch (error) {
-    console.error('PUT /api/users/profile error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  },
+  'usr', // users module
+  'u'    // update permission (own profile)
+);

@@ -1,14 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { projectService } from '@/backend/services/project/services';
-import { ProjectRole, UserRole } from '@prisma/client';
+import { ProjectRole } from '@prisma/client';
+import { CustomRequest } from '@/backend/utils/interceptor';
 
 export class ProjectController {
   /**
    * GET /api/projects - List all projects
+   * Scope-based filtering applied via request.scopeInfo
    */
-  async listProjects(userId: string, userRole: UserRole) {
+  async listProjects(request: CustomRequest) {
     try {
-      const projects = await projectService.getAllProjects(userId, userRole);
+      const projects = await projectService.getAllProjects(
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
       return NextResponse.json({ data: projects });
     } catch (error) {
       console.error('List projects error:', error);
@@ -21,8 +26,9 @@ export class ProjectController {
 
   /**
    * POST /api/projects - Create new project
+   * Permission already checked by route wrapper
    */
-  async createProject(request: NextRequest, userId: string) {
+  async createProject(request: CustomRequest) {
     try {
       const body = await request.json();
       const { name, key, description } = body;
@@ -61,7 +67,7 @@ export class ProjectController {
         name,
         key,
         description,
-        createdById: userId,
+        createdById: request.userInfo.id,
       });
 
       return NextResponse.json({ data: project }, { status: 201 });
@@ -84,19 +90,16 @@ export class ProjectController {
 
   /**
    * GET /api/projects/[id] - Get project details
+   * Access already checked by route wrapper
    */
-  async getProject(projectId: string, userId: string, userRole: UserRole, includeStats: boolean = false) {
+  async getProject(request: CustomRequest, projectId: string, includeStats: boolean = false) {
     try {
-      // Check access
-      const hasAccess = await projectService.hasProjectAccess(projectId, userId, userRole);
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: 'Access denied' },
-          { status: 403 }
-        );
-      }
-
-      const project = await projectService.getProjectById(projectId, includeStats);
+      const project = await projectService.getProjectById(
+        projectId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name,
+        includeStats
+      );
 
       if (!project) {
         return NextResponse.json(
@@ -117,18 +120,10 @@ export class ProjectController {
 
   /**
    * PUT /api/projects/[id] - Update project info
+   * Permission already checked by route wrapper
    */
-  async updateProject(request: NextRequest, projectId: string, userId: string, userRole: UserRole) {
+  async updateProject(request: CustomRequest, projectId: string) {
     try {
-      // Check if user can modify project
-      const canModify = await projectService.canModifyProject(projectId, userId, userRole);
-      if (!canModify) {
-        return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can modify projects' },
-          { status: 403 }
-        );
-      }
-
       const body = await request.json();
       const { name, description } = body;
 
@@ -165,19 +160,15 @@ export class ProjectController {
 
   /**
    * DELETE /api/projects/[id] - Delete project
+   * Permission already checked by route wrapper
    */
-  async deleteProject(projectId: string, userId: string, userRole: UserRole) {
+  async deleteProject(request: CustomRequest, projectId: string) {
     try {
-      // Check if user can modify project
-      const canModify = await projectService.canModifyProject(projectId, userId, userRole);
-      if (!canModify) {
-        return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can delete projects' },
-          { status: 403 }
-        );
-      }
-
-      await projectService.deleteProject(projectId);
+      await projectService.deleteProject(
+        projectId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
 
       return NextResponse.json({ message: 'Project deleted successfully' });
     } catch (error) {
@@ -199,18 +190,10 @@ export class ProjectController {
 
   /**
    * GET /api/projects/[id]/members - Get members of a project
+   * Access already checked by route wrapper
    */
-  async getProjectMembers(projectId: string, userId: string, userRole: UserRole) {
+  async getProjectMembers(request: CustomRequest, projectId: string) {
     try {
-      // Check access
-      const hasAccess = await projectService.hasProjectAccess(projectId, userId, userRole);
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: 'Access denied' },
-          { status: 403 }
-        );
-      }
-
       const members = await projectService.getProjectMembers(projectId);
 
       return NextResponse.json({ data: members });
@@ -225,18 +208,10 @@ export class ProjectController {
 
   /**
    * POST /api/projects/[id]/members - Add member to project
+   * Permission already checked by route wrapper
    */
-  async addProjectMember(request: NextRequest, projectId: string, userId: string, userRole: UserRole) {
+  async addProjectMember(request: CustomRequest, projectId: string) {
     try {
-      // Check if user can manage members
-      const canManage = await projectService.canManageMembers(projectId, userId, userRole);
-      if (!canManage) {
-        return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can add members' },
-          { status: 403 }
-        );
-      }
-
       const body = await request.json();
       const { userId: newUserId, email, role } = body;
 
@@ -295,18 +270,10 @@ export class ProjectController {
 
   /**
    * DELETE /api/projects/[id]/members/[memberId] - Remove member
+   * Permission already checked by route wrapper
    */
-  async removeProjectMember(projectId: string, memberId: string, userId: string, userRole: UserRole) {
+  async removeProjectMember(request: CustomRequest, projectId: string, memberId: string) {
     try {
-      // Check if user can manage members
-      const canManage = await projectService.canManageMembers(projectId, userId, userRole);
-      if (!canManage) {
-        return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can remove members' },
-          { status: 403 }
-        );
-      }
-
       await projectService.removeProjectMember(projectId, memberId);
 
       return NextResponse.json({ message: 'Member removed successfully' });

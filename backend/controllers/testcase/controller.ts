@@ -1,13 +1,15 @@
 import { testCaseService } from '@/backend/services/testcase/services';
-import { Priority, TestStatus, UserRole } from '@prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { Priority, TestStatus } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { CustomRequest } from '@/backend/utils/interceptor';
 
 export class TestCaseController {
   /**
    * Get all test cases for a project
+   * Access already checked by route wrapper
    */
   async getProjectTestCases(
-    req: NextRequest,
+    req: CustomRequest,
     projectId: string
   ) {
     try {
@@ -41,11 +43,11 @@ export class TestCaseController {
 
   /**
    * Create a new test case
+   * Permission already checked by route wrapper
    */
   async createTestCase(
-    req: NextRequest,
-    projectId: string,
-    userId: string
+    req: CustomRequest,
+    projectId: string
   ) {
     try {
       const body = await req.json();
@@ -110,7 +112,7 @@ export class TestCaseController {
         estimatedTime: body.estimatedTime,
         preconditions: body.preconditions,
         postconditions: body.postconditions,
-        createdById: userId,
+        createdById: req.userInfo.id,
         steps: body.steps,
       });
 
@@ -126,23 +128,18 @@ export class TestCaseController {
 
   /**
    * Get test case by ID
+   * Access already checked by route wrapper
    */
   async getTestCaseById(
-    testCaseId: string,
-    userId: string,
-    userRole: UserRole
+    request: CustomRequest,
+    testCaseId: string
   ) {
     try {
-      // Check access
-      const hasAccess = await testCaseService.hasTestCaseAccess(testCaseId, userId, userRole);
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: 'Access denied' },
-          { status: 403 }
-        );
-      }
-
-      const testCase = await testCaseService.getTestCaseById(testCaseId);
+      const testCase = await testCaseService.getTestCaseById(
+        testCaseId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
       return NextResponse.json({ data: testCase });
     } catch (error) {
       console.error('Error fetching test case:', error);
@@ -163,24 +160,14 @@ export class TestCaseController {
 
   /**
    * Update test case
+   * Permission already checked by route wrapper
    */
   async updateTestCase(
-    testCaseId: string,
-    req: NextRequest,
-    userId: string,
-    userRole: UserRole
+    request: CustomRequest,
+    testCaseId: string
   ) {
     try {
-      // Check permissions
-      const canModify = await testCaseService.canModifyTestCase(testCaseId, userId, userRole);
-      if (!canModify) {
-        return NextResponse.json(
-          { error: 'Permission denied' },
-          { status: 403 }
-        );
-      }
-
-      const body = await req.json();
+      const body = await request.json();
 
       // Validation
       if (body.title !== undefined && body.title.trim() === '') {
@@ -214,16 +201,21 @@ export class TestCaseController {
         );
       }
 
-      const testCase = await testCaseService.updateTestCase(testCaseId, {
-        title: body.title,
-        description: body.description,
-        priority: body.priority,
-        status: body.status,
-        estimatedTime: body.estimatedTime,
-        preconditions: body.preconditions,
-        postconditions: body.postconditions,
-        suiteId: body.suiteId,
-      });
+      const testCase = await testCaseService.updateTestCase(
+        testCaseId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name,
+        {
+          title: body.title,
+          description: body.description,
+          priority: body.priority,
+          status: body.status,
+          estimatedTime: body.estimatedTime,
+          preconditions: body.preconditions,
+          postconditions: body.postconditions,
+          suiteId: body.suiteId,
+        }
+      );
 
       return NextResponse.json({ data: testCase });
     } catch (error) {
@@ -245,23 +237,18 @@ export class TestCaseController {
 
   /**
    * Delete test case
+   * Permission already checked by route wrapper
    */
   async deleteTestCase(
-    testCaseId: string,
-    userId: string,
-    userRole: UserRole
+    request: CustomRequest,
+    testCaseId: string
   ) {
     try {
-      // Check permissions
-      const canModify = await testCaseService.canModifyTestCase(testCaseId, userId, userRole);
-      if (!canModify) {
-        return NextResponse.json(
-          { error: 'Permission denied' },
-          { status: 403 }
-        );
-      }
-
-      await testCaseService.deleteTestCase(testCaseId);
+      await testCaseService.deleteTestCase(
+        testCaseId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
       return NextResponse.json({ message: 'Test case deleted successfully' });
     } catch (error) {
       console.error('Error deleting test case:', error);
@@ -282,24 +269,14 @@ export class TestCaseController {
 
   /**
    * Update test steps
+   * Permission already checked by route wrapper
    */
   async updateTestSteps(
-    testCaseId: string,
-    req: NextRequest,
-    userId: string,
-    userRole: UserRole
+    request: CustomRequest,
+    testCaseId: string
   ) {
     try {
-      // Check permissions
-      const canModify = await testCaseService.canModifyTestCase(testCaseId, userId, userRole);
-      if (!canModify) {
-        return NextResponse.json(
-          { error: 'Permission denied' },
-          { status: 403 }
-        );
-      }
-
-      const body = await req.json();
+      const body = await request.json();
 
       // Validation
       if (!Array.isArray(body.steps)) {
@@ -324,7 +301,12 @@ export class TestCaseController {
         }
       }
 
-      const testCase = await testCaseService.updateTestSteps(testCaseId, body.steps);
+      const testCase = await testCaseService.updateTestSteps(
+        testCaseId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name,
+        body.steps
+      );
       return NextResponse.json({ data: testCase });
     } catch (error) {
       console.error('Error updating test steps:', error);

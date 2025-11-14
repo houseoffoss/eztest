@@ -305,3 +305,81 @@ enum RequirementStatus {
   VERIFIED
   DEPRECATED
 }
+
+// ====================================
+// Authorization System Models
+// ====================================
+
+// Roles define user system-level roles
+model Role {
+  id          String   @id @default(cuid())
+  keyword     String   @unique  // e.g., "admin", "project_manager", "tester", "viewer"
+  name        String               // Display name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  privileges  RolePrivilege[]
+
+  @@index([keyword])
+}
+
+// Modules represent major application features
+model Module {
+  id          String   @id @default(cuid())
+  keyword     String   @unique  // e.g., "prn" (projects), "tc" (test cases), "tr" (test runs)
+  name        String               // Display name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  privileges  RolePrivilege[]
+
+  @@index([keyword])
+}
+
+// Actions define what operations can be performed
+model Action {
+  id          String   @id @default(cuid())
+  keyword     String   @unique  // e.g., "r" (read), "w" (write), "u" (update), "d" (delete)
+  score       Int                  // Permission level: 1=read, 2=write, 3=update, 4=delete
+  name        String               // Display name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  privileges  RolePrivilege[]
+
+  @@index([keyword])
+}
+
+// Scopes define the data access level
+model Scope {
+  id          String   @id @default(cuid())
+  keyword     String   @unique  // e.g., "all", "project", "own"
+  score       Int                  // Access level: 1=all, 2=project, 3=own
+  name        String               // Display name
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  privileges  RolePrivilege[]
+
+  @@index([keyword])
+}
+
+// RolePrivilege maps roles to their permissions
+model RolePrivilege {
+  id              String   @id @default(cuid())
+  role_name       String
+  module_keyword  String
+  action_keyword  String
+  scope_keyword   String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  role            Role     @relation(fields: [role_name], references: [keyword], onDelete: Cascade)
+  module          Module   @relation(fields: [module_keyword], references: [keyword], onDelete: Cascade)
+  action          Action   @relation(fields: [action_keyword], references: [keyword], onDelete: Cascade)
+  scope           Scope    @relation(fields: [scope_keyword], references: [keyword], onDelete: Cascade)
+
+  @@unique([role_name, module_keyword, action_keyword])
+  @@index([role_name])
+  @@index([module_keyword])
+}

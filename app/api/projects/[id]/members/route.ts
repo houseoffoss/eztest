@@ -1,50 +1,36 @@
-import { NextRequest } from 'next/server';
-import { authenticateRequest } from '@/lib/auth-middleware';
+import { hasPermission } from '@/lib/auth';
 import { projectController } from '@/backend/controllers/project/controller';
 
 /**
  * GET /api/projects/[id]/members
  * Get all members of a project
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const auth = await authenticateRequest();
-  
-  if (auth.error) {
-    return auth.error;
-  }
+export const GET = hasPermission(
+  async (request, { params }) => {
+    const { id } = await params;
 
-  const { id } = await params;
-
-  return projectController.getProjectMembers(
-    id,
-    auth.session.user.id,
-    auth.session.user.role
-  );
-}
+    return projectController.getProjectMembers(
+      request,
+      id
+    );
+  },
+  'prn', // projects module
+  'r'    // read permission
+);
 
 /**
  * POST /api/projects/[id]/members
  * Add a member to a project
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const auth = await authenticateRequest();
-  
-  if (auth.error) {
-    return auth.error;
-  }
+export const POST = hasPermission(
+  async (request, { params }) => {
+    const { id } = await params;
 
-  const { id } = await params;
-
-  return projectController.addProjectMember(
-    request,
-    id,
-    auth.session.user.id,
-    auth.session.user.role
-  );
-}
+    return projectController.addProjectMember(
+      request,
+      id
+    );
+  },
+  'prn', // projects module
+  'u'    // update permission (adding members)
+);

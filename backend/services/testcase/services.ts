@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { Priority, TestStatus, UserRole } from '@prisma/client';
+import { Priority, TestStatus } from '@prisma/client';
 
 interface CreateTestCaseInput {
   projectId: string;
@@ -102,10 +102,33 @@ export class TestCaseService {
 
   /**
    * Get test case by ID with full details
+   * Scope filtering applied via project membership check
    */
-  async getTestCaseById(testCaseId: string) {
-    const testCase = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
+  async getTestCaseById(testCaseId: string, userId: string, scope: string) {
+    // Build query to check access based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'own') {
+      whereClause = {
+        ...whereClause,
+        createdById: userId,
+      };
+    } else if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    const testCase = await prisma.testCase.findFirst({
+      where: whereClause,
       include: {
         project: {
           select: {
@@ -241,15 +264,39 @@ export class TestCaseService {
 
   /**
    * Update test case
+   * Scope filtering: verify user has access before updating
    */
-  async updateTestCase(testCaseId: string, data: UpdateTestCaseInput) {
-    // Check if test case exists
-    const existing = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
+  async updateTestCase(testCaseId: string, userId: string, scope: string, data: UpdateTestCaseInput) {
+    // Build where clause based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'own') {
+      whereClause = {
+        ...whereClause,
+        createdById: userId,
+      };
+    } else if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    // Check if test case exists and user has access
+    const existing = await prisma.testCase.findFirst({
+      where: whereClause,
     });
 
     if (!existing) {
-      throw new Error('Test case not found');
+      throw new Error('Test case not found or access denied');
     }
 
     // Verify suite if being changed
@@ -310,14 +357,38 @@ export class TestCaseService {
 
   /**
    * Delete test case
+   * Scope filtering: verify user has access before deleting
    */
-  async deleteTestCase(testCaseId: string) {
-    const testCase = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
+  async deleteTestCase(testCaseId: string, userId: string, scope: string) {
+    // Build where clause based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'own') {
+      whereClause = {
+        ...whereClause,
+        createdById: userId,
+      };
+    } else if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    const testCase = await prisma.testCase.findFirst({
+      where: whereClause,
     });
 
     if (!testCase) {
-      throw new Error('Test case not found');
+      throw new Error('Test case not found or access denied');
     }
 
     // Delete test case (steps will cascade)
@@ -328,9 +399,12 @@ export class TestCaseService {
 
   /**
    * Add/Update test steps
+   * Scope filtering: verify user has access before updating
    */
   async updateTestSteps(
     testCaseId: string,
+    userId: string,
+    scope: string,
     steps: Array<{
       id?: string;
       stepNumber: number;
@@ -338,13 +412,36 @@ export class TestCaseService {
       expectedResult: string;
     }>
   ) {
-    // Verify test case exists
-    const testCase = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
+    // Build where clause based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'own') {
+      whereClause = {
+        ...whereClause,
+        createdById: userId,
+      };
+    } else if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    // Verify test case exists and user has access
+    const testCase = await prisma.testCase.findFirst({
+      where: whereClause,
     });
 
     if (!testCase) {
-      throw new Error('Test case not found');
+      throw new Error('Test case not found or access denied');
     }
 
     // Delete existing steps
@@ -364,70 +461,11 @@ export class TestCaseService {
       });
     }
 
-    // Return updated test case
-    return await this.getTestCaseById(testCaseId);
+    // Return updated test case (pass userId and scope for access check)
+    return await this.getTestCaseById(testCaseId, userId, scope);
   }
 
-  /**
-   * Check if user has access to test case
-   */
-  async hasTestCaseAccess(testCaseId: string, userId: string, userRole: UserRole): Promise<boolean> {
-    const testCase = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
-      include: {
-        project: {
-          include: {
-            members: {
-              where: { userId },
-            },
-          },
-        },
-      },
-    });
 
-    if (!testCase) {
-      return false;
-    }
-
-    // Admins have access to everything
-    if (userRole === 'ADMIN') {
-      return true;
-    }
-
-    // Check if user is a project member
-    return testCase.project.members.length > 0;
-  }
-
-  /**
-   * Check if user can modify test case
-   */
-  async canModifyTestCase(testCaseId: string, userId: string, userRole: UserRole): Promise<boolean> {
-    const testCase = await prisma.testCase.findUnique({
-      where: { id: testCaseId },
-      include: {
-        project: {
-          include: {
-            members: {
-              where: { userId },
-            },
-          },
-        },
-      },
-    });
-
-    if (!testCase) {
-      return false;
-    }
-
-    // Admins can modify everything
-    if (userRole === 'ADMIN') {
-      return true;
-    }
-
-    // Check if user is project owner/admin
-    const member = testCase.project.members[0];
-    return member && (member.role === 'OWNER' || member.role === 'ADMIN' || member.role === 'TESTER');
-  }
 
   /**
    * Get test case statistics for a project
