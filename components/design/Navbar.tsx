@@ -11,6 +11,7 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
   brandHref?: string;
   brandLabel?: React.ReactNode;
   items?: NavItem[];
+  breadcrumbs?: React.ReactNode;
   actions?: React.ReactNode;
   containerClassName?: string;
 }
@@ -24,6 +25,7 @@ export function Navbar({
     </div>
   ),
   items,
+  breadcrumbs,
   actions,
   className,
   containerClassName,
@@ -34,13 +36,23 @@ export function Navbar({
   return (
     <header className={cn("sticky top-4 z-50", className)} {...props}>
       <div className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8", containerClassName)}>
-        <div className="flex items-center justify-between gap-3">
-          {/* Left capsule: Brand */}
+        <div className="flex items-center gap-3">
+          {/* Left: Brand */}
           <Link href={brandHref} className="shrink-0">
             <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
               {brandLabel}
             </span>
           </Link>
+
+          {/* Center: Breadcrumbs */}
+          {breadcrumbs && (
+            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-4 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+              {breadcrumbs}
+            </div>
+          )}
+
+          {/* Spacer to push right content to the right */}
+          <div className="flex-1" />
 
           {/* Right capsule: Nav + actions */}
           {(items && items.length > 0) || actions ? (

@@ -47,6 +47,24 @@ export async function POST(req: Request) {
       },
     });
 
+    // Create demo project for new user
+    await prisma.project.create({
+      data: {
+        name: 'Demo Project',
+        key: 'DEMO',
+        description: 'Welcome to EZTest! This is a demo project to help you get started. Feel free to explore the features and create your own test suites, test cases, and test plans.',
+        createdById: user.id,
+        members: {
+          create: [
+            {
+              userId: user.id,
+              role: 'OWNER',
+            },
+          ],
+        },
+      },
+    });
+
     return NextResponse.json(
       {
         message: 'User created successfully',
