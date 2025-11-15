@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/elements/button";
 // UI primitives
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/elements/input";
+import { Badge } from "@/elements/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/elements/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/elements/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/elements/card";
+import { Checkbox } from "@/elements/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/elements/dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,9 +28,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from "@/elements/dropdown-menu";
+import { Label } from "@/elements/label";
+import { RadioGroup, RadioGroupItem } from "@/elements/radio-group";
 import {
   Select,
   SelectContent,
@@ -39,9 +39,9 @@ import {
   SelectLabel as UiSelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+} from "@/elements/select";
+import { Separator } from "@/elements/separator";
+import { Switch } from "@/elements/switch";
 import {
   Table,
   TableBody,
@@ -51,10 +51,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+} from "@/elements/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/elements/tabs";
+import { Textarea } from "@/elements/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/elements/tooltip";
 import { GlassPanel, PageHeader, StatCard, StatusBadge, PriorityBadge, ProgressBar, FilterBar, Assignee, EmptyState, ConfirmDialog, Section } from "@/components/design";
 import { GlassFooter } from "@/components/design/GlassFooter";
 

@@ -1,9 +1,9 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/elements/dropdown-menu';
 import { MoreVertical, Folder, Settings, Users, Trash2, TestTube2, Play, FileText } from 'lucide-react';
 
 interface ProjectCardProps {

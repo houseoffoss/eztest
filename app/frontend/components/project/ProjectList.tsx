@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { Navbar } from '@/components/design/Navbar';
-import { Loader } from '@/components/ui/loader';
+import { Loader } from '@/elements/loader';
 import { ProjectCard } from './subcomponents/ProjectCard';
 import { CreateProjectDialog } from './subcomponents/CreateProjectDialog';
 import { DeleteProjectDialog } from './subcomponents/DeleteProjectDialog';

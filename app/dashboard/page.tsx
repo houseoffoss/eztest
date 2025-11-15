@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Navbar } from '@/components/design/Navbar';
 import { Metadata } from 'next';

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/elements/button';
+import { Card, CardContent } from '@/elements/card';
 import { TestTube2, Play, FileText, Folder } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Loader } from '@/components/ui/loader';
+import { Loader } from '@/elements/loader';
 import { StatCard } from './subcomponents/StatCard';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
 import { ProjectOverviewCard } from './subcomponents/ProjectOverviewCard';

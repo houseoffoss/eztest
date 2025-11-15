@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 // removed unused next-auth imports
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 
 interface Profile {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import Link from 'next/link';
 

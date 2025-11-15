@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design';
 
 export default function ForgotPasswordPage() {

@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import { Save, Trash2 } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Loader } from '@/components/ui/loader';
+import { Loader } from '@/elements/loader';
 
 interface Project {
   id: string;

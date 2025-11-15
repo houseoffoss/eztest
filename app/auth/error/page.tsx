@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
-import { Loader } from '@/components/ui/loader';
+import { Loader } from '@/elements/loader';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 

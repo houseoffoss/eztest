@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/elements/card';
 
 interface StatCardProps {
   icon: React.ReactNode;

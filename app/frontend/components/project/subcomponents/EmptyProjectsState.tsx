@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/elements/card';
+import { Button } from '@/elements/button';
 import { Folder, Plus } from 'lucide-react';
 
 interface EmptyProjectsStateProps {
