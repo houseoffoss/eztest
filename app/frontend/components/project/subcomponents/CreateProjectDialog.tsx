@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/elements/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -11,10 +11,17 @@ import { Project } from '../types';
 
 interface CreateProjectDialogProps {
   onProjectCreated: (project: Project) => void;
+  triggerOpen?: boolean;
 }
 
-export const CreateProjectDialog = ({ onProjectCreated }: CreateProjectDialogProps) => {
+export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreateProjectDialogProps) => {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (triggerOpen) {
+      setOpen(true);
+    }
+  }, [triggerOpen]);
   const [formData, setFormData] = useState({
     name: '',
     key: '',
