@@ -2,18 +2,18 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
+import { Badge } from '@/elements/badge';
 import { Navbar } from '@/components/design/Navbar';
 import { GlassFooter } from '@/components/design/GlassFooter';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect to projects
   if (session) {
-    redirect('/dashboard');
+    redirect('/projects');
   }
 
   return (

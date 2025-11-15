@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/elements/card"
 
 export interface GlassPanelProps extends Omit<React.ComponentProps<typeof Card>, "title"> {
   heading?: React.ReactNode

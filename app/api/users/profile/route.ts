@@ -1,54 +1,38 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getSessionUser } from '@/lib/auth/getSessionUser';
+import { hasPermission } from '@/lib/rbac/hasPermission';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { NotFoundException, BadRequestException } from '@/backend/utils/exceptions';
 
 /**
  * GET /api/users/profile
  * Get current user's profile
  */
 export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        bio: true,
-        phone: true,
-        location: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ data: user });
-  } catch (error) {
-    console.error('GET /api/users/profile error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  const sessionUser = await getSessionUser();
+  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
+  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'r')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUser!.id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      bio: true,
+      phone: true,
+      location: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+  return NextResponse.json({ data: user });
 }
 
 /**
@@ -56,62 +40,40 @@ export async function GET(request: NextRequest) {
  * Update current user's profile
  */
 export async function PUT(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const { name, bio, phone, location } = body;
-
-    // Validate input
-    if (name && name.length < 1) {
-      return NextResponse.json(
-        { error: 'Name must not be empty' },
-        { status: 400 }
-      );
-    }
-
-    if (name && name.length > 255) {
-      return NextResponse.json(
-        { error: 'Name must be less than 255 characters' },
-        { status: 400 }
-      );
-    }
-
-    // Update user profile
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        ...(name && { name }),
-        ...(bio !== undefined && { bio: bio || null }),
-        ...(phone !== undefined && { phone: phone || null }),
-        ...(location !== undefined && { location: location || null }),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        bio: true,
-        phone: true,
-        location: true,
-        role: true,
-        updatedAt: true,
-      },
-    });
-
-    return NextResponse.json({ data: updatedUser });
-  } catch (error) {
-    console.error('PUT /api/users/profile error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  const sessionUser = await getSessionUser();
+  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
+  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'u')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  const body = await request.json();
+  const { name, bio, phone, location } = body;
+  // Validate input
+  if (name && name.length < 1) {
+    throw new BadRequestException('Name must not be empty');
+  }
+  if (name && name.length > 255) {
+    throw new BadRequestException('Name must be less than 255 characters');
+  }
+  // Update user profile
+  const updatedUser = await prisma.user.update({
+    where: { id: sessionUser!.id },
+    data: {
+      ...(name && { name }),
+      ...(bio !== undefined && { bio: bio || null }),
+      ...(phone !== undefined && { phone: phone || null }),
+      ...(location !== undefined && { location: location || null }),
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      bio: true,
+      phone: true,
+      location: true,
+      role: true,
+      updatedAt: true,
+    },
+  });
+  return NextResponse.json({ data: updatedUser });
 }

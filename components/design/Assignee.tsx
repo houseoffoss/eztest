@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/elements/avatar"
 
 export interface AssigneeProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string

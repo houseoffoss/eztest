@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/elements/badge"
 
 export type Priority = "low" | "medium" | "high" | "critical"
 

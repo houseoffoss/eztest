@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/elements/separator";
 
 type GlassFooterProps = {
   variant?: "full" | "simple";

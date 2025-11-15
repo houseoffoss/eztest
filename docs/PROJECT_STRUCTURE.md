@@ -200,7 +200,7 @@ lib/
 // Absolute imports with @/
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 
 // Instead of relative
 import { prisma } from '../../../lib/prisma';  // ✗ Avoid
@@ -215,7 +215,7 @@ import { getServerSession } from 'next-auth';
 
 // 2. Internal imports
 import { prisma } from '@/lib/prisma';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 
 // 3. Type imports
 import type { User } from '@/types/user';
