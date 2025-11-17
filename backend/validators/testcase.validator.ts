@@ -1,0 +1,83 @@
+import { z } from 'zod';
+import { Priority, TestStatus } from '@prisma/client';
+
+/**
+ * Test Step Schema
+ */
+export const testStepSchema = z.object({
+  stepNumber: z
+    .number()
+    .int('Step number must be an integer')
+    .positive('Step number must be positive'),
+  action: z.string().min(1, 'Action is required').trim(),
+  expectedResult: z.string().min(1, 'Expected result is required').trim(),
+});
+
+/**
+ * Test Case Creation Schema
+ */
+export const createTestCaseSchema = z.object({
+  suiteId: z.string().uuid('Invalid suite ID format').optional(),
+  title: z.string().min(1, 'Title is required').trim(),
+  description: z.string().optional(),
+  priority: z.nativeEnum(Priority, {
+    message: 'Invalid priority value',
+  }).optional(),
+  status: z.nativeEnum(TestStatus, {
+    message: 'Invalid status value',
+  }).optional(),
+  estimatedTime: z
+    .number()
+    .nonnegative('Estimated time must be a positive number')
+    .optional(),
+  preconditions: z.string().optional(),
+  postconditions: z.string().optional(),
+  steps: z.array(testStepSchema).optional(),
+});
+
+/**
+ * Test Case Update Schema
+ */
+export const updateTestCaseSchema = z.object({
+  title: z.string().min(1, 'Title cannot be empty').trim().optional(),
+  description: z.string().optional(),
+  priority: z.nativeEnum(Priority, {
+    message: 'Invalid priority value',
+  }).optional(),
+  status: z.nativeEnum(TestStatus, {
+    message: 'Invalid status value',
+  }).optional(),
+  estimatedTime: z
+    .number()
+    .nonnegative('Estimated time must be a positive number')
+    .optional(),
+  preconditions: z.string().optional(),
+  postconditions: z.string().optional(),
+  suiteId: z.string().uuid('Invalid suite ID format').optional().nullable(),
+});
+
+/**
+ * Test Steps Update Schema
+ */
+export const updateTestStepsSchema = z.object({
+  steps: z.array(testStepSchema).min(1, 'At least one step is required'),
+});
+
+/**
+ * Test Case Query Parameters Schema
+ */
+export const testCaseQuerySchema = z.object({
+  suiteId: z.string().uuid('Invalid suite ID format').optional(),
+  priority: z.nativeEnum(Priority).optional(),
+  status: z.nativeEnum(TestStatus).optional(),
+  search: z.string().optional(),
+});
+
+/**
+ * Type exports
+ */
+export type TestStepInput = z.infer<typeof testStepSchema>;
+export type CreateTestCaseInput = z.infer<typeof createTestCaseSchema>;
+export type UpdateTestCaseInput = z.infer<typeof updateTestCaseSchema>;
+export type UpdateTestStepsInput = z.infer<typeof updateTestStepsSchema>;
+export type TestCaseQueryParams = z.infer<typeof testCaseQuerySchema>;

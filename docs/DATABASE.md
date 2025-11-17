@@ -100,11 +100,10 @@ Represents team membership with role-based access.
 
 ```prisma
 model ProjectMember {
-  id        String      @id @default(cuid())
+  id        String   @id @default(cuid())
   projectId String
   userId    String
-  role      ProjectRole @default(TESTER)   // Project-level role
-  joinedAt  DateTime    @default(now())
+  joinedAt  DateTime @default(now())
 
   // Relations
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -112,19 +111,13 @@ model ProjectMember {
 
   @@unique([projectId, userId])  // One member per project
 }
-
-enum ProjectRole {
-  OWNER      // Full project control
-  ADMIN      // Can manage project
-  TESTER     // Can execute tests
-  VIEWER     // Read-only access
-}
 ```
 
 **Design Notes:**
+- **Binary Membership Model**: No project-specific roles, just membership tracking
 - Unique constraint prevents duplicate memberships
 - Cascade deletes maintain referential integrity
-- Project roles independent of system roles
+- User permissions within project determined by their application-level role (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
 
 ### TestSuite
 

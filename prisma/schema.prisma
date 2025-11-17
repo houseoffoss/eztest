@@ -16,7 +16,7 @@ model User {
   email         String    @unique
   name          String
   password      String
-  role          UserRole  @default(TESTER)
+  roleId        String    // FK to Role table
   avatar        String?
   bio           String?
   phone         String?
@@ -25,6 +25,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  role          Role      @relation(fields: [roleId], references: [id])
   projects      ProjectMember[]
   testCases     TestCase[]
   testRuns      TestRun[]
@@ -34,6 +35,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
 
   @@index([email])
+  @@index([roleId])
   @@index([deletedAt])
 }
 
@@ -53,19 +55,13 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
-enum UserRole {
-  ADMIN
-  PROJECT_MANAGER
-  TESTER
-  VIEWER
-}
-
 // Project Management
 model Project {
   id          String   @id @default(cuid())
   name        String
   key         String   @unique  // Short key like "PROJ"
   description String?
+  isDeleted   Boolean  @default(false) // Soft delete flag
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String
@@ -79,13 +75,13 @@ model Project {
 
   @@index([key])
   @@index([createdById])
+  @@index([isDeleted])
 }
 
 model ProjectMember {
   id        String   @id @default(cuid())
   projectId String
   userId    String
-  role      ProjectRole @default(TESTER)
   joinedAt  DateTime @default(now())
 
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -94,13 +90,6 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
-}
-
-enum ProjectRole {
-  OWNER
-  ADMIN
-  TESTER
-  VIEWER
 }
 
 // Test Management
@@ -302,4 +291,46 @@ enum RequirementStatus {
   IMPLEMENTED
   VERIFIED
   DEPRECATED
+}
+
+// ====================================
+// RBAC (Role-Based Access Control)
+// ====================================
+
+model Role {
+  id          String         @id @default(cuid())
+  name        String         @unique // e.g., "ADMIN", "PROJECT_MANAGER", "TESTER", "VIEWER"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@index([name])
+}
+
+model Permission {
+  id          String         @id @default(cuid())
+  name        String         @unique // e.g., "projects:read", "projects:create", "testcases:update"
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  roles       RolePermission[]
+
+  @@index([name])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
 }
