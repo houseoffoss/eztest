@@ -14,6 +14,7 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
   breadcrumbs?: React.ReactNode;
   actions?: React.ReactNode;
   containerClassName?: string;
+  breadcrumbs?: React.ReactNode;
 }
 
 export function Navbar({
@@ -29,6 +30,7 @@ export function Navbar({
   actions,
   className,
   containerClassName,
+  breadcrumbs,
   ...props
 }: NavbarProps) {
   const pathname = usePathname();
@@ -36,13 +38,20 @@ export function Navbar({
   return (
     <header className={cn("sticky top-4 z-50", className)} {...props}>
       <div className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8", containerClassName)}>
-        <div className="flex items-center gap-3">
-          {/* Left: Brand */}
-          <Link href={brandHref} className="shrink-0">
-            <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
-              {brandLabel}
-            </span>
-          </Link>
+        <div className="flex items-center justify-between gap-3">
+          {/* Left capsule: Brand + Breadcrumbs */}
+          <div className="flex items-center gap-3">
+            <Link href={brandHref} className="shrink-0">
+              <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                {brandLabel}
+              </span>
+            </Link>
+            {breadcrumbs && (
+              <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-4 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                {breadcrumbs}
+              </div>
+            )}
+          </div>
 
           {/* Center: Breadcrumbs */}
           {breadcrumbs && (
@@ -60,7 +69,8 @@ export function Navbar({
               {items && items.length > 0 ? (
                 <nav className="hidden md:flex items-center gap-1">
                   {items.map((it) => {
-                    const active = pathname && (pathname === it.href || pathname.startsWith(it.href + "/"));
+                    // Use exact matching to prevent multiple highlights
+                    const active = pathname === it.href;
                     return (
                       <Link
                         key={it.href}

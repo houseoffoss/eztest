@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 // removed unused next-auth imports
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 
 interface Profile {
@@ -17,6 +17,10 @@ interface Profile {
 }
 
 export default function ProfileSettingsPage() {
+  useEffect(() => {
+    document.title = 'Profile Settings | EZTest';
+  }, []);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -97,18 +101,7 @@ export default function ProfileSettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen py-12">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
-            <div className="space-y-4">
-              <div className="h-8 bg-primary/10 rounded animate-pulse"></div>
-              <div className="h-4 bg-muted rounded animate-pulse w-2/3"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading profile..." />;
   }
 
   return (

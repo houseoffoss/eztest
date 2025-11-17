@@ -1,10 +1,14 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { seedRBAC } from './seed-rbac';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  console.log('🌱 Starting database seed...\n');
+
+  // Seed RBAC system first (Roles, Permissions, RolePermissions)
+  await seedRBAC();
 
   // Get admin credentials from environment
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@eztest.local';

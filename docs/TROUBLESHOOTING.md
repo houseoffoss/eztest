@@ -330,13 +330,13 @@ npm run dev
 
 ```bash
 # 1. Verify components installed
-ls components/ui/
+ls elements/
 
 # 2. Reinstall ShadCN
 npx shadcn@latest init
 
 # 3. Check component imports
-grep -r "from '@/components/ui'" app/
+grep -r "from '@/elements'" app/
 
 # 4. Verify components.json
 cat components.json

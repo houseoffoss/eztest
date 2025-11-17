@@ -15,6 +15,9 @@ EZTest provides comprehensive project management capabilities for organizing and
 5. [Test Run Management](#test-run-management)
 6. [Access Control](#access-control)
 7. [Project Settings](#project-settings)
+3. [Test Case Management](#test-case-management)
+4. [Access Control](#access-control)
+5. [Project Settings](#project-settings)
 
 ---
 
@@ -32,7 +35,7 @@ Create new test projects with the following capabilities:
 **Requirements:**
 - Project name must be unique within the organization
 - Project key must be unique and follow naming conventions (uppercase, no spaces)
-- Only authenticated users can create projects
+- Only authenticated users with PROJECT_MANAGER, TESTER, or ADMIN role can create projects
 
 ### View Projects
 
@@ -40,7 +43,7 @@ Create new test projects with the following capabilities:
 - **Project Details**: Each card displays:
   - Project name and key
   - Description
-  - Owner information
+  - Creator information
   - Member count
   - Test case count
   - Created date
@@ -60,7 +63,7 @@ Access comprehensive project information including:
 - **Project Details Card**:
   - Project name and key
   - Full description
-  - Owner information
+  - Creator information
   - Creation date
   - Last updated timestamp
 
@@ -77,11 +80,11 @@ Modify existing project details:
 - **Non-editable Fields**:
   - Project key (permanent after creation)
   - Created date
-  - Owner (can be changed through member management)
+  - Creator (tracked automatically)
 
 **Permissions Required:**
-- Project Owner or Admin role
-- System Admin (global access)
+- ADMIN role (can edit any project)
+- PROJECT_MANAGER or TESTER role (can edit projects where they are members)
 
 ### Delete Project
 
@@ -92,14 +95,13 @@ Soft-delete functionality to remove projects:
   - Deletes all associated test cases
   - Removes all team members
   - Cannot be undone
-  - Prevents last owner removal before deletion
+  - Prevents creator removal if they're the only member
   
 - **Soft Delete**: Projects are marked as deleted, not permanently removed
 - **Data Retention**: Deleted projects remain in database for recovery if needed
 
 **Permissions Required:**
-- Project Owner role
-- System Admin (global access)
+- ADMIN role only (system-wide permission)
 
 ---
 
@@ -110,19 +112,18 @@ Soft-delete functionality to remove projects:
 Invite users to collaborate on your project:
 
 - **Email-Based Invitation**: Add members using their email address
-- **Role Assignment**: Assign appropriate role during invitation
-- **Automatic Notification**: System looks up user by email
+- **Simple Membership**: Users are added as members (no project-specific roles)
+- **Automatic Lookup**: System looks up user by email
 - **Duplicate Prevention**: Cannot add existing members twice
 
-**Available Roles:**
-- **Owner**: Full control over project and settings
-- **Admin**: Manage members and project settings
-- **Tester**: Create and manage test cases
-- **Viewer**: Read-only access to project and test cases
+**Note on Roles:**
+- Project membership is binary (member or not member)
+- User permissions are determined by their **application role**: ADMIN, PROJECT_MANAGER, TESTER, or VIEWER
+- Application roles are system-wide and assigned by administrators
+- Members with different application roles have different capabilities within projects
 
 **Input Fields:**
 - Email Address (required): user@example.com
-- Project Role (required): Default is "Tester"
 
 **Validation:**
 - User must exist in the system
@@ -137,8 +138,7 @@ Access team member information:
   - Avatar/Initial badge
   - Full name
   - Email address
-  - Project role badge
-  - System role badge
+  - Application role badge (ADMIN, PROJECT_MANAGER, TESTER, or VIEWER)
   - Join date
   
 - **Total Member Count**: Displayed in card header
@@ -151,11 +151,11 @@ Remove users from project access:
 - **Confirmation Dialog**: Glass-style confirmation with warning
 - **Warning Information**:
   - Removes member's access immediately
-  - Revokes all permissions
+  - Revokes project access (user retains their application role)
   - Can be reversed by re-adding member
   
 - **Safety Checks**:
-  - Cannot remove last project owner
+  - Cannot remove project creator if they're the only member
   - Requires confirmation before deletion
   - Loading state during removal process
 
@@ -349,6 +349,45 @@ Create test runs from entire suites:
   3. Select test suites instead of individual cases
   4. System automatically includes all suite test cases
   5. Execute test run as normal
+- ADMIN or PROJECT_MANAGER role
+- Cannot remove yourself if you're the last member
+
+### Application Roles & Project Permissions
+
+**Note:** All roles are application-level (system-wide), not project-specific. Users have the same role across all projects, but must be members to access projects (except ADMIN).
+
+#### ADMIN (System-Wide)
+- Access **all projects** without membership requirement
+- Full project control
+- Manage all members
+- Delete any project
+- Create/edit/delete test cases in any project
+- Assign roles to users
+- Remove users from the application
+
+#### PROJECT_MANAGER (System-Wide)
+- Access projects where they are **members**
+- Create new projects
+- Manage project members (add/remove)
+- Modify project settings
+- Create/edit/delete test cases
+- **Cannot** delete projects
+- **Cannot** assign roles or remove users from application
+
+#### TESTER (System-Wide)
+- Access projects where they are **members**
+- Create new projects
+- Modify project settings
+- Create/edit/delete test cases
+- **Cannot** manage project members
+- **Cannot** delete projects
+
+#### VIEWER (System-Wide)
+- Access projects where they are **members**
+- Read-only access to all project data
+- View project details and test cases
+- **Cannot** create or modify anything
+- **Cannot** manage members
 
 ---
 
@@ -410,9 +449,8 @@ Modify existing test cases:
 - **Version History**: Tracked for audit purposes
 
 **Permissions Required:**
-- Test case creator (own cases)
-- Project Owner or Admin (all cases)
-- System Admin (global access)
+- PROJECT_MANAGER or TESTER role (member projects)
+- ADMIN role (all projects without membership requirement)
 
 ### Delete Test Cases
 
@@ -637,29 +675,31 @@ Recommended process for test execution:
 
 ### Permission System
 
-Four-tier role-based access control:
+Four-tier application-level role-based access control:
 
-1. **System Admin** (Global)
-   - Access to all projects
-   - Full CRUD operations
-   - User management
+1. **ADMIN** (Application-Level)
+   - Access to all projects without membership
+   - Full CRUD operations on all projects
+   - User and role management
    - System settings
 
-2. **Project Owner** (Project-Level)
-   - Full project control
-   - Member management
-   - Project deletion
+2. **PROJECT_MANAGER** (Application-Level)
+   - Access to member projects only
+   - Full project control (except deletion)
+   - Member management within projects
    - Settings modification
 
-3. **Project Admin** (Project-Level)
-   - Member management (except owners)
-   - Content management
-   - Limited settings access
+3. **TESTER** (Application-Level)
+   - Access to member projects only
+   - Content creation and management
+   - Cannot manage members
+   - Cannot delete projects
 
-4. **Project Member** (Tester/Viewer)
-   - Content access based on role
+4. **VIEWER** (Application-Level)
+   - Access to member projects only
+   - Read-only access to all content
+   - No modification permissions
    - No member management
-   - No settings access
 
 ### Security Features
 
@@ -677,11 +717,11 @@ Four-tier role-based access control:
 Configure project properties:
 
 - **Project Information**:
-  - Name (editable)
-  - Key (read-only)
-  - Description (editable)
+  - Name (editable by PROJECT_MANAGER, TESTER, or ADMIN)
+  - Key (read-only, permanent after creation)
+  - Description (editable by PROJECT_MANAGER, TESTER, or ADMIN)
   - Created date (read-only)
-  - Owner (read-only, changeable via members)
+  - Creator (read-only, tracked automatically)
 
 ### Delete Project
 
@@ -695,8 +735,9 @@ Permanently remove project:
   - Cannot be undone message
   
 - **Prerequisites**:
-  - Must have Owner role
-  - Cannot delete if last owner (must transfer ownership first)
+  - Must have ADMIN role (system-wide)
+  - Cannot delete if creator is the only member
+  - Project must exist and be accessible
 
 ### Access Settings
 
@@ -773,16 +814,6 @@ Consistent actions available:
 - `PATCH /api/testcases/[id]` - Update test case
 - `DELETE /api/testcases/[id]` - Delete test case
 
-### Test Run Endpoints
-
-- `GET /api/projects/[id]/testruns` - List test runs
-- `POST /api/projects/[id]/testruns` - Create test run
-- `GET /api/testruns/[id]` - Get test run details
-- `PATCH /api/testruns/[id]` - Update test run
-- `DELETE /api/testruns/[id]` - Delete test run
-- `POST /api/testruns/[id]/results` - Record test results
-- `GET /api/testruns/[id]/execute` - Get execution view
-
 ---
 
 ## Best Practices
@@ -792,24 +823,16 @@ Consistent actions available:
 1. **Use Clear Names**: Choose descriptive project names
 2. **Consistent Keys**: Use uppercase, short keys (3-6 chars)
 3. **Detailed Descriptions**: Help team understand project scope
-4. **Proper Roles**: Assign minimal required permissions
+4. **Appropriate Members**: Add only necessary team members to projects
 5. **Regular Cleanup**: Remove inactive members and test cases
 
 ### Team Management
 
-1. **Role Assignment**: Give appropriate access levels
-2. **Multiple Owners**: Have at least 2 owners for continuity
+1. **Application Roles**: Contact system admin to assign appropriate roles (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
+2. **Multiple Members**: Have multiple team members for continuity
 3. **Regular Reviews**: Audit member list periodically
-4. **Email Verification**: Ensure correct email addresses
-5. **Communication**: Notify members when adding/removing access
-
-### Test Suite Organization
-
-1. **Logical Grouping**: Organize suites by feature/module
-2. **Consistent Naming**: Use clear, descriptive suite names
-3. **Appropriate Nesting**: Don't nest too deeply (3-4 levels max)
-4. **Balanced Distribution**: Distribute test cases evenly
-5. **Regular Review**: Reorganize as project evolves
+4. **Email Verification**: Ensure correct email addresses when adding members
+5. **Communication**: Notify members when adding/removing project access
 
 ### Test Case Management
 
@@ -843,6 +866,11 @@ Consistent actions available:
 - **Email Notifications**: Automated emails for test runs
 - **Member Invitations**: Send invitation links to non-users
 - **Export/Import**: Project data export and import
+- **Email Notifications**: Automated emails when members are added
+- **Member Invitations**: Send invitation links to non-users
+- **Bulk Operations**: Add multiple members at once
+- **Export/Import**: Project data export and import
+- **Templates**: Project and test case templates
 - **Advanced Permissions**: Granular permission controls
 - **Activity Log**: Track all project activities
 - **Analytics**: Project metrics and reporting
@@ -871,11 +899,11 @@ Consistent actions available:
 - Verify email address is correct
 - Ensure user has registered account
 - Check if user is already a member
-- Verify you have Owner/Admin permissions
+- Verify you have PROJECT_MANAGER or ADMIN role
 
 **Cannot Delete Project**
-- Must be project owner
-- Cannot delete if last owner (transfer ownership first)
+- Must have ADMIN role (system-wide)
+- Cannot delete if creator is the only member
 - Check for unsaved changes
 - Verify network connection
 
@@ -902,6 +930,17 @@ Consistent actions available:
 - Verify suite contains test cases
 - Check if test cases are active
 - Ensure you have proper permissions
+
+- Verify you are a project member (unless you're an ADMIN)
+- Check if project was deleted
+- Ensure you're logged in
+- Contact project admin or system admin for membership
+
+**Cannot Remove Member**
+- Must have PROJECT_MANAGER or ADMIN role
+- Cannot remove creator if they're the only member
+- Check if member has open tasks
+- Verify permissions
 
 ---
 

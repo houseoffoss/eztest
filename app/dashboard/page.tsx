@@ -1,9 +1,14 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Navbar } from '@/components/design/Navbar';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+};
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -16,7 +21,6 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-[#0a1628]">
       <Navbar
         items={[
-          { label: 'Dashboard', href: '/dashboard' },
           { label: 'Projects', href: '/projects' },
           { label: 'Runs', href: '/runs' },
         ]}
