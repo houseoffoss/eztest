@@ -150,13 +150,12 @@ export class ProjectController {
       );
     }
 
-    const { userId: newUserId, email, role } = validationResult.data;
+    const { userId: newUserId, email } = validationResult.data;
 
     try {
       const member = await projectService.addProjectMember(projectId, {
         userId: newUserId,
         email,
-        role,
       });
 
       return { data: member, statusCode: 201 };

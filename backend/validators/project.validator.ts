@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ProjectRole } from '@prisma/client';
 
 /**
  * Project Creation Schema
@@ -39,9 +38,6 @@ export const addProjectMemberSchema = z
   .object({
     userId: z.string().uuid('Invalid user ID format').optional(),
     email: z.string().email('Invalid email format').optional(),
-    role: z.nativeEnum(ProjectRole, {
-      message: 'Invalid role. Must be one of: OWNER, ADMIN, TESTER, VIEWER',
-    }).optional(),
   })
   .refine((data: { userId?: string; email?: string }) => data.userId || data.email, {
     message: 'Either userId or email is required',

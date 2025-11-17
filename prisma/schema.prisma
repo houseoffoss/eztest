@@ -16,7 +16,7 @@ model User {
   email         String    @unique
   name          String
   password      String
-  role          UserRole  @default(TESTER)
+  roleId        String    // FK to Role table
   avatar        String?
   bio           String?
   phone         String?
@@ -25,6 +25,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  role          Role      @relation(fields: [roleId], references: [id])
   projects      ProjectMember[]
   testCases     TestCase[]
   testRuns      TestRun[]
@@ -34,6 +35,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
 
   @@index([email])
+  @@index([roleId])
   @@index([deletedAt])
 }
 
@@ -51,13 +53,6 @@ model PasswordResetToken {
   @@index([userId])
   @@index([token])
   @@index([expiresAt])
-}
-
-enum UserRole {
-  ADMIN
-  PROJECT_MANAGER
-  TESTER
-  VIEWER
 }
 
 // Project Management
@@ -87,7 +82,6 @@ model ProjectMember {
   id        String   @id @default(cuid())
   projectId String
   userId    String
-  role      ProjectRole @default(TESTER)
   joinedAt  DateTime @default(now())
 
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -96,13 +90,6 @@ model ProjectMember {
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
-}
-
-enum ProjectRole {
-  OWNER
-  ADMIN
-  TESTER
-  VIEWER
 }
 
 // Test Management
@@ -307,79 +294,43 @@ enum RequirementStatus {
 }
 
 // ====================================
-// Authorization System Models
+// RBAC (Role-Based Access Control)
 // ====================================
 
-// Roles define user system-level roles
 model Role {
-  id          String   @id @default(cuid())
-  keyword     String   @unique  // e.g., "admin", "project_manager", "tester", "viewer"
-  name        String               // Display name
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String         @id @default(cuid())
+  name        String         @unique // e.g., "ADMIN", "PROJECT_MANAGER", "TESTER", "VIEWER"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  privileges  RolePrivilege[]
+  users       User[]
+  permissions RolePermission[]
 
-  @@index([keyword])
+  @@index([name])
 }
 
-// Modules represent major application features
-model Module {
-  id          String   @id @default(cuid())
-  keyword     String   @unique  // e.g., "prn" (projects), "tc" (test cases), "tr" (test runs)
-  name        String               // Display name
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Permission {
+  id          String         @id @default(cuid())
+  name        String         @unique // e.g., "projects:read", "projects:create", "testcases:update"
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  privileges  RolePrivilege[]
+  roles       RolePermission[]
 
-  @@index([keyword])
+  @@index([name])
 }
 
-// Actions define what operations can be performed
-model Action {
-  id          String   @id @default(cuid())
-  keyword     String   @unique  // e.g., "r" (read), "w" (write), "u" (update), "d" (delete)
-  score       Int                  // Permission level: 1=read, 2=write, 3=update, 4=delete
-  name        String               // Display name
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
 
-  privileges  RolePrivilege[]
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@index([keyword])
-}
-
-// Scopes define the data access level
-model Scope {
-  id          String   @id @default(cuid())
-  keyword     String   @unique  // e.g., "all", "project", "own"
-  score       Int                  // Access level: 1=all, 2=project, 3=own
-  name        String               // Display name
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  privileges  RolePrivilege[]
-
-  @@index([keyword])
-}
-
-// RolePrivilege maps roles to their permissions
-model RolePrivilege {
-  id              String   @id @default(cuid())
-  role_name       String
-  module_keyword  String
-  action_keyword  String
-  scope_keyword   String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  role            Role     @relation(fields: [role_name], references: [keyword], onDelete: Cascade)
-  module          Module   @relation(fields: [module_keyword], references: [keyword], onDelete: Cascade)
-  action          Action   @relation(fields: [action_keyword], references: [keyword], onDelete: Cascade)
-  scope           Scope    @relation(fields: [scope_keyword], references: [keyword], onDelete: Cascade)
-
-  @@unique([role_name, module_keyword, action_keyword])
-  @@index([role_name])
-  @@index([module_keyword])
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
 }

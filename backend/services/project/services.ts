@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { ProjectRole } from '@prisma/client';
 
 interface CreateProjectInput {
   name: string;
@@ -16,7 +15,6 @@ interface UpdateProjectInput {
 interface AddMemberInput {
   userId?: string; // Optional, for backward compatibility
   email?: string; // Email address of the user to add
-  role?: ProjectRole; // Optional, defaults to TESTER
 }
 
 export class ProjectService {
@@ -112,7 +110,7 @@ export class ProjectService {
       throw new Error('Project key already exists (in deleted projects). Please choose a different key.');
     }
 
-    // Create project and automatically add creator as OWNER
+    // Create project and automatically add creator as member
     return await prisma.project.create({
       data: {
         name: data.name,
@@ -122,7 +120,6 @@ export class ProjectService {
         members: {
           create: {
             userId: data.createdById,
-            role: 'OWNER',
           },
         },
       },
@@ -385,7 +382,6 @@ export class ProjectService {
       data: {
         projectId,
         userId: user.id,
-        role: data.role || 'TESTER', // Default to TESTER if not specified
       },
       include: {
         user: {
@@ -414,17 +410,19 @@ export class ProjectService {
       throw new Error('Member not found in this project');
     }
 
-    // Prevent removing the last OWNER
-    if (member.role === 'OWNER') {
-      const ownerCount = await prisma.projectMember.count({
-        where: {
-          projectId,
-          role: 'OWNER',
-        },
+    // Check if this is the project creator
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { createdById: true },
+    });
+
+    if (project?.createdById === member.userId) {
+      const memberCount = await prisma.projectMember.count({
+        where: { projectId },
       });
 
-      if (ownerCount <= 1) {
-        throw new Error('Cannot remove the last owner of the project');
+      if (memberCount <= 1) {
+        throw new Error('Cannot remove the project creator when they are the only member');
       }
     }
 
@@ -434,10 +432,10 @@ export class ProjectService {
   }
 
   /**
-   * Get user's role in a project
-   * Kept for internal use and member management
+   * Check if user is a member of a project
+   * Used for internal checks and member management
    */
-  async getUserProjectRole(projectId: string, userId: string): Promise<ProjectRole | null> {
+  async isProjectMember(projectId: string, userId: string): Promise<boolean> {
     const membership = await prisma.projectMember.findFirst({
       where: {
         projectId,
@@ -448,7 +446,7 @@ export class ProjectService {
       },
     });
 
-    return membership?.role || null;
+    return !!membership;
   }
 }
 

@@ -1,16 +1,14 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { seedAuthorizationSystem } from './seed-auth';
+import { seedRBAC } from './seed-rbac';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...\n');
 
-  // Seed authorization system first
-  console.log('📋 Seeding authorization system...');
-  await seedAuthorizationSystem();
-  console.log('✅ Authorization system seeded successfully!\n');
+  // Seed RBAC system first (Roles, Permissions, RolePermissions)
+  await seedRBAC();
 
   // Get admin credentials from environment
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@eztest.local';
@@ -27,6 +25,15 @@ async function main() {
     return;
   }
 
+  // Get ADMIN role
+  const adminRole = await prisma.role.findUnique({
+    where: { name: 'ADMIN' },
+  });
+
+  if (!adminRole) {
+    throw new Error('ADMIN role not found. Make sure RBAC seeding completed successfully.');
+  }
+
   // Hash the password
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
@@ -36,14 +43,14 @@ async function main() {
       email: adminEmail,
       name: adminName,
       password: hashedPassword,
-      role: UserRole.ADMIN,
+      roleId: adminRole.id,
     },
   });
 
   console.log('✅ Admin user created successfully!');
   console.log('   Email:', adminUser.email);
   console.log('   Name:', adminUser.name);
-  console.log('   Role:', adminUser.role);
+  console.log('   Role:', adminRole.name);
   console.log('\n⚠️  Please change the default admin password after first login!');
 }
 

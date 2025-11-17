@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { UserRole } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +26,18 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get TESTER role
+    const testerRole = await prisma.role.findUnique({
+      where: { name: 'TESTER' },
+    });
+
+    if (!testerRole) {
+      return NextResponse.json(
+        { error: 'System configuration error: TESTER role not found' },
+        { status: 500 }
+      );
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -36,13 +47,13 @@ export async function POST(req: Request) {
         email,
         name,
         password: hashedPassword,
-        role: UserRole.TESTER, // Default role for new users
+        roleId: testerRole.id,
       },
       select: {
         id: true,
         email: true,
         name: true,
-        role: true,
+        roleId: true,
         createdAt: true,
       },
     });
