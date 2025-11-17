@@ -5,7 +5,7 @@
 
 ## The Answer: Yes, It's Now Simplified! ✅
 
-We've **removed the `ProjectRole` enum** entirely and now use a cleaner system:
+We use a cleaner system with **no project-specific roles**:
 
 ### What We Have Now
 
@@ -84,7 +84,7 @@ if (user.role.name === 'ADMIN') {
 
 ## What Changed from Before
 
-### ❌ Old System (Confusing)
+### ❌ Old System (What We DON'T Have)
 ```prisma
 model User {
   role  UserRole  // System role: ADMIN, PROJECT_MANAGER, TESTER, VIEWER
@@ -95,9 +95,9 @@ model ProjectMember {
 }
 ```
 
-**Problems:**
-- Two separate role systems
-- Confusing: What's the difference between USER.TESTER and PROJECT.TESTER?
+**Problems with this approach:**
+- Two separate role systems would be confusing
+- What's the difference between USER.TESTER and PROJECT.TESTER?
 - Hard to manage: Which role takes precedence?
 
 ### ✅ New System (Clear)

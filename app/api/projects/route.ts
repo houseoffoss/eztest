@@ -21,9 +21,12 @@ export const GET = baseInterceptor(async (request: NextRequest) => {
     );
   }
 
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+
   // Build custom request for controller
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,

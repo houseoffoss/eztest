@@ -23,7 +23,6 @@ export class ProjectService {
    * Scope-based filtering:
    * - 'all': All projects (admin access)
    * - 'project': Projects user is a member of
-   * - 'own': Projects user created
    */
   async getAllProjects(userId: string, scope: string) {
     const baseInclude = {
@@ -61,13 +60,7 @@ export class ProjectService {
       isDeleted: false,
     };
 
-    if (scope === 'own') {
-      // Only projects created by this user
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       // Only projects user is a member of
       whereClause = {
         ...whereClause,
@@ -159,12 +152,7 @@ export class ProjectService {
       isDeleted: false,
     };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       whereClause = {
         ...whereClause,
         members: {
@@ -277,18 +265,13 @@ export class ProjectService {
       isDeleted: false,
     };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
+      // User must be a member to delete (though only ADMIN has this permission)
       whereClause = {
         ...whereClause,
         members: {
           some: {
             userId: userId,
-            role: { in: ['OWNER', 'ADMIN'] },
           },
         },
       };

@@ -108,12 +108,7 @@ export class TestCaseService {
     // Build query to check access based on scope
     let whereClause: Record<string, unknown> = { id: testCaseId };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       whereClause = {
         ...whereClause,
         project: {
@@ -270,19 +265,13 @@ export class TestCaseService {
     // Build where clause based on scope
     let whereClause: Record<string, unknown> = { id: testCaseId };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       whereClause = {
         ...whereClause,
         project: {
           members: {
             some: {
               userId: userId,
-              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
             },
           },
         },
@@ -363,19 +352,13 @@ export class TestCaseService {
     // Build where clause based on scope
     let whereClause: Record<string, unknown> = { id: testCaseId };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       whereClause = {
         ...whereClause,
         project: {
           members: {
             some: {
               userId: userId,
-              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
             },
           },
         },
@@ -415,19 +398,13 @@ export class TestCaseService {
     // Build where clause based on scope
     let whereClause: Record<string, unknown> = { id: testCaseId };
 
-    if (scope === 'own') {
-      whereClause = {
-        ...whereClause,
-        createdById: userId,
-      };
-    } else if (scope === 'project') {
+    if (scope === 'project') {
       whereClause = {
         ...whereClause,
         project: {
           members: {
             some: {
               userId: userId,
-              role: { in: ['OWNER', 'ADMIN', 'TESTER'] },
             },
           },
         },

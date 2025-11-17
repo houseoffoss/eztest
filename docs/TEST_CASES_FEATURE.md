@@ -21,7 +21,8 @@ Implemented `TestCaseService` class with the following methods:
 
 **Key Features:**
 - Full CRUD operations
-- Permission checking (ADMIN, OWNER, ADMIN, TESTER roles)
+- Permission checking based on application roles (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
+- Membership-based access control
 - Comprehensive validation
 - Related data inclusion (suite, creator, steps, requirements)
 - Test step ordering with unique constraint
@@ -219,11 +220,11 @@ enum TestStatus {
 ```
 
 ### Permission Model
-- **View Test Cases:** All project members
-- **Create Test Cases:** All project members (TESTER, ADMIN, OWNER)
-- **Edit Test Cases:** Project members with TESTER, ADMIN, or OWNER role
-- **Delete Test Cases:** Project members with TESTER, ADMIN, or OWNER role
-- **Admin Override:** ADMIN users have full access to all test cases
+- **View Test Cases:** All project members (any application role)
+- **Create Test Cases:** Members with PROJECT_MANAGER, TESTER, or ADMIN application role
+- **Edit Test Cases:** Members with PROJECT_MANAGER, TESTER, or ADMIN application role
+- **Delete Test Cases:** Members with PROJECT_MANAGER, TESTER, or ADMIN application role
+- **Admin Override:** ADMIN users have full access to all test cases in all projects without membership requirement
 
 ### API Response Format
 Success:

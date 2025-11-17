@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import { UserRole } from '@prisma/client';
 
 export interface ScopeInfo {
   access: boolean;
@@ -10,7 +9,7 @@ export interface UserInfo {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: string; // Role name: "ADMIN", "PROJECT_MANAGER", "TESTER", "VIEWER"
   orgId?: string;
   [key: string]: unknown;
 }

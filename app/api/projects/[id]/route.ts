@@ -23,8 +23,11 @@ export const GET = baseInterceptor(async (request: NextRequest, context: { param
   const { searchParams } = new URL(request.url);
   const includeStats = searchParams.get('stats') === 'true';
   
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
@@ -53,8 +56,11 @@ export const PUT = baseInterceptor(async (request: NextRequest, context: { param
   
   const { id } = context.params;
   
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,

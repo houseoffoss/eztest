@@ -1,61 +1,89 @@
 import { testCaseController } from '@/backend/controllers/testcase/controller';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
 import { hasPermission } from '@/lib/rbac/hasPermission';
-import { NextRequest } from 'next/server';
+import { baseInterceptor } from '@/backend/utils/baseInterceptor';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export const GET = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
-  const rbacUser = user && user.roleObj ? { id: user.id, email: user.email, name: user.name, role: user.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'tc', 'r')) {
-    return new Response('Forbidden', { status: 403 });
+  
+  if (!hasPermission(user, 'testcases:read')) {
+    return NextResponse.json(
+      { error: 'Forbidden: Missing testcases:read permission' },
+      { status: 403 }
+    );
   }
+  
   const testCaseId = context.params.id;
+  
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
       name: user!.name,
-      role: user!.roleEnum,
+      role: user!.role.name,
     },
   });
+  
   return testCaseController.getTestCaseById(customRequest, testCaseId);
-}
+});
 
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
+export const PUT = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
-  const rbacUser = user && user.roleObj ? { id: user.id, email: user.email, name: user.name, role: user.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'tc', 'u')) {
-    return new Response('Forbidden', { status: 403 });
+  
+  if (!hasPermission(user, 'testcases:update')) {
+    return NextResponse.json(
+      { error: 'Forbidden: Missing testcases:update permission' },
+      { status: 403 }
+    );
   }
+  
   const testCaseId = context.params.id;
+  
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
       name: user!.name,
-      role: user!.roleEnum,
+      role: user!.role.name,
     },
   });
+  
   return testCaseController.updateTestCase(customRequest, testCaseId);
-}
+});
 
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
+export const DELETE = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
-  const rbacUser = user && user.roleObj ? { id: user.id, email: user.email, name: user.name, role: user.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'tc', 'd')) {
-    return new Response('Forbidden', { status: 403 });
+  
+  if (!hasPermission(user, 'testcases:delete')) {
+    return NextResponse.json(
+      { error: 'Forbidden: Missing testcases:delete permission' },
+      { status: 403 }
+    );
   }
+  
   const testCaseId = context.params.id;
+  
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
       name: user!.name,
-      role: user!.roleEnum,
+      role: user!.role.name,
     },
   });
+  
   return testCaseController.deleteTestCase(customRequest, testCaseId);
-}
+});

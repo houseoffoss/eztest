@@ -1,42 +1,61 @@
 import { testCaseController } from '@/backend/controllers/testcase/controller';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
 import { hasPermission } from '@/lib/rbac/hasPermission';
-import { NextRequest } from 'next/server';
+import { baseInterceptor } from '@/backend/utils/baseInterceptor';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export const GET = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
-  const rbacUser = user && user.roleObj ? { id: user.id, email: user.email, name: user.name, role: user.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'tc', 'r')) {
-    return new Response('Forbidden', { status: 403 });
+  
+  if (!hasPermission(user, 'testcases:read')) {
+    return NextResponse.json(
+      { error: 'Forbidden: Missing testcases:read permission' },
+      { status: 403 }
+    );
   }
+  
   const projectId = context.params.id;
+  
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
       name: user!.name,
-      role: user!.roleEnum,
+      role: user!.role.name,
     },
   });
+  
   return testCaseController.getProjectTestCases(customRequest, projectId);
-}
+});
 
-export async function POST(request: NextRequest, context: { params: { id: string } }) {
+export const POST = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
-  const rbacUser = user && user.roleObj ? { id: user.id, email: user.email, name: user.name, role: user.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'tc', 'w')) {
-    return new Response('Forbidden', { status: 403 });
+  
+  if (!hasPermission(user, 'testcases:create')) {
+    return NextResponse.json(
+      { error: 'Forbidden: Missing testcases:create permission' },
+      { status: 403 }
+    );
   }
+  
   const projectId = context.params.id;
+  
+  // Determine scope based on role
+  const scope = user!.role.name === 'ADMIN' ? 'all' : 'project';
+  
   const customRequest = Object.assign(request, {
-    scopeInfo: { access: true, scope_name: 'all' },
+    scopeInfo: { access: true, scope_name: scope },
     userInfo: {
       id: user!.id,
       email: user!.email,
       name: user!.name,
-      role: user!.roleEnum,
+      role: user!.role.name,
     },
   });
+  
   return testCaseController.createTestCase(customRequest, projectId);
-}
+});

@@ -76,11 +76,11 @@ app/projects/
 | 1 | `/api/projects` | GET | List all projects | ✅ User | Any |
 | 2 | `/api/projects` | POST | Create new project | ✅ User | ADMIN, PROJECT_MANAGER, TESTER |
 | 3 | `/api/projects/[id]` | GET | Get project details | ✅ Member/Admin | Member or ADMIN |
-| 4 | `/api/projects/[id]` | PUT | Update project info | ✅ Owner/Admin | OWNER, ADMIN (project) or ADMIN (system) |
-| 5 | `/api/projects/[id]` | DELETE | Delete project | ✅ Owner/Admin | OWNER, ADMIN (project) or ADMIN (system) |
+| 4 | `/api/projects/[id]` | PUT | Update project info | ✅ Member/Admin | PROJECT_MANAGER, TESTER (member) or ADMIN (system) |
+| 5 | `/api/projects/[id]` | DELETE | Delete project | ✅ Admin | ADMIN (system only) |
 | 6 | `/api/projects/[id]/members` | GET | Get project members | ✅ Member/Admin | Member or ADMIN |
-| 7 | `/api/projects/[id]/members` | POST | Add member to project | ✅ Owner/Admin | OWNER, ADMIN (project) or ADMIN (system) |
-| 8 | `/api/projects/[id]/members/[memberId]` | DELETE | Remove member | ✅ Owner/Admin | OWNER, ADMIN (project) or ADMIN (system) |
+| 7 | `/api/projects/[id]/members` | POST | Add member to project | ✅ Manager/Admin | PROJECT_MANAGER (member) or ADMIN (system) |
+| 8 | `/api/projects/[id]/members/[memberId]` | DELETE | Remove member | ✅ Manager/Admin | PROJECT_MANAGER (member) or ADMIN (system) |
 
 ## Authorization Rules
 
@@ -98,14 +98,11 @@ Only the following system roles can create projects:
 
 VIEWER role is **not allowed** to create projects.
 
-### Project Roles (Project-specific)
-- **OWNER**: Full control over project, can delete project
-- **ADMIN**: Can manage project settings and members
-- **TESTER**: Default role for new members, can work on test artifacts
-- **VIEWER**: Read-only project access
-
-### Default Role
-When adding members via API without specifying a role, the default role is **TESTER**.
+### Project Membership
+- **Binary Membership**: Users are either members or non-members of a project
+- **No Project-Specific Roles**: Project membership is simple - no roles are assigned at the project level
+- **Permissions Based on Application Role**: User capabilities within a project are determined by their system-wide role (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
+- **Creator Tracking**: Project creator is tracked via `createdById` field, not a role
 
 ## Key Features Implemented
 
@@ -114,9 +111,9 @@ When adding members via API without specifying a role, the default role is **TES
 - Returns 401 for unauthenticated requests
 
 ### 2. Authorization
-- Project-level access control
-- Role-based permissions (OWNER, ADMIN, TESTER, VIEWER)
-- System ADMIN override capability
+- Project membership-based access control
+- Application-level role-based permissions (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
+- System ADMIN can access all projects without membership requirement
 
 ### 3. Validation
 - Input validation for all POST/PUT requests
@@ -126,18 +123,18 @@ When adding members via API without specifying a role, the default role is **TES
 ### 4. Security Features
 - Prevents duplicate project keys (409 conflict)
 - Prevents duplicate project members (409 conflict)
-- Prevents removing last project owner (400 error)
+- Prevents removing project creator if they're the only member (400 error)
 - Project key validation: 2-10 uppercase alphanumeric characters (regex: `/^[A-Z0-9]+$/`)
 - Project name validation: 3-255 characters
 - Cascading deletes for data integrity
 - SQL injection protection via Prisma ORM
 
 ### 5. Business Logic
-- Auto-add creator as project OWNER on creation
-- Default TESTER role when adding members without role specification
-- Hierarchical permission checks
-- Smart access control (system admins bypass project roles)
-- Role-based project listing (ADMIN sees all, others see only memberships)
+- Auto-add creator as project member on creation
+- Simple membership model (no project-specific roles)
+- Permission checks based on application-level roles
+- Smart access control (ADMIN role bypasses membership requirement)
+- Scope-based project listing (ADMIN sees all projects, others see only projects where they're members)
 
 ### 6. Response Format
 Consistent response format across all endpoints:
@@ -265,16 +262,12 @@ Response (200):
 POST http://localhost:3000/api/projects/clx.../members
 Content-Type: application/json
 
-Body (with explicit role):
+Body:
 {
-  "userId": "user456",
-  "role": "ADMIN"
+  "userId": "user456"
 }
 
-Or (defaults to TESTER):
-{
-  "userId": "user789"
-}
+Note: Project membership is binary. User permissions are determined by their application-level role (ADMIN, PROJECT_MANAGER, TESTER, VIEWER).
 
 Response (201):
 {
@@ -282,7 +275,6 @@ Response (201):
     "id": "member123",
     "projectId": "clx...",
     "userId": "user456",
-    "role": "ADMIN",
     "joinedAt": "2024-01-15T11:00:00Z"
   }
 }
@@ -297,7 +289,6 @@ Response (200):
   "data": [
     {
       "id": "member123",
-      "role": "OWNER",
       "joinedAt": "2024-01-15T10:30:00Z",
       "user": {
         "id": "user123",
@@ -380,7 +371,7 @@ curl -X PUT http://localhost:3000/api/projects/[id] \
   }'
 ```
 
-#### 5. Add Member (defaults to TESTER)
+#### 5. Add Member
 ```bash
 curl -X POST http://localhost:3000/api/projects/[id]/members \
   -H "Content-Type: application/json" \
@@ -389,15 +380,7 @@ curl -X POST http://localhost:3000/api/projects/[id]/members \
   }'
 ```
 
-#### 6. Add Member with Specific Role
-```bash
-curl -X POST http://localhost:3000/api/projects/[id]/members \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "role": "ADMIN"
-  }'
-```
+Note: Membership is binary. User permissions are based on their application role.
 
 #### 7. Remove Member
 ```bash
@@ -479,18 +462,17 @@ The project includes a complete UI built with React, Next.js, and Shadcn UI comp
 **Features:**
 - Add member dialog with:
   - User ID input field
-  - Role selector (OWNER, ADMIN, TESTER default, VIEWER)
   - Submit button
 - Members list displaying:
   - Colored avatar circles with initials
-  - Member name with role badge
+  - Member name
   - Email address with icon
-  - System role badge (if applicable)
+  - Application role badge (ADMIN, PROJECT_MANAGER, TESTER, or VIEWER)
   - Joined date
   - Remove button with confirmation
 - Empty state with "Add First Member" CTA
-- Role-specific badge colors and icons:
-  - OWNER/ADMIN: Shield icon
+- Application role-specific badge colors and icons:
+  - ADMIN/PROJECT_MANAGER: Shield icon
   - TESTER: Users icon
   - VIEWER: Eye icon
 
@@ -576,7 +558,7 @@ All UI pages integrate seamlessly with the backend API:
 
 | Code | Meaning | Common Causes |
 |------|---------|---------------|
-| 400 | Bad Request | Invalid input, validation failure, last owner removal |
+| 400 | Bad Request | Invalid input, validation failure, cannot remove creator if only member |
 | 401 | Unauthorized | Not logged in, session expired |
 | 403 | Forbidden | Insufficient permissions for operation |
 | 404 | Not Found | Project or member doesn't exist |
@@ -593,7 +575,7 @@ The implementation uses the following Prisma models:
 ## Error Handling
 
 All endpoints include comprehensive error handling:
-- **400**: Bad Request (validation errors, invalid input, cannot remove last owner)
+- **400**: Bad Request (validation errors, invalid input, cannot remove creator if only member)
 - **401**: Unauthorized (not logged in, session expired)
 - **403**: Forbidden (insufficient permissions, role restrictions)
 - **404**: Not Found (resource doesn't exist, project/member not found)

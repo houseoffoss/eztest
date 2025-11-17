@@ -42,24 +42,24 @@ All endpoints require authentication using NextAuth session. Include the session
 - **TESTER**: Can create projects, work on assigned projects
 - **VIEWER**: Read-only access, cannot create projects
 
-### Project Roles (Project-specific)
-- **OWNER**: Full control over the project, cannot be removed if they're the last owner
-- **ADMIN**: Can manage project settings and members
-- **TESTER**: Can work on test cases (default role when adding members)
-- **VIEWER**: Read-only access to the project
+### Project Membership
+- **Binary Membership**: Users are either members or non-members of a project
+- **No Project-Specific Roles**: All permissions are determined by application-level roles
+- **Creator Tracking**: Project creator tracked via `createdById` field
+- **Member Permissions**: Based on user's application role (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
 
 ### Permission Matrix
 
-| Action | Required System Role | Required Project Role |
-|--------|---------------------|----------------------|
+| Action | Required Application Role | Membership Required |
+|--------|--------------------------|---------------------|
 | List Projects | Any authenticated user | N/A |
-| Create Project | ADMIN, PROJECT_MANAGER, TESTER | N/A |
-| View Project | Any | Member or ADMIN |
-| Update Project | Any | OWNER, ADMIN or System ADMIN |
-| Delete Project | Any | OWNER, ADMIN or System ADMIN |
-| View Members | Any | Member or ADMIN |
-| Add Members | Any | OWNER, ADMIN or System ADMIN |
-| Remove Members | Any | OWNER, ADMIN or System ADMIN |
+| Create Project | ADMIN, PROJECT_MANAGER, TESTER | No |
+| View Project | Any | Yes (unless ADMIN) |
+| Update Project | ADMIN, PROJECT_MANAGER, TESTER | Yes (unless ADMIN) |
+| Delete Project | ADMIN only | No |
+| View Members | Any | Yes (unless ADMIN) |
+| Add Members | ADMIN, PROJECT_MANAGER | Yes (unless ADMIN) |
+| Remove Members | ADMIN, PROJECT_MANAGER | Yes (unless ADMIN) |
 
 ---
 
@@ -111,10 +111,11 @@ List all projects accessible to the current user.
 ### 2. Create New Project
 **POST** `/api/projects`
 
-Create a new project. The creator is automatically added as the project OWNER.
+Create a new project. The creator is automatically added as a project member.
 
 **Authorization:**
-- Authenticated users can create projects
+- Users with ADMIN, PROJECT_MANAGER, or TESTER role can create projects
+- VIEWER role cannot create projects
 
 **Request Body:**
 ```json
