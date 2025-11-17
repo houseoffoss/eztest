@@ -179,7 +179,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                   type="email"
                   placeholder="user@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>
@@ -187,7 +187,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                 <Label htmlFor="role">Project Role</Label>
                 <Select
                   value={formData.role}
-                  onValueChange={(value) => setFormData({ ...formData, role: value })}
+                  onValueChange={(value: string) => setFormData({ ...formData, role: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />

@@ -18,11 +18,23 @@ export async function seedRBAC() {
     { name: 'projects:delete', description: 'Delete projects' },
     { name: 'projects:manage_members', description: 'Add/remove project members' },
     
+    // Test Suite permissions
+    { name: 'testsuites:read', description: 'View test suites' },
+    { name: 'testsuites:create', description: 'Create new test suites' },
+    { name: 'testsuites:update', description: 'Update test suites' },
+    { name: 'testsuites:delete', description: 'Delete test suites' },
+    
     // Test Case permissions
     { name: 'testcases:read', description: 'View test cases' },
     { name: 'testcases:create', description: 'Create new test cases' },
     { name: 'testcases:update', description: 'Update test cases' },
     { name: 'testcases:delete', description: 'Delete test cases' },
+    
+    // Test Plan permissions
+    { name: 'testplans:read', description: 'View test plans' },
+    { name: 'testplans:create', description: 'Create new test plans' },
+    { name: 'testplans:update', description: 'Update test plans' },
+    { name: 'testplans:delete', description: 'Delete test plans' },
     
     // Test Run permissions
     { name: 'testruns:read', description: 'View test runs' },
@@ -37,12 +49,6 @@ export async function seedRBAC() {
     { name: 'users:update', description: 'Update user details' },
     { name: 'users:delete', description: 'Delete users' },
     { name: 'users:manage_roles', description: 'Assign roles to users' },
-    
-    // Test Suite permissions
-    { name: 'testsuites:read', description: 'View test suites' },
-    { name: 'testsuites:create', description: 'Create new test suites' },
-    { name: 'testsuites:update', description: 'Update test suites' },
-    { name: 'testsuites:delete', description: 'Delete test suites' },
     
     // Requirement permissions
     { name: 'requirements:read', description: 'View requirements' },
@@ -112,19 +118,23 @@ export async function seedRBAC() {
       'projects:create',
       'projects:update',
       'projects:manage_members',
+      'testsuites:read',
+      'testsuites:create',
+      'testsuites:update',
+      'testsuites:delete',
       'testcases:read',
       'testcases:create',
       'testcases:update',
       'testcases:delete',
+      'testplans:read',
+      'testplans:create',
+      'testplans:update',
+      'testplans:delete',
       'testruns:read',
       'testruns:create',
       'testruns:update',
       'testruns:delete',
       'testruns:execute',
-      'testsuites:read',
-      'testsuites:create',
-      'testsuites:update',
-      'testsuites:delete',
       'requirements:read',
       'requirements:create',
       'requirements:update',
@@ -139,7 +149,7 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ PROJECT_MANAGER: Can view/create/edit projects, add/remove members, manage all tests');
+  console.log('    ✅ PROJECT_MANAGER: Full access to projects, test suites, test cases, test plans, test runs');
 
   // Assign permissions to TESTER
   // TESTER has all PROJECT_MANAGER permissions EXCEPT projects:manage_members
@@ -148,19 +158,23 @@ export async function seedRBAC() {
       'projects:read',
       'projects:create',
       'projects:update',
+      'testsuites:read',
+      'testsuites:create',
+      'testsuites:update',
+      'testsuites:delete',
       'testcases:read',
       'testcases:create',
       'testcases:update',
       'testcases:delete',
+      'testplans:read',
+      'testplans:create',
+      'testplans:update',
+      'testplans:delete',
       'testruns:read',
       'testruns:create',
       'testruns:update',
       'testruns:delete',
       'testruns:execute',
-      'testsuites:read',
-      'testsuites:create',
-      'testsuites:update',
-      'testsuites:delete',
       'requirements:read',
       'requirements:create',
       'requirements:update',
@@ -175,15 +189,16 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ TESTER: Same as PROJECT_MANAGER but cannot add members');
+  console.log('    ✅ TESTER: Full access to test suites, test cases, test plans, test runs (cannot manage members)');
 
   // Assign permissions to VIEWER (read-only)
   const viewerPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
-      'testcases:read',
-      'testruns:read',
       'testsuites:read',
+      'testcases:read',
+      'testplans:read',
+      'testruns:read',
       'requirements:read',
     ].includes(perm.name)
   );

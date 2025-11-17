@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { TestRunStatus, TestResultStatus, UserRole } from '@prisma/client';
+import { TestRunStatus, TestResultStatus } from '@prisma/client';
 
 interface CreateTestRunInput {
   projectId: string;
@@ -388,13 +388,8 @@ export class TestRunService {
    */
   async hasAccessToTestRun(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ): Promise<boolean> {
-    if (userRole === 'ADMIN') {
-      return true;
-    }
-
     const testRun = await prisma.testRun.findUnique({
       where: { id: testRunId },
       select: {
@@ -419,17 +414,13 @@ export class TestRunService {
   }
 
   /**
-   * Check if user can manage test run (OWNER or ADMIN)
+   * Check if user can manage test run
+   * Role-based permissions are handled by hasPermission wrapper
    */
   async canManageTestRun(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ): Promise<boolean> {
-    if (userRole === 'ADMIN') {
-      return true;
-    }
-
     const testRun = await prisma.testRun.findUnique({
       where: { id: testRunId },
       select: {
@@ -450,7 +441,8 @@ export class TestRunService {
       },
     });
 
-    return member?.role === 'OWNER' || member?.role === 'ADMIN';
+    // Check if user is a member of the project (role-based permissions handled by hasPermission)
+    return !!member;
   }
 }
 

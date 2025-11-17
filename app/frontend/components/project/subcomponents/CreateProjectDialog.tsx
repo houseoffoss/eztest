@@ -92,7 +92,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
               id="name"
               placeholder="E-Commerce Platform"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, name: e.target.value })}
               required
               minLength={3}
               maxLength={255}
@@ -104,7 +104,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
               id="key"
               placeholder="ECOM"
               value={formData.key}
-              onChange={(e) => setFormData({ ...formData, key: e.target.value.toUpperCase() })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, key: e.target.value.toUpperCase() })}
               required
               minLength={2}
               maxLength={10}
@@ -121,7 +121,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
               id="description"
               placeholder="Brief description of the project..."
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
             />
           </div>

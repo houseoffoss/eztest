@@ -178,7 +178,7 @@ export default function RegisterPage() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="John Doe"
@@ -192,7 +192,7 @@ export default function RegisterPage() {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="you@example.com"
@@ -206,7 +206,7 @@ export default function RegisterPage() {
                   type="password"
                   required
                   value={formData.password}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
                   placeholder="••••••••"
@@ -223,7 +223,7 @@ export default function RegisterPage() {
                   type="password"
                   required
                   value={formData.confirmPassword}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setFormData({ ...formData, confirmPassword: e.target.value })
                   }
                   placeholder="••••••••"

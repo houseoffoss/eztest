@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import { Save, Trash2 } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
@@ -212,7 +212,7 @@ export default function ProjectSettingsPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, name: e.target.value })}
                   required
                   minLength={3}
                   maxLength={255}
@@ -238,7 +238,7 @@ export default function ProjectSettingsPage() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
                   placeholder="Brief description of the project..."
                 />

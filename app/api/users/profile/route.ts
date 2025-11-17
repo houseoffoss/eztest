@@ -1,5 +1,5 @@
 import { getSessionUser } from '@/lib/auth/getSessionUser';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { checkPermission } from '@/lib/rbac/hasPermission';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { NotFoundException, BadRequestException } from '@/backend/utils/exceptions';
@@ -10,8 +10,8 @@ import { NotFoundException, BadRequestException } from '@/backend/utils/exceptio
  */
 export async function GET(request: NextRequest) {
   const sessionUser = await getSessionUser();
-  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'r')) {
+  
+  if (!checkPermission(sessionUser, 'users:read')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const user = await prisma.user.findUnique({
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   const sessionUser = await getSessionUser();
-  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'u')) {
+  
+  if (!checkPermission(sessionUser, 'users:update')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const body = await request.json();

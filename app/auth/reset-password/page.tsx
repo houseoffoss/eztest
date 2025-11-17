@@ -157,7 +157,7 @@ export default function ResetPasswordPage() {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPassword(e.target.value)}
                   required
                   className="w-full px-4 py-3 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   placeholder="Enter new password (min 8 characters)"
@@ -172,7 +172,7 @@ export default function ResetPasswordPage() {
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setConfirmPassword(e.target.value)}
                   required
                   className="w-full px-4 py-3 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   placeholder="Confirm your password"

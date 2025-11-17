@@ -1,60 +1,44 @@
-import { NextRequest } from 'next/server';
-import { authenticateRequest } from '@/lib/auth-middleware';
 import { testRunController } from '@/backend/controllers/testrun/controller';
+import { hasPermission } from '@/lib/rbac';
 
 /**
  * GET /api/projects/[id]/testruns
  * Get all test runs for a project
+ * Required permission: testruns:read
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const auth = await authenticateRequest();
+export const GET = hasPermission(
+  async (request, context) => {
+    const { id } = await context!.params;
+    
+    // Get query parameters for filters
+    const searchParams = new URL(request.url).searchParams;
+    const filters = {
+      status: searchParams.get('status') || undefined,
+      assignedToId: searchParams.get('assignedToId') || undefined,
+      environment: searchParams.get('environment') || undefined,
+      search: searchParams.get('search') || undefined,
+    };
 
-  if (auth.error) {
-    return auth.error;
-  }
-
-  const { id } = await params;
-
-  // Get query parameters for filters
-  const searchParams = request.nextUrl.searchParams;
-  const filters = {
-    status: searchParams.get('status') || undefined,
-    assignedToId: searchParams.get('assignedToId') || undefined,
-    environment: searchParams.get('environment') || undefined,
-    search: searchParams.get('search') || undefined,
-  };
-
-  return testRunController.getProjectTestRuns(
-    id,
-    auth.session.user.id,
-    auth.session.user.role,
-    filters as never
-  );
-}
+    return testRunController.getProjectTestRuns(
+      id,
+      request.userInfo.id,
+      filters as never
+    );
+  },
+  'testruns',
+  'read'
+);
 
 /**
  * POST /api/projects/[id]/testruns
  * Create a new test run for a project
+ * Required permission: testruns:create
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const auth = await authenticateRequest();
-
-  if (auth.error) {
-    return auth.error;
-  }
-
-  const { id } = await params;
-
-  return testRunController.createTestRun(
-    request,
-    id,
-    auth.session.user.id,
-    auth.session.user.role
-  );
-}
+export const POST = hasPermission(
+  async (request, context) => {
+    const { id } = await context!.params;
+    return testRunController.createTestRun(request, id, request.userInfo.id);
+  },
+  'testruns',
+  'create'
+);

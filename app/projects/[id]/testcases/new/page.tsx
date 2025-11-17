@@ -2,19 +2,19 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import { ArrowLeft, Plus, Trash2, GripVertical } from 'lucide-react';
 import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
@@ -269,7 +269,7 @@ export default function NewTestCasePage() {
                     id="title"
                     variant="glass"
                     value={formData.title}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
                     placeholder="Enter test case title"
@@ -282,7 +282,7 @@ export default function NewTestCasePage() {
                     id="description"
                     variant="glass"
                     value={formData.description}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
                     rows={3}
@@ -295,7 +295,7 @@ export default function NewTestCasePage() {
                     <Label htmlFor="priority">Priority</Label>
                     <Select
                       value={formData.priority}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         setFormData({ ...formData, priority: value })
                       }
                     >
@@ -315,7 +315,7 @@ export default function NewTestCasePage() {
                     <Label htmlFor="status">Status</Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         setFormData({ ...formData, status: value })
                       }
                     >
@@ -340,7 +340,7 @@ export default function NewTestCasePage() {
                     variant="glass"
                     type="number"
                     value={formData.estimatedTime}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({
                         ...formData,
                         estimatedTime: e.target.value,
@@ -354,7 +354,7 @@ export default function NewTestCasePage() {
                   <Label htmlFor="suiteId">Test Suite (Optional)</Label>
                   <Select
                     value={formData.suiteId || 'NONE'}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       setFormData({ ...formData, suiteId: value === 'NONE' ? '' : value })
                     }
                   >
@@ -380,7 +380,7 @@ export default function NewTestCasePage() {
                     id="preconditions"
                     variant="glass"
                     value={formData.preconditions}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, preconditions: e.target.value })
                     }
                     rows={2}
@@ -394,7 +394,7 @@ export default function NewTestCasePage() {
                     id="postconditions"
                     variant="glass"
                     value={formData.postconditions}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({
                         ...formData,
                         postconditions: e.target.value,
@@ -479,7 +479,7 @@ export default function NewTestCasePage() {
                         <Input
                           variant="glass"
                           value={newStep.action}
-                          onChange={(e) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                             setNewStep({ ...newStep, action: e.target.value })
                           }
                           placeholder="Enter action"
@@ -490,7 +490,7 @@ export default function NewTestCasePage() {
                         <Input
                           variant="glass"
                           value={newStep.expectedResult}
-                          onChange={(e) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                             setNewStep({
                               ...newStep,
                               expectedResult: e.target.value,

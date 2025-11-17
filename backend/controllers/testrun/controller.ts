@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { testRunService } from '@/backend/services/testrun/services';
-import { TestRunStatus, TestResultStatus, UserRole } from '@prisma/client';
+import { TestRunStatus, TestResultStatus } from '@prisma/client';
 
 export class TestRunController {
   /**
@@ -9,7 +9,6 @@ export class TestRunController {
   async getProjectTestRuns(
     projectId: string,
     userId: string,
-    userRole: UserRole,
     filters?: {
       status?: TestRunStatus;
       assignedToId?: string;
@@ -38,15 +37,13 @@ export class TestRunController {
    */
   async getTestRunById(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check access
       const hasAccess = await testRunService.hasAccessToTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!hasAccess) {
@@ -92,8 +89,7 @@ export class TestRunController {
   async createTestRun(
     request: NextRequest,
     projectId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       const body = await request.json();
@@ -133,15 +129,13 @@ export class TestRunController {
   async updateTestRun(
     request: NextRequest,
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check permission
       const canManage = await testRunService.canManageTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!canManage) {
@@ -193,15 +187,13 @@ export class TestRunController {
    */
   async deleteTestRun(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check permission
       const canManage = await testRunService.canManageTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!canManage) {
@@ -231,15 +223,13 @@ export class TestRunController {
    */
   async startTestRun(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check access
       const hasAccess = await testRunService.hasAccessToTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!hasAccess) {
@@ -266,15 +256,13 @@ export class TestRunController {
    */
   async completeTestRun(
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check access
       const hasAccess = await testRunService.hasAccessToTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!hasAccess) {
@@ -302,15 +290,13 @@ export class TestRunController {
   async addTestResult(
     request: NextRequest,
     testRunId: string,
-    userId: string,
-    userRole: UserRole
+    userId: string
   ) {
     try {
       // Check access
       const hasAccess = await testRunService.hasAccessToTestRun(
         testRunId,
-        userId,
-        userRole
+        userId
       );
 
       if (!hasAccess) {

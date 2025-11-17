@@ -69,7 +69,6 @@ export async function POST(req: Request) {
           create: [
             {
               userId: user.id,
-              role: 'OWNER',
             },
           ],
         },

@@ -1,10 +1,4 @@
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'PROJECT_MANAGER', 'TESTER', 'VIEWER');
-
--- CreateEnum
-CREATE TYPE "ProjectRole" AS ENUM ('OWNER', 'ADMIN', 'TESTER', 'VIEWER');
-
--- CreateEnum
 CREATE TYPE "Priority" AS ENUM ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW');
 
 -- CreateEnum
@@ -25,7 +19,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "role" "UserRole" NOT NULL DEFAULT 'TESTER',
+    "roleId" TEXT NOT NULL,
     "avatar" TEXT,
     "bio" TEXT,
     "phone" TEXT,
@@ -68,7 +62,6 @@ CREATE TABLE "ProjectMember" (
     "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "role" "ProjectRole" NOT NULL DEFAULT 'TESTER',
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ProjectMember_pkey" PRIMARY KEY ("id")
@@ -121,9 +114,34 @@ CREATE TABLE "TestStep" (
 );
 
 -- CreateTable
+CREATE TABLE "TestPlan" (
+    "id" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdById" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TestPlan_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TestPlanCase" (
+    "id" TEXT NOT NULL,
+    "testPlanId" TEXT NOT NULL,
+    "testCaseId" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TestPlanCase_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "TestRun" (
     "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
+    "testPlanId" TEXT,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "status" "TestRunStatus" NOT NULL DEFAULT 'PLANNED',
@@ -131,6 +149,7 @@ CREATE TABLE "TestRun" (
     "environment" TEXT,
     "startedAt" TIMESTAMP(3),
     "completedAt" TIMESTAMP(3),
+    "createdById" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -196,6 +215,37 @@ CREATE TABLE "Attachment" (
 );
 
 -- CreateTable
+CREATE TABLE "Role" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RolePermission" (
+    "id" TEXT NOT NULL,
+    "roleId" TEXT NOT NULL,
+    "permissionId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RolePermission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_RequirementToTestCase" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -208,6 +258,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_roleId_idx" ON "User"("roleId");
 
 -- CreateIndex
 CREATE INDEX "User_deletedAt_idx" ON "User"("deletedAt");
@@ -270,10 +323,31 @@ CREATE INDEX "TestStep_testCaseId_idx" ON "TestStep"("testCaseId");
 CREATE UNIQUE INDEX "TestStep_testCaseId_stepNumber_key" ON "TestStep"("testCaseId", "stepNumber");
 
 -- CreateIndex
+CREATE INDEX "TestPlan_projectId_idx" ON "TestPlan"("projectId");
+
+-- CreateIndex
+CREATE INDEX "TestPlan_createdById_idx" ON "TestPlan"("createdById");
+
+-- CreateIndex
+CREATE INDEX "TestPlanCase_testPlanId_idx" ON "TestPlanCase"("testPlanId");
+
+-- CreateIndex
+CREATE INDEX "TestPlanCase_testCaseId_idx" ON "TestPlanCase"("testCaseId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TestPlanCase_testPlanId_testCaseId_key" ON "TestPlanCase"("testPlanId", "testCaseId");
+
+-- CreateIndex
 CREATE INDEX "TestRun_projectId_idx" ON "TestRun"("projectId");
 
 -- CreateIndex
+CREATE INDEX "TestRun_testPlanId_idx" ON "TestRun"("testPlanId");
+
+-- CreateIndex
 CREATE INDEX "TestRun_assignedToId_idx" ON "TestRun"("assignedToId");
+
+-- CreateIndex
+CREATE INDEX "TestRun_createdById_idx" ON "TestRun"("createdById");
 
 -- CreateIndex
 CREATE INDEX "TestRun_status_idx" ON "TestRun"("status");
@@ -312,7 +386,31 @@ CREATE INDEX "Attachment_testCaseId_idx" ON "Attachment"("testCaseId");
 CREATE INDEX "Attachment_testResultId_idx" ON "Attachment"("testResultId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
+
+-- CreateIndex
+CREATE INDEX "Role_name_idx" ON "Role"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_name_key" ON "Permission"("name");
+
+-- CreateIndex
+CREATE INDEX "Permission_name_idx" ON "Permission"("name");
+
+-- CreateIndex
+CREATE INDEX "RolePermission_roleId_idx" ON "RolePermission"("roleId");
+
+-- CreateIndex
+CREATE INDEX "RolePermission_permissionId_idx" ON "RolePermission"("permissionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RolePermission_roleId_permissionId_key" ON "RolePermission"("roleId", "permissionId");
+
+-- CreateIndex
 CREATE INDEX "_RequirementToTestCase_B_index" ON "_RequirementToTestCase"("B");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PasswordResetToken" ADD CONSTRAINT "PasswordResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -345,10 +443,28 @@ ALTER TABLE "TestCase" ADD CONSTRAINT "TestCase_createdById_fkey" FOREIGN KEY ("
 ALTER TABLE "TestStep" ADD CONSTRAINT "TestStep_testCaseId_fkey" FOREIGN KEY ("testCaseId") REFERENCES "TestCase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "TestPlan" ADD CONSTRAINT "TestPlan_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestPlan" ADD CONSTRAINT "TestPlan_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestPlanCase" ADD CONSTRAINT "TestPlanCase_testPlanId_fkey" FOREIGN KEY ("testPlanId") REFERENCES "TestPlan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestPlanCase" ADD CONSTRAINT "TestPlanCase_testCaseId_fkey" FOREIGN KEY ("testCaseId") REFERENCES "TestCase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "TestRun" ADD CONSTRAINT "TestRun_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "TestRun" ADD CONSTRAINT "TestRun_testPlanId_fkey" FOREIGN KEY ("testPlanId") REFERENCES "TestPlan"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "TestRun" ADD CONSTRAINT "TestRun_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestRun" ADD CONSTRAINT "TestRun_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TestResult" ADD CONSTRAINT "TestResult_testRunId_fkey" FOREIGN KEY ("testRunId") REFERENCES "TestRun"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -373,6 +489,12 @@ ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_testCaseId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_testResultId_fkey" FOREIGN KEY ("testResultId") REFERENCES "TestResult"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RolePermission" ADD CONSTRAINT "RolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_RequirementToTestCase" ADD CONSTRAINT "_RequirementToTestCase_A_fkey" FOREIGN KEY ("A") REFERENCES "Requirement"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -13,23 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/elements/dropdown-menu';
 import {
   AlertCircle,
   Calendar,
@@ -340,7 +340,7 @@ export default function TestRunsPage() {
                       id="name"
                       variant="glass"
                       value={formData.name}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
                       placeholder="Enter test run name"
@@ -353,7 +353,7 @@ export default function TestRunsPage() {
                       id="description"
                       variant="glass"
                       value={formData.description}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
                       placeholder="Enter test run description"
@@ -365,7 +365,7 @@ export default function TestRunsPage() {
                     <Label htmlFor="environment">Environment</Label>
                     <Select
                       value={formData.environment}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         setFormData({ ...formData, environment: value })
                       }
                     >
@@ -411,7 +411,7 @@ export default function TestRunsPage() {
                     variant="glass"
                     placeholder="Search test runs..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSearchQuery(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -513,7 +513,7 @@ export default function TestRunsPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           asChild
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
                         >
                           <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                             <MoreVertical className="w-4 h-4" />
@@ -521,7 +521,7 @@ export default function TestRunsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent variant="glass" align="end">
                           <DropdownMenuItem
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               router.push(`/projects/${projectId}/testruns/${testRun.id}`);
                             }}
@@ -530,7 +530,7 @@ export default function TestRunsPage() {
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               setSelectedTestRun(testRun);
                               setDeleteDialogOpen(true);

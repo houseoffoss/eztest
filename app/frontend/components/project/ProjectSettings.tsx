@@ -156,7 +156,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, name: e.target.value })}
                 required
                 minLength={3}
                 maxLength={255}
@@ -182,7 +182,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
                 placeholder="Brief description of the project..."
               />

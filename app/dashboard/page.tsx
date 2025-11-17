@@ -69,7 +69,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="space-y-1">
                   <dt className="text-xs uppercase tracking-wide text-muted-foreground">Role</dt>
-                  <dd className="text-sm text-foreground font-medium">{session.user.role}</dd>
+                  <dd className="text-sm text-foreground font-medium">{session.user.roleName}</dd>
                 </div>
               </dl>
             </div>

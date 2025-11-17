@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -12,16 +12,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+} from '@/elements/dialog';
+import { Textarea } from '@/elements/textarea';
+import { Label } from '@/elements/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import {
   AlertCircle,
   ArrowLeft,
@@ -573,7 +573,7 @@ export default function TestRunDetailPage() {
                 <Label htmlFor="status">Result Status *</Label>
                 <Select
                   value={resultForm.status}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setResultForm({ ...resultForm, status: value })
                   }
                 >
@@ -621,7 +621,7 @@ export default function TestRunDetailPage() {
                   id="comment"
                   variant="glass"
                   value={resultForm.comment}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setResultForm({ ...resultForm, comment: e.target.value })
                   }
                   placeholder="Add any comments about this test execution"

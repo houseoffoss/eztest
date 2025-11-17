@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -12,17 +12,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import {
   ArrowLeft,
   Clock,
@@ -348,7 +348,7 @@ export default function TestCaseDetailPage() {
               {isEditing ? (
                 <Input
                   value={formData.title}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
                   className="text-3xl font-bold"
@@ -409,7 +409,7 @@ export default function TestCaseDetailPage() {
                     <Textarea
                       variant="glass"
                       value={formData.description}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
                       rows={3}
@@ -422,7 +422,7 @@ export default function TestCaseDetailPage() {
                       <Label>Priority</Label>
                       <Select
                         value={formData.priority}
-                        onValueChange={(value) =>
+                        onValueChange={(value: string) =>
                           setFormData({ ...formData, priority: value })
                         }
                       >
@@ -442,7 +442,7 @@ export default function TestCaseDetailPage() {
                       <Label>Status</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value) =>
+                        onValueChange={(value: string) =>
                           setFormData({ ...formData, status: value })
                         }
                       >
@@ -464,7 +464,7 @@ export default function TestCaseDetailPage() {
                       variant="glass"
                       type="number"
                       value={formData.estimatedTime}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, estimatedTime: e.target.value })
                       }
                       placeholder="Enter estimated time"
@@ -476,7 +476,7 @@ export default function TestCaseDetailPage() {
                     <Textarea
                       variant="glass"
                       value={formData.preconditions}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, preconditions: e.target.value })
                       }
                       rows={2}
@@ -489,7 +489,7 @@ export default function TestCaseDetailPage() {
                     <Textarea
                       variant="glass"
                       value={formData.postconditions}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, postconditions: e.target.value })
                       }
                       rows={2}
@@ -594,7 +594,7 @@ export default function TestCaseDetailPage() {
                               {isEditing ? (
                                 <Input
                                   value={step.action}
-                                  onChange={(e) => {
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                                     const updated = steps.map(s =>
                                       s.stepNumber === step.stepNumber
                                         ? { ...s, action: e.target.value }
@@ -615,7 +615,7 @@ export default function TestCaseDetailPage() {
                               {isEditing ? (
                                 <Input
                                   value={step.expectedResult}
-                                  onChange={(e) => {
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                                     const updated = steps.map(s =>
                                       s.stepNumber === step.stepNumber
                                         ? { ...s, expectedResult: e.target.value }
@@ -652,7 +652,7 @@ export default function TestCaseDetailPage() {
                       <Input
                         variant="glass"
                         value={newStep.action}
-                        onChange={(e) =>
+                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                           setNewStep({ ...newStep, action: e.target.value })
                         }
                         placeholder="Enter action"
@@ -663,7 +663,7 @@ export default function TestCaseDetailPage() {
                       <Input
                         variant="glass"
                         value={newStep.expectedResult}
-                        onChange={(e) =>
+                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                           setNewStep({ ...newStep, expectedResult: e.target.value })
                         }
                         placeholder="Enter expected result"

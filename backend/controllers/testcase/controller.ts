@@ -53,6 +53,10 @@ export class TestCaseController {
     // Validation with Zod
     const validationResult = createTestCaseSchema.safeParse(body);
     if (!validationResult.success) {
+      console.error('Test case validation failed:', {
+        body,
+        errors: validationResult.error.issues
+      });
       throw new ValidationException(
         'Validation failed',
         validationResult.error.issues
@@ -63,7 +67,7 @@ export class TestCaseController {
 
     const testCase = await testCaseService.createTestCase({
       projectId,
-      suiteId: validatedData.suiteId,
+      suiteId: validatedData.suiteId ?? undefined,
       title: validatedData.title,
       description: validatedData.description,
       priority: validatedData.priority,
