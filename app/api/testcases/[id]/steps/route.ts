@@ -1,13 +1,13 @@
 import { testCaseController } from '@/backend/controllers/testcase/controller';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { checkPermission } from '@/lib/rbac';
 import { baseInterceptor } from '@/backend/utils/baseInterceptor';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const PUT = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
   
-  if (!hasPermission(user, 'testcases:update')) {
+  if (!checkPermission(user, 'testcases:update')) {
     return NextResponse.json(
       { error: 'Forbidden: Missing testcases:update permission' },
       { status: 403 }

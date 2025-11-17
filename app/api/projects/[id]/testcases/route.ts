@@ -1,13 +1,13 @@
 import { testCaseController } from '@/backend/controllers/testcase/controller';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { checkPermission } from '@/lib/rbac';
 import { baseInterceptor } from '@/backend/utils/baseInterceptor';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const GET = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
   
-  if (!hasPermission(user, 'testcases:read')) {
+  if (!checkPermission(user, 'testcases:read')) {
     return NextResponse.json(
       { error: 'Forbidden: Missing testcases:read permission' },
       { status: 403 }
@@ -35,7 +35,7 @@ export const GET = baseInterceptor(async (request: NextRequest, context: { param
 export const POST = baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
   const user = await getSessionUser();
   
-  if (!hasPermission(user, 'testcases:create')) {
+  if (!checkPermission(user, 'testcases:create')) {
     return NextResponse.json(
       { error: 'Forbidden: Missing testcases:create permission' },
       { status: 403 }

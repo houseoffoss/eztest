@@ -1,5 +1,5 @@
 import { getSessionUser } from '@/lib/auth/getSessionUser';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { checkPermission } from '@/lib/rbac';
 import { projectController } from '@/backend/controllers/project/controller';
 import { baseInterceptor } from '@/backend/utils/baseInterceptor';
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const DELETE = baseInterceptor(async (request: NextRequest, context: { params: { id: string, memberId: string } }) => {
   const user = await getSessionUser();
   
-  if (!hasPermission(user, 'projects:manage_members')) {
+  if (!checkPermission(user, 'projects:manage_members')) {
     return NextResponse.json(
       { error: 'Forbidden: Missing projects:manage_members permission' },
       { status: 403 }
