@@ -97,7 +97,10 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
       <Navbar
         items={[
           { label: 'Overview', href: `/projects/${projectId}` },
+          { label: 'Test Suites', href: `/projects/${projectId}/testsuites` },
           { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
+          { label: 'Test Plans', href: `/projects/${projectId}/testplans` },
+          { label: 'Test Runs', href: `/projects/${projectId}/testruns` },
           { label: 'Members', href: `/projects/${projectId}/members` },
           { label: 'Settings', href: `/projects/${projectId}/settings` },
         ]}
