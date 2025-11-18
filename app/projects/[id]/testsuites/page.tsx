@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -13,23 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/elements/dropdown-menu';
 import {
   ChevronRight,
   Folder,
@@ -257,14 +257,14 @@ export default function TestSuitesPage() {
 
               {/* Actions */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                   <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent variant="glass" align="end">
                   <DropdownMenuItem
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       router.push(`/projects/${projectId}/testsuites/${suite.id}`);
                     }}
@@ -273,7 +273,7 @@ export default function TestSuitesPage() {
                     View Suite
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       setSelectedSuite(suite);
                       setDeleteDialogOpen(true);
@@ -306,7 +306,7 @@ export default function TestSuitesPage() {
                       <div className="flex-1 min-w-0">
                         <h4
                           className="text-sm text-white font-medium cursor-pointer hover:text-primary transition-colors"
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             router.push(`/projects/${projectId}/testsuites/${child.id}`);
                           }}
@@ -319,14 +319,14 @@ export default function TestSuitesPage() {
                         <span>{child._count.testCases}</span>
                       </div>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                           <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                             <MoreVertical className="w-3 h-3" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent variant="glass" align="end">
                           <DropdownMenuItem
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               router.push(`/projects/${projectId}/testsuites/${child.id}`);
                             }}
@@ -335,7 +335,7 @@ export default function TestSuitesPage() {
                             View Suite
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={(e) => {
+                            onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               setSelectedSuite(child);
                               setDeleteDialogOpen(true);
@@ -428,7 +428,7 @@ export default function TestSuitesPage() {
                     id="name"
                     variant="glass"
                     value={formData.name}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Enter suite name"
@@ -441,7 +441,7 @@ export default function TestSuitesPage() {
                     id="description"
                     variant="glass"
                     value={formData.description}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
                     placeholder="Enter suite description"
@@ -453,7 +453,7 @@ export default function TestSuitesPage() {
                   <Label htmlFor="parentId">Parent Suite (Optional)</Label>
                   <Select
                     value={formData.parentId || "__none__"}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       setFormData({ ...formData, parentId: value === "__none__" ? null : value })
                     }
                   >

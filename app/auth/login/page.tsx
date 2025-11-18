@@ -136,7 +136,7 @@ export default function LoginPage() {
                     autoComplete="email"
                     required
                     value={formData.email}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="you@company.com"
@@ -151,7 +151,7 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     required
                     value={formData.password}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
                     placeholder="••••••••"

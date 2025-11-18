@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
+import { Loader } from '@/elements/loader';
 
 interface Profile {
   id: string;

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TestPlanService } from '@/backend/services/testplan/services';
-import { UserRole } from '@prisma/client';
 
 const testPlanService = new TestPlanService();
 
@@ -28,7 +27,7 @@ export class TestPlanController {
   /**
    * Get a single test plan by ID
    */
-  async getTestPlanById(testPlanId: string, userId: string, userRole: UserRole) {
+  async getTestPlanById(testPlanId: string, userId: string) {
     try {
       // Check access
       const hasAccess = await testPlanService.hasAccessToTestPlan(testPlanId, userId);
@@ -64,7 +63,7 @@ export class TestPlanController {
   /**
    * Create a new test plan
    */
-  async createTestPlan(request: NextRequest, projectId: string, userId: string, userRole: UserRole) {
+  async createTestPlan(request: NextRequest, projectId: string, userId: string) {
     try {
       const body = await request.json();
       const { name, description, testCaseIds } = body;
@@ -100,7 +99,7 @@ export class TestPlanController {
   /**
    * Update a test plan
    */
-  async updateTestPlan(request: NextRequest, testPlanId: string, userId: string, userRole: UserRole) {
+  async updateTestPlan(request: NextRequest, testPlanId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testPlanService.canManageTestPlan(testPlanId, userId);
@@ -135,7 +134,7 @@ export class TestPlanController {
   /**
    * Delete a test plan
    */
-  async deleteTestPlan(testPlanId: string, userId: string, userRole: UserRole) {
+  async deleteTestPlan(testPlanId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testPlanService.canManageTestPlan(testPlanId, userId);
@@ -163,7 +162,7 @@ export class TestPlanController {
   /**
    * Add test cases to a test plan
    */
-  async addTestCasesToPlan(request: NextRequest, testPlanId: string, userId: string, userRole: UserRole) {
+  async addTestCasesToPlan(request: NextRequest, testPlanId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testPlanService.canManageTestPlan(testPlanId, userId);
@@ -202,7 +201,7 @@ export class TestPlanController {
   /**
    * Remove test cases from a test plan
    */
-  async removeTestCasesFromPlan(request: NextRequest, testPlanId: string, userId: string, userRole: UserRole) {
+  async removeTestCasesFromPlan(request: NextRequest, testPlanId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testPlanService.canManageTestPlan(testPlanId, userId);

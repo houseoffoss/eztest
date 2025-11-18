@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -13,23 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/elements/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/elements/dropdown-menu';
 import {
   AlertCircle,
   Clock,
@@ -352,7 +352,7 @@ export default function TestCasesPage() {
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
                     placeholder="Enter test case title"
@@ -364,7 +364,7 @@ export default function TestCasesPage() {
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
                     placeholder="Enter test case description"
@@ -376,7 +376,7 @@ export default function TestCasesPage() {
                   <Label htmlFor="suite">Test Suite</Label>
                   <Select
                     value={formData.suiteId || "__none__"}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       setFormData({ ...formData, suiteId: value === "__none__" ? null : value })
                     }
                   >
@@ -399,7 +399,7 @@ export default function TestCasesPage() {
                     <Label htmlFor="priority">Priority</Label>
                     <Select
                       value={formData.priority}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         setFormData({ ...formData, priority: value })
                       }
                     >
@@ -419,7 +419,7 @@ export default function TestCasesPage() {
                     <Label htmlFor="status">Status</Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value) =>
+                      onValueChange={(value: string) =>
                         setFormData({ ...formData, status: value })
                       }
                     >
@@ -441,7 +441,7 @@ export default function TestCasesPage() {
                     id="estimatedTime"
                     type="number"
                     value={formData.estimatedTime}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, estimatedTime: e.target.value })
                     }
                     placeholder="Enter estimated time"
@@ -453,7 +453,7 @@ export default function TestCasesPage() {
                   <Textarea
                     id="preconditions"
                     value={formData.preconditions}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, preconditions: e.target.value })
                     }
                     placeholder="Enter preconditions"
@@ -466,7 +466,7 @@ export default function TestCasesPage() {
                   <Textarea
                     id="postconditions"
                     value={formData.postconditions}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, postconditions: e.target.value })
                     }
                     placeholder="Enter postconditions"
@@ -501,7 +501,7 @@ export default function TestCasesPage() {
                 <Input
                   placeholder="Search test cases..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -599,7 +599,7 @@ export default function TestCasesPage() {
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       asChild
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
                       <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
                         <MoreVertical className="w-4 h-4" />
@@ -607,7 +607,7 @@ export default function TestCasesPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent variant="glass" align="end">
                       <DropdownMenuItem
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           setSelectedTestCase(testCase);
                           setDeleteDialogOpen(true);

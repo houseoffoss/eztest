@@ -23,6 +23,15 @@ async function main() {
   if (adminUser) {
     console.log('✅ Admin user already exists:', adminEmail);
   } else {
+    // Get ADMIN role
+    const adminRole = await prisma.role.findUnique({
+      where: { name: 'ADMIN' },
+    });
+
+    if (!adminRole) {
+      throw new Error('ADMIN role not found. Make sure RBAC seeding completed successfully.');
+    }
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
@@ -32,14 +41,14 @@ async function main() {
         email: adminEmail,
         name: adminName,
         password: hashedPassword,
-        role: UserRole.ADMIN,
+        roleId: adminRole.id,
       },
     });
 
     console.log('✅ Admin user created successfully!');
     console.log('   Email:', adminUser.email);
     console.log('   Name:', adminUser.name);
-    console.log('   Role:', adminUser.role);
+    console.log('   Role: ADMIN');
     console.log('\n⚠️  Please change the default admin password after first login!');
   }
 
@@ -65,7 +74,6 @@ async function main() {
           create: [
             {
               userId: adminUser.id,
-              role: 'OWNER',
             },
           ],
         },

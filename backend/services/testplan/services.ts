@@ -290,9 +290,7 @@ export class TestPlanService {
     if (!testPlan) return false;
 
     const membership = testPlan.project.members[0];
-    if (!membership) return false;
-
-    // Only OWNER and ADMIN can manage test plans
-    return membership.role === 'OWNER' || membership.role === 'ADMIN';
+    // Check if user is a member of the project (role-based permissions handled by hasPermission)
+    return !!membership;
   }
 }

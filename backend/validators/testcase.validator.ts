@@ -17,7 +17,7 @@ export const testStepSchema = z.object({
  * Test Case Creation Schema
  */
 export const createTestCaseSchema = z.object({
-  suiteId: z.string().uuid('Invalid suite ID format').optional(),
+  suiteId: z.string().min(1, 'Suite ID cannot be empty').nullable().optional(),
   title: z.string().min(1, 'Title is required').trim(),
   description: z.string().optional(),
   priority: z.nativeEnum(Priority, {
@@ -53,7 +53,7 @@ export const updateTestCaseSchema = z.object({
     .optional(),
   preconditions: z.string().optional(),
   postconditions: z.string().optional(),
-  suiteId: z.string().uuid('Invalid suite ID format').optional().nullable(),
+  suiteId: z.string().min(1, 'Suite ID cannot be empty').optional().nullable(),
 });
 
 /**
@@ -67,7 +67,7 @@ export const updateTestStepsSchema = z.object({
  * Test Case Query Parameters Schema
  */
 export const testCaseQuerySchema = z.object({
-  suiteId: z.string().uuid('Invalid suite ID format').optional(),
+  suiteId: z.string().min(1, 'Suite ID cannot be empty').optional(),
   priority: z.nativeEnum(Priority).optional(),
   status: z.nativeEnum(TestStatus).optional(),
   search: z.string().optional(),

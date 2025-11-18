@@ -268,6 +268,7 @@ export class TestSuiteService {
     }
 
     const member = suite.project.members[0];
-    return member && (member.role === 'OWNER' || member.role === 'ADMIN');
+    // Check if user is a member of the project (role-based permissions handled by hasPermission)
+    return !!member;
   }
 }

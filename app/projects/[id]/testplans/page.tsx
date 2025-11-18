@@ -2,8 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -12,16 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/elements/dropdown-menu';
 import {
   AlertCircle,
   FileText,
@@ -249,7 +249,7 @@ export default function TestPlansPage() {
                     variant="glass"
                     id="name"
                     value={formData.name}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Enter test plan name"
@@ -262,7 +262,7 @@ export default function TestPlansPage() {
                     variant="glass"
                     id="description"
                     value={formData.description}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
                     placeholder="Enter test plan description"
@@ -334,14 +334,14 @@ export default function TestPlansPage() {
                     )}
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" variant="glass">
                       <DropdownMenuItem
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           router.push(`/projects/${projectId}/testplans/${testPlan.id}`);
                         }}
@@ -351,7 +351,7 @@ export default function TestPlansPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-400 focus:text-red-400"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           setSelectedTestPlan(testPlan);
                           setDeleteDialogOpen(true);

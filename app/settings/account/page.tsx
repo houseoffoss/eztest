@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
+import { Loader } from '@/elements/loader';
 
 interface AccountStatus {
   isMarkedForDeletion: boolean;
@@ -189,7 +190,7 @@ export default function AccountSettingsPage() {
                   <input
                     type="password"
                     value={passwordData.currentPassword}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
                         ...prev,
                         currentPassword: e.target.value,
@@ -209,7 +210,7 @@ export default function AccountSettingsPage() {
                   <input
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
                         ...prev,
                         newPassword: e.target.value,
@@ -229,7 +230,7 @@ export default function AccountSettingsPage() {
                   <input
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
                         ...prev,
                         confirmPassword: e.target.value,
@@ -366,7 +367,7 @@ export default function AccountSettingsPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                 onKeyDown={(e) => {

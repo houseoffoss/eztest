@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TestSuiteService } from '@/backend/services/testsuite/services';
-import { UserRole } from '@prisma/client';
 
 const testSuiteService = new TestSuiteService();
 
@@ -28,7 +27,7 @@ export class TestSuiteController {
   /**
    * Get a single test suite by ID
    */
-  async getTestSuiteById(suiteId: string, userId: string, userRole: UserRole) {
+  async getTestSuiteById(suiteId: string, userId: string) {
     try {
       // Check access
       const hasAccess = await testSuiteService.hasAccessToTestSuite(suiteId, userId);
@@ -64,7 +63,7 @@ export class TestSuiteController {
   /**
    * Create a new test suite
    */
-  async createTestSuite(request: NextRequest, projectId: string, userId: string, userRole: UserRole) {
+  async createTestSuite(request: NextRequest, projectId: string, userId: string) {
     try {
       const body = await request.json();
       const { name, description, parentId, order } = body;
@@ -100,7 +99,7 @@ export class TestSuiteController {
   /**
    * Update a test suite
    */
-  async updateTestSuite(request: NextRequest, suiteId: string, userId: string, userRole: UserRole) {
+  async updateTestSuite(request: NextRequest, suiteId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testSuiteService.canManageTestSuite(suiteId, userId);
@@ -137,7 +136,7 @@ export class TestSuiteController {
   /**
    * Delete a test suite
    */
-  async deleteTestSuite(suiteId: string, userId: string, userRole: UserRole) {
+  async deleteTestSuite(suiteId: string, userId: string) {
     try {
       // Check permissions
       const canManage = await testSuiteService.canManageTestSuite(suiteId, userId);
@@ -165,7 +164,7 @@ export class TestSuiteController {
   /**
    * Move test cases to a suite
    */
-  async moveTestCasesToSuite(request: NextRequest, userId: string, userRole: UserRole) {
+  async moveTestCasesToSuite(request: NextRequest, userId: string) {
     try {
       const body = await request.json();
       const { testCaseIds, suiteId } = body;
@@ -195,7 +194,7 @@ export class TestSuiteController {
   /**
    * Reorder suites
    */
-  async reorderSuites(request: NextRequest, userId: string, userRole: UserRole) {
+  async reorderSuites(request: NextRequest, userId: string) {
     try {
       const body = await request.json();
       const { updates } = body;

@@ -2,9 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/elements/badge';
+import { Button } from '@/elements/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import {
   Dialog,
   DialogContent,
@@ -12,10 +12,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/elements/dialog';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Textarea } from '@/elements/textarea';
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/elements/table';
 import {
   ArrowLeft,
   Edit,
@@ -254,7 +254,7 @@ export default function TestSuiteDetailPage() {
                   <Input
                     variant="glass"
                     value={formData.name}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
                     className="text-3xl font-bold"
@@ -314,7 +314,7 @@ export default function TestSuiteDetailPage() {
                     <Textarea
                       variant="glass"
                       value={formData.description}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
                       rows={3}

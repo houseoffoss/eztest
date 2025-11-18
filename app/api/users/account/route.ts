@@ -1,5 +1,5 @@
 import { getSessionUser } from '@/lib/auth/getSessionUser';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { checkPermission } from '@/lib/rbac/hasPermission';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
@@ -12,8 +12,8 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from '@
  */
 export async function DELETE(request: NextRequest) {
   const sessionUser = await getSessionUser();
-  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'd')) {
+  
+  if (!checkPermission(sessionUser, 'users:delete')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const { password } = await request.json();
@@ -53,8 +53,8 @@ export async function DELETE(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   const sessionUser = await getSessionUser();
-  const rbacUser = sessionUser && sessionUser.roleObj ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name, role: sessionUser.roleObj } : null;
-  if (!rbacUser || !hasPermission(rbacUser, 'usr', 'r')) {
+  
+  if (!checkPermission(sessionUser, 'users:read')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   const user = await prisma.user.findUnique({
