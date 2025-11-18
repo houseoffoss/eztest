@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import ProjectDetail from '@/app/frontend/components/project/ProjectDetail';
+import ProjectDetail from '@/frontend/components/project/ProjectDetail';
 
 export default function ProjectDetailPage() {
   const params = useParams();

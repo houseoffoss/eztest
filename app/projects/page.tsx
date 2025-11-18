@@ -1,4 +1,4 @@
-import ProjectList from '@/app/frontend/components/project/ProjectList';
+import ProjectList from '@/frontend/components/project/ProjectList';
 import CONFIG_SEO from '@/config/configSEO';
 import { Metadata } from 'next';
 
