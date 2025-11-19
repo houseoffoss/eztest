@@ -1,8 +1,5 @@
 import { projectController } from '@/backend/controllers/project/controller';
-import { baseInterceptor } from '@/backend/utils/baseInterceptor';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { hasPermission } from '@/lib/rbac/hasPermission';
-import { NextRequest } from 'next/server';
 
 /**
  * DELETE /api/projects/[id]/members/[memberId]
@@ -10,10 +7,10 @@ import { NextRequest } from 'next/server';
  * Required permission: projects:manage_members
  */
 export const DELETE = hasPermission(
-  baseInterceptor(async (request: NextRequest, context: { params: { id: string, memberId: string } }) => {
+  async (request, context) => {
     const { id, memberId } = context.params;
-    return projectController.removeProjectMember(request as CustomRequest, id, memberId);
-  }),
+    return projectController.removeProjectMember(request, id, memberId);
+  },
   'projects',
   'manage_members'
 );

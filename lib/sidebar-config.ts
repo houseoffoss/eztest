@@ -32,10 +32,6 @@ export const getProjectSidebarItems = (projectId: string): SidebarItem[] => [
     href: `/projects/${projectId}/testcases`,
   },
   {
-    label: 'Test Plans',
-    href: `/projects/${projectId}/testplans`,
-  },
-  {
     label: 'Test Runs',
     href: `/projects/${projectId}/testruns`,
     children: [], // Will be populated dynamically
@@ -64,10 +60,6 @@ export const getProjectsPageSidebarItems = (): SidebarItem[] => [
   },
   {
     label: 'Test Cases',
-    href: '#',
-  },
-  {
-    label: 'Test Plans',
     href: '#',
   },
   {

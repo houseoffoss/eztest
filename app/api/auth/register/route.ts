@@ -58,11 +58,15 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create demo project for new user
+    // Create demo project for new user with unique key
+    const userPrefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+    const timestamp = Date.now().toString().slice(-4);
+    const demoProjectKey = userPrefix ? `${userPrefix}${timestamp}` : `DEMO${timestamp}`;
+    
     await prisma.project.create({
       data: {
         name: 'Demo Project',
-        key: 'DEMO',
+        key: demoProjectKey,
         description: 'Welcome to EZTest! This is a demo project to help you get started. Feel free to explore the features and create your own test suites, test cases, and test plans.',
         createdById: user.id,
         members: {

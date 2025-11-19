@@ -63,7 +63,7 @@ export default function UIShowcasePage() {
     document.title = 'UI Components | EZTest';
   }, []);
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-4 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

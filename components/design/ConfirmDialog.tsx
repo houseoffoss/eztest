@@ -39,7 +39,7 @@ export function ConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button">{children}</button>
+        {children}
       </DialogTrigger>
       <DialogContent variant={variant}>
         <DialogHeader>

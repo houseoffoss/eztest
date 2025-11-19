@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
-import { Navbar } from '@/components/design/Navbar';
+import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -18,21 +18,26 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
-      <Navbar
-        items={[
-          { label: 'Projects', href: '/projects' },
-          { label: 'Runs', href: '/runs' },
-        ]}
-        actions={
-          <form action="/api/auth/signout" method="POST">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        }
-      />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10">
+    <>
+      {/* Top Bar */}
+      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
+        <div className="px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Breadcrumbs 
+              items={[
+                { label: 'Dashboard' }
+              ]}
+            />
+            <form action="/api/auth/signout" method="POST">
+              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+                Sign Out
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-8 py-10 space-y-8">
         <GlassPanel contentClassName="p-6">
           <h1 className="text-3xl font-bold text-foreground mb-4">Welcome to EZTest</h1>
           <div className="space-y-5">
@@ -85,7 +90,7 @@ export default async function DashboardPage() {
               </ul>
             </div>
 
-            {/* Sign out moved to navbar */}
+            {/* Sign out moved to top bar */}
           </div>
         </GlassPanel>
         {/* Glassy footer panel for dashboard */}
@@ -99,6 +104,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
