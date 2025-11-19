@@ -9,35 +9,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/elements/dialog';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/elements/select';
 import { TestSuite, TestSuiteFormData } from '../types';
+import { TestCaseFormBuilder } from '../../testcase/subcomponents/TestCaseFormBuilder';
+import { getCreateTestSuiteFormFields } from '../constants/testSuiteFormConfig';
 
 interface CreateTestSuiteDialogProps {
   open: boolean;
   formData: TestSuiteFormData;
   testSuites: TestSuite[];
+  errors?: Record<string, string>;
   onOpenChange: (open: boolean) => void;
   onFormChange: (data: TestSuiteFormData) => void;
+  onFieldChange?: (field: keyof TestSuiteFormData, value: string | number | null) => void;
   onSubmit: () => void;
 }
+
+export type { CreateTestSuiteDialogProps };
 
 export function CreateTestSuiteDialog({
   open,
   formData,
   testSuites,
+  errors = {},
   onOpenChange,
   onFormChange,
+  onFieldChange,
   onSubmit,
 }: CreateTestSuiteDialogProps) {
+  const handleFieldChange = onFieldChange || ((field, value) => {
+    onFormChange({ ...formData, [field]: value });
+  });
+
+  const fields = getCreateTestSuiteFormFields(testSuites);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="glass" className="max-w-2xl">
@@ -48,56 +52,13 @@ export function CreateTestSuiteDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              variant="glass"
-              value={formData.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                onFormChange({ ...formData, name: e.target.value })
-              }
-              placeholder="Enter suite name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              variant="glass"
-              value={formData.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                onFormChange({ ...formData, description: e.target.value })
-              }
-              placeholder="Enter suite description"
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="parentId">Parent Suite (Optional)</Label>
-            <Select
-              value={formData.parentId || "__none__"}
-              onValueChange={(value: string) =>
-                onFormChange({ ...formData, parentId: value === "__none__" ? null : value })
-              }
-            >
-              <SelectTrigger variant="glass">
-                <SelectValue placeholder="Select parent suite" />
-              </SelectTrigger>
-              <SelectContent variant="glass">
-                <SelectItem value="__none__">None (Root Level)</SelectItem>
-                {testSuites.filter(s => !s.parentId).map((suite) => (
-                  <SelectItem key={suite.id} value={suite.id}>
-                    {suite.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <TestCaseFormBuilder
+          fields={fields}
+          formData={formData}
+          errors={errors}
+          onFieldChange={handleFieldChange}
+          variant="glass"
+        />
 
         <DialogFooter>
           <Button variant="glass" onClick={() => onOpenChange(false)}>

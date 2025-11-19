@@ -18,6 +18,12 @@ interface DeleteTestSuiteDialogProps {
   onConfirm: () => void;
 }
 
+export type { DeleteTestSuiteDialogProps };
+
+/**
+ * Generic delete confirmation dialog for test suites
+ * Displays warnings about related items (test cases, child suites)
+ */
 export function DeleteTestSuiteDialog({
   open,
   suite,

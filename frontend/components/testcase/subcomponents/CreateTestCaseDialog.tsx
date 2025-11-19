@@ -20,7 +20,7 @@ interface CreateTestCaseDialogProps {
   errors?: Record<string, string>;
   onOpenChange: (open: boolean) => void;
   onFormChange: (data: TestCaseFormData) => void;
-  onFieldChange?: (field: keyof TestCaseFormData, value: any) => void;
+  onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
   onSubmit: () => void;
 }
 

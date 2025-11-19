@@ -13,7 +13,7 @@ interface TestCaseDetailsCardProps {
   errors?: Record<string, string>;
   testSuites?: any[];
   onFormChange: (data: TestCaseFormData) => void;
-  onFieldChange?: (field: keyof TestCaseFormData, value: any) => void;
+  onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
 }
 
 export function TestCaseDetailsCard({
