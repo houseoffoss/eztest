@@ -20,6 +20,15 @@ export class TestSuiteService {
             },
           },
         },
+        testCases: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            priority: true,
+            status: true,
+          },
+        },
         _count: {
           select: { testCases: true },
         },
