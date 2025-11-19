@@ -139,7 +139,7 @@ export class TestCaseController {
           estimatedTime: validatedData.estimatedTime,
           preconditions: validatedData.preconditions,
           postconditions: validatedData.postconditions,
-          suiteId: validatedData.suiteId ?? undefined,
+          suiteId: validatedData.suiteId,
         }
       );
 
@@ -201,7 +201,7 @@ export class TestCaseController {
         testCaseId,
         request.userInfo.id,
         request.scopeInfo.scope_name,
-        steps
+        steps as unknown as Array<{ id?: string; stepNumber: number; action: string; expectedResult: string }>
       );
       return { data: testCase };
     } catch (error) {

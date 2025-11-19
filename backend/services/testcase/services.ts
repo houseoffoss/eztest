@@ -27,7 +27,7 @@ interface UpdateTestCaseInput {
   estimatedTime?: number;
   preconditions?: string;
   postconditions?: string;
-  suiteId?: string;
+  suiteId?: string | null;
 }
 
 interface TestCaseFilters {
@@ -299,20 +299,23 @@ export class TestCaseService {
           throw new Error('Test suite not found or does not belong to this project');
         }
       }
+      // If suiteId is null, it's valid - just removing from suite
     }
+
+    const updateData: Record<string, unknown> = {};
+    
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.priority !== undefined) updateData.priority = data.priority;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime;
+    if (data.preconditions !== undefined) updateData.preconditions = data.preconditions;
+    if (data.postconditions !== undefined) updateData.postconditions = data.postconditions;
+    if (data.suiteId !== undefined) updateData.suiteId = data.suiteId;
 
     return await prisma.testCase.update({
       where: { id: testCaseId },
-      data: {
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        status: data.status,
-        estimatedTime: data.estimatedTime,
-        preconditions: data.preconditions,
-        postconditions: data.postconditions,
-        suiteId: data.suiteId,
-      },
+      data: updateData,
       include: {
         project: {
           select: {
