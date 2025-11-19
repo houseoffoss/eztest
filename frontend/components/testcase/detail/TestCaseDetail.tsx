@@ -4,11 +4,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { TestCase, TestCaseFormData, TestStep } from './types';
+import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
 import { TestCaseHeader } from './subcomponents/TestCaseHeader';
 import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
 import { TestStepsCard } from './subcomponents/TestStepsCard';
 import { TestCaseInfoCard } from './subcomponents/TestCaseInfoCard';
+import { TestCaseHistoryCard } from './subcomponents/TestCaseHistoryCard';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';
 
 interface TestCaseDetailProps {
@@ -21,7 +22,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [testSuites, setTestSuites] = useState<any[]>([]);
+  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
 
   const [formData, setFormData] = useState<TestCaseFormData>({
     title: '',
@@ -269,6 +270,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
           <div className="space-y-6">
             <TestCaseInfoCard testCase={testCase} />
+            <TestCaseHistoryCard testCaseId={testCaseId} />
           </div>
         </div>
 

@@ -49,3 +49,9 @@ export interface TestCaseFormData {
   postconditions: string;
   suiteId: string | null;
 }
+
+export interface TestSuite {
+  id: string;
+  name: string;
+  description?: string;
+}
