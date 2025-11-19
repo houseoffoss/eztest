@@ -186,7 +186,7 @@ export default function NewTestCasePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="flex-1 flex flex-col">
       <Navbar
         items={[
           { label: 'Overview', href: `/projects/${projectId}` },
