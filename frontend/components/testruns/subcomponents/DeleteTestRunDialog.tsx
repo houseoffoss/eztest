@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Dialog,
   DialogContent,
@@ -8,12 +10,18 @@ import {
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
 
+/**
+ * Dialog for confirming deletion of a test run
+ * Shows the test run name and warns about deletion of all results
+ */
 interface DeleteTestRunDialogProps {
   open: boolean;
   testRunName: string;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }
+
+export type { DeleteTestRunDialogProps };
 
 export function DeleteTestRunDialog({
   open,

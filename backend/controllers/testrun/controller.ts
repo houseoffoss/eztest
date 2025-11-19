@@ -93,7 +93,8 @@ export class TestRunController {
   ) {
     try {
       const body = await request.json();
-      const { name, description, assignedToId, environment, testCaseIds } = body;
+      const { name, description, environment, testCaseIds } = body;
+      let { assignedToId } = body;
 
       // Validation
       if (!name) {
@@ -101,6 +102,11 @@ export class TestRunController {
           { error: 'Name is required' },
           { status: 400 }
         );
+      }
+
+      // Sanitize assignedToId - convert empty string or 'none' to undefined
+      if (!assignedToId || assignedToId === 'none' || assignedToId === '') {
+        assignedToId = undefined;
       }
 
       const testRun = await testRunService.createTestRun({

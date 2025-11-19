@@ -171,7 +171,7 @@ export class TestRunService {
         projectId: data.projectId,
         name: data.name,
         description: data.description,
-        assignedToId: data.assignedToId,
+        assignedToId: data.assignedToId || null,
         environment: data.environment,
         status: 'PLANNED',
         createdById: data.createdById,
