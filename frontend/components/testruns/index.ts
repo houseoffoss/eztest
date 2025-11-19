@@ -1,6 +1,16 @@
 // Components
 export { default as TestRunsList } from './TestRunsList';
 
+// Detail Components
+export { TestRunDetail } from './detail';
+export type {
+  TestRun as TestRunDetailType,
+  TestResult,
+  TestCase as TestCaseType,
+  ResultFormData,
+  TestRunStats,
+} from './detail/types';
+
 // Subcomponents
 export {
   CreateTestRunDialog,
