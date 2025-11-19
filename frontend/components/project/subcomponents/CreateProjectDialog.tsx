@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/elements/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { Textarea } from '@/elements/textarea';
-import { Plus } from 'lucide-react';
 import { Project } from '../types';
 
 interface CreateProjectDialogProps {
   onProjectCreated: (project: Project) => void;
   triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreateProjectDialogProps) => {
+export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChange }: CreateProjectDialogProps) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -22,6 +22,13 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
       setOpen(true);
     }
   }, [triggerOpen]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    }
+  };
   const [formData, setFormData] = useState({
     name: '',
     key: '',
@@ -58,8 +65,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
           members: data.data.members || [],
         };
         onProjectCreated(project);
-        setOpen(false);
         setFormData({ name: '', key: '', description: '' });
+        handleOpenChange(false);
       } else {
         setError(data.error || 'Failed to create project');
       }
@@ -71,13 +78,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen }: CreatePro
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="glass-primary" className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Project
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
 import { Card, CardContent } from '@/elements/card';
 import { TestTube2, Play, FileText, Folder } from 'lucide-react';
-import { Navbar } from '@/components/design/Navbar';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
 import { StatCard } from './subcomponents/StatCard';
@@ -77,49 +76,33 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-[#0a1628] p-8">
-        <div className="max-w-7xl mx-auto">
-          <Card variant="glass">
-            <CardContent className="p-8 text-center">
-              <p className="text-lg text-white/70">Project not found</p>
-              <Button onClick={() => router.push('/projects')} variant="glass-primary" className="mt-4">
-                Back to Projects
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <p className="text-white/70">Project not found</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
-      <Navbar
-        items={[
-          { label: 'Overview', href: `/projects/${projectId}` },
-          { label: 'Test Suites', href: `/projects/${projectId}/testsuites` },
-          { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
-          { label: 'Test Plans', href: `/projects/${projectId}/testplans` },
-          { label: 'Test Runs', href: `/projects/${projectId}/testruns` },
-          { label: 'Members', href: `/projects/${projectId}/members` },
-          { label: 'Settings', href: `/projects/${projectId}/settings` },
-        ]}
-        breadcrumbs={
-          <Breadcrumbs 
-            items={[
-              { label: 'Projects', href: '/projects' },
-              { label: project.name }
-            ]}
-          />
-        }
-        actions={
-          <form action="/api/auth/signout" method="POST">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        }
-      />
+    <>
+      {/* Top Bar */}
+      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
+        <div className="px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Breadcrumbs 
+              items={[
+                { label: 'Projects', href: '/projects' },
+                { label: project.name, href: `/projects/${projectId}` },
+                { label: 'Overview' }
+              ]}
+            />
+            <form action="/api/auth/signout" method="POST">
+              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+                Sign Out
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
       
       {/* Page Header */}
       <div className="max-w-7xl mx-auto px-8 pt-8">
@@ -159,6 +142,6 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
         {/* Project Overview Card */}
         <ProjectOverviewCard project={project} />
       </div>
-    </div>
+    </>
   );
 }
