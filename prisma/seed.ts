@@ -224,37 +224,12 @@ async function main() {
     });
     console.log('   ✅ Test Cases: API Testing (2 cases)');
 
-    // Create demo test plan
-    const regressionPlan = await prisma.testPlan.create({
-      data: {
-        name: 'Regression Test Plan',
-        description: 'Complete regression testing covering authentication, UI, and API',
-        projectId: demoProject.id,
-        createdById: adminUser.id,
-      },
-    });
-
-    // Add test cases to the test plan
-    await prisma.testPlanCase.createMany({
-      data: [
-        { testPlanId: regressionPlan.id, testCaseId: loginTestCase.id, order: 1 },
-        { testPlanId: regressionPlan.id, testCaseId: logoutTestCase.id, order: 2 },
-        { testPlanId: regressionPlan.id, testCaseId: passwordResetTestCase.id, order: 3 },
-        { testPlanId: regressionPlan.id, testCaseId: dashboardTestCase.id, order: 4 },
-        { testPlanId: regressionPlan.id, testCaseId: navigationTestCase.id, order: 5 },
-        { testPlanId: regressionPlan.id, testCaseId: apiAuthTestCase.id, order: 6 },
-        { testPlanId: regressionPlan.id, testCaseId: apiProjectsTestCase.id, order: 7 },
-      ],
-    });
-    console.log('   ✅ Test Plan: Regression Test Plan (7 test cases)');
-
     // Create demo test run
     const testRun = await prisma.testRun.create({
       data: {
         name: 'Sprint 1 Regression Testing',
         description: 'End-to-end regression testing for Sprint 1 release',
         projectId: demoProject.id,
-        testPlanId: regressionPlan.id,
         assignedToId: adminUser.id,
         environment: 'Staging',
         status: 'IN_PROGRESS',

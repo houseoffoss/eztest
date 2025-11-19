@@ -87,7 +87,8 @@ export function hasPermission(
   apiMethod: BaseApiMethod<CustomRequest>,
   module: string,
   action: string
-): BaseApiMethod<CustomRequest> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   return baseInterceptor<CustomRequest>(async (request: NextRequest, context) => {
     // Get authenticated user
     const user = await getSessionUser();

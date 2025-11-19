@@ -1,8 +1,5 @@
 import { projectController } from '@/backend/controllers/project/controller';
-import { baseInterceptor } from '@/backend/utils/baseInterceptor';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { hasPermission } from '@/lib/rbac/hasPermission';
-import { NextRequest } from 'next/server';
 
 /**
  * GET /api/projects/[id]/members
@@ -10,10 +7,10 @@ import { NextRequest } from 'next/server';
  * Required permission: projects:read
  */
 export const GET = hasPermission(
-  baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
+  async (request, context) => {
     const { id } = context.params;
-    return projectController.getProjectMembers(request as CustomRequest, id);
-  }),
+    return projectController.getProjectMembers(request, id);
+  },
   'projects',
   'read'
 );
@@ -24,10 +21,10 @@ export const GET = hasPermission(
  * Required permission: projects:manage_members
  */
 export const POST = hasPermission(
-  baseInterceptor(async (request: NextRequest, context: { params: { id: string } }) => {
+  async (request, context) => {
     const { id } = context.params;
-    return projectController.addProjectMember(request as CustomRequest, id);
-  }),
+    return projectController.addProjectMember(request, id);
+  },
   'projects',
   'manage_members'
 );

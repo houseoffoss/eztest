@@ -28,7 +28,6 @@ model User {
   role          Role      @relation(fields: [roleId], references: [id])
   projects      ProjectMember[]
   testCases     TestCase[]
-  createdTestPlans TestPlan[] @relation("TestPlanCreator")
   assignedTestRuns TestRun[]
   createdTestRuns TestRun[] @relation("TestRunCreator")
   testResults   TestResult[]
@@ -72,7 +71,6 @@ model Project {
   members     ProjectMember[]
   testSuites  TestSuite[]
   testCases   TestCase[]
-  testPlans   TestPlan[]
   testRuns    TestRun[]
   requirements Requirement[]
 
@@ -110,6 +108,7 @@ model TestSuite {
   parent      TestSuite? @relation("NestedSuites", fields: [parentId], references: [id], onDelete: Cascade)
   children    TestSuite[] @relation("NestedSuites")
   testCases   TestCase[]
+  testRuns    TestRunSuite[]
 
   @@index([projectId])
   @@index([parentId])
@@ -134,7 +133,6 @@ model TestCase {
   suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   createdBy     User     @relation(fields: [createdById], references: [id])
   steps         TestStep[]
-  testPlans     TestPlanCase[]
   results       TestResult[]
   requirements  Requirement[]
   comments      Comment[]
@@ -161,43 +159,9 @@ model TestStep {
   @@index([testCaseId])
 }
 
-model TestPlan {
-  id          String   @id @default(cuid())
-  projectId   String
-  name        String
-  description String?
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   User     @relation("TestPlanCreator", fields: [createdById], references: [id])
-  testCases   TestPlanCase[]
-  testRuns    TestRun[]
-
-  @@index([projectId])
-  @@index([createdById])
-}
-
-model TestPlanCase {
-  id          String   @id @default(cuid())
-  testPlanId  String
-  testCaseId  String
-  order       Int      @default(0)
-  addedAt     DateTime @default(now())
-
-  testPlan    TestPlan @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
-  testCase    TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
-
-  @@unique([testPlanId, testCaseId])
-  @@index([testPlanId])
-  @@index([testCaseId])
-}
-
 model TestRun {
   id          String   @id @default(cuid())
   projectId   String
-  testPlanId  String?
   name        String
   description String?
   status      TestRunStatus @default(PLANNED)
@@ -210,16 +174,29 @@ model TestRun {
   updatedAt   DateTime @updatedAt
 
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  testPlan    TestPlan? @relation(fields: [testPlanId], references: [id], onDelete: SetNull)
   assignedTo  User?    @relation(fields: [assignedToId], references: [id])
   createdBy   User     @relation("TestRunCreator", fields: [createdById], references: [id])
   results     TestResult[]
+  suites      TestRunSuite[]
 
   @@index([projectId])
-  @@index([testPlanId])
   @@index([assignedToId])
   @@index([createdById])
   @@index([status])
+}
+
+model TestRunSuite {
+  id          String   @id @default(cuid())
+  testRunId   String
+  testSuiteId String
+  createdAt   DateTime @default(now())
+
+  testRun     TestRun  @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  testSuite   TestSuite @relation(fields: [testSuiteId], references: [id], onDelete: Cascade)
+
+  @@unique([testRunId, testSuiteId])
+  @@index([testRunId])
+  @@index([testSuiteId])
 }
 
 model TestResult {

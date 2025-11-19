@@ -42,7 +42,7 @@ export const Loader: React.FC<LoaderProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-8">
         <div className="max-w-7xl mx-auto w-full flex items-center justify-center h-64">
           {spinner}
         </div>

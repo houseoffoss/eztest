@@ -30,12 +30,6 @@ export async function seedRBAC() {
     { name: 'testcases:update', description: 'Update test cases' },
     { name: 'testcases:delete', description: 'Delete test cases' },
     
-    // Test Plan permissions
-    { name: 'testplans:read', description: 'View test plans' },
-    { name: 'testplans:create', description: 'Create new test plans' },
-    { name: 'testplans:update', description: 'Update test plans' },
-    { name: 'testplans:delete', description: 'Delete test plans' },
-    
     // Test Run permissions
     { name: 'testruns:read', description: 'View test runs' },
     { name: 'testruns:create', description: 'Create new test runs' },
@@ -111,11 +105,10 @@ export async function seedRBAC() {
   console.log('    ✅ ADMIN: Full access (all permissions)');
 
   // Assign permissions to PROJECT_MANAGER
-  // PROJECT_MANAGER can: view, create, edit projects + add/remove members + all test operations
+  // PROJECT_MANAGER can: view, edit projects they're members of + all test operations
   const pmPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
-      'projects:create',
       'projects:update',
       'projects:manage_members',
       'testsuites:read',
@@ -126,10 +119,6 @@ export async function seedRBAC() {
       'testcases:create',
       'testcases:update',
       'testcases:delete',
-      'testplans:read',
-      'testplans:create',
-      'testplans:update',
-      'testplans:delete',
       'testruns:read',
       'testruns:create',
       'testruns:update',
@@ -149,14 +138,13 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ PROJECT_MANAGER: Full access to projects, test suites, test cases, test plans, test runs');
+  console.log('    ✅ PROJECT_MANAGER: Full access to test suites, test cases, test runs + manage members');
 
   // Assign permissions to TESTER
-  // TESTER has all PROJECT_MANAGER permissions EXCEPT projects:manage_members
+  // TESTER can work within projects they're members of (cannot create projects or manage members)
   const testerPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
-      'projects:create',
       'projects:update',
       'testsuites:read',
       'testsuites:create',
@@ -166,10 +154,6 @@ export async function seedRBAC() {
       'testcases:create',
       'testcases:update',
       'testcases:delete',
-      'testplans:read',
-      'testplans:create',
-      'testplans:update',
-      'testplans:delete',
       'testruns:read',
       'testruns:create',
       'testruns:update',
@@ -189,7 +173,7 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ TESTER: Full access to test suites, test cases, test plans, test runs (cannot manage members)');
+  console.log('    ✅ TESTER: Full access to test suites, test cases, test runs (cannot create projects or manage members)');
 
   // Assign permissions to VIEWER (read-only)
   const viewerPermissions = permissionRecords.filter((perm) =>
@@ -197,7 +181,6 @@ export async function seedRBAC() {
       'projects:read',
       'testsuites:read',
       'testcases:read',
-      'testplans:read',
       'testruns:read',
       'requirements:read',
     ].includes(perm.name)
