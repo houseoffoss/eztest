@@ -18,6 +18,8 @@ interface DeleteTestCaseDialogProps {
   onConfirm: () => void;
 }
 
+export type { DeleteTestCaseDialogProps };
+
 export function DeleteTestCaseDialog({
   open,
   testCase,

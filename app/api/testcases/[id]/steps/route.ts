@@ -3,8 +3,8 @@ import { hasPermission } from '@/lib/rbac/hasPermission';
 
 export const PUT = hasPermission(
   async (request, context) => {
-    const testCaseId = context.params.id;
-    return testCaseController.updateTestSteps(request, testCaseId);
+    const { id } = await context!.params;
+    return testCaseController.updateTestSteps(request, id);
   },
   'testcases',
   'update'

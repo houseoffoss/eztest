@@ -18,6 +18,8 @@ interface TestCaseCardProps {
   onClick: () => void;
 }
 
+export type { TestCaseCardProps };
+
 export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {

@@ -47,5 +47,5 @@ export interface TestCaseFormData {
   estimatedTime: string;
   preconditions: string;
   postconditions: string;
-  suiteId?: string | null;
+  suiteId: string | null;
 }

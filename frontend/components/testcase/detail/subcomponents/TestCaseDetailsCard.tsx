@@ -1,34 +1,36 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/elements/select';
 import { Clock } from 'lucide-react';
 import { TestCase, TestCaseFormData } from '../types';
+import { TestCaseFormBuilder } from '../../subcomponents/TestCaseFormBuilder';
+import { getEditTestCaseFormFields } from '../../constants/testCaseFormConfig';
 
 interface TestCaseDetailsCardProps {
   testCase: TestCase;
   isEditing: boolean;
   formData: TestCaseFormData;
+  errors?: Record<string, string>;
   testSuites?: any[];
   onFormChange: (data: TestCaseFormData) => void;
+  onFieldChange?: (field: keyof TestCaseFormData, value: any) => void;
 }
 
 export function TestCaseDetailsCard({
   testCase,
   isEditing,
   formData,
+  errors = {},
   testSuites = [],
   onFormChange,
+  onFieldChange,
 }: TestCaseDetailsCardProps) {
+  const handleFieldChange = onFieldChange || ((field, value) => {
+    onFormChange({ ...formData, [field]: value });
+  });
+
+  const fields = getEditTestCaseFormFields(testSuites);
+
   return (
     <Card variant="glass">
       <CardHeader>
@@ -36,122 +38,13 @@ export function TestCaseDetailsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {isEditing ? (
-          <>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                variant="glass"
-                value={formData.description}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                  onFormChange({ ...formData, description: e.target.value })
-                }
-                rows={3}
-                placeholder="Enter description"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Select
-                  value={formData.priority}
-                  onValueChange={(value: string) =>
-                    onFormChange({ ...formData, priority: value })
-                  }
-                >
-                  <SelectTrigger variant="glass">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent variant="glass">
-                    <SelectItem value="CRITICAL">Critical</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="LOW">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: string) =>
-                    onFormChange({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger variant="glass">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent variant="glass">
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="DRAFT">Draft</SelectItem>
-                    <SelectItem value="DEPRECATED">Deprecated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Test Suite</Label>
-              <Select
-                value={formData.suiteId || 'null'}
-                onValueChange={(value: string) =>
-                  onFormChange({ ...formData, suiteId: value === 'null' ? null : value })
-                }
-              >
-                <SelectTrigger variant="glass">
-                  <SelectValue placeholder="Select a test suite" />
-                </SelectTrigger>
-                <SelectContent variant="glass">
-                  <SelectItem value="null">None</SelectItem>
-                  {testSuites.map((suite) => (
-                    <SelectItem key={suite.id} value={suite.id}>
-                      {suite.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Estimated Time (minutes)</Label>
-              <Input
-                variant="glass"
-                type="number"
-                value={formData.estimatedTime}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                  onFormChange({ ...formData, estimatedTime: e.target.value })
-                }
-                placeholder="Enter estimated time"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Preconditions</Label>
-              <Textarea
-                variant="glass"
-                value={formData.preconditions}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                  onFormChange({ ...formData, preconditions: e.target.value })
-                }
-                rows={2}
-                placeholder="Enter preconditions"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Postconditions</Label>
-              <Textarea
-                variant="glass"
-                value={formData.postconditions}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                  onFormChange({ ...formData, postconditions: e.target.value })
-                }
-                rows={2}
-                placeholder="Enter postconditions"
-              />
-            </div>
-          </>
+          <TestCaseFormBuilder
+            fields={fields}
+            formData={formData}
+            errors={errors}
+            onFieldChange={handleFieldChange}
+            variant="glass"
+          />
         ) : (
           <>
             {testCase.description && (
