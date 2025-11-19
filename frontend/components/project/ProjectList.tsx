@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
-import { Navbar } from '@/components/design/Navbar';
+import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
 import { ProjectCard } from './subcomponents/ProjectCard';
 import { CreateProjectDialog } from './subcomponents/CreateProjectDialog';
@@ -53,8 +53,12 @@ export default function ProjectList() {
 
   const handleCreateProject = () => {
     setTriggerCreateDialog(true);
-    // Reset after a brief moment to allow re-triggering
-    setTimeout(() => setTriggerCreateDialog(false), 100);
+  };
+
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setTriggerCreateDialog(false);
+    }
   };
 
   if (loading) {
@@ -62,31 +66,40 @@ export default function ProjectList() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
-      <Navbar
-        items={[
-          { label: 'Projects', href: '/projects' },
-          { label: 'Runs', href: '/runs' },
-        ]}
-        actions={
-          <form action="/api/auth/signout" method="POST">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        }
-      />
+    <>
+      {/* Top Bar */}
+      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
+        <div className="px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Breadcrumbs 
+              items={[
+                { label: 'Projects' }
+              ]}
+            />
+            <div className="flex items-center gap-3">
+              <Button onClick={() => setTriggerCreateDialog(true)} variant="glass-primary">
+                + New Project
+              </Button>
+              <form action="/api/auth/signout" method="POST" className="inline">
+                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+                  Sign Out
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* Page Header */}
       <div className="max-w-7xl mx-auto px-8 py-6 pt-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
-            <p className="text-white/70 text-sm">Manage your test projects and track progress</p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
+              <p className="text-white/70 text-sm">Manage your test projects and track progress</p>
+            </div>
           </div>
-          <CreateProjectDialog triggerOpen={triggerCreateDialog} onProjectCreated={handleProjectCreated} />
+          <CreateProjectDialog triggerOpen={triggerCreateDialog} onProjectCreated={handleProjectCreated} onOpenChange={handleDialogOpenChange} />
         </div>
-      </div>
 
       {/* Projects Grid */}
       <div className="max-w-7xl mx-auto px-8 pb-8">
@@ -113,6 +126,6 @@ export default function ProjectList() {
         onOpenChange={setDeleteDialogOpen}
         onProjectDeleted={handleProjectDeleted}
       />
-    </div>
+    </>
   );
 }
