@@ -260,8 +260,9 @@ export default function UserManagement() {
                       variant="glass"
                       size="icon"
                       className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                      title="View user details"
                     >
-                      <Link href={`/profile/${user.id}`}>
+                      <Link href={`/admin/users/${user.id}`}>
                         <Eye className="w-4 h-4" />
                       </Link>
                     </Button>
