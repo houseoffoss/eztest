@@ -5,10 +5,6 @@ import { SidebarItem } from '@/components/design/Sidebar';
  */
 export const mainSidebarItems: SidebarItem[] = [
   {
-    label: 'Dashboard',
-    href: '/dashboard',
-  },
-  {
     label: 'Projects',
     href: '/projects',
   },
@@ -18,6 +14,10 @@ export const mainSidebarItems: SidebarItem[] = [
  * Admin-only navigation items
  */
 export const getAdminSidebarItems = (): SidebarItem[] => [
+  {
+    label: 'Projects',
+    href: '/projects',
+  },
   {
     label: 'Admin',
     href: '/admin',

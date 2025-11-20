@@ -51,9 +51,9 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         setProjectId(null);
       }
     } else {
-      // Main pages - add admin items if user is admin
+      // Main pages (including settings/profile) - show main items with admin items if applicable
       if (isAdmin) {
-        setSidebarItems([...mainSidebarItems, ...getAdminSidebarItems()]);
+        setSidebarItems(getAdminSidebarItems());
       } else {
         setSidebarItems(mainSidebarItems);
       }
