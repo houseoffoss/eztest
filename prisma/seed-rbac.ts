@@ -106,6 +106,7 @@ export async function seedRBAC() {
 
   // Assign permissions to PROJECT_MANAGER
   // PROJECT_MANAGER can: view, edit projects they're members of + all test operations
+  // NOTE: Can manage members ONLY for projects they are members of
   const pmPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
@@ -138,7 +139,7 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ PROJECT_MANAGER: Full access to test suites, test cases, test runs + manage members');
+  console.log('    ✅ PROJECT_MANAGER: Full access to test suites, test cases, test runs + manage members (for their projects only)');
 
   // Assign permissions to TESTER
   // TESTER can work within projects they're members of (cannot create projects or manage members)

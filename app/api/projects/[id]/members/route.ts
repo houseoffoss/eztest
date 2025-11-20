@@ -1,5 +1,5 @@
 import { projectController } from '@/backend/controllers/project/controller';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { hasProjectMemberAccess, hasPermission } from '@/lib/rbac';
 
 /**
  * GET /api/projects/[id]/members
@@ -19,8 +19,9 @@ export const GET = hasPermission(
  * POST /api/projects/[id]/members
  * Add a member to a project
  * Required permission: projects:manage_members
+ * Required: User must be ADMIN or a member of the project
  */
-export const POST = hasPermission(
+export const POST = hasProjectMemberAccess(
   async (request, context) => {
     const { id } = context.params;
     return projectController.addProjectMember(request, id);

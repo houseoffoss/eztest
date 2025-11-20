@@ -8,15 +8,14 @@ import { ProjectMember } from '../types';
 
 interface MembersCardProps {
   members: ProjectMember[];
+  isAdminOrManager: boolean;
   onAddMember: () => void;
   onRemoveMember: (memberId: string, memberName: string) => void;
 }
 
-export function MembersCard({ members, onAddMember, onRemoveMember }: MembersCardProps) {
+export function MembersCard({ members, isAdminOrManager, onAddMember, onRemoveMember }: MembersCardProps) {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'OWNER':
-        return 'default';
       case 'ADMIN':
         return 'secondary';
       default:
@@ -26,7 +25,6 @@ export function MembersCard({ members, onAddMember, onRemoveMember }: MembersCar
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'OWNER':
       case 'ADMIN':
         return <Shield className="w-3 h-3" />;
       case 'VIEWER':
@@ -51,12 +49,14 @@ export function MembersCard({ members, onAddMember, onRemoveMember }: MembersCar
               <Users className="w-16 h-16 text-white/50 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-white">No members yet</h3>
               <p className="text-white/60 mb-6">
-                Add team members to collaborate on this project
+                {isAdminOrManager ? 'Add team members to collaborate on this project' : 'Waiting for project manager or admin to add members'}
               </p>
-              <Button onClick={onAddMember} variant="glass-primary">
-                <Plus className="w-4 h-4 mr-2" />
-                Add First Member
-              </Button>
+              {isAdminOrManager && (
+                <Button onClick={onAddMember} variant="glass-primary">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add First Member
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -95,14 +95,16 @@ export function MembersCard({ members, onAddMember, onRemoveMember }: MembersCar
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="glass"
-                    size="icon"
-                    onClick={() => onRemoveMember(member.id, member.user.name)}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {isAdminOrManager && (
+                    <Button
+                      variant="glass"
+                      size="icon"
+                      onClick={() => onRemoveMember(member.id, member.user.name)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

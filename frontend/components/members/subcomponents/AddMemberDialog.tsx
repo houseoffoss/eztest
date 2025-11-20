@@ -4,7 +4,6 @@ import { Button } from '@/elements/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/elements/select';
 import { AddMemberFormData } from '../types';
 
 interface AddMemberDialogProps {
@@ -51,25 +50,6 @@ export function AddMemberDialog({
             <p className="text-xs text-muted-foreground">
               Enter the email address of the user you want to add
             </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Project Role</Label>
-            <Select
-              value={formData.role}
-              onValueChange={(value: string) =>
-                onFormChange({ ...formData, role: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="OWNER">Owner</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="TESTER">Tester (Default)</SelectItem>
-                <SelectItem value="VIEWER">Viewer</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           {error && (
             <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 p-3 rounded-md">

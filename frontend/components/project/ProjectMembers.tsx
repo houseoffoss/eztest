@@ -122,30 +122,23 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'OWNER':
-        return 'default';
-      case 'ADMIN':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'OWNER':
-      case 'ADMIN':
-        return <Shield className="w-3 h-3" />;
-      case 'VIEWER':
-        return <Eye className="w-3 h-3" />;
-      default:
-        return <Users className="w-3 h-3" />;
-    }
-  };
-
-  if (loading) {
+    const getRoleBadgeVariant = (role: string) => {
+      switch (role) {
+        case 'ADMIN':
+          return 'secondary';
+        default:
+          return 'outline';
+      }
+    };    const getRoleIcon = (role: string) => {
+      switch (role) {
+        case 'ADMIN':
+          return <Shield className="w-3 h-3" />;
+        case 'VIEWER':
+          return <Eye className="w-3 h-3" />;
+        default:
+          return <Users className="w-3 h-3" />;
+      }
+    };  if (loading) {
     return (
       <div className="text-center py-12">
         <p className="text-white/70">Loading members...</p>
@@ -193,8 +186,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="OWNER">Owner</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="PROJECT_MANAGER">Project Manager</SelectItem>
                     <SelectItem value="TESTER">Tester (Default)</SelectItem>
                     <SelectItem value="VIEWER">Viewer</SelectItem>
                   </SelectContent>

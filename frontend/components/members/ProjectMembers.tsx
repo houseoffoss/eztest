@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Card, CardContent } from '@/elements/card';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
@@ -17,6 +18,7 @@ interface ProjectMembersProps {
 
 export default function ProjectMembers({ projectId }: ProjectMembersProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +28,12 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState<AddMemberFormData>({
     email: '',
-    role: 'TESTER',
   });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+
+  // Check if user is admin or project manager
+  const isAdminOrManager = session?.user?.roleName === 'ADMIN' || session?.user?.roleName === 'PROJECT_MANAGER';
 
   useEffect(() => {
     fetchProjectAndMembers();
@@ -78,7 +82,6 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         },
         body: JSON.stringify({
           email: formData.email,
-          role: formData.role,
         }),
       });
 
@@ -87,7 +90,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       if (response.ok) {
         setMembers([...members, data.data]);
         setAddDialogOpen(false);
-        setFormData({ email: '', role: 'TESTER' });
+        setFormData({ email: '' });
       } else {
         setError(data.error || 'Failed to add member');
       }
@@ -181,11 +184,13 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       
       <MembersHeader
         project={project}
+        isAdminOrManager={isAdminOrManager}
         onAddMember={() => setAddDialogOpen(true)}
       />
 
       <MembersCard
         members={members}
+        isAdminOrManager={isAdminOrManager}
         onAddMember={() => setAddDialogOpen(true)}
         onRemoveMember={handleRemoveMember}
       />

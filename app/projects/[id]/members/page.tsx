@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
@@ -39,6 +40,7 @@ interface Project {
 export default function ProjectMembersPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
@@ -54,6 +56,9 @@ export default function ProjectMembersPage() {
   });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+
+  // Check if user is admin or project manager
+  const isAdminOrManager = session?.user?.roleName === 'ADMIN' || session?.user?.roleName === 'PROJECT_MANAGER';
 
   useEffect(() => {
     fetchProjectAndMembers();
@@ -217,76 +222,78 @@ export default function ProjectMembersPage() {
               ]}
             />
             <div className="flex items-center gap-3">
-              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="glass-primary" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Member
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Project Member</DialogTitle>
-                    <DialogDescription>
-                      Add a team member to this project
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleAddMember} className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="user@example.com"
-                        value={formData.email}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, email: e.target.value })}
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Enter the email address of the user you want to add
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="role">Project Role</Label>
-                      <Select
-                        value={formData.role}
-                        onValueChange={(value: string) => setFormData({ ...formData, role: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="OWNER">Owner</SelectItem>
-                          <SelectItem value="ADMIN">Admin</SelectItem>
-                          <SelectItem value="TESTER">Tester (Default)</SelectItem>
-                          <SelectItem value="VIEWER">Viewer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {error && (
-                      <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 p-3 rounded-md">
-                        {error}
+              {isAdminOrManager && (
+                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="glass-primary" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Member
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Project Member</DialogTitle>
+                      <DialogDescription>
+                        Add a team member to this project
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddMember} className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="user@example.com"
+                          value={formData.email}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, email: e.target.value })}
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Enter the email address of the user you want to add
+                        </p>
                       </div>
-                    )}
-                    <div className="flex gap-3 justify-end">
-                      <Button
-                        type="button"
-                        variant="glass"
-                        onClick={() => setAddDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={adding}
-                        variant="glass-primary"
-                      >
-                        {adding ? 'Adding...' : 'Add Member'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+                      <div className="space-y-2">
+                        <Label htmlFor="role">Project Role</Label>
+                        <Select
+                          value={formData.role}
+                          onValueChange={(value: string) => setFormData({ ...formData, role: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="OWNER">Owner</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="TESTER">Tester (Default)</SelectItem>
+                            <SelectItem value="VIEWER">Viewer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {error && (
+                        <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 p-3 rounded-md">
+                          {error}
+                        </div>
+                      )}
+                      <div className="flex gap-3 justify-end">
+                        <Button
+                          type="button"
+                          variant="glass"
+                          onClick={() => setAddDialogOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={adding}
+                          variant="glass-primary"
+                        >
+                          {adding ? 'Adding...' : 'Add Member'}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
               <form action="/api/auth/signout" method="POST" className="inline">
                 <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
                   Sign Out
@@ -303,6 +310,7 @@ export default function ProjectMembersPage() {
           <h1 className="text-2xl font-bold text-white mb-1">Project Members</h1>
           <p className="text-white/70 text-sm">
             Manage team members for <span className="font-semibold text-white">{project.name}</span>
+            {!isAdminOrManager && <span className="text-white/50 ml-2">(Project managers and admins can manage members)</span>}
           </p>
         </div>
       </div>
@@ -322,12 +330,14 @@ export default function ProjectMembersPage() {
                 <Users className="w-16 h-16 text-white/50 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2 text-white">No members yet</h3>
                 <p className="text-white/60 mb-6">
-                  Add team members to collaborate on this project
+                  {isAdminOrManager ? 'Add team members to collaborate on this project' : 'Waiting for admin or manager to add members'}
                 </p>
-                <Button onClick={() => setAddDialogOpen(true)} variant="glass-primary">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add First Member
-                </Button>
+                {isAdminOrManager && (
+                  <Button onClick={() => setAddDialogOpen(true)} variant="glass-primary">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Member
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -360,14 +370,16 @@ export default function ProjectMembersPage() {
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant="glass"
-                      size="icon"
-                      onClick={() => handleRemoveMember(member.id, member.user.name)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {isAdminOrManager && (
+                      <Button
+                        variant="glass"
+                        size="icon"
+                        onClick={() => handleRemoveMember(member.id, member.user.name)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
