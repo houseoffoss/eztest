@@ -27,6 +27,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [formData, setFormData] = useState<TestCaseFormData>({
     title: '',
     description: '',
+    expectedResult: '',
     priority: 'MEDIUM',
     status: 'DRAFT',
     estimatedTime: '',
@@ -61,6 +62,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         setFormData({
           title: data.data.title,
           description: data.data.description || '',
+          expectedResult: data.data.expectedResult || '',
           priority: data.data.priority,
           status: data.data.status,
           estimatedTime: data.data.estimatedTime?.toString() || '',

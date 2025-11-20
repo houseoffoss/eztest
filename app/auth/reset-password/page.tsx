@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import Link from 'next/link';
 
-export default function ResetPasswordPage() {
-  useEffect(() => {
-    document.title = 'Reset Password | EZTest';
-  }, []);
-
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -22,6 +18,10 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [tokenValid, setTokenValid] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Reset Password | EZTest';
+  }, []);
 
   // Validate token
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         {/* Card */}
-  <GlassPanel contentClassName="p-8">
+        <GlassPanel contentClassName="p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Create New Password</h1>
             <p className="text-muted-foreground">
@@ -207,8 +207,27 @@ export default function ResetPasswordPage() {
               </Link>
             </p>
           </div>
-  </GlassPanel>
+        </GlassPanel>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
+            <div className="space-y-4">
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

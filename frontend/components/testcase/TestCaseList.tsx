@@ -46,6 +46,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [formData, setFormData] = useState<TestCaseFormData>({
     title: '',
     description: '',
+    expectedResult: '',
     priority: 'MEDIUM',
     status: 'DRAFT',
     estimatedTime: '',
@@ -186,6 +187,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         setFormData({
           title: '',
           description: '',
+          expectedResult: '',
           priority: 'MEDIUM',
           status: 'DRAFT',
           estimatedTime: '',

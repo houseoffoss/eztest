@@ -56,6 +56,17 @@ export function TestCaseDetailsCard({
               </div>
             )}
 
+            {testCase.expectedResult && (
+              <div>
+                <h4 className="text-sm font-medium text-white/60 mb-1">
+                  Expected Result
+                </h4>
+                <p className="text-white/90 whitespace-pre-wrap">
+                  {testCase.expectedResult}
+                </p>
+              </div>
+            )}
+
             {testCase.estimatedTime && (
               <div>
                 <h4 className="text-sm font-medium text-white/60 mb-1">

@@ -2,7 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { seedRBAC } from './seed-rbac';
 
-const prisma = new PrismaClient();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const prisma: any = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...\n');
@@ -114,10 +115,13 @@ async function main() {
     console.log('   ✅ Test Suite: API Testing');
 
     // Create demo test cases for Authentication suite
+    let testCaseCounter = 1;
     const loginTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'User Login with Valid Credentials',
         description: 'Verify that users can successfully log in with valid email and password',
+        expectedResult: 'User is successfully authenticated and dashboard is displayed',
         projectId: demoProject.id,
         suiteId: authSuite.id,
         priority: 'CRITICAL',
@@ -131,8 +135,10 @@ async function main() {
 
     const logoutTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'User Logout',
         description: 'Verify that users can successfully log out',
+        expectedResult: 'User session is terminated and redirected to login page',
         projectId: demoProject.id,
         suiteId: authSuite.id,
         priority: 'HIGH',
@@ -146,8 +152,10 @@ async function main() {
 
     const passwordResetTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'Password Reset Flow',
         description: 'Verify that users can reset their password via email',
+        expectedResult: 'Reset email is sent and user can set new password successfully',
         projectId: demoProject.id,
         suiteId: authSuite.id,
         priority: 'HIGH',
@@ -163,8 +171,10 @@ async function main() {
     // Create demo test cases for UI suite
     const dashboardTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'Dashboard Layout Validation',
         description: 'Verify that dashboard displays all required widgets and information',
+        expectedResult: 'All dashboard widgets are visible and properly formatted',
         projectId: demoProject.id,
         suiteId: uiSuite.id,
         priority: 'MEDIUM',
@@ -178,8 +188,10 @@ async function main() {
 
     const navigationTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'Navigation Menu Functionality',
         description: 'Verify that all navigation menu items work correctly',
+        expectedResult: 'All menu items navigate to their respective pages without errors',
         projectId: demoProject.id,
         suiteId: uiSuite.id,
         priority: 'MEDIUM',
@@ -195,8 +207,10 @@ async function main() {
     // Create demo test cases for API suite
     const apiAuthTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'API Authentication Endpoint',
         description: 'Verify that /api/auth/login endpoint returns correct response',
+        expectedResult: 'HTTP 200 response with valid JWT token in response body',
         projectId: demoProject.id,
         suiteId: apiSuite.id,
         priority: 'CRITICAL',
@@ -210,8 +224,10 @@ async function main() {
 
     const apiProjectsTestCase = await prisma.testCase.create({
       data: {
+        tcId: `tc${testCaseCounter++}`,
         title: 'API Projects List Endpoint',
         description: 'Verify that /api/projects endpoint returns user projects',
+        expectedResult: 'HTTP 200 response with projects array containing user projects',
         projectId: demoProject.id,
         suiteId: apiSuite.id,
         priority: 'HIGH',

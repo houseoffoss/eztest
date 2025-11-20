@@ -70,6 +70,7 @@ export class TestCaseController {
       suiteId: validatedData.suiteId ?? undefined,
       title: validatedData.title,
       description: validatedData.description,
+      expectedResult: validatedData.expectedResult,
       priority: validatedData.priority,
       status: validatedData.status,
       estimatedTime: validatedData.estimatedTime,
@@ -134,6 +135,7 @@ export class TestCaseController {
         {
           title: validatedData.title,
           description: validatedData.description,
+          expectedResult: validatedData.expectedResult,
           priority: validatedData.priority,
           status: validatedData.status,
           estimatedTime: validatedData.estimatedTime,

@@ -19,13 +19,13 @@ interface TestSuiteHeaderProps {
   onSave: () => void;
   onDelete: () => void;
   onNameChange: (name: string) => void;
+  onBack?: () => void;
 }
 
 export function TestSuiteHeader({
   testSuite,
   isEditing,
   formData,
-  onBack,
   onEdit,
   onCancelEdit,
   onSave,

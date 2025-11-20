@@ -43,6 +43,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [testCaseFormData, setTestCaseFormData] = useState<TestCaseFormData>({
     title: '',
     description: '',
+    expectedResult: '',
     priority: 'MEDIUM',
     status: 'DRAFT',
     estimatedTime: '',
@@ -155,6 +156,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         setTestCaseFormData({
           title: '',
           description: '',
+          expectedResult: '',
           priority: 'MEDIUM',
           status: 'DRAFT',
           estimatedTime: '',
@@ -330,6 +332,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 setTestCaseFormData({
                   title: '',
                   description: '',
+                  expectedResult: '',
                   priority: 'MEDIUM',
                   status: 'DRAFT',
                   estimatedTime: '',
@@ -377,6 +380,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 setTestCaseFormData({
                   title: '',
                   description: '',
+                  expectedResult: '',
                   priority: 'MEDIUM',
                   status: 'DRAFT',
                   estimatedTime: '',
@@ -390,6 +394,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 setTestCaseFormData({
                   title: '',
                   description: '',
+                  expectedResult: '',
                   priority: 'MEDIUM',
                   status: 'DRAFT',
                   estimatedTime: '',

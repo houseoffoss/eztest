@@ -31,11 +31,10 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
       required: true,
     },
     {
-      name: 'description',
-      label: 'Description',
-      type: 'textarea',
-      placeholder: 'Enter test case description',
-      rows: 3,
+      name: 'priority',
+      label: 'Priority',
+      type: 'select',
+      options: PRIORITY_OPTIONS,
     },
     {
       name: 'suiteId',
@@ -46,12 +45,6 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
         { label: 'None (No Suite)', value: 'none' },
         ...suiteOptions,
       ],
-    },
-    {
-      name: 'priority',
-      label: 'Priority',
-      type: 'select',
-      options: PRIORITY_OPTIONS,
     },
     {
       name: 'status',
@@ -66,6 +59,13 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
       placeholder: 'Enter estimated time',
     },
     {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea',
+      placeholder: 'Enter test case description',
+      rows: 3,
+    },
+    {
       name: 'preconditions',
       label: 'Preconditions',
       type: 'textarea',
@@ -78,6 +78,13 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
       type: 'textarea',
       placeholder: 'Enter postconditions',
       rows: 2,
+    },
+    {
+      name: 'expectedResult',
+      label: 'Expected Result',
+      type: 'textarea',
+      placeholder: 'Enter the expected result or outcome',
+      rows: 3,
     },
   ];
 }

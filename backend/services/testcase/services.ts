@@ -6,6 +6,7 @@ interface CreateTestCaseInput {
   suiteId?: string;
   title: string;
   description?: string;
+  expectedResult?: string;
   priority?: Priority;
   status?: TestStatus;
   estimatedTime?: number;
@@ -22,6 +23,7 @@ interface CreateTestCaseInput {
 interface UpdateTestCaseInput {
   title?: string;
   description?: string;
+  expectedResult?: string;
   priority?: Priority;
   status?: TestStatus;
   estimatedTime?: number;
@@ -38,6 +40,19 @@ interface TestCaseFilters {
 }
 
 export class TestCaseService {
+  /**
+   * Generate next test case ID for a project (e.g., tc1, tc2, tc3...)
+   */
+  private async generateTestCaseId(projectId: string): Promise<string> {
+    // Get the count of existing test cases in the project
+    const count = await prisma.testCase.count({
+      where: { projectId },
+    });
+    
+    // Generate tcId as tc1, tc2, tc3, etc.
+    return `tc${count + 1}`;
+  }
+
   /**
    * Get all test cases for a project with optional filters
    */
@@ -201,13 +216,18 @@ export class TestCaseService {
       }
     }
 
+    // Generate unique test case ID
+    const tcId = await this.generateTestCaseId(data.projectId);
+
     // Create test case with steps
     const testCase = await prisma.testCase.create({
       data: {
+        tcId,
         projectId: data.projectId,
         suiteId: data.suiteId,
         title: data.title,
         description: data.description,
+        expectedResult: data.expectedResult,
         priority: data.priority || 'MEDIUM',
         status: data.status || 'DRAFT',
         estimatedTime: data.estimatedTime,
@@ -223,7 +243,8 @@ export class TestCaseService {
               })),
             }
           : undefined,
-      },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       include: {
         project: {
           select: {
@@ -306,6 +327,7 @@ export class TestCaseService {
     
     if (data.title !== undefined) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
+    if (data.expectedResult !== undefined) updateData.expectedResult = data.expectedResult;
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.status !== undefined) updateData.status = data.status;
     if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime;

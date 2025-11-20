@@ -24,19 +24,28 @@ export function TestCaseFormBuilder<T = Record<string, unknown>>({
     onFieldChange(fieldName, value);
   };
 
+  // Determine if a field should span full width
+  const shouldSpanFull = (field: FormFieldConfig) => {
+    return field.name === 'expectedResult';
+  };
+
   return (
     <div className={className}>
       {fields.map((field) => (
-        <TestCaseFormField
+        <div
           key={field.name}
-          {...field}
-          value={(formData[field.name as keyof T] as string | number | null) || ''}
-          onChange={(value) =>
-            handleChange(field.name as keyof T, value)
-          }
-          error={errors[field.name]}
-          variant={variant}
-        />
+          className={shouldSpanFull(field) ? 'col-span-2' : ''}
+        >
+          <TestCaseFormField
+            {...field}
+            value={(formData[field.name as keyof T] as string | number | null) || ''}
+            onChange={(value) =>
+              handleChange(field.name as keyof T, value)
+            }
+            error={errors[field.name]}
+            variant={variant}
+          />
+        </div>
       ))}
     </div>
   );

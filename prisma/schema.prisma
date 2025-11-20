@@ -7,6 +7,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Note: Using url in schema for Prisma v5 compatibility
+  // This syntax is supported in Prisma v5.x and required for database migrations
   url      = env("DATABASE_URL")
 }
 
@@ -116,10 +118,12 @@ model TestSuite {
 
 model TestCase {
   id            String   @id @default(cuid())
+  tcId          String   // Test case ID like tc1, tc2, etc. (unique per project)
   projectId     String
   suiteId       String?
   title         String
   description   String?
+  expectedResult String?  // Overall expected result for the test case
   priority      Priority @default(MEDIUM)
   status        TestStatus @default(ACTIVE)
   estimatedTime Int?     // in minutes
@@ -138,6 +142,7 @@ model TestCase {
   comments      Comment[]
   attachments   Attachment[]
 
+  @@unique([projectId, tcId])
   @@index([projectId])
   @@index([suiteId])
   @@index([createdById])

@@ -43,6 +43,7 @@ export interface Project {
 export interface TestCaseFormData {
   title: string;
   description: string;
+  expectedResult: string;
   priority: string;
   status: string;
   estimatedTime: string;

@@ -20,6 +20,7 @@ export const createTestCaseSchema = z.object({
   suiteId: z.string().optional().nullable(),
   title: z.string().min(1, 'Title is required').trim(),
   description: z.string().optional(),
+  expectedResult: z.string().optional(),
   priority: z.nativeEnum(Priority, {
     message: 'Invalid priority value',
   }).optional(),
@@ -41,6 +42,7 @@ export const createTestCaseSchema = z.object({
 export const updateTestCaseSchema = z.object({
   title: z.string().min(1, 'Title cannot be empty').trim().optional(),
   description: z.string().optional(),
+  expectedResult: z.string().optional(),
   priority: z.nativeEnum(Priority, {
     message: 'Invalid priority value',
   }).optional(),
