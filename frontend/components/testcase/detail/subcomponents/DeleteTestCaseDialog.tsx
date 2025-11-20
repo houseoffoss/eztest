@@ -28,7 +28,7 @@ export function DeleteTestCaseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete Test Case</DialogTitle>
           <DialogDescription>

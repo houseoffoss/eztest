@@ -42,7 +42,7 @@ export function CreateTestRunDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass" className="max-w-2xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create Test Run</DialogTitle>
           <DialogDescription>

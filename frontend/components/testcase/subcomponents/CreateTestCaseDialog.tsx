@@ -44,7 +44,7 @@ export function CreateTestCaseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass" className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Test Case</DialogTitle>
           <DialogDescription>
@@ -57,7 +57,6 @@ export function CreateTestCaseDialog({
           formData={formData}
           errors={errors}
           onFieldChange={handleFieldChange}
-          variant="glass"
         />
 
         <DialogFooter>

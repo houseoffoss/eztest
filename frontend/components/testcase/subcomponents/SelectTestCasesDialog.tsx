@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/elements/dialog';
+import { Checkbox } from '@/elements/checkbox';
 import { TestCase } from '../types';
 
 interface SelectTestCasesDialogProps {
@@ -38,7 +39,7 @@ export function SelectTestCasesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass" className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Add Test Cases</DialogTitle>
           <DialogDescription>
@@ -59,11 +60,11 @@ export function SelectTestCasesDialog({
                   className="flex items-start gap-3 p-3 border border-white/10 rounded hover:bg-slate-800/50 cursor-pointer transition-colors"
                   onClick={() => handleToggle(testCase.id)}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedIds.includes(testCase.id)}
-                    onChange={() => {}}
-                    className="w-4 h-4 mt-1 cursor-pointer accent-green-500"
+                    onCheckedChange={() => handleToggle(testCase.id)}
+                    variant="glass"
+                    className="mt-1"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white">{testCase.title}</p>

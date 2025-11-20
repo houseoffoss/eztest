@@ -292,7 +292,7 @@ export default function UIShowcasePage() {
                 <DialogTrigger asChild>
                   <Button variant="glass-primary" className="rounded-full">Open dialog</Button>
                 </DialogTrigger>
-                <DialogContent variant="glass">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Glass dialog</DialogTitle>
                     <DialogDescription>Use for confirmations and forms.</DialogDescription>

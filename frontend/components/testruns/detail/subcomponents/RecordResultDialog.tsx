@@ -38,7 +38,7 @@ export function RecordResultDialog({
 }: RecordResultDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Record Test Result</DialogTitle>
           <DialogDescription>{testCaseName}</DialogDescription>
@@ -51,10 +51,10 @@ export function RecordResultDialog({
               value={formData.status}
               onValueChange={(value: string) => onFormChange({ status: value })}
             >
-              <SelectTrigger variant="glass">
+              <SelectTrigger>
                 <SelectValue placeholder="Select result status" />
               </SelectTrigger>
-              <SelectContent variant="glass">
+              <SelectContent>
                 <SelectItem value="PASSED">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />

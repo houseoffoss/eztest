@@ -32,7 +32,7 @@ export function AddMemberDialog({
         <DialogHeader>
           <DialogTitle>Add Project Member</DialogTitle>
           <DialogDescription>
-            Add a team member to this project
+            Add a member to this project
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 mt-4">

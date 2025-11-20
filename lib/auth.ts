@@ -4,9 +4,13 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import * as bcrypt from 'bcryptjs';
 import { getServerSession } from 'next-auth';
 import { prisma } from './prisma';
+import { getEnv } from './env-validation';
 import { BadRequestException, UnauthorizedException } from '@/backend/utils/exceptions';
 import { BaseApiMethod, baseInterceptor } from '@/backend/utils/baseInterceptor';
 import { CustomRequest } from '@/backend/utils/interceptor';
+
+// Validate environment on import
+const env = getEnv();
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -84,8 +88,8 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  secret: env.nextAuthSecret,
+  debug: env.nodeEnv === 'development',
 };
 
 /**

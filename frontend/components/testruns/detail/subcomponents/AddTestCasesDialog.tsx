@@ -32,7 +32,7 @@ export function AddTestCasesDialog({
 }: AddTestCasesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="glass" className="max-w-3xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Add Test Cases</DialogTitle>
           <DialogDescription>

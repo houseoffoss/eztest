@@ -299,10 +299,10 @@ export default function NewTestCasePage() {
                         setFormData({ ...formData, priority: value })
                       }
                     >
-                      <SelectTrigger variant="glass">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent variant="glass">
+                      <SelectContent>
                         <SelectItem value="CRITICAL">Critical</SelectItem>
                         <SelectItem value="HIGH">High</SelectItem>
                         <SelectItem value="MEDIUM">Medium</SelectItem>
@@ -319,10 +319,10 @@ export default function NewTestCasePage() {
                         setFormData({ ...formData, status: value })
                       }
                     >
-                      <SelectTrigger variant="glass">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent variant="glass">
+                      <SelectContent>
                         <SelectItem value="ACTIVE">Active</SelectItem>
                         <SelectItem value="DRAFT">Draft</SelectItem>
                         <SelectItem value="DEPRECATED">Deprecated</SelectItem>
@@ -358,10 +358,10 @@ export default function NewTestCasePage() {
                       setFormData({ ...formData, suiteId: value === 'NONE' ? '' : value })
                     }
                   >
-                    <SelectTrigger variant="glass">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select test suite" />
                     </SelectTrigger>
-                    <SelectContent variant="glass">
+                    <SelectContent>
                       <SelectItem value="NONE">None</SelectItem>
                       {testSuites
                         .filter((s) => !s.parentId)

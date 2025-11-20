@@ -385,7 +385,7 @@ export default function AccountSettingsPage() {
 
       {/* Delete Account Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent variant="glass" className="max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Account?</DialogTitle>
             <DialogDescription>
