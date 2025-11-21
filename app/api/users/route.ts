@@ -1,19 +1,42 @@
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { hasPermission, checkPermission } from '@/lib/rbac/hasPermission';
+import { getSessionUser } from '@/lib/auth/getSessionUser';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
 /**
  * GET /api/users
- * Get all users (admin only)
- * Required permission: users:read
+ * Get all users for project member selection
+ * Allowed for: users with users:read permission (ADMIN) and PROJECT_MANAGER/TESTER for member selection
  */
-export const GET = hasPermission(
-  async (request) => {
-    try {
+export async function GET() {
+  try {
+    const user = await getSessionUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Allow ADMIN users and any user with users:read permission
+    const hasReadPermission = checkPermission(user, 'users:read');
+    const isProjectManagerOrTester = user.role?.name === 'PROJECT_MANAGER' || user.role?.name === 'TESTER' || user.role?.name === 'ADMIN';
+
+    if (!hasReadPermission && !isProjectManagerOrTester) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      );
+    }
+
+    // For PROJECT_MANAGER/TESTER, return minimal user data for selection
+    // For ADMIN, return full user data
+    if (user.role?.name === 'ADMIN' && hasReadPermission) {
       const users = await prisma.user.findMany({
         where: {
-          deletedAt: null, // Only active users
+          deletedAt: null,
         },
         include: {
           role: {
@@ -38,20 +61,39 @@ export const GET = hasPermission(
         data: users,
         error: null,
       });
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      return NextResponse.json(
-        {
-          data: null,
-          error: 'Failed to fetch users',
+    } else {
+      // For non-admin users (member selection)
+      const users = await prisma.user.findMany({
+        where: {
+          deletedAt: null,
         },
-        { status: 500 }
-      );
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return NextResponse.json({
+        data: users,
+        error: null,
+      });
     }
-  },
-  'users',
-  'read'
-);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return NextResponse.json(
+      {
+        data: null,
+        error: 'Failed to fetch users',
+      },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/users

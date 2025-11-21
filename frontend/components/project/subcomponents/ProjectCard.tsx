@@ -30,9 +30,15 @@ interface ProjectCardProps {
   };
   onNavigate: (path: string) => void;
   onDelete: () => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
+  canManageMembers?: boolean;
 }
 
-export const ProjectCard = ({ project, onNavigate, onDelete }: ProjectCardProps) => {
+export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, canDelete = false, canManageMembers = false }: ProjectCardProps) => {
+  // If user can't perform any actions, show simplified card
+  const hasActionPermissions = canUpdate || canDelete || canManageMembers;
+
   return (
     <Card
       variant="glass"
@@ -55,31 +61,39 @@ export const ProjectCard = ({ project, onNavigate, onDelete }: ProjectCardProps)
               </CardDescription>
             )}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 shrink-0 hover:bg-white/10">
-                <MoreVertical className="w-3.5 h-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}`)} className="hover:bg-white/10">
-                <Folder className="w-4 h-4 mr-2" />
-                Open Project
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/settings`)} className="hover:bg-white/10">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/members`)} className="hover:bg-white/10">
-                <Users className="w-4 h-4 mr-2" />
-                Manage Members
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-red-400 hover:bg-red-400/10">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {hasActionPermissions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 shrink-0 hover:bg-white/10">
+                  <MoreVertical className="w-3.5 h-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}`)} className="hover:bg-white/10">
+                  <Folder className="w-4 h-4 mr-2" />
+                  Open Project
+                </DropdownMenuItem>
+                {canUpdate && (
+                  <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/settings`)} className="hover:bg-white/10">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                )}
+                {canManageMembers && (
+                  <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/members`)} className="hover:bg-white/10">
+                    <Users className="w-4 h-4 mr-2" />
+                    Manage Members
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem onClick={onDelete} className="text-red-400 hover:bg-red-400/10">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       <CardContent onClick={() => onNavigate(`/projects/${project.id}`)} className="py-2.5 px-3.5">

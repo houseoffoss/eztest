@@ -1,14 +1,6 @@
 'use client';
 
-import { Button } from '@/elements/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
 import { TestCase } from '../types';
 
 interface DeleteTestCaseDialogProps {
@@ -26,25 +18,16 @@ export function DeleteTestCaseDialog({
   onOpenChange,
   onConfirm,
 }: DeleteTestCaseDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Test Case</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete &quot;{testCase?.title}&quot;?
-            This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="glass-destructive" onClick={onConfirm}>
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  const config: BaseConfirmDialogConfig = {
+    title: 'Delete Test Case',
+    description: `Are you sure you want to delete "${testCase?.title}"? This action cannot be undone.`,
+    submitLabel: 'Delete',
+    cancelLabel: 'Cancel',
+    triggerOpen: open,
+    onOpenChange,
+    onSubmit: async () => onConfirm(),
+    destructive: true,
+  };
+
+  return <BaseConfirmDialog {...config} />;
 }

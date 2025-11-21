@@ -1,0 +1,15 @@
+'use client';
+
+interface InlineErrorProps {
+  message: string;
+}
+
+export const InlineError = ({ message }: InlineErrorProps) => {
+  if (!message) return null;
+
+  return (
+    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+      <p className="text-sm text-red-300">{message}</p>
+    </div>
+  );
+};

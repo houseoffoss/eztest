@@ -6,21 +6,29 @@ import { Folder, Plus } from 'lucide-react';
 
 interface EmptyProjectsStateProps {
   onCreateProject: () => void;
+  canCreateProject?: boolean;
 }
 
-export const EmptyProjectsState = ({ onCreateProject }: EmptyProjectsStateProps) => {
+export const EmptyProjectsState = ({ onCreateProject, canCreateProject = true }: EmptyProjectsStateProps) => {
   return (
-    <Card variant="glass" className="border-dashed border-2 border-white/20">
+    <Card
+      variant="glass"
+      className="hover:shadow-xl hover:shadow-primary/10 transition-all"
+    >
       <CardContent className="flex flex-col items-center justify-center py-16">
         <Folder className="w-16 h-16 text-white/50 mb-4" />
         <h3 className="text-xl font-semibold mb-2 text-white">No projects yet</h3>
         <p className="text-white/60 mb-6 text-center max-w-sm">
-          Get started by creating your first project to organize test cases and track testing progress.
+          {canCreateProject
+            ? 'Get started by creating your first project to organize test cases and track testing progress.'
+            : 'You do not have permission to create projects. Contact an admin to get started.'}
         </p>
-        <Button onClick={onCreateProject} variant="glass-primary">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Your First Project
-        </Button>
+        {canCreateProject && (
+          <Button onClick={onCreateProject} variant="glass-primary">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Your First Project
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

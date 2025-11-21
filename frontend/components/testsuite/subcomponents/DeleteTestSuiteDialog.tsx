@@ -1,14 +1,6 @@
 'use client';
 
-import { Button } from '@/elements/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
 import { TestSuite } from '../types';
 
 interface DeleteTestSuiteDialogProps {
@@ -35,51 +27,45 @@ export function DeleteTestSuiteDialog({
   const hasTestCases = suite._count?.testCases > 0;
   const hasChildren = suite.children && suite.children.length > 0;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Test Suite</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete &quot;{suite.name}&quot;?
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3 py-4">
-          {hasTestCases && (
-            <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
-              <p className="font-medium">⚠️ This suite contains {suite._count.testCases} test case(s)</p>
-              <p className="mt-1 text-yellow-300/80">
-                Test cases will not be deleted but will become unorganized.
-              </p>
-            </div>
-          )}
-
-          {hasChildren && (
-            <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
-              <p className="font-medium">⚠️ This suite contains {suite.children?.length} child suite(s)</p>
-              <p className="mt-1 text-yellow-300/80">
-                Child suites will be moved to root level.
-              </p>
-            </div>
-          )}
-
-          {!hasTestCases && !hasChildren && (
-            <p className="text-sm text-gray-300">
-              This action cannot be undone.
-            </p>
-          )}
+  const content = (
+    <div className="space-y-3">
+      {hasTestCases && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
+          <p className="font-medium">⚠️ This suite contains {suite._count.testCases} test case(s)</p>
+          <p className="mt-1 text-yellow-300/80">
+            Test cases will not be deleted but will become unorganized.
+          </p>
         </div>
+      )}
 
-        <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="glass-destructive" onClick={onConfirm}>
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {hasChildren && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
+          <p className="font-medium">⚠️ This suite contains {suite.children?.length} child suite(s)</p>
+          <p className="mt-1 text-yellow-300/80">
+            Child suites will be moved to root level.
+          </p>
+        </div>
+      )}
+
+      {!hasTestCases && !hasChildren && (
+        <p className="text-sm text-gray-300">
+          This action cannot be undone.
+        </p>
+      )}
+    </div>
   );
+
+  const config: BaseConfirmDialogConfig = {
+    title: 'Delete Test Suite',
+    description: `Are you sure you want to delete "${suite.name}"?`,
+    content,
+    submitLabel: 'Delete',
+    cancelLabel: 'Cancel',
+    triggerOpen: open,
+    onOpenChange,
+    onSubmit: async () => onConfirm(),
+    destructive: true,
+  };
+
+  return <BaseConfirmDialog {...config} />;
 }

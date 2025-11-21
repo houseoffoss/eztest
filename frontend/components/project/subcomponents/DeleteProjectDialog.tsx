@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/elements/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
 
 interface DeleteProjectDialogProps {
   project: {
@@ -15,68 +13,49 @@ interface DeleteProjectDialogProps {
 }
 
 export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDeleted }: DeleteProjectDialogProps) => {
-  const [deleting, setDeleting] = useState(false);
+  const content = (
+    <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
+      <p className="font-semibold mb-2">This will permanently delete:</p>
+      <ul className="list-disc list-inside space-y-1">
+        <li>All test cases</li>
+        <li>All test runs</li>
+        <li>All test suites</li>
+        <li>All requirements</li>
+        <li>All project data</li>
+      </ul>
+    </div>
+  );
 
-  const handleDelete = async () => {
+  const handleSubmit = async () => {
     if (!project) return;
 
-    setDeleting(true);
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'DELETE',
-      });
+    const response = await fetch(`/api/projects/${project.id}`, {
+      method: 'DELETE',
+    });
 
-      if (response.ok) {
-        onProjectDeleted(project.id);
-        onOpenChange(false);
-      }
-    } catch (error) {
-      console.error('Failed to delete project:', error);
-    } finally {
-      setDeleting(false);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'Failed to delete project');
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Project</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete &quot;{project?.name}&quot;? This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
-            <p className="font-semibold mb-2">This will permanently delete:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>All test cases</li>
-              <li>All test runs</li>
-              <li>All test suites</li>
-              <li>All requirements</li>
-              <li>All project data</li>
-            </ul>
-          </div>
-          <div className="flex gap-3 justify-end">
-            <Button
-              type="button"
-              variant="glass"
-              onClick={() => onOpenChange(false)}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="glass-destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? 'Deleting...' : 'Delete Project'}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  const config: BaseConfirmDialogConfig = {
+    title: 'Delete Project',
+    description: `Are you sure you want to delete "${project?.name}"? This action cannot be undone.`,
+    content,
+    submitLabel: 'Delete Project',
+    cancelLabel: 'Cancel',
+    triggerOpen: open,
+    onOpenChange,
+    onSubmit: handleSubmit,
+    onSuccess: () => {
+      if (project) {
+        onProjectDeleted(project.id);
+      }
+    },
+    destructive: true,
+  };
+
+  return <BaseConfirmDialog {...config} />;
 };

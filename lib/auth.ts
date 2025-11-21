@@ -71,12 +71,31 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // Fetch user's role name from database
+        // Fetch user's role and permissions from database
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          include: { role: true },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         });
+        
         token.roleName = dbUser?.role.name || 'TESTER';
+        // Extract permission names array
+        token.permissions = dbUser?.role.permissions?.map(
+          (rp) => rp.permission.name
+        ) || [];
       }
       return token;
     },
@@ -84,6 +103,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.roleName = token.roleName as string;
+        // Add permissions to session
+        session.user.permissions = token.permissions as string[];
       }
       return session;
     },

@@ -6,12 +6,10 @@ import { useSession } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/elements/select';
 import { Badge } from '@/elements/badge';
 import { Plus, Trash2, Mail, Shield, Eye, Users } from 'lucide-react';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { SearchableUserSelect } from '@/components/design/SearchableUserSelect';
 
 interface ProjectMember {
   id: string;
@@ -29,6 +27,13 @@ interface ProjectMember {
       updatedAt: string;
     };
   };
+}
+
+interface AvailableUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
 }
 
 interface Project {
@@ -52,7 +57,7 @@ export default function ProjectMembersPage() {
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    role: 'TESTER',
+    userId: '',
   });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
@@ -94,6 +99,19 @@ export default function ProjectMembersPage() {
     }
   };
 
+  const handleSelectUser = (user: AvailableUser) => {
+    setFormData({ email: user.email, userId: user.id });
+    setError('');
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setAddDialogOpen(open);
+    if (open) {
+      setFormData({ email: '', userId: '' });
+      setError('');
+    }
+  };
+
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     setAdding(true);
@@ -107,7 +125,6 @@ export default function ProjectMembersPage() {
         },
         body: JSON.stringify({
           email: formData.email,
-          role: formData.role,
         }),
       });
 
@@ -116,7 +133,7 @@ export default function ProjectMembersPage() {
       if (response.ok) {
         setMembers([...members, data.data]);
         setAddDialogOpen(false);
-        setFormData({ email: '', role: 'TESTER' });
+        setFormData({ email: '', userId: '' });
       } else {
         setError(data.error || 'Failed to add member');
       }
@@ -223,7 +240,7 @@ export default function ProjectMembersPage() {
             />
             <div className="flex items-center gap-3">
               {isAdminOrManager && (
-                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <Dialog open={addDialogOpen} onOpenChange={handleDialogOpenChange}>
                   <DialogTrigger asChild>
                     <Button variant="glass-primary" size="sm">
                       <Plus className="w-4 h-4 mr-2" />
@@ -238,37 +255,15 @@ export default function ProjectMembersPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleAddMember} className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="user@example.com"
-                          value={formData.email}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, email: e.target.value })}
-                          required
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Enter the email address of the user you want to add
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="role">Project Role</Label>
-                        <Select
-                          value={formData.role}
-                          onValueChange={(value: string) => setFormData({ ...formData, role: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="OWNER">Owner</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="TESTER">Tester (Default)</SelectItem>
-                            <SelectItem value="VIEWER">Viewer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <SearchableUserSelect
+                        label="Select User Email *"
+                        placeholder="Search by email or name..."
+                        helperText="Start typing to search for unassigned users"
+                        onUserSelect={handleSelectUser}
+                        excludeUserIds={members.map(m => m.user.id)}
+                        disabled={adding}
+                        value={formData.userId}
+                      />
                       {error && (
                         <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 p-3 rounded-md">
                           {error}
@@ -284,7 +279,7 @@ export default function ProjectMembersPage() {
                         </Button>
                         <Button
                           type="submit"
-                          disabled={adding}
+                          disabled={adding || !formData.userId}
                           variant="glass-primary"
                         >
                           {adding ? 'Adding...' : 'Add Member'}
