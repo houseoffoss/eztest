@@ -7,6 +7,7 @@ import { TestResult, TestCase } from '../types';
 interface TestCasesListCardProps {
   results: TestResult[];
   testRunStatus: string;
+  canUpdate?: boolean;
   onAddTestCases: () => void;
   onAddTestSuites: () => void;
   onExecuteTestCase: (testCase: TestCase) => void;
@@ -16,6 +17,7 @@ interface TestCasesListCardProps {
 export function TestCasesListCard({
   results,
   testRunStatus,
+  canUpdate = true,
   onAddTestCases,
   onAddTestSuites,
   onExecuteTestCase,
@@ -43,26 +45,28 @@ export function TestCasesListCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Test Cases</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestSuites}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
-            </Button>
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestCases}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
-            </Button>
-          </div>
+          {canUpdate && (
+            <div className="flex gap-2">
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={onAddTestSuites}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Suites
+              </Button>
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={onAddTestCases}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Cases
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>

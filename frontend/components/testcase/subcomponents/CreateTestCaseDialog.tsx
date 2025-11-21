@@ -1,74 +1,156 @@
 'use client';
 
-import { Button } from '@/elements/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
-import { TestCaseFormData, TestSuite } from '../types';
-import { TestCaseFormBuilder } from './TestCaseFormBuilder';
-import { getCreateTestCaseFormFields } from '../constants/testCaseFormConfig';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { TestCase, TestSuite } from '../types';
+import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../constants/testCaseFormConfig';
 
 interface CreateTestCaseDialogProps {
-  open: boolean;
-  formData: TestCaseFormData;
+  projectId: string;
   testSuites: TestSuite[];
-  errors?: Record<string, string>;
-  onOpenChange: (open: boolean) => void;
-  onFormChange: (data: TestCaseFormData) => void;
-  onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
-  onSubmit: () => void;
+  triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onTestCaseCreated: (testCase: TestCase) => void;
+}
+
+export function CreateTestCaseDialog({
+  projectId,
+  testSuites,
+  triggerOpen,
+  onOpenChange,
+  onTestCaseCreated,
+}: CreateTestCaseDialogProps) {
+  const suiteOptions = testSuites.map((suite) => ({
+    value: suite.id,
+    label: suite.name,
+  }));
+
+  const fields: BaseDialogField[] = [
+    {
+      name: 'title',
+      label: 'Title',
+      placeholder: 'Enter test case title',
+      type: 'text',
+      required: true,
+      minLength: 3,
+      maxLength: 255,
+      cols: 2,
+    },
+    {
+      name: 'priority',
+      label: 'Priority',
+      type: 'select',
+      defaultValue: 'MEDIUM',
+      options: PRIORITY_OPTIONS.map(opt => ({ value: opt.value, label: opt.label })),
+      cols: 1,
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      defaultValue: 'DRAFT',
+      options: STATUS_OPTIONS.map(opt => ({ value: opt.value, label: opt.label })),
+      cols: 1,
+    },
+    {
+      name: 'suiteId',
+      label: 'Test Suite',
+      type: 'select',
+      placeholder: 'Select a test suite',
+      defaultValue: 'none',
+      options: [
+        { value: 'none', label: 'None (No Suite)' },
+        ...suiteOptions,
+      ],
+      cols: 1,
+    },
+    {
+      name: 'estimatedTime',
+      label: 'Estimated Time (minutes)',
+      type: 'number',
+      placeholder: 'Enter estimated time',
+      cols: 1,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea',
+      placeholder: 'Enter test case description',
+      rows: 3,
+      cols: 2,
+    },
+    {
+      name: 'preconditions',
+      label: 'Preconditions',
+      type: 'textarea',
+      placeholder: 'Enter preconditions',
+      rows: 2,
+      cols: 1,
+    },
+    {
+      name: 'postconditions',
+      label: 'Postconditions',
+      type: 'textarea',
+      placeholder: 'Enter postconditions',
+      rows: 2,
+      cols: 1,
+    },
+    {
+      name: 'expectedResult',
+      label: 'Expected Result',
+      type: 'textarea',
+      placeholder: 'Enter the expected result or outcome',
+      rows: 3,
+      cols: 2,
+    },
+  ];
+
+  const handleSubmit = async (formData: Record<string, string>) => {
+    const estimatedTime = formData.estimatedTime ? parseInt(formData.estimatedTime) : undefined;
+
+    const response = await fetch(`/api/projects/${projectId}/testcases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: formData.title,
+        description: formData.description || undefined,
+        expectedResult: formData.expectedResult || undefined,
+        priority: formData.priority,
+        status: formData.status,
+        estimatedTime,
+        preconditions: formData.preconditions || undefined,
+        postconditions: formData.postconditions || undefined,
+        suiteId: formData.suiteId !== 'none' ? formData.suiteId : undefined,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'Failed to create test case');
+    }
+
+    return data.data;
+  };
+
+  const config: BaseDialogConfig<TestCase> = {
+    title: 'Create Test Case',
+    description: 'Add a new test case to this project. Fill in the details to get started.',
+    fields,
+    submitLabel: 'Create Test Case',
+    cancelLabel: 'Cancel',
+    triggerOpen,
+    onOpenChange,
+    onSubmit: handleSubmit,
+    onSuccess: (testCase) => {
+      if (testCase) {
+        onTestCaseCreated(testCase);
+      }
+    },
+  };
+
+  return <BaseDialog {...config} />;
 }
 
 export type { CreateTestCaseDialogProps };
-
-export function CreateTestCaseDialog({
-  open,
-  formData,
-  testSuites,
-  errors = {},
-  onOpenChange,
-  onFormChange,
-  onFieldChange,
-  onSubmit,
-}: CreateTestCaseDialogProps) {
-  const handleFieldChange = onFieldChange || ((field, value) => {
-    onFormChange({ ...formData, [field]: value });
-  });
-
-  const fields = getCreateTestCaseFormFields(testSuites);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create Test Case</DialogTitle>
-          <DialogDescription>
-            Add a new test case to this project
-          </DialogDescription>
-        </DialogHeader>
-        
-        <TestCaseFormBuilder
-          fields={fields}
-          formData={formData}
-          errors={errors}
-          onFieldChange={handleFieldChange}
-          className="grid grid-cols-2 gap-4"
-        />
-
-        <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="glass-primary" onClick={onSubmit}>
-            Create
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}

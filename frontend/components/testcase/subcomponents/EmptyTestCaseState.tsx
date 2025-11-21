@@ -6,9 +6,10 @@ import { AlertCircle } from 'lucide-react';
 interface EmptyTestCaseStateProps {
   hasFilters: boolean;
   onCreateClick: () => void;
+  canCreate?: boolean;
 }
 
-export function EmptyTestCaseState({ hasFilters, onCreateClick }: EmptyTestCaseStateProps) {
+export function EmptyTestCaseState({ hasFilters, onCreateClick, canCreate = true }: EmptyTestCaseStateProps) {
   return (
     <EmptyState
       icon={AlertCircle}
@@ -16,8 +17,8 @@ export function EmptyTestCaseState({ hasFilters, onCreateClick }: EmptyTestCaseS
       description={hasFilters
         ? 'Try adjusting your filters'
         : 'Get started by creating your first test case'}
-      actionLabel={!hasFilters ? 'Create Test Case' : undefined}
-      onAction={!hasFilters ? onCreateClick : undefined}
+      actionLabel={!hasFilters && canCreate ? 'Create Test Case' : undefined}
+      onAction={!hasFilters && canCreate ? onCreateClick : undefined}
       variant="glass"
     />
   );

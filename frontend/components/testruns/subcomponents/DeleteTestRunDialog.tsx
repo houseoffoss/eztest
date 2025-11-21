@@ -1,53 +1,33 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
+import { TestRun } from '../types';
 
-/**
- * Dialog for confirming deletion of a test run
- * Shows the test run name and warns about deletion of all results
- */
 interface DeleteTestRunDialogProps {
-  open: boolean;
-  testRunName: string;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  testRun: TestRun | null;
+  triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onConfirm: () => Promise<void>;
 }
 
 export type { DeleteTestRunDialogProps };
 
 export function DeleteTestRunDialog({
-  open,
-  testRunName,
+  testRun,
+  triggerOpen,
   onOpenChange,
   onConfirm,
 }: DeleteTestRunDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Test Run</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete &quot;{testRunName}&quot;? This will
-            also delete all test results. This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="glass-destructive" onClick={onConfirm}>
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  const config: BaseConfirmDialogConfig = {
+    title: 'Delete Test Run',
+    description: `Are you sure you want to delete "${testRun?.name}"? This will also delete all test results. This action cannot be undone.`,
+    submitLabel: 'Delete',
+    cancelLabel: 'Cancel',
+    triggerOpen,
+    onOpenChange,
+    onSubmit: onConfirm,
+    destructive: true,
+  };
+
+  return <BaseConfirmDialog {...config} />;
 }

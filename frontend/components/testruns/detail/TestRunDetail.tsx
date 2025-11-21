@@ -423,6 +423,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         <TestRunHeader
           testRun={testRun}
           actionLoading={actionLoading}
+          canUpdate={canUpdateTestRun}
           onStartTestRun={handleStartTestRun}
           onCompleteTestRun={handleCompleteTestRun}
         />
@@ -437,6 +438,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         <TestCasesListCard
           results={testRun.results}
           testRunStatus={testRun.status}
+          canUpdate={canUpdateTestRun}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);
