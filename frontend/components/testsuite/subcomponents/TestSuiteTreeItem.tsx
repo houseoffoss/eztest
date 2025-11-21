@@ -24,6 +24,7 @@ interface TestSuiteTreeItemProps {
   onToggleExpand: (suiteId: string) => void;
   onView: (suiteId: string) => void;
   onDelete: (suite: TestSuite) => void;
+  canDelete?: boolean;
 }
 
 export function TestSuiteTreeItem({
@@ -32,6 +33,7 @@ export function TestSuiteTreeItem({
   onToggleExpand,
   onView,
   onDelete,
+  canDelete = true,
 }: TestSuiteTreeItemProps) {
   return (
     <div className="mb-1">
@@ -107,16 +109,18 @@ export function TestSuiteTreeItem({
                   <FolderOpen className="w-4 h-4 mr-2" />
                   View Suite
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onDelete(suite);
-                  }}
-                  className="text-red-400"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
+                {canDelete && (
+                  <DropdownMenuItem
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      onDelete(suite);
+                    }}
+                    className="text-red-400"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -165,16 +169,18 @@ export function TestSuiteTreeItem({
                           <FolderOpen className="w-4 h-4 mr-2" />
                           View Suite
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            onDelete(child);
-                          }}
-                          className="text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              onDelete(child);
+                            }}
+                            className="text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

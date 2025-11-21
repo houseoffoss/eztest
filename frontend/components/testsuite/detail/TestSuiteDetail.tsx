@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/elements/loader';
 import { TestSuiteHeader } from './subcomponents/TestSuiteHeader';
 import { TestSuiteDetailsCard } from './subcomponents/TestSuiteDetailsCard';
 import { TestCasesCard } from './subcomponents/TestCasesCard';
@@ -16,6 +17,7 @@ import { SelectTestCasesDialog } from '@/frontend/components/testcase/subcompone
 import { DeleteTestCaseDialog } from '@/frontend/components/testcase/subcomponents/DeleteTestCaseDialog';
 import { TestSuite, TestSuiteFormData } from './types';
 import { TestCaseFormData, TestCase } from '@/frontend/components/testcase/types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestSuiteDetailProps {
   suiteId: string;
@@ -23,6 +25,7 @@ interface TestSuiteDetailProps {
 
 export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [testSuite, setTestSuite] = useState<TestSuite | null>(null);
   const [loading, setLoading] = useState(true);
@@ -181,7 +184,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       if (data.data) {
         // Filter out test cases that are already in this suite
         const alreadyInSuite = testSuite?.testCases.map(tc => tc.id) || [];
-        const available = data.data.filter((tc: any) => !alreadyInSuite.includes(tc.id));
+        const available = data.data.filter((tc: TestCase) => !alreadyInSuite.includes(tc.id));
         setAvailableTestCases(available);
       }
     } catch (error) {
@@ -254,15 +257,14 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen p-4 md:p-6 lg:p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading test suite...</p>
-        </div>
-      </div>
-    );
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading..." />;
   }
+
+  // Check permissions
+  const canUpdateSuite = hasPermissionCheck('testsuites:update');
+  const canDeleteSuite = hasPermissionCheck('testsuites:delete');
+  const canCreateTestCase = hasPermissionCheck('testcases:create');
 
   if (!testSuite) {
     return (
@@ -311,6 +313,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           onSave={handleSave}
           onDelete={() => setDeleteDialogOpen(true)}
           onNameChange={(name) => setFormData({ ...formData, name })}
+          canUpdate={canUpdateSuite}
+          canDelete={canDeleteSuite}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -347,6 +351,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 )
               }
               onRemoveTestCase={handleRemoveTestCase}
+              canAdd={canCreateTestCase}
+              canDelete={canCreateTestCase}
             />
 
             <ChildSuitesCard
@@ -413,6 +419,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               onViewAllSuites={() =>
                 router.push(`/projects/${testSuite.project.id}/testsuites`)
               }
+              canCreateTestCase={canCreateTestCase}
             />
           </div>
         </div>

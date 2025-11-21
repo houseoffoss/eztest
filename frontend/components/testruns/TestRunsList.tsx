@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/elements/loader';
 import { Plus } from 'lucide-react';
 import { TestRunsHeader } from './subcomponents/TestRunsHeader';
 import { TestRunsFilterCard } from './subcomponents/TestRunsFilterCard';
@@ -12,6 +13,7 @@ import { TestRunsEmptyState } from './subcomponents/TestRunsEmptyState';
 import { CreateTestRunDialog } from './subcomponents/CreateTestRunDialog';
 import { DeleteTestRunDialog } from './subcomponents/DeleteTestRunDialog';
 import { TestRun, Project, TestRunFormData, TestRunFilters } from './types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestRunsListProps {
   projectId: string;
@@ -19,6 +21,7 @@ interface TestRunsListProps {
 
 export default function TestRunsList({ projectId }: TestRunsListProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [project, setProject] = useState<Project | null>(null);
   const [testRuns, setTestRuns] = useState<TestRun[]>([]);
@@ -163,15 +166,12 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen p-4 md:p-6 lg:p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading test runs...</p>
-        </div>
-      </div>
-    );
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading..." />;
   }
+
+  const canCreateTestRun = hasPermissionCheck('testruns:create');
+  const canDeleteTestRun = hasPermissionCheck('testruns:delete');
 
   return (
     <>
@@ -187,14 +187,16 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               ]}
             />
             <div className="flex items-center gap-3">
-              <Button
-                variant="glass-primary"
-                size="sm"
-                onClick={() => setCreateDialogOpen(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Test Run
-              </Button>
+              {canCreateTestRun && (
+                <Button
+                  variant="glass-primary"
+                  size="sm"
+                  onClick={() => setCreateDialogOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Test Run
+                </Button>
+              )}
               <form action="/api/auth/signout" method="POST">
                 <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
                   Sign Out
@@ -247,6 +249,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               <TestRunCard
                 key={testRun.id}
                 testRun={testRun}
+                canDelete={canDeleteTestRun}
                 onCardClick={() =>
                   router.push(`/projects/${projectId}/testruns/${testRun.id}`)
                 }

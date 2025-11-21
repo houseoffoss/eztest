@@ -19,6 +19,8 @@ interface TestCasesCardProps {
   onAddTestCase: () => void;
   onTestCaseClick: (testCaseId: string) => void;
   onRemoveTestCase?: (testCase: TestCase) => void;
+  canAdd?: boolean;
+  canDelete?: boolean;
 }
 
 export function TestCasesCard({
@@ -27,6 +29,8 @@ export function TestCasesCard({
   onAddTestCase,
   onTestCaseClick,
   onRemoveTestCase,
+  canAdd = false,
+  canDelete = false,
 }: TestCasesCardProps) {
   return (
     <Card variant="glass">
@@ -46,7 +50,7 @@ export function TestCasesCard({
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Steps</TableHead>
                   <TableHead className="text-right">Runs</TableHead>
-                  {onRemoveTestCase && <TableHead className="text-right">Actions</TableHead>}
+                  {onRemoveTestCase && canDelete && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -99,7 +103,7 @@ export function TestCasesCard({
                     <TableCell className="text-right text-white/70">
                       {testCase._count.results}
                     </TableCell>
-                    {onRemoveTestCase && (
+                    {onRemoveTestCase && canDelete && (
                       <TableCell className="text-right">
                         <Button
                           size="sm"
@@ -125,10 +129,12 @@ export function TestCasesCard({
             <p className="text-white/60 mb-4">
               No test cases in this suite yet
             </p>
-            <Button variant="glass-primary" size="sm" onClick={onAddTestCase}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add First Test Case
-            </Button>
+            {canAdd && (
+              <Button variant="glass-primary" size="sm" onClick={onAddTestCase}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Test Case
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

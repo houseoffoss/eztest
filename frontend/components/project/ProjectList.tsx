@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
@@ -15,6 +16,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 export default function ProjectList() {
   const router = useRouter();
+  const { status } = useSession();
   const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,8 +26,16 @@ export default function ProjectList() {
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (status === 'unauthenticated') {
+      router.push('/auth/login');
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchProjects();
+    }
+  }, [status]);
 
   const fetchProjects = async () => {
     try {
@@ -84,6 +94,10 @@ export default function ProjectList() {
     setDeleteDialogOpen(true);
   };
 
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/auth/login' });
+  };
+
   const handleCreateProject = () => {
     setTriggerCreateDialog(true);
   };
@@ -94,8 +108,12 @@ export default function ProjectList() {
     }
   };
 
-  if (loading || permissionsLoading) {
+  if (status === 'loading' || loading || permissionsLoading) {
     return <Loader fullScreen text="Loading..." />;
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // Will be redirected by useEffect
   }
 
   // Check if user can create projects
@@ -121,11 +139,14 @@ export default function ProjectList() {
                   + New Project
                 </Button>
               )}
-              <form action="/api/auth/signout" method="POST" className="inline">
-                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                  Sign Out
-                </Button>
-              </form>
+              <Button 
+                onClick={handleSignOut}
+                variant="glass-destructive" 
+                size="sm" 
+                className="px-5"
+              >
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>

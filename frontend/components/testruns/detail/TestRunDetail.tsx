@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/elements/loader';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
 import { TestCasesListCard } from './subcomponents/TestCasesListCard';
@@ -18,6 +19,7 @@ import {
   Circle,
 } from 'lucide-react';
 import { TestRun, TestCase, ResultFormData, TestRunStats } from './types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestRunDetailProps {
   testRunId: string;
@@ -25,6 +27,7 @@ interface TestRunDetailProps {
 
 export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [testRun, setTestRun] = useState<TestRun | null>(null);
   const [loading, setLoading] = useState(true);
@@ -371,12 +374,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const passRate =
     executed > 0 ? Math.round((stats.passed / executed) * 100) : 0;
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <p className="text-gray-400">Loading test run...</p>
-      </div>
-    );
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading..." />;
   }
 
   if (!testRun) {
@@ -386,6 +385,9 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       </div>
     );
   }
+
+  const canUpdateTestRun = hasPermissionCheck('testruns:update');
+  const canDeleteTestRun = hasPermissionCheck('testruns:delete');
 
   return (
     <div className="flex-1">

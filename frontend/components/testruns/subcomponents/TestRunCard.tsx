@@ -12,6 +12,7 @@ import { TestRun } from '../types';
 
 interface TestRunCardProps {
   testRun: TestRun;
+  canDelete?: boolean;
   onCardClick: () => void;
   onViewDetails: () => void;
   onDelete: () => void;
@@ -19,6 +20,7 @@ interface TestRunCardProps {
 
 export function TestRunCard({
   testRun,
+  canDelete = true,
   onCardClick,
   onViewDetails,
   onDelete,
@@ -126,16 +128,18 @@ export function TestRunCard({
                 <Play className="w-4 h-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                className="text-red-400"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
+              {canDelete && (
+                <DropdownMenuItem
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="text-red-400"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

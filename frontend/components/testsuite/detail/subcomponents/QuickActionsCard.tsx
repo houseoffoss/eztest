@@ -8,6 +8,7 @@ interface QuickActionsCardProps {
   onAddExistingTestCases: () => void;
   onViewAllTestCases: () => void;
   onViewAllSuites: () => void;
+  canCreateTestCase?: boolean;
 }
 
 export function QuickActionsCard({
@@ -16,6 +17,7 @@ export function QuickActionsCard({
   onAddExistingTestCases,
   onViewAllTestCases,
   onViewAllSuites,
+  canCreateTestCase = false,
 }: QuickActionsCardProps) {
   return (
     <Card variant="glass">
@@ -23,22 +25,26 @@ export function QuickActionsCard({
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <Button
-          variant="glass"
-          className="w-full justify-start"
-          onClick={onCreateTestCase}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Test Case
-        </Button>
-        <Button
-          variant="glass"
-          className="w-full justify-start"
-          onClick={onAddExistingTestCases}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Test Cases
-        </Button>
+        {canCreateTestCase && (
+          <Button
+            variant="glass"
+            className="w-full justify-start"
+            onClick={onCreateTestCase}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Test Case
+          </Button>
+        )}
+        {canCreateTestCase && (
+          <Button
+            variant="glass"
+            className="w-full justify-start"
+            onClick={onAddExistingTestCases}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Test Cases
+          </Button>
+        )}
         <Button
           variant="glass"
           className="w-full justify-start"

@@ -6,11 +6,13 @@ import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { Plus } from 'lucide-react';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/elements/loader';
 import { TestSuite, Project, TestSuiteFormData } from './types';
 import { TestSuiteTreeItem } from './subcomponents/TestSuiteTreeItem';
 import { CreateTestSuiteDialog } from './subcomponents/CreateTestSuiteDialog';
 import { DeleteTestSuiteDialog } from './subcomponents/DeleteTestSuiteDialog';
 import { EmptyTestSuiteState } from './subcomponents/EmptyTestSuiteState';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestSuiteListProps {
   projectId: string;
@@ -18,6 +20,7 @@ interface TestSuiteListProps {
 
 export default function TestSuiteList({ projectId }: TestSuiteListProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
   const [project, setProject] = useState<Project | null>(null);
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,6 +148,14 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
 
   const rootSuites = testSuites.filter(s => !s.parentId);
 
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading..." />;
+  }
+
+  // Check if user can create, update, or delete test suites
+  const canCreateTestSuite = hasPermissionCheck('testsuites:create');
+  const canDeleteTestSuite = hasPermissionCheck('testsuites:delete');
+
   return (
     <>
       {/* Top Bar */}
@@ -161,14 +172,16 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
               />
             )}
             <div className="flex items-center gap-3">
-              <Button
-                variant="glass-primary"
-                size="sm"
-                onClick={() => setCreateDialogOpen(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Test Suite
-              </Button>
+              {canCreateTestSuite && (
+                <Button
+                  variant="glass-primary"
+                  size="sm"
+                  onClick={() => setCreateDialogOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Test Suite
+                </Button>
+              )}
               <form action="/api/auth/signout" method="POST" className="inline">
                 <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
                   Sign Out
@@ -206,7 +219,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         {loading ? (
           <div className="text-center py-12 text-gray-400">Loading...</div>
         ) : testSuites.length === 0 ? (
-          <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} />
+          <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
         ) : (
           <div className="space-y-2">
             {rootSuites.map((suite) => (
@@ -217,6 +230,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
                 onToggleExpand={toggleExpanded}
                 onView={handleViewSuite}
                 onDelete={handleDeleteClick}
+                canDelete={canDeleteTestSuite}
               />
             ))}
           </div>

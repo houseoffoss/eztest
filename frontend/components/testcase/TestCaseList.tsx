@@ -6,6 +6,7 @@ import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { Plus } from 'lucide-react';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
 import { TestCase, TestSuite, Project, TestCaseFormData } from './types';
 import { TestCaseTable } from './subcomponents/TestCaseTable';
@@ -13,6 +14,7 @@ import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';
 import { TestCaseFilters } from './subcomponents/TestCaseFilters';
 import { EmptyTestCaseState } from './subcomponents/EmptyTestCaseState';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestCaseListProps {
   projectId: string;
@@ -20,6 +22,7 @@ interface TestCaseListProps {
 
 export default function TestCaseList({ projectId }: TestCaseListProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [project, setProject] = useState<Project | null>(null);
   const [testCases, setTestCases] = useState<TestCase[]>([]);
@@ -236,6 +239,14 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setDeleteDialogOpen(true);
   };
 
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading..." />;
+  }
+
+  // Check permissions
+  const canCreateTestCase = hasPermissionCheck('testcases:create');
+  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
+
   return (
     <>
       {/* Top Bar */}
@@ -250,10 +261,12 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
               ]}
             />
             <div className="flex items-center gap-3">
-              <Button variant="glass-primary" size="sm" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                New Test Case
-              </Button>
+              {canCreateTestCase && (
+                <Button variant="glass-primary" size="sm" onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Test Case
+                </Button>
+              )}
               <form action="/api/auth/signout" method="POST" className="inline">
                 <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
                   Sign Out
@@ -317,6 +330,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
               groupedByTestSuite={true}
               onDelete={handleDeleteClick}
               onClick={handleCardClick}
+              canDelete={canDeleteTestCase}
             />
 
             {/* Pagination */}

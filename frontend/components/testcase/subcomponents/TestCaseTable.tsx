@@ -16,9 +16,10 @@ interface TestCaseTableProps {
   groupedByTestSuite?: boolean;
   onDelete: (testCase: TestCase) => void;
   onClick: (testCaseId: string) => void;
+  canDelete?: boolean;
 }
 
-export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete, onClick }: TestCaseTableProps) {
+export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete, onClick, canDelete = true }: TestCaseTableProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -134,16 +135,18 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent variant="glass" align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(testCase);
-                          }}
-                          className="text-red-400 hover:bg-red-400/10"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        {canDelete && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(testCase);
+                            }}
+                            className="text-red-400 hover:bg-red-400/10"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -219,16 +222,18 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent variant="glass" align="end">
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(testCase);
-                    }}
-                    className="text-red-400 hover:bg-red-400/10"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
+                  {canDelete && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(testCase);
+                      }}
+                      className="text-red-400 hover:bg-red-400/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

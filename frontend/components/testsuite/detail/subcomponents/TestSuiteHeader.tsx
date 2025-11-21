@@ -20,6 +20,8 @@ interface TestSuiteHeaderProps {
   onDelete: () => void;
   onNameChange: (name: string) => void;
   onBack?: () => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 export function TestSuiteHeader({
@@ -31,6 +33,8 @@ export function TestSuiteHeader({
   onSave,
   onDelete,
   onNameChange,
+  canUpdate = false,
+  canDelete = false,
 }: TestSuiteHeaderProps) {
   return (
     <div className="mb-6">
@@ -76,14 +80,18 @@ export function TestSuiteHeader({
             </>
           ) : (
             <>
-              <Button variant="glass" onClick={onEdit}>
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button variant="glass-destructive" onClick={onDelete}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
+              {canUpdate && (
+                <Button variant="glass" onClick={onEdit}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+              {canDelete && (
+                <Button variant="glass-destructive" onClick={onDelete}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              )}
             </>
           )}
         </div>
