@@ -4,9 +4,9 @@ import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/
 import { TestSuite } from '../types';
 
 interface DeleteTestSuiteDialogProps {
-  open: boolean;
   suite: TestSuite | null;
-  onOpenChange: (open: boolean) => void;
+  triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onConfirm: () => void;
 }
 
@@ -17,8 +17,8 @@ export type { DeleteTestSuiteDialogProps };
  * Displays warnings about related items (test cases, child suites)
  */
 export function DeleteTestSuiteDialog({
-  open,
   suite,
+  triggerOpen,
   onOpenChange,
   onConfirm,
 }: DeleteTestSuiteDialogProps) {
@@ -61,7 +61,7 @@ export function DeleteTestSuiteDialog({
     content,
     submitLabel: 'Delete',
     cancelLabel: 'Cancel',
-    triggerOpen: open,
+    triggerOpen,
     onOpenChange,
     onSubmit: async () => onConfirm(),
     destructive: true,

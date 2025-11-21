@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { TestSuiteHeader } from './subcomponents/TestSuiteHeader';
 import { TestSuiteDetailsCard } from './subcomponents/TestSuiteDetailsCard';
 import { TestCasesCard } from './subcomponents/TestCasesCard';
@@ -31,6 +32,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [createTestCaseDialogOpen, setCreateTestCaseDialogOpen] = useState(false);
   const [addTestCasesDialogOpen, setAddTestCasesDialogOpen] = useState(false);
   const [deleteTestCaseDialogOpen, setDeleteTestCaseDialogOpen] = useState(false);
@@ -70,16 +72,30 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     try {
       setLoading(true);
       const response = await fetch(`/api/testsuites/${suiteId}`);
-      const data = await response.json();
-
-      if (data.data) {
-        setTestSuite(data.data);
-        setFormData({
-          name: data.data.name,
-          description: data.data.description || '',
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setAlert({
+          type: 'error',
+          title: 'Failed to Load Test Suite',
+          message: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
         });
+      } else {
+        const data = await response.json();
+        if (data.data) {
+          setTestSuite(data.data);
+          setFormData({
+            name: data.data.name,
+            description: data.data.description || '',
+          });
+        }
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error fetching test suite:', error);
     } finally {
       setLoading(false);
@@ -96,15 +112,30 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
       const data = await response.json();
 
-      if (data.data) {
+      if (response.ok && data.data) {
         setIsEditing(false);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test suite updated successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
         fetchTestSuite();
       } else {
-        alert(data.error || 'Failed to update test suite');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Update Test Suite',
+          message: data.error || 'Failed to update test suite',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error updating test suite:', error);
-      alert('Failed to update test suite');
     }
   };
 
@@ -125,14 +156,28 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       });
 
       if (response.ok) {
-        router.push(`/projects/${testSuite?.project.id}/testsuites`);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test suite deleted successfully',
+        });
+        setTimeout(() => router.push(`/projects/${testSuite?.project.id}/testsuites`), 1000);
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete test suite');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Delete Test Suite',
+          message: data.error || 'Failed to delete test suite',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error deleting test suite:', error);
-      alert('Failed to delete test suite');
     }
   };
 
@@ -154,7 +199,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
       const data = await response.json();
 
-      if (data.data) {
+      if (response.ok && data.data) {
         setCreateTestCaseDialogOpen(false);
         setTestCaseFormData({
           title: '',
@@ -167,13 +212,28 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           postconditions: '',
           suiteId: null,
         });
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test case created successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
         fetchTestSuite();
       } else {
-        alert(data.error || 'Failed to create test case');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Create Test Case',
+          message: data.error || 'Failed to create test case',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error creating test case:', error);
-      alert('Failed to create test case');
     }
   };
 
@@ -194,7 +254,11 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
   const handleAddTestCases = async () => {
     if (selectedTestCaseIds.length === 0) {
-      alert('Please select at least one test case');
+      setAlert({
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please select at least one test case',
+      });
       return;
     }
 
@@ -209,17 +273,33 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         });
 
         if (!response.ok) {
-          alert(`Failed to add test case`);
+          const errorData = await response.json().catch(() => ({}));
+          setAlert({
+            type: 'error',
+            title: 'Failed to Add Test Case',
+            message: errorData.error || 'Failed to add test case',
+          });
           return;
         }
       }
 
       setAddTestCasesDialogOpen(false);
       setSelectedTestCaseIds([]);
+      setAlert({
+        type: 'success',
+        title: 'Success',
+        message: `${selectedTestCaseIds.length} test case(s) added successfully`,
+      });
+      setTimeout(() => setAlert(null), 5000);
       fetchTestSuite();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error adding test cases:', error);
-      alert('Failed to add test cases');
     }
   };
 
@@ -249,11 +329,20 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         await fetchTestSuite();
       } else {
         console.error('Remove test case error:', data);
-        alert(data.error || 'Failed to remove test case');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Remove Test Case',
+          message: data.error || 'Failed to remove test case',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error removing test case:', error);
-      alert('Failed to remove test case');
     }
   };
 
@@ -278,6 +367,9 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
   return (
     <div className="flex-1">
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
       {/* Top Bar */}
       <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center justify-between p-4">

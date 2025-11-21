@@ -5,6 +5,13 @@ import { Button } from '@/elements/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
 import { Textarea } from '@/elements/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/elements/select';
 import { InlineError } from '@/components/utils/InlineError';
 
 export interface BaseDialogField {
@@ -20,6 +27,7 @@ export interface BaseDialogField {
   cols?: number; // Column span: 1 or 2
   options?: Array<{ value: string; label: string }>; // For select type
   transform?: 'uppercase' | 'lowercase' | 'capitalize'; // Text transformation
+  defaultValue?: string; // Default value for the field
 }
 
 export interface BaseDialogConfig<T = unknown> {
@@ -53,7 +61,7 @@ export const BaseDialog = <T = unknown,>({
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     fields.forEach((field) => {
-      initial[field.name] = '';
+      initial[field.name] = field.defaultValue || '';
     });
     return initial;
   });
@@ -148,6 +156,31 @@ export const BaseDialog = <T = unknown,>({
           rows={field.rows || 3}
           className={`bg-[#0f172a] border-[#334155] ${upperCaseClass}`}
         />
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <Select key={field.name} value={formData[field.name]} onValueChange={(value) => {
+          const syntheticEvent = {
+            target: {
+              name: field.name,
+              value: value,
+            },
+          } as unknown as React.ChangeEvent<HTMLInputElement>;
+          handleInputChange(syntheticEvent);
+        }}>
+          <SelectTrigger className="bg-[#0f172a] border-[#334155]">
+            <SelectValue placeholder={field.placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options?.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       );
     }
 

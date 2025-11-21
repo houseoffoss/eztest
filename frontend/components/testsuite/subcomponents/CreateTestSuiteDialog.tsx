@@ -1,74 +1,98 @@
 'use client';
 
-import { Button } from '@/elements/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
-import { TestSuite, TestSuiteFormData } from '../types';
-import { TestCaseFormBuilder } from '../../testcase/subcomponents/TestCaseFormBuilder';
-import { getCreateTestSuiteFormFields } from '../constants/testSuiteFormConfig';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { TestSuite } from '../types';
 
 interface CreateTestSuiteDialogProps {
-  open: boolean;
-  formData: TestSuiteFormData;
+  projectId: string;
   testSuites: TestSuite[];
-  errors?: Record<string, string>;
-  onOpenChange: (open: boolean) => void;
-  onFormChange: (data: TestSuiteFormData) => void;
-  onFieldChange?: (field: keyof TestSuiteFormData, value: string | number | null) => void;
-  onSubmit: () => void;
+  triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onTestSuiteCreated: (suite: TestSuite) => void;
 }
 
-export type { CreateTestSuiteDialogProps };
-
 export function CreateTestSuiteDialog({
-  open,
-  formData,
+  projectId,
   testSuites,
-  errors = {},
+  triggerOpen,
   onOpenChange,
-  onFormChange,
-  onFieldChange,
-  onSubmit,
+  onTestSuiteCreated,
 }: CreateTestSuiteDialogProps) {
-  const handleFieldChange = onFieldChange || ((field, value) => {
-    onFormChange({ ...formData, [field]: value });
-  });
+  // Get parent suite options - only root level suites
+  const parentOptions = testSuites
+    .filter(s => !s.parentId)
+    .map((suite) => ({
+      value: suite.id,
+      label: suite.name,
+    }));
 
-  const fields = getCreateTestSuiteFormFields(testSuites);
+  const fields: BaseDialogField[] = [
+    {
+      name: 'name',
+      label: 'Test Suite Name',
+      placeholder: 'Authentication Tests',
+      type: 'text',
+      required: true,
+      minLength: 3,
+      maxLength: 255,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      placeholder: 'Brief description of the test suite...',
+      type: 'textarea',
+      rows: 3,
+    },
+    {
+      name: 'parentId',
+      label: 'Parent Suite',
+      type: 'select',
+      placeholder: 'Select parent suite',
+      defaultValue: 'none',
+      options: [
+        { value: 'none', label: 'None (Root Level)' },
+        ...parentOptions,
+      ],
+    },
+  ];
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Create Test Suite</DialogTitle>
-          <DialogDescription>
-            Organize your test cases into suites
-          </DialogDescription>
-        </DialogHeader>
+  const handleSubmit = async (formData: Record<string, string>) => {
+    const response = await fetch(`/api/projects/${projectId}/testsuites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        description: formData.description || undefined,
+        parentId: formData.parentId !== 'none' ? formData.parentId : undefined,
+      }),
+    });
 
-        <TestCaseFormBuilder
-          fields={fields}
-          formData={formData}
-          errors={errors}
-          onFieldChange={handleFieldChange}
-          variant="glass"
-        />
+    const data = await response.json();
 
-        <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="glass-primary" onClick={onSubmit}>
-            Create
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'Failed to create test suite');
+    }
+
+    return data.data;
+  };
+
+  const config: BaseDialogConfig<TestSuite> = {
+    title: 'Create Test Suite',
+    description: 'Organize your test cases into suites to keep your testing structured and manageable.',
+    fields,
+    submitLabel: 'Create Test Suite',
+    cancelLabel: 'Cancel',
+    triggerOpen,
+    onOpenChange,
+    onSubmit: handleSubmit,
+    onSuccess: (suite) => {
+      if (suite) {
+        onTestSuiteCreated(suite);
+      }
+    },
+  };
+
+  return <BaseDialog {...config} />;
 }
