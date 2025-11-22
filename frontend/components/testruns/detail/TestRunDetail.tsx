@@ -385,6 +385,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const canUpdateTestRun = hasPermissionCheck('testruns:update');
   const canDeleteTestRun = hasPermissionCheck('testruns:delete');
+  const canCreateTestRun = hasPermissionCheck('testruns:create');
 
   return (
     <div className="flex-1">
@@ -433,6 +434,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           results={testRun.results}
           testRunStatus={testRun.status}
           canUpdate={canUpdateTestRun}
+          canCreate={canCreateTestRun}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);

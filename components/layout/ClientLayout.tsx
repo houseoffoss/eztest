@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Sidebar } from '@/components/design/Sidebar';
 import { mainSidebarItems, getProjectSidebarItems, getProjectsPageSidebarItems, getAdminSidebarItems } from '@/lib/sidebar-config';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSidebarCollapsed } from '@/lib/sidebar-context';
 
 interface ClientLayoutProps {
@@ -28,6 +28,14 @@ export function ClientLayout({ children }: ClientLayoutProps) {
 
   // Check if user is admin
   const isAdmin = session?.user?.roleName === 'ADMIN';
+  
+  // Check if user can manage settings (ADMIN, PROJECT_MANAGER, or has testruns:update permission)
+  const canManageSettings = useMemo(() => 
+    isAdmin || 
+    session?.user?.permissions?.includes('testruns:update') ||
+    session?.user?.permissions?.includes('users:manage'),
+    [isAdmin, session?.user?.permissions]
+  );
 
   useEffect(() => {
     // Determine which sidebar items to show based on current path
@@ -45,7 +53,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       if (projectIdMatch && projectIdMatch[1]) {
         const extractedProjectId = projectIdMatch[1];
         setProjectId(extractedProjectId);
-        setSidebarItems(getProjectSidebarItems(extractedProjectId, isAdmin));
+        setSidebarItems(getProjectSidebarItems(extractedProjectId, isAdmin, canManageSettings));
       } else {
         setSidebarItems(mainSidebarItems);
         setProjectId(null);

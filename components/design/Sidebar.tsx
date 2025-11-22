@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Folder,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/elements/button';
 
@@ -47,7 +48,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Test Runs': <PlayCircle className="w-4 h-4" />,
   Members: <Users className="w-4 h-4" />,
   Settings: <Settings className="w-4 h-4" />,
-  Admin: <Settings className="w-4 h-4" />,
+  Admin: <Shield className="w-4 h-4" />,
   Users: <Users className="w-4 h-4" />,
 };
 

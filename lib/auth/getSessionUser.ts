@@ -4,6 +4,7 @@ import { prisma } from "../prisma";
 /**
  * Fetches the current session user with their role and permissions (RBAC).
  * Returns the user with their role object containing all permissions.
+ * Returns null if user is deleted or role is invalid.
  */
 export async function getSessionUser() {
   const session = await auth();
@@ -24,6 +25,11 @@ export async function getSessionUser() {
       },
     },
   });
+
+  // Check if user exists and is not deleted
+  if (!user || user.deletedAt) {
+    return null;
+  }
 
   return user;
 }

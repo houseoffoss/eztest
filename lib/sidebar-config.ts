@@ -25,9 +25,9 @@ export const getAdminSidebarItems = (): SidebarItem[] => [
 ];
 
 /**
- * Generate project-specific sidebar items
+ * Generate project-specific sidebar items based on user permissions
  */
-export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = false): SidebarItem[] => {
+export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = false, canManageSettings: boolean = false): SidebarItem[] => {
   const items: SidebarItem[] = [
     {
       label: 'Projects',
@@ -51,11 +51,15 @@ export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = fal
       label: 'Members',
       href: `/projects/${projectId}/members`,
     },
-    {
+  ];
+
+  // Only show Settings if user has manage permissions (ADMIN, PROJECT_MANAGER) or testruns:update permission
+  if (isAdmin || canManageSettings) {
+    items.push({
       label: 'Settings',
       href: `/projects/${projectId}/settings`,
-    },
-  ];
+    });
+  }
 
   // Add admin items if user is admin
   if (isAdmin) {
@@ -93,10 +97,6 @@ export const getProjectsPageSidebarItems = (isAdmin: boolean = false): SidebarIt
     },
     {
       label: 'Members',
-      href: '#',
-    },
-    {
-      label: 'Settings',
       href: '#',
     },
   ];

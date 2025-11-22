@@ -9,6 +9,7 @@ export interface DetailCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   contentClassName?: string;
   headerClassName?: string;
+  headerAction?: React.ReactNode;
   variant?: 'default' | 'glass';
 }
 
@@ -29,19 +30,21 @@ export function DetailCard({
   children,
   contentClassName = 'space-y-4',
   headerClassName = '',
+  headerAction,
   variant = 'glass',
   className,
   ...props
 }: DetailCardProps) {
   return (
     <Card variant={variant} className={className} {...props}>
-      <CardHeader className={headerClassName}>
+      <CardHeader className={`${headerClassName} ${headerAction ? 'flex flex-row items-start justify-between' : ''}`}>
         <div className="flex flex-col gap-1">
           <CardTitle>{title}</CardTitle>
           {description && (
             <p className="text-sm text-white/60">{description}</p>
           )}
         </div>
+        {headerAction && <div>{headerAction}</div>}
       </CardHeader>
       <CardContent className={contentClassName}>
         {children}

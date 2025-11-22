@@ -81,7 +81,7 @@ export function TestCaseHeader({
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                   onFormChange({ ...formData, title: e.target.value })
                 }
-                className="text-3xl font-bold"
+                className="text-3xl font-bold text-white bg-white/5 border-white/10"
               />
             ) : (
               testCase.title

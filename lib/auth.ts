@@ -34,6 +34,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid email or password');
         }
 
+        // Check if user is deleted
+        if (user.deletedAt) {
+          throw new Error('Your account has been deleted. Please contact your administrator.');
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password

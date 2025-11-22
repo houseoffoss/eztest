@@ -9,6 +9,7 @@ interface TestCasesListCardProps {
   results: TestResult[];
   testRunStatus: string;
   canUpdate?: boolean;
+  canCreate?: boolean;
   onAddTestCases: () => void;
   onAddTestSuites: () => void;
   onExecuteTestCase: (testCase: TestCase) => void;
@@ -28,6 +29,7 @@ export function TestCasesListCard({
   results,
   testRunStatus,
   canUpdate = true,
+  canCreate = true,
   onAddTestCases,
   onAddTestSuites,
   onExecuteTestCase,
@@ -142,62 +144,65 @@ export function TestCasesListCard({
     <DetailCard
       title={`Test Cases (${results?.length || 0})`}
       contentClassName=""
-      headerClassName="flex items-center justify-between"
+      headerAction={
+        results && results.length > 0 && canCreate ? (
+          <div className="flex gap-2 flex-wrap justify-end">
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={onAddTestSuites}
+              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Test Suites
+            </Button>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={onAddTestCases}
+              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Test Cases
+            </Button>
+          </div>
+        ) : undefined
+      }
     >
       {!results || results.length === 0 ? (
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-400 mb-4">No test cases in this test run</p>
-          <div className="flex gap-2 justify-center flex-wrap">
-            <Button
-              variant="glass-primary"
-              size="sm"
-              onClick={onAddTestCases}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
-            </Button>
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestSuites}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
-            </Button>
-          </div>
+          {canCreate && (
+            <div className="flex gap-2 justify-center flex-wrap">
+              <Button
+                variant="glass-primary"
+                size="sm"
+                onClick={onAddTestCases}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Cases
+              </Button>
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={onAddTestSuites}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Suites
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
-        <>
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestSuites}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
-            </Button>
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestCases}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
-            </Button>
-          </div>
-          <DataTable
-            columns={columns}
-            data={tableData}
-            rowClassName="cursor-pointer hover:bg-white/5"
-            emptyMessage="No test cases in this run"
-          />
-        </>
+        <DataTable
+          columns={columns}
+          data={tableData}
+          rowClassName="cursor-pointer hover:bg-white/5"
+          emptyMessage="No test cases in this run"
+        />
       )}
     </DetailCard>
   );
