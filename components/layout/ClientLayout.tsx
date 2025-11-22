@@ -19,6 +19,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const { data: session } = useSession();
   const [sidebarItems, setSidebarItems] = useState(mainSidebarItems);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
   const { isCollapsed } = useSidebarCollapsed();
 
   // Pages that shouldn't have sidebar
@@ -44,15 +45,16 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       setSidebarItems(getAdminSidebarItems());
       setProjectId(null);
     } else if (pathname === '/projects') {
-      // Projects list page - show projects menu with admin items if applicable
+      // Projects list page - keep last project context in sidebar for quick access
       setSidebarItems(getProjectsPageSidebarItems(isAdmin));
-      setProjectId(null);
+      // Don't clear projectId - keep the last visited project in sidebar
     } else if (pathname?.startsWith('/projects/')) {
       // Project detail page - extract project ID and show project menu with admin items if applicable
       const projectIdMatch = pathname.match(/\/projects\/([^\/]+)/);
       if (projectIdMatch && projectIdMatch[1]) {
         const extractedProjectId = projectIdMatch[1];
         setProjectId(extractedProjectId);
+        setLastProjectId(extractedProjectId);
         setSidebarItems(getProjectSidebarItems(extractedProjectId, isAdmin, canManageSettings));
       } else {
         setSidebarItems(mainSidebarItems);

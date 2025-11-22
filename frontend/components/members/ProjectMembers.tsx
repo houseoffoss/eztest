@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/elements/button';
 import { Card, CardContent } from '@/elements/card';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { Project, ProjectMember } from './types';
 import { MembersCard } from './subcomponents/MembersCard';
@@ -151,36 +151,25 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
   return (
     <>
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs
-              items={[
-                { label: 'Projects', href: '/projects' },
-                { label: project.name, href: `/projects/${projectId}` },
-                { label: 'Members' },
-              ]}
-            />
-            <div className="flex items-center gap-3">
-              {isAdminOrManager && (
-                <Button
-                  variant="glass-primary"
-                  size="sm"
-                  onClick={() => setAddDialogOpen(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Member
-                </Button>
-              )}
-              <form action="/api/auth/signout" method="POST">
-                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                  Sign Out
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project.name, href: `/projects/${projectId}` },
+          { label: 'Members' },
+        ]}
+        actions={
+          isAdminOrManager && (
+            <Button
+              variant="glass-primary"
+              size="sm"
+              onClick={() => setAddDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Member
+            </Button>
+          )
+        }
+      />
       
       <div className="max-w-6xl mx-auto px-8 pt-8">
         <div className="mb-6">

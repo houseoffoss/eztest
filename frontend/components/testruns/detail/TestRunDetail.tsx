@@ -1,7 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
@@ -390,29 +389,20 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   return (
     <div className="flex-1">
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center justify-between p-4">
-          <Breadcrumbs
-            items={[
-              { label: 'Projects', href: '/projects' },
-              {
-                label: testRun.project.name,
-                href: `/projects/${testRun.project.id}`,
-              },
-              {
-                label: 'Test Runs',
-                href: `/projects/${testRun.project.id}/testruns`,
-              },
-              { label: testRun.name },
-            ]}
-          />
-          <form action="/api/auth/signout" method="POST" className="inline">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          {
+            label: testRun.project.name,
+            href: `/projects/${testRun.project.id}`,
+          },
+          {
+            label: 'Test Runs',
+            href: `/projects/${testRun.project.id}/testruns`,
+          },
+          { label: testRun.name },
+        ]}
+      />
 
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
         <TestRunHeader

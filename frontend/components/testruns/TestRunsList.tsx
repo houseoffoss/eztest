@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Plus } from 'lucide-react';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
@@ -171,37 +171,25 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs
-              items={[
-                { label: 'Projects', href: '/projects' },
-                { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-                { label: 'Test Runs' },
-              ]}
-            />
-            <div className="flex items-center gap-3">
-              {canCreateTestRun && (
-                <Button
-                  variant="glass-primary"
-                  size="sm"
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Test Run
-                </Button>
-              )}
-              <form action="/api/auth/signout" method="POST" className="inline">
-                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                  Sign Out
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
+          { label: 'Test Runs' },
+        ]}
+        actions={
+          canCreateTestRun ? (
+            <Button
+              variant="glass-primary"
+              size="sm"
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Test Run
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Page Header and Filters */}
       <div className="px-8 pt-4">

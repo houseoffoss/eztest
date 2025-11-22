@@ -2,28 +2,18 @@
 
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Button } from '@/elements/button';
+import { TopBar } from '@/components/design';
 import { Users } from 'lucide-react';
 
 export default function AdminDashboard() {
   return (
     <div className="flex-1">
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center justify-between p-4">
-          <Breadcrumbs
-            items={[
-              { label: 'Admin' },
-            ]}
-          />
-          <form action="/api/auth/signout" method="POST" className="inline">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Admin' },
+        ]}
+      />
 
       {/* Content */}
       <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">

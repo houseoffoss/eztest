@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/elements/button";
+import { ButtonBlue } from "@/elements/button-blue";
+import { ButtonOrange } from "@/elements/button-orange";
 // UI primitives
 import { Input } from "@/elements/input";
 import { Badge } from "@/elements/badge";
@@ -193,6 +195,31 @@ export default function UIShowcasePage() {
         {/* Catalogue: list and demo of design components */}
         <Section heading="Component catalogue" description="All reusable glass components available." className="mt-10">
           <div className="grid gap-6 md:grid-cols-2">
+            <GlassPanel heading="Color Set 1 - Blue Gradient" contentClassName="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonBlue variant="default">Default</ButtonBlue>
+                <ButtonBlue variant="light">Light</ButtonBlue>
+                <ButtonBlue variant="outline">Outline</ButtonBlue>
+                <ButtonBlue variant="ghost">Ghost</ButtonBlue>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonBlue variant="default" size="sm">Small</ButtonBlue>
+                <ButtonBlue variant="default" size="lg">Large</ButtonBlue>
+              </div>
+            </GlassPanel>
+
+            <GlassPanel heading="Color Set 2 - Orange Gradient" contentClassName="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonOrange variant="default">Default</ButtonOrange>
+                <ButtonOrange variant="light">Light</ButtonOrange>
+                <ButtonOrange variant="outline">Outline</ButtonOrange>
+                <ButtonOrange variant="ghost">Ghost</ButtonOrange>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonOrange variant="default" size="sm">Small</ButtonOrange>
+                <ButtonOrange variant="default" size="lg">Large</ButtonOrange>
+              </div>
+            </GlassPanel>
             <GlassPanel heading="Core wrappers" contentClassName="space-y-3">
               <ul className="list-disc list-inside text-white/80 text-sm">
                 <li>GlassPanel — frosted card wrapper</li>

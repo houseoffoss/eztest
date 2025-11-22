@@ -7,7 +7,7 @@ import { Button } from '@/elements/button';
 import { Badge } from '@/elements/badge';
 import { Avatar } from '@/elements/avatar';
 import { Input } from '@/elements/input';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { 
   Users, 
@@ -186,33 +186,22 @@ export default function UserManagement() {
   return (
     <>
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs
-              items={[
-                { label: 'Admin', href: '/admin' },
-                { label: 'Users' },
-              ]}
-            />
-            <div className="flex items-center gap-3">
-              <Button
-                variant="glass-primary"
-                onClick={() => setAddDialogOpen(true)}
-                className="gap-2"
-              >
-                <UserPlus className="w-4 h-4" />
-                Add User
-              </Button>
-              <form action="/api/auth/signout" method="POST">
-                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                  Sign Out
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Users' },
+        ]}
+        actions={
+          <Button
+            variant="glass-primary"
+            onClick={() => setAddDialogOpen(true)}
+            className="gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add User
+          </Button>
+        }
+      />
 
       {/* Page Header */}
       <div className="max-w-7xl mx-auto px-8 py-6 pt-8">
