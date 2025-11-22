@@ -12,6 +12,10 @@ import {
 import { Checkbox } from '@/elements/checkbox';
 import { TestCase } from '../types';
 
+/**
+ * @deprecated Use AddTestCasesDialog from @/frontend/components/common/dialogs instead
+ * This component is kept for backward compatibility but should not be used for new code
+ */
 interface SelectTestCasesDialogProps {
   open: boolean;
   testCases: TestCase[];

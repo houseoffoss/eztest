@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use AddTestCasesDialog from @/frontend/components/common/dialogs instead
+ * This component is kept for backward compatibility but should not be used for new code
+ */
 import {
   Dialog,
   DialogContent,

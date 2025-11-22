@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { usePermissions } from '@/hooks/usePermissions';
 import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
 import { TestCaseHeader } from './subcomponents/TestCaseHeader';
 import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
@@ -18,6 +20,7 @@ interface TestCaseDetailProps {
 
 export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck } = usePermissions();
   const [testCase, setTestCase] = useState<TestCase | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -39,6 +42,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [steps, setSteps] = useState<TestStep[]>([]);
   const [newStep, setNewStep] = useState({ action: '', expectedResult: '' });
   const [addingStep, setAddingStep] = useState(false);
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   useEffect(() => {
     fetchTestCase();
@@ -50,6 +54,10 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       document.title = `${testCase.title} | EZTest`;
     }
   }, [testCase]);
+
+  // Check permissions
+  const canUpdateTestCase = hasPermissionCheck('testcases:update');
+  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
 
   const fetchTestCase = async () => {
     try {
@@ -112,13 +120,28 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       if (data.data) {
         await updateSteps();
         setIsEditing(false);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test case updated successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
         fetchTestCase();
       } else {
-        alert(data.error || 'Failed to update test case');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Update Test Case',
+          message: data.error || 'Failed to update test case',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error updating test case:', error);
-      alert('Failed to update test case');
     }
   };
 
@@ -141,7 +164,11 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   const handleAddStep = () => {
     if (!newStep.action || !newStep.expectedResult) {
-      alert('Please fill in both action and expected result');
+      setAlert({
+        type: 'error',
+        title: 'Missing Required Fields',
+        message: 'Please fill in both action and expected result',
+      });
       return;
     }
 
@@ -177,14 +204,30 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       });
 
       if (response.ok) {
-        router.push(`/projects/${testCase?.project.id}/testcases`);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test case deleted successfully',
+        });
+        setTimeout(() => {
+          router.push(`/projects/${testCase?.project.id}/testcases`);
+        }, 1500);
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete test case');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Delete Test Case',
+          message: data.error || 'Failed to delete test case',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error deleting test case:', error);
-      alert('Failed to delete test case');
     }
   };
 
@@ -210,6 +253,9 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   return (
     <div className="flex-1">
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
       {/* Top Bar */}
       <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center justify-between p-4">
@@ -245,6 +291,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           onSave={handleSave}
           onDelete={() => setDeleteDialogOpen(true)}
           onFormChange={setFormData}
+          canUpdate={canUpdateTestCase}
+          canDelete={canDeleteTestCase}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -277,8 +325,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         </div>
 
         <DeleteTestCaseDialog
-          open={deleteDialogOpen}
           testCase={testCase}
+          triggerOpen={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={handleDeleteTestCase}
         />

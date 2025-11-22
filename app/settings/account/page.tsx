@@ -7,6 +7,7 @@ import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Loader } from '@/elements/loader';
+import { SettingsSidebar } from '@/components/layout/SettingsSidebar';
 
 interface AccountStatus {
   isMarkedForDeletion: boolean;
@@ -170,8 +171,10 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="max-w-2xl mx-auto px-4">
+    <div className="min-h-screen flex">
+      <SettingsSidebar />
+      <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Account & Security</h1>
           <p className="text-muted-foreground">Manage password, security settings, and account deletion</p>
@@ -443,6 +446,7 @@ export default function AccountSettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

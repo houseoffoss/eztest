@@ -13,6 +13,7 @@ interface TestRunHeaderProps {
     };
   };
   actionLoading: boolean;
+  canUpdate?: boolean;
   onStartTestRun: () => void;
   onCompleteTestRun: () => void;
 }
@@ -20,6 +21,7 @@ interface TestRunHeaderProps {
 export function TestRunHeader({
   testRun,
   actionLoading,
+  canUpdate = true,
   onStartTestRun,
   onCompleteTestRun,
 }: TestRunHeaderProps) {
@@ -60,7 +62,7 @@ export function TestRunHeader({
         </div>
 
         <div className="flex gap-2">
-          {testRun.status === 'PLANNED' && (
+          {canUpdate && testRun.status === 'PLANNED' && (
             <Button
               variant="glass-primary"
               onClick={onStartTestRun}
@@ -70,7 +72,7 @@ export function TestRunHeader({
               Start Test Run
             </Button>
           )}
-          {testRun.status === 'IN_PROGRESS' && (
+          {canUpdate && testRun.status === 'IN_PROGRESS' && (
             <Button
               variant="glass-primary"
               onClick={onCompleteTestRun}

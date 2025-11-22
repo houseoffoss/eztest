@@ -180,6 +180,7 @@ export async function seedRBAC() {
       'testcases:read',
       'testruns:read',
       'requirements:read',
+      'users:read',
     ].includes(perm.name)
   );
   await prisma.rolePermission.createMany({

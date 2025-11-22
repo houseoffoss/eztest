@@ -15,6 +15,8 @@ interface TestCaseHeaderProps {
   onSave: () => void;
   onDelete: () => void;
   onFormChange: (data: TestCaseFormData) => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 export function TestCaseHeader({
@@ -26,6 +28,8 @@ export function TestCaseHeader({
   onSave,
   onDelete,
   onFormChange,
+  canUpdate = true,
+  canDelete = true,
 }: TestCaseHeaderProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -102,14 +106,18 @@ export function TestCaseHeader({
             </>
           ) : (
             <>
-              <Button variant="glass" onClick={onEdit}>
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button variant="glass-destructive" onClick={onDelete}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
+              {canUpdate && (
+                <Button variant="glass" onClick={onEdit}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+              {canDelete && (
+                <Button variant="glass-destructive" onClick={onDelete}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              )}
             </>
           )}
         </div>

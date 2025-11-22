@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
-import { Checkbox } from '@/elements/checkbox';
+import { CheckboxListItem } from '@/elements/checkbox-list-item';
 import { Badge } from '@/elements/badge';
 import { Folder, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
@@ -98,32 +98,22 @@ export function AddTestSuitesDialog({
                 {/* Suite Header */}
                 <div className="bg-white/5 p-4 hover:bg-white/10 transition-colors">
                   <div className="flex items-start gap-3">
-                    <Checkbox
+                    <CheckboxListItem
                       id={testSuite.id}
                       checked={selectedSuiteIds.includes(testSuite.id)}
-                      onCheckedChange={(checked: boolean) =>
+                      onCheckedChange={(checked) =>
                         onToggleTestSuite(testSuite.id, checked)
                       }
-                      className="mt-1"
+                      label={testSuite.name}
+                      description={testSuite.description}
+                      rightContent={
+                        <Badge variant="outline" className="text-xs">
+                          {testSuite._count?.testCases || testSuite.testCases?.length || 0} test cases
+                        </Badge>
+                      }
+                      variant="compact"
+                      onClick={() => toggleSuiteExpanded(testSuite.id)}
                     />
-                    <div className="flex-1 cursor-pointer">
-                      <label htmlFor={testSuite.id} className="cursor-pointer">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Folder className="w-4 h-4 text-primary" />
-                          <p className="font-semibold text-white">
-                            {testSuite.name}
-                          </p>
-                          <Badge variant="outline" className="text-xs ml-auto">
-                            {testSuite._count?.testCases || testSuite.testCases?.length || 0} test cases
-                          </Badge>
-                        </div>
-                        {testSuite.description && (
-                          <p className="text-xs text-white/60 ml-6">
-                            {testSuite.description}
-                          </p>
-                        )}
-                      </label>
-                    </div>
                     <button
                       onClick={() => toggleSuiteExpanded(testSuite.id)}
                       className="text-white/60 hover:text-white p-1 transition-colors"

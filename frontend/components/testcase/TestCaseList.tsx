@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { TestCase, TestSuite, Project, TestCaseFormData } from './types';
 import { TestCaseTable } from './subcomponents/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
@@ -45,18 +46,8 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Form state
-  const [formData, setFormData] = useState<TestCaseFormData>({
-    title: '',
-    description: '',
-    expectedResult: '',
-    priority: 'MEDIUM',
-    status: 'DRAFT',
-    estimatedTime: '',
-    preconditions: '',
-    postconditions: '',
-    suiteId: null,
-  });
+  // Alert state
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -168,44 +159,14 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   const totalPages = Math.ceil(filteredTestCases.length / itemsPerPage);
 
-  const handleCreateTestCase = async () => {
-    try {
-      const estimatedTime = formData.estimatedTime
-        ? parseInt(formData.estimatedTime)
-        : undefined;
-
-      const response = await fetch(`/api/projects/${projectId}/testcases`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          estimatedTime,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.data) {
-        setCreateDialogOpen(false);
-        setFormData({
-          title: '',
-          description: '',
-          expectedResult: '',
-          priority: 'MEDIUM',
-          status: 'DRAFT',
-          estimatedTime: '',
-          preconditions: '',
-          postconditions: '',
-          suiteId: null,
-        });
-        fetchTestCases();
-      } else {
-        alert(data.error || 'Failed to create test case');
-      }
-    } catch (error) {
-      console.error('Error creating test case:', error);
-      alert('Failed to create test case');
-    }
+  const handleTestCaseCreated = (newTestCase: TestCase) => {
+    setAlert({
+      type: 'success',
+      title: 'Success',
+      message: `Test case "${newTestCase.title}" created successfully`,
+    });
+    setTimeout(() => setAlert(null), 5000);
+    fetchTestCases();
   };
 
   const handleDeleteTestCase = async () => {
@@ -217,16 +178,32 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       });
 
       if (response.ok) {
+        const deletedTestCaseName = selectedTestCase.title;
         setDeleteDialogOpen(false);
         setSelectedTestCase(null);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: `Test case "${deletedTestCaseName}" deleted successfully`,
+        });
+        setTimeout(() => setAlert(null), 5000);
         fetchTestCases();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete test case');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Delete Test Case',
+          message: data.error || 'Failed to delete test case',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error deleting test case:', error);
-      alert('Failed to delete test case');
     }
   };
 
@@ -249,6 +226,9 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   return (
     <>
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
       {/* Top Bar */}
       <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
         <div className="px-8 py-4">
@@ -322,6 +302,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
           <EmptyTestCaseState
             hasFilters={testCases.length > 0}
             onCreateClick={() => setCreateDialogOpen(true)}
+            canCreate={canCreateTestCase}
           />
         ) : (
           <>
@@ -353,18 +334,17 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
         {/* Create Dialog */}
         <CreateTestCaseDialog
-          open={createDialogOpen}
-          formData={formData}
+          projectId={projectId}
           testSuites={testSuites}
+          triggerOpen={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          onFormChange={setFormData}
-          onSubmit={handleCreateTestCase}
+          onTestCaseCreated={handleTestCaseCreated}
         />
 
         {/* Delete Dialog */}
         <DeleteTestCaseDialog
-          open={deleteDialogOpen}
           testCase={selectedTestCase}
+          triggerOpen={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={handleDeleteTestCase}
         />

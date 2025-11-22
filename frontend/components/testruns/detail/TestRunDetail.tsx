@@ -1,8 +1,5 @@
-'use client';
-
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
 import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
@@ -10,7 +7,7 @@ import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
 import { TestCasesListCard } from './subcomponents/TestCasesListCard';
 import { RecordResultDialog } from './subcomponents/RecordResultDialog';
-import { AddTestCasesDialog } from './subcomponents/AddTestCasesDialog';
+import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { AddTestSuitesDialog } from './subcomponents/AddTestSuitesDialog';
 import {
   CheckCircle,
@@ -408,14 +405,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
               { label: testRun.name },
             ]}
           />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => signOut({ callbackUrl: '/auth/login' })}
-            className="text-white/70 hover:text-white border-white/20"
-          >
-            Sign Out
-          </Button>
+          <form action="/api/auth/signout" method="POST" className="inline">
+            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+              Sign Out
+            </Button>
+          </form>
         </div>
       </div>
 
@@ -423,6 +417,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         <TestRunHeader
           testRun={testRun}
           actionLoading={actionLoading}
+          canUpdate={canUpdateTestRun}
           onStartTestRun={handleStartTestRun}
           onCompleteTestRun={handleCompleteTestRun}
         />
@@ -437,6 +432,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         <TestCasesListCard
           results={testRun.results}
           testRunStatus={testRun.status}
+          canUpdate={canUpdateTestRun}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);
@@ -460,21 +456,13 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
         <AddTestCasesDialog
           open={addCasesDialogOpen}
-          availableTestCases={availableTestCases}
-          selectedCaseIds={selectedCaseIds}
+          testCases={availableTestCases}
+          selectedIds={selectedCaseIds}
           onOpenChange={setAddCasesDialogOpen}
-          onToggleTestCase={(testCaseId, checked) => {
-            if (checked) {
-              setSelectedCaseIds([...selectedCaseIds, testCaseId]);
-            } else {
-              setSelectedCaseIds(selectedCaseIds.filter((id) => id !== testCaseId));
-            }
-          }}
-          onAdd={handleAddTestCases}
-          onCancel={() => {
-            setAddCasesDialogOpen(false);
-            setSelectedCaseIds([]);
-          }}
+          onSelectionChange={(ids) => setSelectedCaseIds(ids)}
+          onSubmit={handleAddTestCases}
+          context="run"
+          showPriority={true}
         />
 
         <AddTestSuitesDialog

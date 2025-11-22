@@ -7,6 +7,7 @@ import { TestResult, TestCase } from '../types';
 interface TestCasesListCardProps {
   results: TestResult[];
   testRunStatus: string;
+  canUpdate?: boolean;
   onAddTestCases: () => void;
   onAddTestSuites: () => void;
   onExecuteTestCase: (testCase: TestCase) => void;
@@ -16,6 +17,7 @@ interface TestCasesListCardProps {
 export function TestCasesListCard({
   results,
   testRunStatus,
+  canUpdate = true,
   onAddTestCases,
   onAddTestSuites,
   onExecuteTestCase,
@@ -43,26 +45,28 @@ export function TestCasesListCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Test Cases</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestSuites}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
-            </Button>
-            <Button
-              variant="glass"
-              size="sm"
-              onClick={onAddTestCases}
-              disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
-            </Button>
-          </div>
+          {canUpdate && (
+            <div className="flex gap-2">
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={onAddTestSuites}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Suites
+              </Button>
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={onAddTestCases}
+                disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Cases
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -88,24 +92,24 @@ export function TestCasesListCard({
               return (
                 <div
                   key={testCase.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-4 p-4 rounded bg-white/5 hover:bg-white/8 transition-colors border border-white/10"
                 >
                   <div className="flex-shrink-0">
                     {getResultIcon(result?.status)}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium mb-1">
-                      {testCase.title}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-white font-medium">
+                        {testCase.title}
+                      </h3>
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 h-fit">
                         {testCase.priority}
                       </Badge>
                       {result && (
                         <Badge
                           variant="outline"
-                          className={`text-xs ${getStatusColor(result.status)}`}
+                          className={`text-xs px-2 py-0.5 h-fit ${getStatusColor(result.status)}`}
                         >
                           {result.status}
                         </Badge>

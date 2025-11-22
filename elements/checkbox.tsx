@@ -13,15 +13,14 @@ type CheckboxProps = React.ComponentProps<typeof CheckboxPrimitive.Root> & {
 function Checkbox({ className, variant = "default", ...props }: CheckboxProps) {
   const base = "peer size-5 shrink-0 rounded transition-all outline-none cursor-pointer"
   const defaultStyles = cn(
-    "border border-border bg-background",
-    "data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground data-[state=checked]:border-accent",
-    // Subtle accent feedback on hover/focus to match selection theme
-    "hover:border-accent/70 focus-visible:border-accent focus-visible:ring-accent/30"
+    "border border-white/15 bg-white/5",
+    "data-[state=checked]:bg-accent/40 data-[state=checked]:text-white data-[state=checked]:border-accent/40",
+    "hover:border-white/25 hover:bg-white/8 focus-visible:border-white/35 focus-visible:ring-accent/25"
   )
   const glassStyles = cn(
-    "border border-white/25 bg-white/10 backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]",
-    "data-[state=checked]:bg-accent/45 data-[state=checked]:border-accent/60",
-    "hover:border-accent/60 focus-visible:border-accent focus-visible:ring-accent/30"
+    "border border-white/15 bg-white/5 backdrop-blur-sm",
+    "data-[state=checked]:bg-accent/40 data-[state=checked]:border-accent/40 data-[state=checked]:text-white",
+    "hover:border-white/25 hover:bg-white/8 focus-visible:border-white/35 focus-visible:ring-accent/25"
   )
 
   return (
@@ -30,7 +29,7 @@ function Checkbox({ className, variant = "default", ...props }: CheckboxProps) {
       className={cn(
         base,
         variant === "glass" ? glassStyles : defaultStyles,
-        "hover:border-ring/60 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/30 aria-invalid:ring-destructive/20 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}

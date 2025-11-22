@@ -6,6 +6,7 @@ import { Button } from '@/elements/button';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
 import { Plus } from 'lucide-react';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { TestRunsHeader } from './subcomponents/TestRunsHeader';
 import { TestRunsFilterCard } from './subcomponents/TestRunsFilterCard';
 import { TestRunCard } from './subcomponents/TestRunCard';
@@ -37,12 +38,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     environmentFilter: 'all',
   });
 
-  const [formData, setFormData] = useState<TestRunFormData>({
-    name: '',
-    description: '',
-    environment: '',
-    assignedToId: '',
-  });
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   useEffect(() => {
     fetchProject();
@@ -116,32 +112,14 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     setFilteredTestRuns(filtered);
   };
 
-  const handleCreateTestRun = async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/testruns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (data.data) {
-        setCreateDialogOpen(false);
-        setFormData({
-          name: '',
-          description: '',
-          environment: '',
-          assignedToId: '',
-        });
-        fetchTestRuns();
-      } else {
-        alert(data.error || 'Failed to create test run');
-      }
-    } catch (error) {
-      console.error('Error creating test run:', error);
-      alert('Failed to create test run');
-    }
+  const handleTestRunCreated = (newTestRun: TestRun) => {
+    setAlert({
+      type: 'success',
+      title: 'Success',
+      message: `Test run "${newTestRun.name}" created successfully`,
+    });
+    setTimeout(() => setAlert(null), 5000);
+    fetchTestRuns();
   };
 
   const handleDeleteTestRun = async () => {
@@ -153,16 +131,32 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
       });
 
       if (response.ok) {
+        const deletedTestRunName = selectedTestRun.name;
         setDeleteDialogOpen(false);
         setSelectedTestRun(null);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: `Test run "${deletedTestRunName}" deleted successfully`,
+        });
+        setTimeout(() => setAlert(null), 5000);
         fetchTestRuns();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to delete test run');
+        setAlert({
+          type: 'error',
+          title: 'Failed to Delete Test Run',
+          message: data.error || 'Failed to delete test run',
+        });
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
       console.error('Error deleting test run:', error);
-      alert('Failed to delete test run');
     }
   };
 
@@ -175,6 +169,9 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
 
   return (
     <>
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
       {/* Top Bar */}
       <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
         <div className="px-8 py-4">
@@ -197,7 +194,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
                   New Test Run
                 </Button>
               )}
-              <form action="/api/auth/signout" method="POST">
+              <form action="/api/auth/signout" method="POST" className="inline">
                 <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
                   Sign Out
                 </Button>
@@ -242,6 +239,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           <TestRunsEmptyState
             hasTestRuns={testRuns.length > 0}
             onCreateClick={() => setCreateDialogOpen(true)}
+            canCreate={canCreateTestRun}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -267,17 +265,16 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
 
         {/* Create Dialog */}
         <CreateTestRunDialog
-          open={createDialogOpen}
-          formData={formData}
+          projectId={projectId}
+          triggerOpen={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          onFormChange={(data) => setFormData({ ...formData, ...data })}
-          onCreate={handleCreateTestRun}
+          onTestRunCreated={handleTestRunCreated}
         />
 
         {/* Delete Dialog */}
         <DeleteTestRunDialog
-          open={deleteDialogOpen}
-          testRunName={selectedTestRun?.name || ''}
+          testRun={selectedTestRun}
+          triggerOpen={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={handleDeleteTestRun}
         />

@@ -4,17 +4,17 @@ import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/
 import { TestCase } from '../types';
 
 interface DeleteTestCaseDialogProps {
-  open: boolean;
   testCase: TestCase | null;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  triggerOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onConfirm: () => Promise<void>;
 }
 
 export type { DeleteTestCaseDialogProps };
 
 export function DeleteTestCaseDialog({
-  open,
   testCase,
+  triggerOpen,
   onOpenChange,
   onConfirm,
 }: DeleteTestCaseDialogProps) {
@@ -23,9 +23,9 @@ export function DeleteTestCaseDialog({
     description: `Are you sure you want to delete "${testCase?.title}"? This action cannot be undone.`,
     submitLabel: 'Delete',
     cancelLabel: 'Cancel',
-    triggerOpen: open,
+    triggerOpen,
     onOpenChange,
-    onSubmit: async () => onConfirm(),
+    onSubmit: onConfirm,
     destructive: true,
   };
 

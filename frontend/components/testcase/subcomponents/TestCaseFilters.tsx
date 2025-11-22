@@ -1,14 +1,7 @@
 'use client';
 
-import { Input } from '@/elements/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/elements/select';
-import { Filter, Search } from 'lucide-react';
+import { SearchInput } from '@/components/design/SearchInput';
+import { FilterDropdown, type FilterOption } from '@/components/design/FilterDropdown';
 
 interface TestCaseFiltersProps {
   searchQuery: string;
@@ -18,6 +11,21 @@ interface TestCaseFiltersProps {
   onPriorityChange: (value: string) => void;
   onStatusChange: (value: string) => void;
 }
+
+const priorityOptions: FilterOption[] = [
+  { value: 'all', label: 'All Priorities' },
+  { value: 'CRITICAL', label: 'Critical' },
+  { value: 'HIGH', label: 'High' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'LOW', label: 'Low' },
+];
+
+const statusOptions: FilterOption[] = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'DEPRECATED', label: 'Deprecated' },
+];
 
 export function TestCaseFilters({
   searchQuery,
@@ -31,46 +39,29 @@ export function TestCaseFilters({
     <div className="mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search test cases..."
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onSearchChange(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={onSearchChange}
+            placeholder="Search test cases..."
+          />
         </div>
 
         <div>
-          <Select value={priorityFilter} onValueChange={onPriorityChange}>
-            <SelectTrigger>
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Priorities</SelectItem>
-              <SelectItem value="CRITICAL">Critical</SelectItem>
-              <SelectItem value="HIGH">High</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="LOW">Low</SelectItem>
-            </SelectContent>
-          </Select>
+          <FilterDropdown
+            value={priorityFilter}
+            onValueChange={onPriorityChange}
+            placeholder="Priority"
+            options={priorityOptions}
+          />
         </div>
 
         <div>
-          <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger>
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="DEPRECATED">Deprecated</SelectItem>
-            </SelectContent>
-          </Select>
+          <FilterDropdown
+            value={statusFilter}
+            onValueChange={onStatusChange}
+            placeholder="Status"
+            options={statusOptions}
+          />
         </div>
       </div>
     </div>

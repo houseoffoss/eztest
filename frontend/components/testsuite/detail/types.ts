@@ -1,5 +1,6 @@
 export interface TestCase {
   id: string;
+  tcId: string;
   title: string;
   description?: string;
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';

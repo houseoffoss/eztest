@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/elements/button';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Loader } from '@/elements/loader';
+import { SettingsSidebar } from '@/components/layout/SettingsSidebar';
 
 interface Profile {
   id: string;
@@ -104,8 +105,10 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="max-w-2xl mx-auto px-4">
+    <div className="min-h-screen flex">
+      <SettingsSidebar />
+      <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Profile Settings</h1>
           <p className="text-muted-foreground">Manage your account information</p>
@@ -218,6 +221,7 @@ export default function ProfileSettingsPage() {
               </div>
             </div>
         </GlassPanel>
+        </div>
       </div>
     </div>
   );

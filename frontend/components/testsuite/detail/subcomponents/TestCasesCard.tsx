@@ -11,7 +11,7 @@ import {
 } from '@/elements/table';
 import { Plus, TestTube2, Trash2 } from 'lucide-react';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
-import { TestCase } from '../types';
+import { TestCase } from '@/frontend/components/testcase/types';
 
 interface TestCasesCardProps {
   testCases: TestCase[];

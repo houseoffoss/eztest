@@ -1,5 +1,3 @@
-'use client';
-
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/elements/button';
@@ -14,10 +12,10 @@ import { TestSuiteInfoCard } from './subcomponents/TestSuiteInfoCard';
 import { QuickActionsCard } from './subcomponents/QuickActionsCard';
 import { DeleteTestSuiteDialog } from './subcomponents/DeleteTestSuiteDialog';
 import { CreateTestCaseDialog } from '@/frontend/components/testcase/subcomponents/CreateTestCaseDialog';
-import { SelectTestCasesDialog } from '@/frontend/components/testcase/subcomponents/SelectTestCasesDialog';
+import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { DeleteTestCaseDialog } from '@/frontend/components/testcase/subcomponents/DeleteTestCaseDialog';
 import { TestSuite, TestSuiteFormData } from './types';
-import { TestCaseFormData, TestCase } from '@/frontend/components/testcase/types';
+import { TestCase } from '@/frontend/components/testcase/types';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestSuiteDetailProps {
@@ -43,18 +41,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [formData, setFormData] = useState<TestSuiteFormData>({
     name: '',
     description: '',
-  });
-
-  const [testCaseFormData, setTestCaseFormData] = useState<TestCaseFormData>({
-    title: '',
-    description: '',
-    expectedResult: '',
-    priority: 'MEDIUM',
-    status: 'DRAFT',
-    estimatedTime: '',
-    preconditions: '',
-    postconditions: '',
-    suiteId: null,
   });
 
   useEffect(() => {
@@ -181,61 +167,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     }
   };
 
-  const handleCreateTestCase = async () => {
-    try {
-      const estimatedTime = testCaseFormData.estimatedTime
-        ? parseInt(testCaseFormData.estimatedTime)
-        : undefined;
 
-      const response = await fetch(`/api/projects/${testSuite?.project.id}/testcases`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...testCaseFormData,
-          estimatedTime,
-          suiteId: suiteId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.data) {
-        setCreateTestCaseDialogOpen(false);
-        setTestCaseFormData({
-          title: '',
-          description: '',
-          expectedResult: '',
-          priority: 'MEDIUM',
-          status: 'DRAFT',
-          estimatedTime: '',
-          preconditions: '',
-          postconditions: '',
-          suiteId: null,
-        });
-        setAlert({
-          type: 'success',
-          title: 'Success',
-          message: 'Test case created successfully',
-        });
-        setTimeout(() => setAlert(null), 5000);
-        fetchTestSuite();
-      } else {
-        setAlert({
-          type: 'error',
-          title: 'Failed to Create Test Case',
-          message: data.error || 'Failed to create test case',
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setAlert({
-        type: 'error',
-        title: 'Connection Error',
-        message: errorMessage,
-      });
-      console.error('Error creating test case:', error);
-    }
-  };
 
   const fetchAvailableTestCases = async () => {
     try {
@@ -425,17 +357,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               testCasesCount={testSuite._count.testCases}
               onAddTestCase={() => {
                 setCreateTestCaseDialogOpen(true);
-                setTestCaseFormData({
-                  title: '',
-                  description: '',
-                  expectedResult: '',
-                  priority: 'MEDIUM',
-                  status: 'DRAFT',
-                  estimatedTime: '',
-                  preconditions: '',
-                  postconditions: '',
-                  suiteId: null,
-                });
               }}
               onTestCaseClick={(testCaseId) =>
                 router.push(
@@ -475,31 +396,9 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
             <QuickActionsCard
               onCreateTestCase={() => {
                 setCreateTestCaseDialogOpen(true);
-                setTestCaseFormData({
-                  title: '',
-                  description: '',
-                  expectedResult: '',
-                  priority: 'MEDIUM',
-                  status: 'DRAFT',
-                  estimatedTime: '',
-                  preconditions: '',
-                  postconditions: '',
-                  suiteId: null,
-                });
               }}
               onAddTestCase={() => {
                 setCreateTestCaseDialogOpen(true);
-                setTestCaseFormData({
-                  title: '',
-                  description: '',
-                  expectedResult: '',
-                  priority: 'MEDIUM',
-                  status: 'DRAFT',
-                  estimatedTime: '',
-                  preconditions: '',
-                  postconditions: '',
-                  suiteId: null,
-                });
               }}
               onAddExistingTestCases={() => {
                 fetchAvailableTestCases();
@@ -525,28 +424,39 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
         {/* Create Test Case Dialog */}
         <CreateTestCaseDialog
-          open={createTestCaseDialogOpen}
-          formData={testCaseFormData}
-          testSuites={[]}
+          projectId={testSuite.project.id}
+          testSuites={testSuite ? [{ id: testSuite.id, name: testSuite.name, parentId: testSuite.parentId || null, _count: { testCases: testSuite._count.testCases } }] : []}
+          defaultSuiteId={suiteId}
+          triggerOpen={createTestCaseDialogOpen}
           onOpenChange={setCreateTestCaseDialogOpen}
-          onFormChange={setTestCaseFormData}
-          onSubmit={handleCreateTestCase}
+          onTestCaseCreated={() => {
+            setCreateTestCaseDialogOpen(false);
+            setAlert({
+              type: 'success',
+              title: 'Success',
+              message: 'Test case created successfully',
+            });
+            setTimeout(() => setAlert(null), 5000);
+            fetchTestSuite();
+          }}
         />
 
         {/* Add Test Cases Dialog */}
-        <SelectTestCasesDialog
+        <AddTestCasesDialog
           open={addTestCasesDialogOpen}
           testCases={availableTestCases}
           selectedIds={selectedTestCaseIds}
           onOpenChange={setAddTestCasesDialogOpen}
           onSelectionChange={setSelectedTestCaseIds}
           onSubmit={handleAddTestCases}
+          context="suite"
+          showPriority={false}
         />
 
         {/* Delete Test Case Dialog */}
         <DeleteTestCaseDialog
-          open={deleteTestCaseDialogOpen}
           testCase={testCaseToDelete}
+          triggerOpen={deleteTestCaseDialogOpen}
           onOpenChange={setDeleteTestCaseDialogOpen}
           onConfirm={handleConfirmDeleteTestCase}
         />
