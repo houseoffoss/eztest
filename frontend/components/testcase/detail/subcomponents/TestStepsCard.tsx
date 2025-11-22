@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
@@ -157,9 +158,9 @@ export function TestStepsCard({
                 />
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="glass-primary" onClick={onAddStep}>
+                <ButtonPrimary size="sm" onClick={onAddStep}>
                   Add
-                </Button>
+                </ButtonPrimary>
                 <Button
                   size="sm"
                   variant="glass"

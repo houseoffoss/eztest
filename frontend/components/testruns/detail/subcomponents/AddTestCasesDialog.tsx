@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Checkbox } from '@/elements/checkbox';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
 import { TestCase } from '../types';
@@ -98,13 +99,12 @@ export function AddTestCasesDialog({
           <Button variant="glass" onClick={onCancel}>
             Cancel
           </Button>
-          <Button
-            variant="glass-primary"
+          <ButtonPrimary
             onClick={onAdd}
             disabled={selectedCaseIds.length === 0}
           >
             Add {selectedCaseIds.length > 0 && `(${selectedCaseIds.length})`}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

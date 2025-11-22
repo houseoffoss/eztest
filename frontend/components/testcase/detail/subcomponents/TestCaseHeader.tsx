@@ -2,6 +2,7 @@
 
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Edit, Trash2, Save, X } from 'lucide-react';
 import { TestCase, TestCaseFormData } from '../types';
@@ -99,10 +100,10 @@ export function TestCaseHeader({
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <Button variant="glass-primary" onClick={onSave}>
+              <ButtonPrimary onClick={onSave}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
-              </Button>
+              </ButtonPrimary>
             </>
           ) : (
             <>

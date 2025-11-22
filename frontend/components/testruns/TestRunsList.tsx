@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Plus } from 'lucide-react';
@@ -179,14 +179,12 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         ]}
         actions={
           canCreateTestRun ? (
-            <Button
-              variant="glass-primary"
-              size="sm"
+            <ButtonPrimary
               onClick={() => setCreateDialogOpen(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
               New Test Run
-            </Button>
+            </ButtonPrimary>
           ) : undefined
         }
       />

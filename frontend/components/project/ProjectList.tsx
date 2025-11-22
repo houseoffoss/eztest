@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { Loader } from '@/elements/loader';
@@ -130,9 +131,9 @@ export default function ProjectList() {
         ]}
         actions={
           canCreateProject ? (
-            <Button onClick={() => setTriggerCreateDialog(true)} variant="glass-primary">
+            <ButtonPrimary onClick={() => setTriggerCreateDialog(true)}>
               + New Project
-            </Button>
+            </ButtonPrimary>
           ) : undefined
         }
       />

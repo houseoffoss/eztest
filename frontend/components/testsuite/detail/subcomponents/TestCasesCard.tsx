@@ -1,6 +1,7 @@
 import { DetailCard } from '@/components/design/DetailCard';
 import { DataTable, type ColumnDef } from '@/components/design/DataTable';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Badge } from '@/elements/badge';
 import { Plus, TestTube2, Trash2 } from 'lucide-react';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
@@ -125,10 +126,10 @@ export function TestCasesCard({
             No test cases in this suite yet
           </p>
           {canAdd && (
-            <Button variant="glass-primary" size="sm" onClick={onAddTestCase}>
+            <ButtonPrimary onClick={onAddTestCase}>
               <Plus className="w-4 h-4 mr-2" />
               Add First Test Case
-            </Button>
+            </ButtonPrimary>
           )}
         </div>
       )}

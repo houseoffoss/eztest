@@ -29,14 +29,18 @@ const buttonVariants = cva(
           "rounded-2xl backdrop-blur-xl border border-accent/40 text-accent-foreground bg-accent/20 shadow-md hover:bg-accent/25 active:bg-accent/30",
         "glass-destructive":
           "rounded-2xl backdrop-blur-xl border border-red-400/40 text-red-50 bg-red-500/20 shadow-md hover:bg-red-500/30 active:bg-red-500/35",
+        "glass-blue":
+          "rounded-full backdrop-blur-xl border border-[#748ED3] text-white bg-[#293B64]/40 shadow-md hover:bg-[#293B64]/50 active:bg-[#293B64]/60",
+        "glass-orange":
+          "rounded-full backdrop-blur-xl border border-[#905320] text-white bg-[#4D3C32]/40 shadow-md hover:bg-[#4D3C32]/50 active:bg-[#4D3C32]/60",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 px-6 has-[>svg]:px-4",
+        default: "h-9 px-5 py-2 has-[>svg]:px-4",
+        sm: "h-8 gap-1.5 px-4 has-[>svg]:px-3 text-xs",
+        lg: "h-11 px-7 has-[>svg]:px-5",
         icon: "size-9",
         "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        "icon-lg": "size-11",
       },
     },
     defaultVariants: {

@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/elements/dialog"
 import { Button } from "@/elements/button"
+import { ButtonPrimary } from "@/elements/button-primary"
 
 export interface ConfirmDialogProps {
   title?: React.ReactNode
@@ -50,9 +51,9 @@ export function ConfirmDialog({
           <Button variant="glass" onClick={() => setOpen(false)} disabled={busy}>
             {cancelLabel}
           </Button>
-          <Button variant="glass-primary" onClick={handleConfirm} disabled={busy}>
+          <ButtonPrimary onClick={handleConfirm} disabled={busy}>
             {confirmLabel}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

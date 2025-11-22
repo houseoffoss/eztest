@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Loader } from '@/elements/loader';
 import { useSearchParams } from 'next/navigation';
@@ -52,9 +53,9 @@ function ErrorContent() {
           </div>
 
           <div className="space-y-4">
-            <Button asChild variant="glass-primary" className="w-full rounded-[10px]">
+            <ButtonPrimary asChild className="w-full rounded-[10px]">
               <Link href="/auth/login" className="flex justify-center">Back to Login</Link>
-            </Button>
+            </ButtonPrimary>
             <Button asChild variant="glass" className="w-full rounded-[10px]">
               <Link href="/auth/register" className="flex justify-center">Create Account</Link>
             </Button>

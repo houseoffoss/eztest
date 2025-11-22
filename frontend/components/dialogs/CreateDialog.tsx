@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import {
   Dialog,
   DialogContent,
@@ -58,13 +59,12 @@ export function CreateDialog({
           >
             {cancelLabel}
           </Button>
-          <Button 
-            variant="glass-primary" 
+          <ButtonPrimary 
             onClick={handleConfirm}
             disabled={isLoading}
           >
             {isLoading ? 'Creating...' : confirmLabel}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -131,9 +132,9 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       <Card variant="glass">
         <CardContent className="p-8 text-center">
           <p className="text-lg text-white/70">Project not found</p>
-          <Button onClick={() => router.push('/projects')} variant="glass-primary" className="mt-4">
+          <ButtonPrimary onClick={() => router.push('/projects')} className="mt-4">
             Back to Projects
-          </Button>
+          </ButtonPrimary>
         </CardContent>
       </Card>
     );
@@ -201,10 +202,10 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             )}
 
             <div className="flex gap-3">
-              <Button type="submit" disabled={saving} variant="glass-primary">
+              <ButtonPrimary type="submit" disabled={saving}>
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
+              </ButtonPrimary>
               <Button
                 type="button"
                 variant="glass"

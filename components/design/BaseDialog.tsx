@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
 import { Textarea } from '@/elements/textarea';
@@ -250,13 +251,12 @@ export const BaseDialog = <T = unknown,>({
             >
               {cancelLabel}
             </Button>
-            <Button
+            <ButtonPrimary
               type="submit"
               disabled={loading}
-              variant="glass-primary"
             >
               {loading ? 'Loading...' : submitLabel}
-            </Button>
+            </ButtonPrimary>
           </div>
         </form>
       </DialogContent>

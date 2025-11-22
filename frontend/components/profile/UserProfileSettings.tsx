@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Textarea } from '@/elements/textarea';
 import { Label } from '@/elements/label';
@@ -248,15 +249,14 @@ export default function UserProfileSettings() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
-                    variant="glass-primary"
                     disabled={saving}
                     className="gap-2"
                   >
                     <Save className="w-4 h-4" />
                     {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                  </ButtonPrimary>
                 </div>
               </form>
             </CardContent>
@@ -323,15 +323,14 @@ export default function UserProfileSettings() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
-                    variant="glass-primary"
                     disabled={saving}
                     className="gap-2"
                   >
                     <Key className="w-4 h-4" />
                     {saving ? 'Updating...' : 'Change Password'}
-                  </Button>
+                  </ButtonPrimary>
                 </div>
               </form>
             </CardContent>

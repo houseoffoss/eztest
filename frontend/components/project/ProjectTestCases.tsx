@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
@@ -234,10 +235,10 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
       <div className="flex justify-end mb-6">
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="glass-primary">
+            <ButtonPrimary>
               <Plus className="w-4 h-4 mr-2" />
               New Test Case
-            </Button>
+            </ButtonPrimary>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

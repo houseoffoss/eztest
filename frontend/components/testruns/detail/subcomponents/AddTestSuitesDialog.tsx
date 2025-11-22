@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { CheckboxListItem } from '@/elements/checkbox-list-item';
 import { Badge } from '@/elements/badge';
 import { Folder, ChevronDown, ChevronRight } from 'lucide-react';
@@ -185,13 +186,12 @@ export function AddTestSuitesDialog({
           <Button variant="glass" onClick={onCancel}>
             Cancel
           </Button>
-          <Button
-            variant="glass-primary"
+          <ButtonPrimary
             onClick={onAdd}
             disabled={selectedSuiteIds.length === 0}
           >
             Add {selectedSuiteIds.length > 0 && `(${selectedSuiteIds.length})`}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

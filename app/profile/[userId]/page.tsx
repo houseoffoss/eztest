@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Badge } from '@/elements/badge';
 import { TopBar } from '@/components/design/TopBar';
@@ -73,9 +74,9 @@ export default function UserProfilePage() {
           <Card variant="glass">
             <CardContent className="p-8 text-center">
               <p className="text-lg text-white/70 mb-4">{error || 'User not found'}</p>
-              <Button onClick={() => router.back()} variant="glass-primary">
+              <ButtonPrimary onClick={() => router.back()}>
                 Go Back
-              </Button>
+              </ButtonPrimary>
             </CardContent>
           </Card>
         </div>

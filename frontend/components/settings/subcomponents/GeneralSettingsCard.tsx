@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
@@ -76,10 +77,10 @@ export function GeneralSettingsCard({
           </div>
 
           <div className="flex gap-3">
-            <Button type="submit" disabled={saving} variant="glass-primary">
+            <ButtonPrimary type="submit" disabled={saving}>
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            </ButtonPrimary>
             <Button type="button" variant="glass" onClick={onCancel}>
               Cancel
             </Button>

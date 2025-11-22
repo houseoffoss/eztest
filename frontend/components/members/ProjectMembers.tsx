@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent } from '@/elements/card';
 import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
@@ -135,13 +136,12 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
           <Card variant="glass">
             <CardContent className="p-8 text-center">
               <p className="text-lg text-white/70">Project not found</p>
-              <Button
+              <ButtonPrimary
                 onClick={() => router.push('/projects')}
-                variant="glass-primary"
                 className="mt-4"
               >
                 Back to Projects
-              </Button>
+              </ButtonPrimary>
             </CardContent>
           </Card>
         </div>
@@ -159,14 +159,13 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         ]}
         actions={
           isAdminOrManager && (
-            <Button
-              variant="glass-primary"
-              size="sm"
+            <ButtonPrimary
+              size="default"
               onClick={() => setAddDialogOpen(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Member
-            </Button>
+            </ButtonPrimary>
           )
         }
       />

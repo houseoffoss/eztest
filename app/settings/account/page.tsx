@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Loader } from '@/elements/loader';
@@ -290,14 +291,13 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
                     disabled={changingPassword}
-                    variant="glass-primary"
                     className="flex-1 rounded-[10px]"
                   >
                     {changingPassword ? 'Changing Password...' : 'Change Password'}
-                  </Button>
+                  </ButtonPrimary>
                   <Button
                     type="button"
                     onClick={() => {
@@ -316,13 +316,12 @@ export default function AccountSettingsPage() {
                 </div>
               </form>
             ) : (
-              <Button
+              <ButtonPrimary
                 onClick={() => setChangePasswordForm(true)}
-                variant="glass-primary"
                 className="rounded-[10px]"
               >
                 Change Password
-              </Button>
+              </ButtonPrimary>
             )}
         </GlassPanel>
 

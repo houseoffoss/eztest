@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Plus } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
@@ -182,14 +183,13 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
           ]}
           actions={
             canCreateTestSuite ? (
-              <Button
-                variant="glass-primary"
-                size="sm"
+              <ButtonPrimary
+                size="default"
                 onClick={() => setCreateDialogOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Test Suite
-              </Button>
+              </ButtonPrimary>
             ) : undefined
           }
         />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { Separator } from '@/elements/separator';
@@ -67,7 +68,7 @@ export function SecuritySettings({
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="glass-primary" className="rounded-lg">Update Password</Button>
+          <ButtonPrimary className="rounded-lg">Update Password</ButtonPrimary>
           <Button variant="glass" className="rounded-lg">Cancel</Button>
         </div>
       </div>

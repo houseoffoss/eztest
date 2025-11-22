@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Plus } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
@@ -237,10 +237,10 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         ]}
         actions={
           canCreateTestCase ? (
-            <Button variant="glass-primary" size="sm" onClick={() => setCreateDialogOpen(true)}>
+            <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Test Case
-            </Button>
+            </ButtonPrimary>
           ) : undefined
         }
       />

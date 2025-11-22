@@ -10,7 +10,7 @@ export function ProfileHeader() {
           <p className="text-white/60 text-sm mt-1">Manage your profile and preferences</p>
         </div>
         <form action="/api/auth/signout" method="POST">
-          <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+          <Button type="submit" variant="glass-destructive" size="default" className="px-5">
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
           </Button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Badge } from '@/elements/badge';
 import { Avatar } from '@/elements/avatar';
 import { Input } from '@/elements/input';
@@ -192,14 +193,13 @@ export default function UserManagement() {
           { label: 'Users' },
         ]}
         actions={
-          <Button
-            variant="glass-primary"
+          <ButtonPrimary
             onClick={() => setAddDialogOpen(true)}
             className="gap-2"
           >
             <UserPlus className="w-4 h-4" />
             Add User
-          </Button>
+          </ButtonPrimary>
         }
       />
 

@@ -17,7 +17,7 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
           <div className="flex items-center gap-3">
             {actions}
             <form action="/api/auth/signout" method="POST" className="inline">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+              <Button type="submit" variant="glass-destructive" size="default" className="px-5">
                 Sign Out
               </Button>
             </form>
