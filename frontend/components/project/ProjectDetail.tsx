@@ -6,7 +6,6 @@ import { TestTube2, Play, FileText, Folder } from 'lucide-react';
 import { Loader } from '@/elements/loader';
 import { TopBar, StatCard } from '@/components/design';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
-import { ProjectOverviewCard } from './subcomponents/ProjectOverviewCard';
 
 interface Project {
   id: string;
@@ -149,9 +148,6 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
             />
           </div>
         </div>
-
-        {/* Project Overview Card */}
-        <ProjectOverviewCard project={project} />
       </div>
     </>
   );

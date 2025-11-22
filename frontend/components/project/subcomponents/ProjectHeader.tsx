@@ -11,6 +11,9 @@ interface ProjectHeaderProps {
       name: string;
     };
     updatedAt: string;
+    members: Array<{
+      id: string;
+    }>;
   };
 }
 
@@ -33,6 +36,10 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
         <div>•</div>
         <div>
           Last updated {new Date(project.updatedAt).toLocaleDateString()}
+        </div>
+        <div>•</div>
+        <div>
+          Team Size: <span className="font-semibold text-white/90">{project.members.length} members</span>
         </div>
       </div>
     </div>
