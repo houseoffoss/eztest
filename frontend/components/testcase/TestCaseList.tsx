@@ -237,7 +237,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         ]}
         actions={
           canCreateTestCase ? (
-            <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
+            <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" />
               New Test Case
             </ButtonPrimary>

@@ -131,7 +131,7 @@ export default function ProjectList() {
         ]}
         actions={
           canCreateProject ? (
-            <ButtonPrimary onClick={() => setTriggerCreateDialog(true)}>
+            <ButtonPrimary onClick={() => setTriggerCreateDialog(true)} className="cursor-pointer">
               + New Project
             </ButtonPrimary>
           ) : undefined

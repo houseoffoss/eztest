@@ -113,12 +113,14 @@ export function AddTestCasesDialog({
               onOpenChange(false);
               onSelectionChange([]);
             }}
+            className="cursor-pointer"
           >
             Cancel
           </Button>
           <ButtonPrimary
             onClick={onSubmit}
             disabled={selectedIds.length === 0}
+            className="cursor-pointer"
           >
             Add {selectedIds.length > 0 && `(${selectedIds.length})`}
           </ButtonPrimary>

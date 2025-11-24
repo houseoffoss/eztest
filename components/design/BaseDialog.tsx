@@ -181,7 +181,7 @@ export const BaseDialog = <T = unknown,>({
           <SelectTrigger className="bg-[#0f172a] border-[#334155]">
             <SelectValue placeholder={field.placeholder} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent variant="glass">
             {field.options?.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -197,7 +197,7 @@ export const BaseDialog = <T = unknown,>({
         key={field.name}
         type={field.type || 'text'}
         {...commonProps}
-        className={`bg-[#0f172a] border-[#334155] ${upperCaseClass}`}
+        className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
       />
     );
   };
@@ -248,12 +248,14 @@ export const BaseDialog = <T = unknown,>({
               type="button"
               variant="glass"
               onClick={() => handleOpenChange(false)}
+              className="cursor-pointer"
             >
               {cancelLabel}
             </Button>
             <ButtonPrimary
               type="submit"
               disabled={loading}
+              className="cursor-pointer"
             >
               {loading ? 'Loading...' : submitLabel}
             </ButtonPrimary>

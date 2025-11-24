@@ -1,6 +1,7 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Input } from '@/elements/input';
 import { Folder, Edit, Trash2, Save, X } from 'lucide-react';
 
@@ -70,11 +71,11 @@ export function TestSuiteHeader({
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button variant="glass" onClick={onCancelEdit}>
+              <Button variant="glass" onClick={onCancelEdit} className="cursor-pointer">
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <ButtonPrimary onClick={onSave}>
+              <ButtonPrimary onClick={onSave} className="cursor-pointer">
                 <Save className="w-4 h-4 mr-2" />
                 Save
               </ButtonPrimary>
@@ -82,16 +83,16 @@ export function TestSuiteHeader({
           ) : (
             <>
               {canUpdate && (
-                <Button variant="glass" onClick={onEdit}>
+                <Button variant="glass" onClick={onEdit} className="cursor-pointer">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
               )}
               {canDelete && (
-                <Button variant="glass-destructive" onClick={onDelete}>
+                <ButtonDestructive onClick={onDelete}>
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
-                </Button>
+                </ButtonDestructive>
               )}
             </>
           )}

@@ -362,7 +362,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreateTestCase}>Create</Button>
+              <ButtonPrimary onClick={handleCreateTestCase}>Create</ButtonPrimary>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -436,10 +436,10 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                 : 'Try adjusting your filters'}
             </p>
             {testCases.length === 0 && (
-              <Button onClick={() => setCreateDialogOpen(true)}>
+              <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Test Case
-              </Button>
+              </ButtonPrimary>
             )}
           </CardContent>
         </Card>

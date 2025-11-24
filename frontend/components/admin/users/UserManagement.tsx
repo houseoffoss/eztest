@@ -195,7 +195,7 @@ export default function UserManagement() {
         actions={
           <ButtonPrimary
             onClick={() => setAddDialogOpen(true)}
-            className="gap-2"
+            className="gap-2 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             Add User

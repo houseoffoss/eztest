@@ -454,7 +454,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           onSelectionChange={(ids) => setSelectedCaseIds(ids)}
           onSubmit={handleAddTestCases}
           context="run"
-          showPriority={true}
+          showPriority={false}
         />
 
         <AddTestSuitesDialog

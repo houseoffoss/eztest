@@ -19,13 +19,13 @@ export function PriorityBadge({ priority, className, children, ...props }: Prior
     <Badge
       variant="glass"
       className={[
-        "rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur-md",
+        "px-2.5 py-0.5 text-xs font-semibold",
         styles[priority],
         className,
       ].join(" ")}
       {...props}
     >
-      {children ?? priority}
+      {children ?? priority.toUpperCase()}
     </Badge>
   )
 }

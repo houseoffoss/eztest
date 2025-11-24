@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react"
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/design"
-import { Button } from "@/elements/button"
+import { ButtonDestructive } from "@/elements/button-destructive"
 
 export interface TopBarProps {
   breadcrumbs: BreadcrumbItem[]
@@ -17,9 +17,9 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
           <div className="flex items-center gap-3">
             {actions}
             <form action="/api/auth/signout" method="POST" className="inline">
-              <Button type="submit" variant="glass-destructive" size="default" className="px-5">
+              <ButtonDestructive type="submit" size="default" className="px-5 cursor-pointer">
                 Sign Out
-              </Button>
+              </ButtonDestructive>
             </form>
           </div>
         </div>

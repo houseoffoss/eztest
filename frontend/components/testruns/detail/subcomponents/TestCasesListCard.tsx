@@ -73,7 +73,7 @@ export function TestCasesListCard({
       label: 'Priority',
       render: (_, row: ResultRow) => (
         <Badge variant="outline" className="text-xs px-2 py-0.5">
-          {row.testCase.priority}
+          {row.testCase.priority?.toUpperCase()}
         </Badge>
       ),
     },

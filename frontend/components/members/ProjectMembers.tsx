@@ -162,6 +162,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
             <ButtonPrimary
               size="default"
               onClick={() => setAddDialogOpen(true)}
+              className="cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Member

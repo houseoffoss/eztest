@@ -158,7 +158,7 @@ export function TestStepsCard({
                 />
               </div>
               <div className="flex gap-2">
-                <ButtonPrimary size="sm" onClick={onAddStep}>
+                <ButtonPrimary size="sm" onClick={onAddStep} className="cursor-pointer">
                   Add
                 </ButtonPrimary>
                 <Button

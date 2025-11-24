@@ -1,4 +1,4 @@
-import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { LogOut } from 'lucide-react';
 
 export function ProfileHeader() {
@@ -10,10 +10,10 @@ export function ProfileHeader() {
           <p className="text-white/60 text-sm mt-1">Manage your profile and preferences</p>
         </div>
         <form action="/api/auth/signout" method="POST">
-          <Button type="submit" variant="glass-destructive" size="default" className="px-5">
+          <ButtonDestructive type="submit" size="default" className="px-5">
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
-          </Button>
+          </ButtonDestructive>
         </form>
       </div>
     </div>

@@ -15,7 +15,7 @@ export function MembersHeader({ project, isAdminOrManager, onAddMember }: Member
     <div className="max-w-6xl mx-auto px-8 pt-8">
       <div className="flex items-center justify-end mb-4">
         {isAdminOrManager && (
-          <ButtonPrimary onClick={onAddMember}>
+          <ButtonPrimary onClick={onAddMember} className="cursor-pointer">
             <Plus className="w-4 h-4 mr-2" />
             Add Member
           </ButtonPrimary>

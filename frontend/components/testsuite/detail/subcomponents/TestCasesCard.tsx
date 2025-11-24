@@ -126,7 +126,7 @@ export function TestCasesCard({
             No test cases in this suite yet
           </p>
           {canAdd && (
-            <ButtonPrimary onClick={onAddTestCase}>
+            <ButtonPrimary onClick={onAddTestCase} className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" />
               Add First Test Case
             </ButtonPrimary>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -300,7 +301,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
             <div className="flex gap-3 justify-end">
               <Button
                 type="button"
-                variant="glass"
+                variant="ghost"
                 onClick={() => {
                   setDeleteDialogOpen(false);
                   setMemberToDelete(null);
@@ -309,14 +310,13 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
               >
                 Cancel
               </Button>
-              <Button
+              <ButtonDestructive
                 type="button"
-                variant="glass-destructive"
                 onClick={confirmRemoveMember}
                 disabled={deleting}
               >
                 {deleting ? 'Removing...' : 'Remove Member'}
-              </Button>
+              </ButtonDestructive>
             </div>
           </div>
         </DialogContent>

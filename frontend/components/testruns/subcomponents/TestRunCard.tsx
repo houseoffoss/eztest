@@ -89,7 +89,7 @@ export function TestRunCard({
           variant="outline"
           className="bg-purple-500/10 text-purple-500 border-purple-500/20"
         >
-          {testRun.environment}
+          {testRun.environment?.toUpperCase()}
         </Badge>
       )}
     </>

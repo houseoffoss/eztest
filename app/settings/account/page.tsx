@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Loader } from '@/elements/loader';
@@ -366,13 +367,12 @@ export default function AccountSettingsPage() {
                   </ul>
                 </div>
 
-                <Button
+                <ButtonDestructive
                   onClick={() => setShowDeleteDialog(true)}
-                  variant="glass-destructive"
                   className="rounded-[10px]"
                 >
                   Delete My Account
-                </Button>
+                </ButtonDestructive>
               </>
             )}
         </GlassPanel>
@@ -428,19 +428,18 @@ export default function AccountSettingsPage() {
                   setPassword('');
                   setError(null);
                 }}
-                variant="glass"
+                variant="ghost"
                 className="rounded-[10px]"
               >
                 Cancel
               </Button>
-              <Button
+              <ButtonDestructive
                 onClick={handleDeleteAccount}
                 disabled={deleting || !password.trim()}
-                variant="glass-destructive"
                 className="rounded-[10px]"
               >
                 {deleting ? 'Deleting...' : 'Delete Account'}
-              </Button>
+              </ButtonDestructive>
             </div>
           </DialogFooter>
         </DialogContent>

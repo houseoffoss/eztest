@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Badge } from '@/elements/badge';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
@@ -59,9 +60,9 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               ]}
             />
             <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="default" className="px-5">
+              <ButtonDestructive type="submit" size="default" className="px-5">
                 Sign Out
-              </Button>
+              </ButtonDestructive>
             </form>
           </div>
         </div>

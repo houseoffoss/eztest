@@ -1,5 +1,5 @@
 import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { GlassPanel } from '@/components/design/GlassPanel';
 
 export function SessionManagement() {
@@ -19,7 +19,7 @@ export function SessionManagement() {
             </div>
           </div>
         </div>
-        <Button variant="glass-destructive" className="w-full rounded-lg">Sign Out All Sessions</Button>
+        <ButtonDestructive className="w-full rounded-lg">Sign Out All Sessions</ButtonDestructive>
       </div>
     </GlassPanel>
   );
