@@ -1,12 +1,13 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ItemCard } from '@/components/design/ItemCard';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/elements/dropdown-menu';
-import { ItemCard } from '@/components/design/ItemCard';
+import { formatDate } from '@/lib/date-utils';
 import { Calendar, MoreVertical, Play, Trash2, User } from 'lucide-react';
 import { TestRun } from '../types';
 
@@ -201,7 +202,7 @@ export function TestRunCard({
       </div>
       <div className="flex items-center gap-1 text-xs text-white/60">
         <Calendar className="w-3 h-3" />
-        <span>{new Date(testRun.createdAt).toLocaleDateString()}</span>
+        <span>{formatDate(testRun.createdAt)}</span>
       </div>
     </>
   );

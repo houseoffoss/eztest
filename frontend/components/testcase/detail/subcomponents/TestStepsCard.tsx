@@ -120,6 +120,7 @@ export function TestStepsCard({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0 cursor-pointer hover:bg-red-400/10 hover:text-red-400"
                       onClick={() => onRemoveStep(step.stepNumber)}
                     >
                       <Trash2 className="w-4 h-4 text-red-400" />

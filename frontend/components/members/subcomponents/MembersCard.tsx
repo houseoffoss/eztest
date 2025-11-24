@@ -1,8 +1,9 @@
 'use client';
 
+import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { DetailCard } from '@/components/design/DetailCard';
-import { Badge } from '@/elements/badge';
+import { formatDate } from '@/lib/date-utils';
 import { Trash2, Shield, Eye, Users } from 'lucide-react';
 import { ProjectMember } from '../types';
 
@@ -78,7 +79,7 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
                       <span className="text-white/70">{member.user.email}</span>
                       <span className="text-white/50 mx-2">•</span>
                       <span className="text-white/50">
-                        Joined {new Date(member.joinedAt).toLocaleDateString()}
+                        Joined {formatDate(member.joinedAt)}
                       </span>
                     </div>
                     {isAdminOrManager && (

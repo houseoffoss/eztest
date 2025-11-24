@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDate } from '@/lib/date-utils';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/elements/dropdown-menu';
@@ -135,7 +136,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
         </span>
       </div>
       <span className="text-xs text-white/50">
-        Updated {new Date(project.updatedAt).toLocaleDateString()}
+        Updated {formatDate(project.updatedAt)}
       </span>
     </>
   );

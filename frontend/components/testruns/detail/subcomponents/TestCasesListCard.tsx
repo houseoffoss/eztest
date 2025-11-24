@@ -1,6 +1,7 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { formatDate } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { DataTable, type ColumnDef } from '@/components/design/DataTable';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -107,7 +108,7 @@ export function TestCasesListCard({
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
           {row.executedAt
-            ? new Date(row.executedAt).toLocaleDateString()
+            ? formatDate(row.executedAt)
             : '-'}
         </span>
       ),

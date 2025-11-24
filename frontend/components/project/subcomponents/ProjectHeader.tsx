@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/elements/badge';
+import { formatDate } from '@/lib/date-utils';
 
 interface ProjectHeaderProps {
   project: {
@@ -35,7 +36,7 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
         </div>
         <div>•</div>
         <div>
-          Last updated {new Date(project.updatedAt).toLocaleDateString()}
+          Last updated {formatDate(project.updatedAt)}
         </div>
         <div>•</div>
         <div>

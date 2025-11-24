@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
@@ -261,7 +262,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                         {member.user.email}
                       </div>
                       <p className="text-xs text-white/50 mt-1">
-                        Joined {new Date(member.joinedAt).toLocaleDateString()}
+                        Joined {formatDate(member.joinedAt)}
                       </p>
                     </div>
                   </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatDateTime } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
@@ -239,13 +240,13 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             <div>
               <Label className="text-white/60 text-xs">Created At</Label>
               <p className="text-sm font-medium text-white">
-                {new Date(project.createdAt).toLocaleString()}
+                {formatDateTime(project.createdAt)}
               </p>
             </div>
             <div>
               <Label className="text-white/60 text-xs">Last Updated</Label>
               <p className="text-sm font-medium text-white">
-                {new Date(project.updatedAt).toLocaleString()}
+                {formatDateTime(project.updatedAt)}
               </p>
             </div>
             <div>
