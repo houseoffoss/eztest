@@ -25,7 +25,8 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   // Pages that shouldn't have sidebar
   const isAuthPage = pathname?.startsWith('/auth');
   const isHomePage = pathname === '/';
-  const showSidebar = !isAuthPage && !isHomePage;
+  const isPrivacyPage = pathname === '/privacy';
+  const showSidebar = !isAuthPage && !isHomePage && !isPrivacyPage;
 
   // Check if user is admin
   const isAdmin = session?.user?.roleName === 'ADMIN';

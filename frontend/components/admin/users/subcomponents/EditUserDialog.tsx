@@ -64,7 +64,16 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   ];
 
   const handleSubmit = async (formData: Record<string, string>) => {
-    await onUpdate(formData as EditUserFormData);
+    const userData: EditUserFormData = {
+      name: formData.name,
+      email: formData.email,
+      roleId: formData.roleId,
+      avatar: formData.avatar || '',
+      bio: formData.bio || '',
+      phone: formData.phone || '',
+      location: formData.location || '',
+    };
+    await onUpdate(userData);
   };
 
   return (

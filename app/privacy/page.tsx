@@ -1,0 +1,11 @@
+import { Metadata } from 'next';
+import PrivacyPolicyPage from '@/components/pages/PrivacyPolicyPage';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Privacy Policy for EZTest - Learn how we collect, use, and protect your data in our self-hosted test management platform.',
+};
+
+export default function Privacy() {
+  return <PrivacyPolicyPage />;
+}

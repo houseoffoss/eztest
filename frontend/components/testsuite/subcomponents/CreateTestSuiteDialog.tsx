@@ -3,7 +3,7 @@
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
 import { TestSuite } from '../types';
 
-interface CreateTestSuiteDialogProps {
+export interface CreateTestSuiteDialogProps {
   projectId: string;
   testSuites: TestSuite[];
   triggerOpen?: boolean;

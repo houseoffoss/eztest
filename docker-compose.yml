@@ -36,6 +36,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - DATABASE_URL=postgresql://eztest:eztest_prod_secure_2024@postgres:5432/eztest?schema=public
+        - NEXTAUTH_SECRET=aK7QkrZ8aOycVXiZDpxhCuLTsZh4KAG6uDZ4YKKDwoQ=
+        - NEXTAUTH_URL=http://localhost:3000
     container_name: eztest-app
     restart: unless-stopped
     ports:

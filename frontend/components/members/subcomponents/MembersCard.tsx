@@ -62,7 +62,6 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
                     avatar: member.user.avatar,
                     role: member.user.role,
                     createdAt: member.joinedAt,
-                    _count: member.user._count,
                   }}
                   onDelete={isAdminOrManager ? () => onRemoveMember(member.id, member.user.name) : undefined}
                   showProjects={false}

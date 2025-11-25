@@ -51,7 +51,13 @@ export function AddUserDialog({ open, roles, onOpenChange, onAdd }: AddUserDialo
   ];
 
   const handleSubmit = async (formData: Record<string, string>) => {
-    await onAdd(formData as UserFormData);
+    const userData: UserFormData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      roleId: formData.roleId,
+    };
+    await onAdd(userData);
   };
 
   return (

@@ -3,14 +3,12 @@
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
 import { TestSuite } from '../types';
 
-interface DeleteTestSuiteDialogProps {
+export interface DeleteTestSuiteDialogProps {
   suite: TestSuite | null;
   triggerOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   onConfirm: () => void;
 }
-
-export type { DeleteTestSuiteDialogProps };
 
 /**
  * Generic delete confirmation dialog for test suites

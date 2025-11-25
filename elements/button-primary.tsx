@@ -36,6 +36,7 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <button
             className={cn("rounded-full bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#748ed3]/30 dark:from-[#293b64] dark:to-[#1e2c4e] cursor-pointer", sizes[size], className)}
             ref={ref}
+            suppressHydrationWarning
             {...props}
           />
         </div>
@@ -46,6 +47,7 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
+        suppressHydrationWarning
         {...props}
       />
     )

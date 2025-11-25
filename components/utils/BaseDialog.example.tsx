@@ -9,7 +9,7 @@
  * - Success callbacks
  */
 
-import { BaseDialog, BaseDialogConfig, BaseDialogField } from '@/components/utils/BaseDialog';
+import { BaseDialog, BaseDialogConfig, BaseDialogField } from '@/components/design/BaseDialog';
 
 // Example 1: Create a project dialog
 export function CreateProjectDialogExample() {

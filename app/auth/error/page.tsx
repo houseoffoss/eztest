@@ -53,12 +53,16 @@ function ErrorContent() {
           </div>
 
           <div className="space-y-4">
-            <ButtonPrimary asChild className="w-full rounded-[10px]">
-              <Link href="/auth/login" className="flex justify-center">Back to Login</Link>
-            </ButtonPrimary>
-            <Button asChild variant="glass" className="w-full rounded-[10px]">
-              <Link href="/auth/register" className="flex justify-center">Create Account</Link>
-            </Button>
+            <Link href="/auth/login" className="w-full">
+              <ButtonPrimary className="w-full rounded-[10px]">
+                Back to Login
+              </ButtonPrimary>
+            </Link>
+            <Link href="/auth/register" className="w-full">
+              <Button variant="glass" className="w-full rounded-[10px]">
+                Create Account
+              </Button>
+            </Link>
           </div>
         </GlassPanel>
       </div>
