@@ -1,13 +1,11 @@
 'use client';
 
-import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Badge } from '@/elements/badge';
 import { DetailCard } from '@/components/design/DetailCard';
 import { formatDate } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Mail, Calendar, Briefcase, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Mail, Calendar, Briefcase } from 'lucide-react';
 
 interface UserRole {
   id: string;
@@ -29,8 +27,6 @@ interface UserDetailsContentProps {
 }
 
 export default function UserDetailsContent({ user }: UserDetailsContentProps) {
-  const router = useRouter();
-
   const getRoleBadgeColor = (roleName: string) => {
     switch (roleName) {
       case 'ADMIN':
@@ -69,16 +65,6 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
       </div>
 
       <div className="max-w-4xl mx-auto px-8 py-10">
-        {/* Back Button */}
-        <Button
-          variant="glass"
-          className="mb-6 gap-2"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-
         {/* Profile Header Card */}
         <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-8">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -156,7 +142,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wide text-muted-foreground">Member Since</label>
-                <p className="text-white font-medium mt-1">{new Date(user.createdAt).toLocaleDateString()}</p>
+                <p className="text-white font-medium mt-1">{formatDate(user.createdAt)}</p>
               </div>
             </div>
           </DetailCard>

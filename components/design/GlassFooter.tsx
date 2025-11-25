@@ -14,7 +14,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
   return (
     <footer className={className ? className + " mt-24" : "mt-24"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] px-6 py-8">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 py-8">
           {/* subtle gradient hairline */}
           <div className="h-px bg-gradient-to-r from-primary/30 via-white/10 to-accent/30 mb-6" />
 
@@ -57,7 +57,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                       </Link>
                     </li>
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Documentation
                       </Link>
                     </li>
@@ -74,22 +74,22 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                   <h3 className="font-semibold text-primary">Resources</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         GitHub
                       </Link>
                     </li>
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Community
                       </Link>
                     </li>
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://github.com/houseoffoss/eztest/issues" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Support
                       </Link>
                     </li>
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Status
                       </Link>
                     </li>

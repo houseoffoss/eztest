@@ -78,22 +78,6 @@ export function CreateTestCaseDialog({
       type: 'textarea',
       placeholder: 'Enter test case description',
       rows: 3,
-      cols: 2,
-    },
-    {
-      name: 'preconditions',
-      label: 'Preconditions',
-      type: 'textarea',
-      placeholder: 'Enter preconditions',
-      rows: 2,
-      cols: 1,
-    },
-    {
-      name: 'postconditions',
-      label: 'Postconditions',
-      type: 'textarea',
-      placeholder: 'Enter postconditions',
-      rows: 2,
       cols: 1,
     },
     {
@@ -102,7 +86,23 @@ export function CreateTestCaseDialog({
       type: 'textarea',
       placeholder: 'Enter the expected result or outcome',
       rows: 3,
-      cols: 2,
+      cols: 1,
+    },
+    {
+      name: 'preconditions',
+      label: 'Preconditions',
+      type: 'textarea',
+      placeholder: 'Enter preconditions',
+      rows: 3,
+      cols: 1,
+    },
+    {
+      name: 'postconditions',
+      label: 'Postconditions',
+      type: 'textarea',
+      placeholder: 'Enter postconditions',
+      rows: 3,
+      cols: 1,
     },
   ];
 

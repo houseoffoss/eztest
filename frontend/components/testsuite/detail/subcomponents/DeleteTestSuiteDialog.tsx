@@ -1,19 +1,12 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonDestructive } from '@/elements/button-destructive';
+'use client';
+
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
 
 interface DeleteTestSuiteDialogProps {
   open: boolean;
   testSuiteName: string;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
 export function DeleteTestSuiteDialog({
@@ -22,26 +15,23 @@ export function DeleteTestSuiteDialog({
   onOpenChange,
   onConfirm,
 }: DeleteTestSuiteDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Test Suite</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete &quot;{testSuiteName}&quot;? Test
-            cases in this suite will not be deleted, but will become unorganized.
-            This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <ButtonDestructive onClick={onConfirm}>
-            Delete
-          </ButtonDestructive>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+  const content = (
+    <p className="text-sm text-gray-300">
+      Test cases in this suite will not be deleted, but will become unorganized.
+    </p>
   );
+
+  const config: BaseConfirmDialogConfig = {
+    title: 'Delete Test Suite',
+    description: `Are you sure you want to delete "${testSuiteName}"? This action cannot be undone.`,
+    content,
+    submitLabel: 'Delete',
+    cancelLabel: 'Cancel',
+    triggerOpen: open,
+    onOpenChange,
+    onSubmit: onConfirm,
+    destructive: true,
+  };
+
+  return <BaseConfirmDialog {...config} />;
 }

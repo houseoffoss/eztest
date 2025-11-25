@@ -9,7 +9,7 @@ export interface ButtonProps
 
 const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
 
     const variants = {
       default: "bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white border-2 border-transparent bg-clip-padding border-image-source-gradient rounded-full hover:shadow-lg hover:shadow-[#748ed3]/30 relative overflow-hidden dark:from-[#293b64] dark:to-[#1e2c4e]",
@@ -34,7 +34,7 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return (
         <div className="relative inline-block rounded-full p-[1px] bg-gradient-to-r from-[#748ed3] via-[#748ed3] to-[#2c4892]">
           <button
-            className={cn("rounded-full bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#748ed3]/30 dark:from-[#293b64] dark:to-[#1e2c4e]", sizes[size], className)}
+            className={cn("rounded-full bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#748ed3]/30 dark:from-[#293b64] dark:to-[#1e2c4e] cursor-pointer", sizes[size], className)}
             ref={ref}
             {...props}
           />

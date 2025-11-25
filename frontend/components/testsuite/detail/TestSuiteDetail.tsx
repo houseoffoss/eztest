@@ -135,34 +135,21 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   };
 
   const handleDeleteTestSuite = async () => {
-    try {
-      const response = await fetch(`/api/testsuites/${suiteId}`, {
-        method: 'DELETE',
-      });
+    const response = await fetch(`/api/testsuites/${suiteId}`, {
+      method: 'DELETE',
+    });
 
-      if (response.ok) {
-        setAlert({
-          type: 'success',
-          title: 'Success',
-          message: 'Test suite deleted successfully',
-        });
-        setTimeout(() => router.push(`/projects/${testSuite?.project.id}/testsuites`), 1000);
-      } else {
-        const data = await response.json();
-        setAlert({
-          type: 'error',
-          title: 'Failed to Delete Test Suite',
-          message: data.error || 'Failed to delete test suite',
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    if (response.ok) {
+      setDeleteDialogOpen(false);
       setAlert({
-        type: 'error',
-        title: 'Connection Error',
-        message: errorMessage,
+        type: 'success',
+        title: 'Success',
+        message: 'Test suite deleted successfully',
       });
-      console.error('Error deleting test suite:', error);
+      setTimeout(() => router.push(`/projects/${testSuite?.project.id}/testsuites`), 1000);
+    } else {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to delete test suite');
     }
   };
 

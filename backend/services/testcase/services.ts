@@ -49,8 +49,31 @@ export class TestCaseService {
       where: { projectId },
     });
     
-    // Generate tcId as tc1, tc2, tc3, etc.
-    return `tc${count + 1}`;
+    // Start from count + 1 and find the first available ID
+    let testCaseNumber = count + 1;
+    let tcId = `tc${testCaseNumber}`;
+    
+    // Check if this ID already exists
+    let exists = await prisma.testCase.findFirst({
+      where: {
+        projectId,
+        tcId,
+      },
+    });
+    
+    // If exists, keep incrementing until we find an available ID
+    while (exists) {
+      testCaseNumber++;
+      tcId = `tc${testCaseNumber}`;
+      exists = await prisma.testCase.findFirst({
+        where: {
+          projectId,
+          tcId,
+        },
+      });
+    }
+    
+    return tcId;
   }
 
   /**
@@ -216,64 +239,90 @@ export class TestCaseService {
       }
     }
 
-    // Generate unique test case ID
-    const tcId = await this.generateTestCaseId(data.projectId);
+    // Generate unique test case ID with retry logic for race conditions
+    let testCase;
+    let attempts = 0;
+    const maxAttempts = 5;
 
-    // Create test case with steps
-    const testCase = await prisma.testCase.create({
-      data: {
-        tcId,
-        projectId: data.projectId,
-        suiteId: data.suiteId,
-        title: data.title,
-        description: data.description,
-        expectedResult: data.expectedResult,
-        priority: data.priority || 'MEDIUM',
-        status: data.status || 'DRAFT',
-        estimatedTime: data.estimatedTime,
-        preconditions: data.preconditions,
-        postconditions: data.postconditions,
-        createdById: data.createdById,
-        steps: data.steps
-          ? {
-              create: data.steps.map((step) => ({
-                stepNumber: step.stepNumber,
-                action: step.action,
-                expectedResult: step.expectedResult,
-              })),
-            }
-          : undefined,
+    while (attempts < maxAttempts) {
+      try {
+        const tcId = await this.generateTestCaseId(data.projectId);
+
+        // Create test case with steps
+        testCase = await prisma.testCase.create({
+          data: {
+            tcId,
+            projectId: data.projectId,
+            suiteId: data.suiteId,
+            title: data.title,
+            description: data.description,
+            expectedResult: data.expectedResult,
+            priority: data.priority || 'MEDIUM',
+            status: data.status || 'DRAFT',
+            estimatedTime: data.estimatedTime,
+            preconditions: data.preconditions,
+            postconditions: data.postconditions,
+            createdById: data.createdById,
+            steps: data.steps
+              ? {
+                  create: data.steps.map((step) => ({
+                    stepNumber: step.stepNumber,
+                    action: step.action,
+                    expectedResult: step.expectedResult,
+                  })),
+                }
+              : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-            key: true,
+          } as any,
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+                key: true,
+              },
+            },
+            suite: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+            steps: {
+              orderBy: {
+                stepNumber: 'asc',
+              },
+            },
           },
-        },
-        suite: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        steps: {
-          orderBy: {
-            stepNumber: 'asc',
-          },
-        },
-      },
-    });
+        });
+        break; // Success - exit retry loop
+      } catch (error: unknown) {
+        attempts++;
+        // Check if it's a unique constraint error
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+          if (attempts >= maxAttempts) {
+            throw new Error('Failed to generate unique test case ID after multiple attempts');
+          }
+          // Wait a bit before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 100 * attempts));
+          continue;
+        }
+        // If it's not a unique constraint error, throw immediately
+        throw error;
+      }
+    }
+
+    if (!testCase) {
+      throw new Error('Failed to create test case');
+    }
 
     return testCase;
   }

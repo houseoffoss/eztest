@@ -115,7 +115,7 @@ export function TestCaseHeader({
                 </Button>
               )}
               {canDelete && (
-                <ButtonDestructive onClick={onDelete}>
+                <ButtonDestructive onClick={onDelete} className="cursor-pointer">
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </ButtonDestructive>

@@ -1,18 +1,10 @@
 'use client';
 
-import { Card, CardContent } from '@/elements/card';
 import { Button } from '@/elements/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
 import {
   ChevronRight,
   Folder,
   FolderOpen,
-  MoreVertical,
   TestTube2,
   Trash2,
 } from 'lucide-react';
@@ -42,153 +34,139 @@ export function TestSuiteCard({
   if (isChild) {
     // Simplified card for child suites
     return (
-      <Card variant="glass" className="hover:border-primary/50 transition-colors">
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2">
-            <div className="text-primary flex-shrink-0">
-              <Folder className="w-3 h-3" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4
-                className="text-xs text-white font-medium cursor-pointer hover:text-primary transition-colors"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  onView(suite.id);
-                }}
-              >
-                {suite.name}
-              </h4>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
-              <TestTube2 className="w-3 h-3" />
-              <span>{suite._count.testCases}</span>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 p-1 h-auto">
-                  <MoreVertical className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent variant="glass" align="end">
-                <DropdownMenuItem
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onView(suite.id);
-                  }}
-                >
-                  <FolderOpen className="w-4 h-4 mr-2" />
-                  View Suite
-                </DropdownMenuItem>
-                {canDelete && (
-                  <DropdownMenuItem
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      onDelete(suite);
-                    }}
-                    className="text-red-400"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+      <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="text-primary flex-shrink-0">
+            <Folder className="w-4 h-4" />
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex-1 min-w-0">
+            <h4
+              className="text-sm text-white font-medium cursor-pointer hover:text-primary transition-colors"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onView(suite.id);
+              }}
+            >
+              {suite.name}
+            </h4>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-white/60 flex-shrink-0">
+            <TestTube2 className="w-4 h-4" />
+            <span>{suite._count.testCases} cases</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 ml-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onView(suite.id);
+            }}
+            className="rounded-full border border-primary/30 text-primary hover:text-primary/80 hover:bg-primary/10"
+            title="View Suite"
+          >
+            <FolderOpen className="w-4 h-4" />
+          </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onDelete(suite);
+              }}
+              className="rounded-full border border-red-400/30 text-red-400 hover:text-red-300 hover:bg-red-400/10"
+              title="Delete Suite"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </div>
     );
   }
 
-  // Full card for parent suites
+  // Full card for parent suites - single line design
   return (
-    <Card variant="glass" className="hover:border-primary/50 transition-colors">
-      <CardContent className="p-3">
-        <div className="flex items-center gap-2">
-          {/* Expand/Collapse Icon */}
-          {hasChildren && (
-            <button
-              onClick={() => onToggleExpand?.(suite.id)}
-              className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
-            >
-              <ChevronRight
-                className={`w-4 h-4 transition-transform ${
-                  isExpanded ? 'rotate-90' : ''
-                }`}
-              />
-            </button>
+    <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors group">
+      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+        {/* Expand/Collapse Icon */}
+        {hasChildren && (
+          <button
+            onClick={() => onToggleExpand?.(suite.id)}
+            className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+          >
+            <ChevronRight
+              className={`w-4 h-4 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`}
+            />
+          </button>
+        )}
+
+        {/* Folder Icon */}
+        <div className="text-primary flex-shrink-0">
+          {isExpanded ? (
+            <FolderOpen className="w-5 h-5" />
+          ) : (
+            <Folder className="w-5 h-5" />
           )}
-
-          {/* Folder Icon */}
-          <div className="text-primary flex-shrink-0">
-            {isExpanded ? (
-              <FolderOpen className="w-4 h-4" />
-            ) : (
-              <Folder className="w-4 h-4" />
-            )}
-          </div>
-
-          {/* Suite Info */}
-          <div className="flex-1 min-w-0">
-            <h3
-              className="text-sm text-white font-medium cursor-pointer hover:text-primary transition-colors"
-              onClick={() => onView(suite.id)}
-            >
-              {suite.name}
-            </h3>
-            {suite.description && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
-                {suite.description}
-              </p>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center gap-3 text-xs text-gray-400 flex-shrink-0">
-            <div className="flex items-center gap-1">
-              <TestTube2 className="w-3 h-3" />
-              <span>{suite._count.testCases}</span>
-            </div>
-            {hasChildren && (
-              <div className="flex items-center gap-1">
-                <Folder className="w-3 h-3" />
-                <span>{suite.children?.length}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 p-1 h-auto">
-                <MoreVertical className="w-3 h-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent variant="glass" align="end">
-              <DropdownMenuItem
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  onView(suite.id);
-                }}
-              >
-                <FolderOpen className="w-4 h-4 mr-2" />
-                View Suite
-              </DropdownMenuItem>
-              {canDelete && (
-                <DropdownMenuItem
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    onDelete(suite);
-                  }}
-                  className="text-red-400"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Suite Info - Single Line */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <h3
+            className="text-sm text-white font-semibold cursor-pointer hover:text-primary transition-colors truncate"
+            onClick={() => onView(suite.id)}
+          >
+            {suite.name}
+          </h3>
+          {suite.description && (
+            <span className="text-xs text-white/60 truncate hidden md:block">
+              {suite.description}
+            </span>
+          )}
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-center gap-3 text-xs text-white/60 flex-shrink-0">
+          <div className="flex items-center gap-1">
+            <TestTube2 className="w-4 h-4" />
+            <span>{suite._count.testCases} cases</span>
+          </div>
+          {hasChildren && (
+            <div className="flex items-center gap-1">
+              <Folder className="w-4 h-4" />
+              <span>{suite.children?.length} suites</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 ml-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onView(suite.id)}
+          className="rounded-full border border-primary/30 text-primary hover:text-primary/80 hover:bg-primary/10 h-8 w-8"
+          title="View Suite"
+        >
+          <FolderOpen className="w-4 h-4" />
+        </Button>
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(suite)}
+            className="rounded-full border border-red-400/30 text-red-400 hover:text-red-300 hover:bg-red-400/10 h-8 w-8"
+            title="Delete Suite"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

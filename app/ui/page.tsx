@@ -57,7 +57,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/elements/tabs";
 import { Textarea } from "@/elements/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/elements/tooltip";
-import { GlassPanel, PageHeader, StatCard, StatusBadge, PriorityBadge, ProgressBar, FilterBar, Assignee, EmptyState, ConfirmDialog, Section } from "@/components/design";
+import { GlassPanel, PageHeader, StatCard, StatusBadge, PriorityBadge, ProgressBar, FilterBar, Assignee, EmptyState, ConfirmDialog, Section, DetailCard } from "@/components/design";
 import { GlassFooter } from "@/components/design/GlassFooter";
 
 export default function UIShowcasePage() {
@@ -84,7 +84,7 @@ export default function UIShowcasePage() {
               <Link href="#" className="px-3 py-2 text-sm text-white/80 hover:text-white transition">Components</Link>
               <Link href="#" className="px-3 py-2 text-sm text-white/80 hover:text-white transition">Docs</Link>
               <div className="pl-1">
-                <Button variant="glass-accent" className="rounded-full px-4 py-2">Open modal</Button>
+                <ButtonSecondary>Open modal</ButtonSecondary>
               </div>
             </nav>
           </div>
@@ -98,7 +98,7 @@ export default function UIShowcasePage() {
           heading="Reusable glass components"
           description="Compose these building blocks to build your test management workflows quickly."
           breadcrumbs={[{ label: 'UI' }, { label: 'Library' }, { label: 'Glass' }]}
-          actions={<Button variant="glass-accent" className="rounded-full">New test run</Button>}
+          actions={<ButtonSecondary>New test run</ButtonSecondary>}
           className="mb-4"
         />
         <FilterBar className="mb-6">
@@ -119,8 +119,8 @@ export default function UIShowcasePage() {
             contentClassName="space-y-4"
           >
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="glass-primary" className="rounded-full">Primary action</Button>
-              <Button variant="glass-accent" className="rounded-full">Accent action</Button>
+              <ButtonPrimary>Primary action</ButtonPrimary>
+              <ButtonSecondary>Accent action</ButtonSecondary>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <Input variant="glass" placeholder="Search components..." />
@@ -148,9 +148,9 @@ export default function UIShowcasePage() {
                 <div className="text-white text-xl font-bold">3.1k</div>
               </div>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="glass-primary" className="rounded-full">Message</Button>
-              <Button variant="glass-accent" className="rounded-full">Follow</Button>
+            <div className="mt-6 flex gap-3">
+              <ButtonPrimary className="flex-1">Message</ButtonPrimary>
+              <ButtonSecondary className="flex-1">Follow</ButtonSecondary>
             </div>
           </GlassPanel>
         </div>
@@ -161,8 +161,8 @@ export default function UIShowcasePage() {
           <GlassPanel heading="Card — Info" contentClassName="space-y-4">
             <p className="text-sm text-white/70">Use translucent surfaces for hierarchy. Accent elements with blue for primary actions and orange for highlights.</p>
             <div className="flex gap-2">
-              <Button size="sm" variant="glass-primary" className="rounded-full px-4">Action</Button>
-              <Button size="sm" variant="glass-accent" className="rounded-full px-4">Secondary</Button>
+              <ButtonPrimary size="sm">Action</ButtonPrimary>
+              <ButtonSecondary size="sm">Secondary</ButtonSecondary>
             </div>
           </GlassPanel>
 
@@ -185,8 +185,8 @@ export default function UIShowcasePage() {
             <div className="flex items-center gap-3">
               <StatusBadge status="running" pulse>Running</StatusBadge>
               <div className="flex gap-2">
-                <Button size="sm" variant="glass-primary" className="rounded-full px-4">Snooze</Button>
-                <Button size="sm" variant="glass-accent" className="rounded-full px-4">Dismiss</Button>
+                <ButtonPrimary size="sm">Snooze</ButtonPrimary>
+                <ButtonSecondary size="sm">Dismiss</ButtonSecondary>
               </div>
             </div>
           </GlassPanel>
@@ -195,7 +195,8 @@ export default function UIShowcasePage() {
         {/* Catalogue: list and demo of design components */}
         <Section heading="Component catalogue" description="All reusable glass components available." className="mt-10">
           <div className="grid gap-6 md:grid-cols-2">
-            <GlassPanel heading="Color Set 1 - Blue Gradient" contentClassName="space-y-3">
+            <GlassPanel heading="ButtonPrimary - Blue Gradient" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Primary button with blue gradient theme</p>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonPrimary variant="default">Default</ButtonPrimary>
                 <ButtonPrimary variant="light">Light</ButtonPrimary>
@@ -204,11 +205,13 @@ export default function UIShowcasePage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonPrimary variant="default" size="sm">Small</ButtonPrimary>
+                <ButtonPrimary variant="default">Default</ButtonPrimary>
                 <ButtonPrimary variant="default" size="lg">Large</ButtonPrimary>
               </div>
             </GlassPanel>
 
-            <GlassPanel heading="Color Set 2 - Orange Gradient" contentClassName="space-y-3">
+            <GlassPanel heading="ButtonSecondary - Orange Gradient" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Secondary button with orange gradient theme</p>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonSecondary variant="default">Default</ButtonSecondary>
                 <ButtonSecondary variant="light">Light</ButtonSecondary>
@@ -217,9 +220,11 @@ export default function UIShowcasePage() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <ButtonSecondary variant="default" size="sm">Small</ButtonSecondary>
+                <ButtonSecondary variant="default">Default</ButtonSecondary>
                 <ButtonSecondary variant="default" size="lg">Large</ButtonSecondary>
               </div>
             </GlassPanel>
+
             <GlassPanel heading="Core wrappers" contentClassName="space-y-3">
               <ul className="list-disc list-inside text-white/80 text-sm">
                 <li>GlassPanel — frosted card wrapper</li>
@@ -250,12 +255,37 @@ export default function UIShowcasePage() {
 
             <GlassPanel heading="Stat cards" contentClassName="grid gap-4">
               <StatCard label="Pass rate" value="96%" delta="+1.2%" trend="up" helpText="week over week" />
+              <StatCard label="Total tests" value="1,248" delta="+24" trend="up" helpText="this month" />
+              <StatCard label="Failed tests" value="12" delta="-3" trend="down" helpText="vs last week" />
+            </GlassPanel>
+
+            <GlassPanel heading="DetailCard" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Specialized card for detail pages with title, description, and optional header action</p>
+              <DetailCard 
+                title="Project Information" 
+                description="View key details about this project"
+              >
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-sm text-white/60">Project Key</span>
+                    <span className="text-sm text-white font-medium">PROJ-001</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-sm text-white/60">Created By</span>
+                    <span className="text-sm text-white font-medium">Jane Doe</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-sm text-white/60">Status</span>
+                    <span className="text-sm text-white font-medium">Active</span>
+                  </div>
+                </div>
+              </DetailCard>
             </GlassPanel>
 
             <GlassPanel heading="Empty state & dialog" contentClassName="space-y-4">
               <EmptyState heading="No test runs" description="Create your first run to start tracking results." />
               <ConfirmDialog description="This will start a new test run.">
-                <Button variant="glass-primary" className="rounded-full">Open confirm</Button>
+                <ButtonPrimary>Open confirm</ButtonPrimary>
               </ConfirmDialog>
             </GlassPanel>
           </div>
@@ -317,7 +347,7 @@ export default function UIShowcasePage() {
             <GlassPanel heading="Dialog" contentClassName="space-y-3">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="glass-primary" className="rounded-full">Open dialog</Button>
+                  <ButtonPrimary>Open dialog</ButtonPrimary>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -329,8 +359,8 @@ export default function UIShowcasePage() {
                     <Input id="dlg-email" variant="glass" placeholder="you@example.com" />
                   </div>
                   <DialogFooter>
-                    <Button variant="glass" className="rounded-full">Cancel</Button>
-                    <Button variant="glass-primary" className="rounded-full">Save</Button>
+                    <ButtonSecondary variant="ghost">Cancel</ButtonSecondary>
+                    <ButtonPrimary>Save</ButtonPrimary>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -340,7 +370,7 @@ export default function UIShowcasePage() {
             <GlassPanel heading="Dropdown menu" contentClassName="space-y-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="glass-primary" className="rounded-full">Open menu</Button>
+                  <ButtonPrimary>Open menu</ButtonPrimary>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent variant="glass" className="min-w-48">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -414,40 +444,76 @@ export default function UIShowcasePage() {
               </Tabs>
             </GlassPanel>
 
-            {/* Table */}
-            <GlassPanel heading="Table" contentClassName="space-y-3">
-              <TableContainer variant="glass">
-                <Table>
-                  <TableHeader>
-                    <TableRow variant="glass">
-                      <TableHead>Test</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Owner</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow variant="glass">
-                      <TableCell>Login flow</TableCell>
-                      <TableCell>Passed</TableCell>
-                      <TableCell>Jane</TableCell>
-                    </TableRow>
-                    <TableRow variant="glass">
-                      <TableCell>Payments</TableCell>
-                      <TableCell>Running</TableCell>
-                      <TableCell>John</TableCell>
-                    </TableRow>
-                  </TableBody>
-                  <TableCaption>Example glass table</TableCaption>
-                </Table>
-              </TableContainer>
-            </GlassPanel>
+            {/* Table - Full Width */}
+            <div className="md:col-span-2">
+              <GlassPanel heading="Table - Reusable Component" contentClassName="space-y-3">
+                <p className="text-sm text-white/70 mb-4">Responsive table with glass styling for data display</p>
+                <TableContainer variant="glass">
+                  <Table>
+                    <TableHeader>
+                      <TableRow variant="glass">
+                        <TableHead>Test Case</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Assignee</TableHead>
+                        <TableHead>Last Run</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow variant="glass">
+                        <TableCell className="font-medium">User Authentication</TableCell>
+                        <TableCell><StatusBadge status="passed">Passed</StatusBadge></TableCell>
+                        <TableCell><PriorityBadge priority="high" /></TableCell>
+                        <TableCell>Jane Doe</TableCell>
+                        <TableCell>2 hours ago</TableCell>
+                        <TableCell className="text-right">
+                          <ButtonPrimary variant="ghost" size="sm">View</ButtonPrimary>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow variant="glass">
+                        <TableCell className="font-medium">Payment Gateway</TableCell>
+                        <TableCell><StatusBadge status="running" pulse>Running</StatusBadge></TableCell>
+                        <TableCell><PriorityBadge priority="critical" /></TableCell>
+                        <TableCell>John Smith</TableCell>
+                        <TableCell>5 mins ago</TableCell>
+                        <TableCell className="text-right">
+                          <ButtonPrimary variant="ghost" size="sm">View</ButtonPrimary>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow variant="glass">
+                        <TableCell className="font-medium">API Integration</TableCell>
+                        <TableCell><StatusBadge status="failed">Failed</StatusBadge></TableCell>
+                        <TableCell><PriorityBadge priority="medium" /></TableCell>
+                        <TableCell>Alex Lee</TableCell>
+                        <TableCell>1 day ago</TableCell>
+                        <TableCell className="text-right">
+                          <ButtonPrimary variant="ghost" size="sm">View</ButtonPrimary>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow variant="glass">
+                        <TableCell className="font-medium">Email Notifications</TableCell>
+                        <TableCell><StatusBadge status="queued">Queued</StatusBadge></TableCell>
+                        <TableCell><PriorityBadge priority="low" /></TableCell>
+                        <TableCell>Sarah Connor</TableCell>
+                        <TableCell>Not run yet</TableCell>
+                        <TableCell className="text-right">
+                          <ButtonPrimary variant="ghost" size="sm">View</ButtonPrimary>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                    <TableCaption>Test case execution overview</TableCaption>
+                  </Table>
+                </TableContainer>
+              </GlassPanel>
+            </div>
 
             {/* Tooltip & Separator */}
             <GlassPanel heading="Tooltip & Separator" contentClassName="space-y-4">
               <div className="flex items-center gap-4">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="glass-accent" className="rounded-full">Hover me</Button>
+                    <ButtonSecondary>Hover me</ButtonSecondary>
                   </TooltipTrigger>
                   <TooltipContent sideOffset={6} variant="glass">Helpful hint</TooltipContent>
                 </Tooltip>

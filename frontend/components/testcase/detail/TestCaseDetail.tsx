@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
+import { Loader } from '@/elements/loader';
 import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
 import { TestCaseHeader } from './subcomponents/TestCaseHeader';
 import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
@@ -197,47 +198,28 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   };
 
   const handleDeleteTestCase = async () => {
-    try {
-      const response = await fetch(`/api/testcases/${testCaseId}`, {
-        method: 'DELETE',
-      });
+    const response = await fetch(`/api/testcases/${testCaseId}`, {
+      method: 'DELETE',
+    });
 
-      if (response.ok) {
-        setAlert({
-          type: 'success',
-          title: 'Success',
-          message: 'Test case deleted successfully',
-        });
-        setTimeout(() => {
-          router.push(`/projects/${testCase?.project.id}/testcases`);
-        }, 1500);
-      } else {
-        const data = await response.json();
-        setAlert({
-          type: 'error',
-          title: 'Failed to Delete Test Case',
-          message: data.error || 'Failed to delete test case',
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    if (response.ok) {
+      setDeleteDialogOpen(false);
       setAlert({
-        type: 'error',
-        title: 'Connection Error',
-        message: errorMessage,
+        type: 'success',
+        title: 'Success',
+        message: 'Test case deleted successfully',
       });
-      console.error('Error deleting test case:', error);
+      setTimeout(() => {
+        router.push(`/projects/${testCase?.project.id}/testcases`);
+      }, 1500);
+    } else {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to delete test case');
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen p-4 md:p-6 lg:p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading test case...</p>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Loading test case..." />;
   }
 
   if (!testCase) {
@@ -317,7 +299,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
         <DeleteTestCaseDialog
           testCase={testCase}
-          triggerOpen={deleteDialogOpen}
+          open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={handleDeleteTestCase}
         />

@@ -3,21 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
-import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
-import { Badge } from '@/elements/badge';
-import { Avatar } from '@/elements/avatar';
 import { Input } from '@/elements/input';
-import { TopBar } from '@/components/design';
+import { TopBar, UserCard } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { 
   Users, 
   UserPlus, 
-  Mail, 
-  Calendar, 
-  Briefcase, 
-  Edit, 
-  Trash2, 
   Search,
   Shield,
   Eye
@@ -250,83 +242,22 @@ export default function UserManagement() {
               ) : (
                 <div className="space-y-3">
                   {filteredUsers.map((user) => (
-                    <div
+                    <UserCard
                       key={user.id}
-                      className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-center gap-4 flex-1">
-                        <Avatar className="w-12 h-12">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-lg">
-                              {user.name.split(' ').map((n) => n[0]).join('').toUpperCase()}
-                            </div>
-                          )}
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-white font-medium">{user.name}</h3>
-                            <Badge
-                              variant="outline"
-                              className={`gap-1 ${getRoleBadgeColor(user.role.name)}`}
-                            >
-                              {getRoleIcon(user.role.name)}
-                              {user.role.name}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-white/60">
-                            <div className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {user.email}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Briefcase className="w-3 h-3" />
-                              {user._count?.createdProjects || 0} projects
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Joined {new Date(user.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          asChild
-                          variant="glass"
-                          size="icon"
-                          className="text-primary hover:text-primary/80 hover:bg-primary/10"
-                          title="View user details"
-                        >
-                          <Link href={`/admin/users/${user.id}`}>
-                            <Eye className="w-4 h-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="glass"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setEditDialogOpen(true);
-                          }}
-                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="glass"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setDeleteDialogOpen(true);
-                          }}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                      user={user}
+                      onEdit={() => {
+                        setSelectedUser(user);
+                        setEditDialogOpen(true);
+                      }}
+                      onDelete={() => {
+                        setSelectedUser(user);
+                        setDeleteDialogOpen(true);
+                      }}
+                      viewHref={`/admin/users/${user.id}`}
+                      showProjects={true}
+                      getRoleBadgeColor={getRoleBadgeColor}
+                      getRoleIcon={getRoleIcon}
+                    />
                   ))}
                 </div>
               )}

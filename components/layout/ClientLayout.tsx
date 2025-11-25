@@ -44,10 +44,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       // Admin pages - show admin menu
       setSidebarItems(getAdminSidebarItems());
       setProjectId(null);
-    } else if (pathname === '/projects') {
-      // Projects list page - keep last project context in sidebar for quick access
-      setSidebarItems(getProjectsPageSidebarItems(isAdmin));
-      // Don't clear projectId - keep the last visited project in sidebar
+      setLastProjectId(null);
     } else if (pathname?.startsWith('/projects/')) {
       // Project detail page - extract project ID and show project menu with admin items if applicable
       const projectIdMatch = pathname.match(/\/projects\/([^\/]+)/);
@@ -58,10 +55,19 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         setSidebarItems(getProjectSidebarItems(extractedProjectId, isAdmin, canManageSettings));
       } else {
         setSidebarItems(mainSidebarItems);
+      }
+    } else if (pathname === '/projects' || pathname?.startsWith('/testcases') || pathname?.startsWith('/testruns') || pathname?.startsWith('/settings') || pathname?.startsWith('/profile')) {
+      // Projects list, test cases, test runs, settings, or profile pages
+      // Keep last project context in sidebar if available
+      if (lastProjectId) {
+        setProjectId(lastProjectId);
+        setSidebarItems(getProjectSidebarItems(lastProjectId, isAdmin, canManageSettings));
+      } else {
+        setSidebarItems(pathname === '/projects' ? getProjectsPageSidebarItems(isAdmin) : mainSidebarItems);
         setProjectId(null);
       }
     } else {
-      // Main pages (including settings/profile) - show main items with admin items if applicable
+      // Other main pages - show main items with admin items if applicable
       if (isAdmin) {
         setSidebarItems(getAdminSidebarItems());
       } else {
@@ -69,7 +75,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       }
       setProjectId(null);
     }
-  }, [pathname, isAdmin]);
+  }, [pathname, isAdmin, canManageSettings, lastProjectId]);
 
   if (!showSidebar) {
     return <>{children}</>;
@@ -78,7 +84,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <div className="min-h-screen flex">
       <Sidebar items={sidebarItems} projectId={projectId || undefined} />
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-60'}`}>
         {children}
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { DetailCard } from '@/components/design/DetailCard';
+import { UserCard } from '@/components/design/UserCard';
 import { formatDate } from '@/lib/date-utils';
 import { Trash2, Shield, Eye, Users } from 'lucide-react';
 import { ProjectMember } from '../types';
@@ -52,48 +53,45 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
           ) : (
             <div className="space-y-3">
               {members.map((member) => (
-                <div
+                <UserCard
                   key={member.id}
-                  className="flex items-center justify-between p-4 border border-white/10 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <h4 className="font-semibold text-white whitespace-nowrap">{member.user.name}</h4>
-                      <Badge
-                        variant={getRoleBadgeVariant(member.role)}
-                        className="gap-1 border-primary/40 bg-primary/10 text-primary text-xs py-0.5 flex-shrink-0"
-                      >
-                        {getRoleIcon(member.role)}
-                        {member.role}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs border-accent/40 bg-accent/10 text-accent py-0.5 flex-shrink-0"
-                      >
-                        {member.user.role.name}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 ml-4 flex-shrink-0">
-                    <div className="text-right whitespace-nowrap text-sm">
-                      <span className="text-white/70">{member.user.email}</span>
-                      <span className="text-white/50 mx-2">•</span>
-                      <span className="text-white/50">
-                        Joined {formatDate(member.joinedAt)}
-                      </span>
-                    </div>
-                    {isAdminOrManager && (
-                      <Button
-                        variant="glass"
-                        size="icon"
-                        onClick={() => onRemoveMember(member.id, member.user.name)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10 flex-shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                  user={{
+                    id: member.user.id,
+                    name: member.user.name,
+                    email: member.user.email,
+                    avatar: member.user.avatar,
+                    role: member.user.role,
+                    createdAt: member.joinedAt,
+                    _count: member.user._count,
+                  }}
+                  onDelete={isAdminOrManager ? () => onRemoveMember(member.id, member.user.name) : undefined}
+                  showProjects={false}
+                  getRoleBadgeColor={(roleName) => {
+                    switch (roleName) {
+                      case 'ADMIN':
+                        return 'bg-red-500/10 text-red-500 border-red-500/20';
+                      case 'PROJECT_MANAGER':
+                        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+                      case 'TESTER':
+                        return 'bg-green-500/10 text-green-500 border-green-500/20';
+                      case 'VIEWER':
+                        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+                      default:
+                        return 'bg-white/10 text-white border-white/20';
+                    }
+                  }}
+                  getRoleIcon={(roleName) => {
+                    switch (roleName) {
+                      case 'ADMIN':
+                      case 'PROJECT_MANAGER':
+                        return <Shield className="w-3 h-3" />;
+                      case 'VIEWER':
+                        return <Eye className="w-3 h-3" />;
+                      default:
+                        return <Users className="w-3 h-3" />;
+                    }
+                  }}
+                />
               ))}
             </div>
           )}

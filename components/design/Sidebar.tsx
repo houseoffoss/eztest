@@ -30,6 +30,7 @@ export interface SidebarItem {
   children?: SidebarItem[];
   count?: number;
   badge?: string;
+  section?: string; // Section header for grouping
 }
 
 export interface SidebarProps {
@@ -157,12 +158,12 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
               className={cn(
                 'flex items-center justify-center p-3 rounded-lg transition-all relative group',
                 isActive
-                  ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-white/60 hover:text-white hover:bg-white/[0.08]'
               )}
             >
               {icon && (
-                <span className={cn('shrink-0', isActive ? 'text-blue-400' : 'text-white/60')}>
+                <span className={cn('shrink-0', isActive ? 'text-white' : 'text-white/60')}>
                   {icon}
                 </span>
               )}
@@ -172,15 +173,15 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 </span>
               )}
               {/* Tooltip */}
-              <span className="absolute left-full ml-2 px-3 py-2 bg-[#1a2332] text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0b1028]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                 {item.label}
               </span>
             </Link>
           ) : (
             <button
               className={cn(
-                'w-full flex items-center justify-center p-3 rounded-lg transition-all relative group',
-                'text-white/70 hover:text-white hover:bg-white/5'
+              'w-full flex items-center justify-center p-3 rounded-lg transition-all relative group',
+              'text-white/60 hover:text-white hover:bg-white/[0.08]'
               )}
             >
               {icon && <span className="shrink-0 text-white/60">{icon}</span>}
@@ -190,7 +191,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 </span>
               )}
               {/* Tooltip */}
-              <span className="absolute left-full ml-2 px-3 py-2 bg-[#1a2332] text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0b1028]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                 {item.label}
               </span>
             </button>
@@ -207,20 +208,20 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           <Link
             href={item.href}
             className={cn(
-              'flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg transition-all group',
+              'flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-all group',
               level > 0 && 'pl-10',
               isActive
-                ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-500'
-                : 'text-white/70 hover:text-white hover:bg-white/5'
+                ? 'bg-white/[0.08] text-white'
+                : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
             )}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {icon && (
-                <span className={cn('shrink-0', isActive ? 'text-blue-400' : 'text-white/60')}>
+                <span className={cn('shrink-0', isActive ? 'text-white' : 'text-white/70')}>
                   {icon}
                 </span>
               )}
-              <span className="text-sm font-medium truncate">{item.label}</span>
+              <span className="text-sm font-normal truncate">{item.label}</span>
             </div>
             {item.count !== undefined && (
               <span className="px-2 py-0.5 text-xs rounded-full bg-white/10 text-white/70">
@@ -239,20 +240,20 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
             <Link
               href={item.href}
               className={cn(
-                'flex-1 flex items-center gap-3 px-4 py-2.5 rounded-l-lg transition-all',
+                'flex-1 flex items-center gap-3 px-3 py-2 rounded-l-md transition-all',
                 level > 0 && 'pl-10',
                 isActive
-                  ? 'bg-blue-500/20 text-blue-400 border-l-2 border-blue-500'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
               )}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {icon && (
-                  <span className={cn('shrink-0', isActive ? 'text-blue-400' : 'text-white/60')}>
+                  <span className={cn('shrink-0', isActive ? 'text-white' : 'text-white/70')}>
                     {icon}
                   </span>
                 )}
-                <span className="text-sm font-medium truncate">{item.label}</span>
+                <span className="text-sm font-normal truncate">{item.label}</span>
               </div>
               {item.count !== undefined && (
                 <span className="px-2 py-0.5 text-xs rounded-full bg-white/10 text-white/70">
@@ -266,10 +267,10 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 toggleExpanded(item.label);
               }}
               className={cn(
-                'flex items-center px-3 py-2.5 rounded-r-lg transition-all',
+                'flex items-center px-3 py-2 rounded-r-md transition-all',
                 isActive
-                  ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
               )}
               title="Toggle dropdown"
             >
@@ -287,14 +288,14 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           <button
             onClick={() => hasChildren && toggleExpanded(item.label)}
             className={cn(
-              'w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg transition-all text-left',
+              'w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-all text-left',
               level > 0 && 'pl-10',
-              'text-white/70 hover:text-white hover:bg-white/5'
+              'text-white/70 hover:text-white hover:bg-white/[0.05]'
             )}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {icon && <span className="shrink-0 text-white/60">{icon}</span>}
-              <span className="text-sm font-medium truncate">{item.label}</span>
+              {icon && <span className="shrink-0 text-white/70">{icon}</span>}
+              <span className="text-sm font-normal truncate">{item.label}</span>
             </div>
             <div className="flex items-center gap-2">
               {item.count !== undefined && (
@@ -330,16 +331,16 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 h-screen bg-[#0f1623] border-r border-white/10 overflow-y-auto transition-all duration-300 flex flex-col',
-        isMounted && isCollapsed ? 'w-20' : 'w-64',
+        'fixed left-2 top-2 bottom-2 h-auto bg-white/[0.05] backdrop-blur-2xl border border-white/[0.1] overflow-y-auto transition-all duration-300 flex flex-col rounded-xl shadow-2xl',
+        isMounted && isCollapsed ? 'w-16' : 'w-56',
         className
       )}
     >
-      {/* Logo & Toggle */}
-      <div className="p-4 border-b border-white/[0.08] flex items-center justify-between gap-2">
+      {/* Logo */}
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-2">
         {!isCollapsed ? (
           <>
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <span className="text-2xl">🧪</span>
               <span className="text-xl font-bold text-white">EZTest</span>
             </Link>
@@ -347,25 +348,25 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="text-white/70 hover:text-white hover:bg-blue-500/20 p-2 shrink-0"
+              className="text-white/40 hover:text-white hover:bg-white/5 p-1.5 shrink-0 rounded-md"
               title="Collapse sidebar"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2 w-full">
-            <Link href="/" className="flex items-center justify-center">
+            <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
               <span className="text-2xl">🧪</span>
             </Link>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="text-white/70 hover:text-white hover:bg-blue-500/20 p-2 w-full"
+              className="text-white/40 hover:text-white hover:bg-white/5 p-1.5 w-full rounded-md"
               title="Expand sidebar"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         )}
@@ -374,27 +375,24 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
       {/* Project Indicator - Show when on project page */}
       {projectId && items.some(item => item.label === 'Test Suites') && (
         <div className={cn(
-          'px-4 py-3 border-b border-white/[0.08]',
+          'px-3 py-2 mb-1',
           isCollapsed && 'px-2'
         )}>
           {!isCollapsed ? (
-            <>
-              <div className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-2">Current Project</div>
-              <Link 
-                href={`/projects/${projectId}`}
-                className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/15 border border-primary/30 hover:bg-primary/20 hover:border-primary/40 transition-all group"
-                title={projectName || projectId}
-              >
-                <Folder className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-sm font-medium text-primary truncate group-hover:text-primary/90">
-                  {projectName || `Project ${projectId.slice(0, 6)}...`}
-                </span>
-              </Link>
-            </>
+            <Link 
+              href={`/projects/${projectId}`}
+              className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all group"
+              title={projectName || projectId}
+            >
+              <Folder className="w-4 h-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-normal text-white/90 truncate">
+                {projectName || `Project ${projectId.slice(0, 6)}...`}
+              </span>
+            </Link>
           ) : (
             <Link 
               href={`/projects/${projectId}`}
-              className="flex items-center justify-center p-2 rounded-md bg-primary/15 border border-primary/30 hover:bg-primary/20 hover:border-primary/40 transition-all"
+              className="flex items-center justify-center p-2.5 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all"
               title={projectName || projectId}
             >
               <Folder className="w-4 h-4 text-primary" />
@@ -404,7 +402,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className={cn('p-4 space-y-1', isMounted && isCollapsed && 'px-2')}>
+      <nav className={cn('px-3 py-2 space-y-0.5', isMounted && isCollapsed && 'px-2')}>
         {displayItems.map((item, index) => renderItem(item, 0, index))}
       </nav>
 
@@ -412,22 +410,22 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
       <div className="flex-1" />
 
       {/* User Account Section - Bottom */}
-      <div className={cn('border-t border-white/10 p-4', isMounted && isCollapsed && 'px-2')}>
+      <div className={cn('border-t border-white/[0.08] px-3 py-4', isMounted && isCollapsed && 'px-2')}>
         <Link
           href="/settings/profile"
           className={cn(
-            'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
+            'flex items-center gap-3 px-3 py-2 rounded-md transition-all',
             isMounted && isCollapsed ? 'justify-center' : 'justify-start',
-            'text-white/70 hover:text-white hover:bg-white/5'
+            'text-white/70 hover:text-white hover:bg-white/[0.05]'
           )}
           title={isMounted && isCollapsed ? 'Account' : ''}
         >
           {isMounted && isCollapsed ? (
-            <Settings className="w-4 h-4" />
+            <Settings className="w-5 h-5" />
           ) : (
             <>
-              <Settings className="w-4 h-4" />
-              <span className="text-sm font-medium">Account</span>
+              <Settings className="w-5 h-5" />
+              <span className="text-sm font-normal">Account</span>
             </>
           )}
         </Link>

@@ -1,6 +1,9 @@
+'use client';
+
 import React, { ReactNode } from "react"
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/design"
 import { ButtonDestructive } from "@/elements/button-destructive"
+import { signOut } from "next-auth/react"
 
 export interface TopBarProps {
   breadcrumbs: BreadcrumbItem[]
@@ -9,6 +12,10 @@ export interface TopBarProps {
 }
 
 export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/auth/login', redirect: true });
+  };
+
   return (
     <div className={`sticky top-0 z-40 backdrop-blur-xl border-b border-white/10 ${className}`}>
       <div className="px-8 py-4">
@@ -16,11 +23,14 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
           <Breadcrumbs items={breadcrumbs} />
           <div className="flex items-center gap-3">
             {actions}
-            <form action="/api/auth/signout" method="POST" className="inline">
-              <ButtonDestructive type="submit" size="default" className="px-5 cursor-pointer">
-                Sign Out
-              </ButtonDestructive>
-            </form>
+            <ButtonDestructive 
+              type="button" 
+              size="default" 
+              className="px-5 cursor-pointer"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </ButtonDestructive>
           </div>
         </div>
       </div>

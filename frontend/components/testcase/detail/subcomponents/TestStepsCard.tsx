@@ -35,10 +35,8 @@ export function TestStepsCard({
     <DetailCard
       title="Test Steps"
       contentClassName="space-y-3"
-      headerClassName="flex items-center justify-between"
-    >
-      {isEditing && (
-        <div className="absolute right-6 top-4">
+      headerAction={
+        isEditing ? (
           <Button
             size="sm"
             variant="glass"
@@ -48,8 +46,9 @@ export function TestStepsCard({
             <Plus className="w-4 h-4 mr-2" />
             Add Step
           </Button>
-        </div>
-      )}
+        ) : undefined
+      }
+    >
       <div className="space-y-3">
         {steps.length === 0 ? (
           <p className="text-white/60 text-center py-8">
