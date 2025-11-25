@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import Link from 'next/link';
 
@@ -94,7 +96,7 @@ function ResetPasswordContent() {
 
   if (validating) {
     return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#0a1628]">
         <div className="w-full max-w-md">
           <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
             <div className="space-y-4">
@@ -108,101 +110,98 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#0a1628]">
       <div className="w-full max-w-md">
         {/* Card */}
         <GlassPanel contentClassName="p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Create New Password</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white mb-2">Create New Password</h1>
+            <p className="text-white/70 text-sm">
               Enter your new password below.
             </p>
           </div>
 
           {success ? (
             <div className="rounded-lg p-4 text-center border border-green-500/40 bg-green-500/10">
-              <h3 className="font-medium text-green-200 mb-2">Password Reset Successful</h3>
-              <p className="text-green-200/90 text-sm mb-4">
+              <h3 className="font-semibold text-green-400 mb-2 text-sm">Password Reset Successful</h3>
+              <p className="text-green-300/90 text-sm mb-3">
                 Your password has been reset. You can now log in with your new password.
               </p>
-              <p className="text-green-200/90 text-sm">
+              <p className="text-green-300/90 text-sm">
                 Redirecting to login page...
               </p>
             </div>
           ) : !tokenValid ? (
             <div className="rounded-lg p-4 border border-red-500/40 bg-red-500/10">
-              <h3 className="font-medium text-red-200 mb-2">Invalid Reset Link</h3>
-              <p className="text-red-200 text-sm mb-4">
+              <h3 className="font-semibold text-red-400 mb-2 text-sm">Invalid Reset Link</h3>
+              <p className="text-red-300 text-sm mb-4">
                 {error || 'The password reset link is invalid or has expired.'}
               </p>
               <Link
                 href="/auth/forgot-password"
-                className="text-red-300 hover:text-red-200 font-medium"
+                className="text-red-400 hover:text-red-300 font-semibold underline"
               >
                 Request a new reset link
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
                 <div className="rounded-lg p-4 border border-red-500/40 bg-red-500/10">
-                  <p className="text-red-200 text-sm">{error}</p>
+                  <p className="text-red-300 text-sm">{error}</p>
                 </div>
               )}
 
               {/* New Password */}
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  New Password
-                </label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="password">New Password</Label>
+                <Input
+                  id="password"
                   type="password"
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   placeholder="Enter new password (min 8 characters)"
                 />
               </div>
 
               {/* Confirm Password */}
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Confirm Password
-                </label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   placeholder="Confirm your password"
                 />
               </div>
 
               {/* Password Requirements */}
               <div className="rounded-lg p-3 text-sm border border-primary/30 bg-primary/5">
-                <p className="font-medium mb-2 text-foreground">Password requirements:</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <p className="font-semibold mb-2 text-white">Password requirements:</p>
+                <ul className="list-disc list-inside space-y-1 text-white/70">
                   <li>At least 8 characters long</li>
                   <li>Must match in both fields</li>
                 </ul>
               </div>
 
-              <ButtonPrimary
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-[10px]"
-              >
-                {loading ? 'Resetting Password...' : 'Reset Password'}
-              </ButtonPrimary>
+              <div className="flex justify-center">
+                <ButtonPrimary
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? 'Resetting Password...' : 'Reset Password'}
+                </ButtonPrimary>
+              </div>
             </form>
           )}
 
           {/* Back to Login */}
           <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
-              <Link href="/auth/login" className="text-primary hover:text-primary/90 font-medium">
+            <p className="text-white/60 text-sm">
+              <Link href="/auth/login" className="text-primary hover:text-accent font-semibold transition-colors">
                 Back to Login
               </Link>
             </p>

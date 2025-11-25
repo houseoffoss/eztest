@@ -117,9 +117,11 @@ export async function sendPasswordResetEmail(
         </p>
 
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetLink}" style="background-color: #033977; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; font-size: 15px;">
-            Reset Password
-          </a>
+          <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
+            <a href="${resetLink}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
+              Reset Password
+            </a>
+          </div>
         </div>
 
         <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin: 20px 0 10px 0;">
