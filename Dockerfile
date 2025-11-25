@@ -1,6 +1,7 @@
 # Stage 1: Dependencies (Production only)
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl openssl-dev
+ENV OPENSSL_ROOT_DIR=/usr
 WORKDIR /app
 
 # Copy package files
@@ -16,7 +17,8 @@ RUN npx prisma generate
 
 # Stage 2: Builder (with all dependencies)
 FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl openssl-dev
+ENV OPENSSL_ROOT_DIR=/usr
 WORKDIR /app
 
 # Copy package files and install ALL dependencies (including dev)
@@ -25,6 +27,9 @@ COPY prisma ./prisma/
 RUN npm ci && \
     npx prisma generate && \
     npm cache clean --force
+
+# Copy docker-entrypoint.sh first (to ensure it's included)
+COPY docker-entrypoint.sh ./
 
 # Copy source code
 COPY . .
@@ -48,10 +53,12 @@ RUN npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
+RUN apk add --no-cache openssl openssl-dev
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV OPENSSL_ROOT_DIR=/usr
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
@@ -69,8 +76,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 # Copy all production dependencies from deps stage (needed for Prisma CLI and migrations)
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Copy start script
-COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
+# Copy start script from builder stage (it was copied there earlier)
+COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
 
 USER nextjs
@@ -83,5 +90,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

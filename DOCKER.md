@@ -2,6 +2,16 @@
 
 EzTest is a lightweight, self-hostable Test Management Application built with Next.js, Tailwind CSS, ShadCN UI, and PostgreSQL. It's designed to run efficiently on minimal hardware (1 core, 2GB RAM).
 
+---
+
+## 📚 Documentation Overview
+
+- **This Document**: General Docker guide for all platforms
+- **[DEPLOYMENT_LINUX.md](./DEPLOYMENT_LINUX.md)**: Complete Linux server deployment guide with production checklist
+- **[DOCKER_STATUS.md](./DOCKER_STATUS.md)**: Docker files compatibility summary and troubleshooting
+
+---
+
 ## 🔧 Development vs Production
 
 EZTest provides **two separate Docker setups**:

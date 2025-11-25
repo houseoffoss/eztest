@@ -30,13 +30,13 @@ Thumbs.db
 .git
 .gitignore
 
-# Docker
-Dockerfile
-docker-compose.yml
+# Docker (keep entrypoint script!)
+# Dockerfile
+# docker-compose.yml
 .dockerignore
 
-# Documentation
-README.md
+# Documentation (keep README for info)
+# README.md
 docs
 
 # Testing

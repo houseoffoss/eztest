@@ -5,10 +5,23 @@ echo "Starting EzTest application..."
 
 # Wait for database to be ready
 echo "Waiting for database connection..."
-until npx prisma db push --skip-generate 2>/dev/null; do
-  echo "Database is unavailable - sleeping"
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+until npx prisma db push --skip-generate 2>&1 | tee /tmp/prisma_error.log || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  echo "Database is unavailable - attempt $RETRY_COUNT/$MAX_RETRIES"
+  if [ -f /tmp/prisma_error.log ]; then
+    echo "Error details:"
+    cat /tmp/prisma_error.log | head -3
+  fi
   sleep 2
 done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+  echo "Failed to connect to database after $MAX_RETRIES attempts"
+  exit 1
+fi
 
 echo "Database is ready!"
 
@@ -16,7 +29,16 @@ echo "Database is ready!"
 echo "Running database migrations..."
 npx prisma db push --skip-generate
 
-echo "Database migrations completed!"
+# Seed database if SEED_DATABASE is set to true
+if [ "$SEED_DATABASE" = "true" ]; then
+  echo "Seeding database..."
+  # Install tsx temporarily for seeding (it's in devDependencies)
+  npm install tsx --no-save 2>/dev/null || true
+  # Run seed directly with npx tsx
+  npx tsx prisma/seed.ts || echo "Seeding failed or already completed"
+fi
+
+echo "Database setup completed!"
 
 # Execute the main command
 exec "$@"
