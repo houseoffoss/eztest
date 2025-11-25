@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Label } from '@/elements/label';
 import { Textarea } from '@/elements/textarea';
 import {
@@ -106,9 +107,9 @@ export function RecordResultDialog({
           <Button variant="glass" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="glass-primary" onClick={onSubmit}>
+          <ButtonPrimary onClick={onSubmit}>
             Save Result
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

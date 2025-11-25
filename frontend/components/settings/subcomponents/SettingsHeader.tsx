@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { Project } from '../types';
 
 interface SettingsHeaderProps {
@@ -15,24 +14,13 @@ export function SettingsHeader({ project, projectId }: SettingsHeaderProps) {
   return (
     <>
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs
-              items={[
-                { label: 'Projects', href: '/projects' },
-                { label: project.name, href: `/projects/${pid}` },
-                { label: 'Settings' },
-              ]}
-            />
-            <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                Sign Out
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project.name, href: `/projects/${pid}` },
+          { label: 'Settings' },
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto px-8 pt-8">
         <div className="mb-6">

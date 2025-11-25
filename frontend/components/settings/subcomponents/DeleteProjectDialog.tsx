@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 
 interface DeleteProjectDialogProps {
@@ -42,20 +43,19 @@ export function DeleteProjectDialog({
           <div className="flex gap-3 justify-end">
             <Button
               type="button"
-              variant="glass"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
               disabled={deleting}
             >
               Cancel
             </Button>
-            <Button
+            <ButtonDestructive
               type="button"
-              variant="glass-destructive"
               onClick={onConfirm}
               disabled={deleting}
             >
               {deleting ? 'Deleting...' : 'Delete Project'}
-            </Button>
+            </ButtonDestructive>
           </div>
         </div>
       </DialogContent>

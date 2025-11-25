@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Button } from '@/elements/button';
 import { Folder } from 'lucide-react';
@@ -62,7 +63,7 @@ export function TestSuiteInfoCard({
           Created
         </h4>
         <p className="text-white/90 text-sm">
-          {new Date(createdAt).toLocaleDateString()}
+          {formatDate(createdAt)}
         </p>
       </div>
 
@@ -71,7 +72,7 @@ export function TestSuiteInfoCard({
           Last Updated
         </h4>
         <p className="text-white/90 text-sm">
-          {new Date(updatedAt).toLocaleDateString()}
+          {formatDate(updatedAt)}
         </p>
       </div>
     </DetailCard>

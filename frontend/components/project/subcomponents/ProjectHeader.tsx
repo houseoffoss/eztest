@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/elements/badge';
+import { formatDate } from '@/lib/date-utils';
 
 interface ProjectHeaderProps {
   project: {
@@ -11,6 +12,9 @@ interface ProjectHeaderProps {
       name: string;
     };
     updatedAt: string;
+    members: Array<{
+      id: string;
+    }>;
   };
 }
 
@@ -32,7 +36,11 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
         </div>
         <div>•</div>
         <div>
-          Last updated {new Date(project.updatedAt).toLocaleDateString()}
+          Last updated {formatDate(project.updatedAt)}
+        </div>
+        <div>•</div>
+        <div>
+          Team Size: <span className="font-semibold text-white/90">{project.members.length} members</span>
         </div>
       </div>
     </div>

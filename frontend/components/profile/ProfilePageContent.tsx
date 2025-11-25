@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import {
   ProfileInformation,
   NotificationPreferences,
@@ -53,22 +52,11 @@ export default function ProfilePageContent() {
   return (
     <>
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs 
-              items={[
-                { label: 'Account Settings' }
-              ]}
-            />
-            <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                Sign Out
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Account Settings' }
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto px-8 py-10">
         <div className="space-y-6">

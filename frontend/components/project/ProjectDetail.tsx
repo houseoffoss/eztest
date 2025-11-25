@@ -2,14 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/elements/button';
-import { Card, CardContent } from '@/elements/card';
 import { TestTube2, Play, FileText, Folder } from 'lucide-react';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Loader } from '@/elements/loader';
-import { StatCard } from '@/components/design/StatCard';
+import { TopBar, StatCard } from '@/components/design';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
-import { ProjectOverviewCard } from './subcomponents/ProjectOverviewCard';
 
 interface Project {
   id: string;
@@ -84,25 +80,12 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs 
-              items={[
-                { label: 'Projects', href: '/projects' },
-                { label: project.name, href: `/projects/${projectId}` },
-                { label: 'Overview' }
-              ]}
-            />
-            <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                Sign Out
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <TopBar 
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project.name, href: `/projects/${projectId}` }
+        ]}
+      />
       
       {/* Page Header */}
       <div className="max-w-7xl mx-auto px-8 pt-8">
@@ -112,35 +95,59 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* Stats Cards */}
-          <StatCard
-            icon={<TestTube2 className="w-4 h-4" />}
-            label="Test Cases"
-            value={project._count.testCases}
-            borderColor="border-l-primary/30"
-          />
-          <StatCard
-            icon={<Play className="w-4 h-4" />}
-            label="Test Runs"
-            value={project._count.testRuns}
-            borderColor="border-l-accent/30"
-          />
-          <StatCard
-            icon={<FileText className="w-4 h-4" />}
-            label="Test Suites"
-            value={project._count.testSuites}
-            borderColor="border-l-purple-400/30"
-          />
-          <StatCard
-            icon={<Folder className="w-4 h-4" />}
-            label="Requirements"
-            value={project._count.requirements}
-            borderColor="border-l-green-400/30"
-          />
+          {/* Test Cases Card - Clickable */}
+          <div
+            onClick={() => router.push(`/projects/${projectId}/testcases`)}
+            className="cursor-pointer group"
+          >
+            <StatCard
+              icon={<TestTube2 className="w-4 h-4" />}
+              label="Test Cases"
+              value={project._count.testCases}
+              borderColor="border-l-primary/30"
+              className="group-hover:bg-primary/10 transition-all"
+            />
+          </div>
+          {/* Test Runs Card - Clickable */}
+          <div
+            onClick={() => router.push(`/projects/${projectId}/testruns`)}
+            className="cursor-pointer group"
+          >
+            <StatCard
+              icon={<Play className="w-4 h-4" />}
+              label="Test Runs"
+              value={project._count.testRuns}
+              borderColor="border-l-accent/30"
+              className="group-hover:bg-accent/10 transition-all"
+            />
+          </div>
+          {/* Test Suites Card - Clickable */}
+          <div
+            onClick={() => router.push(`/projects/${projectId}/testsuites`)}
+            className="cursor-pointer group"
+          >
+            <StatCard
+              icon={<FileText className="w-4 h-4" />}
+              label="Test Suites"
+              value={project._count.testSuites}
+              borderColor="border-l-purple-400/30"
+              className="group-hover:bg-purple-400/10 transition-all"
+            />
+          </div>
+          {/* Members Card - Clickable */}
+          <div
+            onClick={() => router.push(`/projects/${projectId}/members`)}
+            className="cursor-pointer group"
+          >
+            <StatCard
+              icon={<Folder className="w-4 h-4" />}
+              label="Members"
+              value={project.members?.length || 0}
+              borderColor="border-l-green-400/30"
+              className="group-hover:bg-green-400/10 transition-all"
+            />
+          </div>
         </div>
-
-        {/* Project Overview Card */}
-        <ProjectOverviewCard project={project} />
       </div>
     </>
   );

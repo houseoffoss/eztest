@@ -11,7 +11,7 @@ function Card({ className, variant = "default", ...props }: CardProps) {
     <div
       data-slot="card"
       className={cn(
-        "relative overflow-hidden flex flex-col gap-6 rounded-2xl py-6 border backdrop-blur-lg",
+        "relative overflow-hidden flex flex-col gap-3 rounded-lg py-3 px-3 border backdrop-blur-lg",
         variant === "glass"
           ? "bg-gradient-to-b from-white/[0.01] to-white/[0.02] text-foreground border-white/10 shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))]"
           : "bg-card text-card-foreground shadow-md",
@@ -27,7 +27,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-0.5 px-0 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-3",
         className
       )}
       {...props}
@@ -72,7 +72,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-6", className)}
+      className={cn("px-0", className)}
       {...props}
     />
   )
@@ -82,7 +82,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      className={cn("flex items-center px-0 [.border-t]:pt-3", className)}
       {...props}
     />
   )

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { InlineError } from '@/components/utils/InlineError';
 
@@ -84,14 +85,26 @@ export const BaseConfirmDialog = ({
             >
               {cancelLabel}
             </Button>
-            <Button
-              type="button"
-              variant={destructive ? 'glass-destructive' : 'glass'}
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? `${submitLabel}...` : submitLabel}
-            </Button>
+            {destructive ? (
+              <ButtonDestructive
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="cursor-pointer"
+              >
+                {loading ? `${submitLabel}...` : submitLabel}
+              </ButtonDestructive>
+            ) : (
+              <Button
+                type="button"
+                variant="glass"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="cursor-pointer"
+              >
+                {loading ? `${submitLabel}...` : submitLabel}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

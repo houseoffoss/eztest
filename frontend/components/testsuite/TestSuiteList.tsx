@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Plus } from 'lucide-react';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { TestSuite, Project } from './types';
@@ -173,40 +174,28 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            {project && (
-              <Breadcrumbs 
-                items={[
-                  { label: 'Projects', href: '/projects' },
-                  { label: project.name, href: `/projects/${projectId}` },
-                  { label: 'Test Suites' },
-                ]}
-              />
-            )}
-            <div className="flex items-center gap-3">
-              {canCreateTestSuite && (
-                <Button
-                  variant="glass-primary"
-                  size="sm"
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Test Suite
-                </Button>
-              )}
-              <form action="/api/auth/signout" method="POST" className="inline">
-                <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                  Sign Out
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      
+      {project && (
+        <TopBar 
+          breadcrumbs={[
+            { label: 'Projects', href: '/projects' },
+            { label: project.name, href: `/projects/${projectId}` },
+            { label: 'Test Suites' },
+          ]}
+          actions={
+            canCreateTestSuite ? (
+              <ButtonPrimary
+                size="default"
+                onClick={() => setCreateDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Test Suite
+              </ButtonPrimary>
+            ) : undefined
+          }
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-8 pt-8">
         {/* Header */}
         <div className="mb-6">

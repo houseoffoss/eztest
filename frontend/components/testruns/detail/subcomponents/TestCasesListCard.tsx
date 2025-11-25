@@ -1,5 +1,7 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { formatDate } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { DataTable, type ColumnDef } from '@/components/design/DataTable';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -72,7 +74,7 @@ export function TestCasesListCard({
       label: 'Priority',
       render: (_, row: ResultRow) => (
         <Badge variant="outline" className="text-xs px-2 py-0.5">
-          {row.testCase.priority}
+          {row.testCase.priority?.toUpperCase()}
         </Badge>
       ),
     },
@@ -106,7 +108,7 @@ export function TestCasesListCard({
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
           {row.executedAt
-            ? new Date(row.executedAt).toLocaleDateString()
+            ? formatDate(row.executedAt)
             : '-'}
         </span>
       ),
@@ -175,18 +177,17 @@ export function TestCasesListCard({
           <p className="text-gray-400 mb-4">No test cases in this test run</p>
           {canCreate && (
             <div className="flex gap-2 justify-center flex-wrap">
-              <Button
-                variant="glass-primary"
-                size="sm"
+              <ButtonPrimary
+                size="default"
                 onClick={onAddTestCases}
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Test Cases
-              </Button>
+              </ButtonPrimary>
               <Button
                 variant="glass"
-                size="sm"
+                size="default"
                 onClick={onAddTestSuites}
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >

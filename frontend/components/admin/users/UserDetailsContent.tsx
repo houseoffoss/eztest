@@ -1,11 +1,12 @@
 'use client';
 
 import { Button } from '@/elements/button';
-import { DetailCard } from '@/components/design/DetailCard';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Badge } from '@/elements/badge';
+import { DetailCard } from '@/components/design/DetailCard';
+import { formatDate } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Mail, Calendar, Briefcase, User, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Mail, Calendar, Briefcase, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface UserRole {
@@ -59,9 +60,9 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               ]}
             />
             <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
+              <ButtonDestructive type="submit" size="default" className="px-5">
                 Sign Out
-              </Button>
+              </ButtonDestructive>
             </form>
           </div>
         </div>
@@ -105,7 +106,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+                    <span>Joined {formatDate(user.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Briefcase className="w-4 h-4" />

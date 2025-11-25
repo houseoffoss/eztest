@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Trash2 } from 'lucide-react';
 import { Project } from '../types';
@@ -28,15 +28,14 @@ export function DangerZoneCard({ project, deleting, onDelete }: DangerZoneCardPr
               permanently deleted.
             </p>
           </div>
-          <Button
-            variant="glass-destructive"
+          <ButtonDestructive
             onClick={onDelete}
             disabled={deleting}
-            className="ml-4"
+            // className="ml-4"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete Project
-          </Button>
+          </ButtonDestructive>
         </div>
     </DetailCard>
   );

@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/elements/card';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Folder, Plus } from 'lucide-react';
 
 interface EmptyProjectsStateProps {
@@ -24,10 +25,10 @@ export const EmptyProjectsState = ({ onCreateProject, canCreateProject = true }:
             : 'You do not have permission to create projects. Contact an admin to get started.'}
         </p>
         {canCreateProject && (
-          <Button onClick={onCreateProject} variant="glass-primary">
+          <ButtonPrimary onClick={onCreateProject}>
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Project
-          </Button>
+          </ButtonPrimary>
         )}
       </CardContent>
     </Card>

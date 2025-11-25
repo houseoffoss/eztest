@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 
 interface DeleteTestSuiteDialogProps {
   open: boolean;
@@ -33,12 +34,12 @@ export function DeleteTestSuiteDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="glass-destructive" onClick={onConfirm}>
+          <ButtonDestructive onClick={onConfirm}>
             Delete
-          </Button>
+          </ButtonDestructive>
         </DialogFooter>
       </DialogContent>
     </Dialog>

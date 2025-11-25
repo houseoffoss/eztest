@@ -36,7 +36,7 @@ export const ItemCard = ({
   return (
     <Card
       variant="glass"
-      className={`hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer group ${borderClass} ${className}`}
+      className={`hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer group ${borderClass} ${className} flex flex-col`}
       onClick={onClick}
     >
       <CardHeader className="pb-1 pt-2.5 px-3.5">
@@ -46,19 +46,17 @@ export const ItemCard = ({
             <CardTitle className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1 text-white">
               {title}
             </CardTitle>
-            {description && (
-              <CardDescription className="line-clamp-1 text-sm text-white/60">
-                {description}
-              </CardDescription>
-            )}
+            <CardDescription className="line-clamp-1 text-sm text-white/60 min-h-5">
+              {description || ''}
+            </CardDescription>
           </div>
           {header}
         </div>
       </CardHeader>
 
-      <CardContent className="py-2.5 px-3.5">
-        {content}
-        {footer && <div className="flex items-center justify-between pt-2 border-t border-white/10">{footer}</div>}
+      <CardContent className="py-2.5 px-3.5 flex-1 flex flex-col">
+        <div className="flex-1">{content}</div>
+        {footer && <div className="flex items-center justify-between pt-2 border-t border-white/10 mt-auto">{footer}</div>}
       </CardContent>
     </Card>
   );

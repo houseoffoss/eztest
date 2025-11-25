@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import Link from 'next/link';
 
@@ -188,14 +189,13 @@ function ResetPasswordContent() {
                 </ul>
               </div>
 
-              <Button
+              <ButtonPrimary
                 type="submit"
                 disabled={loading}
-                variant="glass-primary"
                 className="w-full rounded-[10px]"
               >
                 {loading ? 'Resetting Password...' : 'Reset Password'}
-              </Button>
+              </ButtonPrimary>
             </form>
           )}
 

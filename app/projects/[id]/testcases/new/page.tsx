@@ -4,6 +4,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
@@ -214,14 +216,13 @@ export default function NewTestCasePage() {
         }
         actions={
           <form action="/api/auth/signout" method="POST">
-            <Button
+            <ButtonDestructive
               type="submit"
-              variant="glass-destructive"
               size="sm"
               className="px-5"
             >
               Sign Out
-            </Button>
+            </ButtonDestructive>
           </form>
         }
       />
@@ -500,9 +501,9 @@ export default function NewTestCasePage() {
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="glass-primary" onClick={handleAddStep}>
+                        <ButtonPrimary size="sm" onClick={handleAddStep}>
                           Add
-                        </Button>
+                        </ButtonPrimary>
                         <Button
                           size="sm"
                           variant="glass"
@@ -529,14 +530,13 @@ export default function NewTestCasePage() {
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button
-                  variant="glass-primary"
+                <ButtonPrimary
                   className="w-full"
                   onClick={handleCreate}
                   disabled={loading}
                 >
                   {loading ? 'Creating...' : 'Create Test Case'}
-                </Button>
+                </ButtonPrimary>
                 <Button
                   variant="glass"
                   className="w-full"

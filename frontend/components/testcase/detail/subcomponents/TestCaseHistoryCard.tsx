@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatDate } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { DataTable, type ColumnDef } from '@/components/design/DataTable';
 import { Badge } from '@/elements/badge';
@@ -108,17 +109,20 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     {
       key: 'status',
       label: 'Status',
-      render: (status: string) => (
-        <div className="flex items-center gap-2">
-          {getStatusIcon(status)}
-          <Badge
-            variant="outline"
-            className={`text-xs ${getStatusColor(status)}`}
-          >
-            {status}
-          </Badge>
-        </div>
-      ),
+      render: (value: unknown, row: TestResult) => {
+        const status = value as string;
+        return (
+          <div className="flex items-center gap-2">
+            {getStatusIcon(status)}
+            <Badge
+              variant="outline"
+              className={`text-xs ${getStatusColor(status)}`}
+            >
+              {status}
+            </Badge>
+          </div>
+        );
+      },
     },
     {
       key: 'testRun',
@@ -153,19 +157,22 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
       render: (_, row: TestResult) => (
         <div className="flex items-center gap-1 text-xs text-white/70">
           <Calendar className="w-3 h-3" />
-          <span>{new Date(row.executedAt).toLocaleDateString()}</span>
+          <span>{formatDate(row.executedAt)}</span>
         </div>
       ),
     },
     {
       key: 'duration',
       label: 'Duration',
-      render: (duration?: number) => (
-        <div className="flex items-center gap-1 text-xs text-white/70">
-          <Clock className="w-3 h-3" />
-          <span>{formatDuration(duration) || '-'}</span>
-        </div>
-      ),
+      render: (value: unknown, row: TestResult) => {
+        const duration = value as number | undefined;
+        return (
+          <div className="flex items-center gap-1 text-xs text-white/70">
+            <Clock className="w-3 h-3" />
+            <span>{formatDuration(duration) || '-'}</span>
+          </div>
+        );
+      },
       align: 'right',
     },
   ];

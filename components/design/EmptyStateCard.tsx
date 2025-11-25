@@ -4,6 +4,7 @@ import * as React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent } from '@/elements/card';
 
 interface EmptyStateCardProps {
@@ -42,9 +43,9 @@ export function EmptyStateCard({
           </p>
         )}
         {actionLabel && onAction && (
-          <Button onClick={onAction} variant="glass-primary">
+          <ButtonPrimary onClick={onAction}>
             {actionLabel}
-          </Button>
+          </ButtonPrimary>
         )}
       </CardContent>
     </Card>

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatDateTime } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -131,9 +134,9 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       <Card variant="glass">
         <CardContent className="p-8 text-center">
           <p className="text-lg text-white/70">Project not found</p>
-          <Button onClick={() => router.push('/projects')} variant="glass-primary" className="mt-4">
+          <ButtonPrimary onClick={() => router.push('/projects')} className="mt-4">
             Back to Projects
-          </Button>
+          </ButtonPrimary>
         </CardContent>
       </Card>
     );
@@ -201,10 +204,10 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             )}
 
             <div className="flex gap-3">
-              <Button type="submit" disabled={saving} variant="glass-primary">
+              <ButtonPrimary type="submit" disabled={saving}>
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
+              </ButtonPrimary>
               <Button
                 type="button"
                 variant="glass"
@@ -237,13 +240,13 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             <div>
               <Label className="text-white/60 text-xs">Created At</Label>
               <p className="text-sm font-medium text-white">
-                {new Date(project.createdAt).toLocaleString()}
+                {formatDateTime(project.createdAt)}
               </p>
             </div>
             <div>
               <Label className="text-white/60 text-xs">Last Updated</Label>
               <p className="text-sm font-medium text-white">
-                {new Date(project.updatedAt).toLocaleString()}
+                {formatDateTime(project.updatedAt)}
               </p>
             </div>
             <div>
@@ -270,15 +273,14 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 Once you delete a project, there is no going back. All data will be permanently deleted.
               </p>
             </div>
-            <Button
-              variant="glass-destructive"
+            <ButtonDestructive
               onClick={() => setDeleteDialogOpen(true)}
               disabled={deleting}
               className="ml-4"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Project
-            </Button>
+            </ButtonDestructive>
           </div>
         </CardContent>
       </Card>
@@ -306,20 +308,19 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             <div className="flex gap-3 justify-end">
               <Button
                 type="button"
-                variant="glass"
+                variant="ghost"
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={deleting}
               >
                 Cancel
               </Button>
-              <Button
+              <ButtonDestructive
                 type="button"
-                variant="glass-destructive"
                 onClick={handleDelete}
                 disabled={deleting}
               >
                 {deleting ? 'Deleting...' : 'Delete Project'}
-              </Button>
+              </ButtonDestructive>
             </div>
           </div>
         </DialogContent>

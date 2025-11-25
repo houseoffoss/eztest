@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Loader } from '@/elements/loader';
@@ -290,14 +292,13 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
                     disabled={changingPassword}
-                    variant="glass-primary"
                     className="flex-1 rounded-[10px]"
                   >
                     {changingPassword ? 'Changing Password...' : 'Change Password'}
-                  </Button>
+                  </ButtonPrimary>
                   <Button
                     type="button"
                     onClick={() => {
@@ -316,13 +317,12 @@ export default function AccountSettingsPage() {
                 </div>
               </form>
             ) : (
-              <Button
+              <ButtonPrimary
                 onClick={() => setChangePasswordForm(true)}
-                variant="glass-primary"
                 className="rounded-[10px]"
               >
                 Change Password
-              </Button>
+              </ButtonPrimary>
             )}
         </GlassPanel>
 
@@ -367,13 +367,12 @@ export default function AccountSettingsPage() {
                   </ul>
                 </div>
 
-                <Button
+                <ButtonDestructive
                   onClick={() => setShowDeleteDialog(true)}
-                  variant="glass-destructive"
                   className="rounded-[10px]"
                 >
                   Delete My Account
-                </Button>
+                </ButtonDestructive>
               </>
             )}
         </GlassPanel>
@@ -429,19 +428,18 @@ export default function AccountSettingsPage() {
                   setPassword('');
                   setError(null);
                 }}
-                variant="glass"
+                variant="ghost"
                 className="rounded-[10px]"
               >
                 Cancel
               </Button>
-              <Button
+              <ButtonDestructive
                 onClick={handleDeleteAccount}
                 disabled={deleting || !password.trim()}
-                variant="glass-destructive"
                 className="rounded-[10px]"
               >
                 {deleting ? 'Deleting...' : 'Delete Account'}
-              </Button>
+              </ButtonDestructive>
             </div>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import {
   Dialog,
   DialogContent,
@@ -48,19 +49,18 @@ export function ConfirmDeleteDialog({
         </DialogHeader>
         <DialogFooter>
           <Button 
-            variant="glass" 
+            variant="ghost" 
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
             {cancelLabel}
           </Button>
-          <Button 
-            variant="glass-destructive" 
+          <ButtonDestructive 
             onClick={handleConfirm}
             disabled={isLoading}
           >
             {isLoading ? 'Deleting...' : confirmLabel}
-          </Button>
+          </ButtonDestructive>
         </DialogFooter>
       </DialogContent>
     </Dialog>

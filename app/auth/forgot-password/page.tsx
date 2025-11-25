@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { GlassPanel } from '@/components/design';
 
 export default function ForgotPasswordPage() {
@@ -97,14 +98,13 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              <Button
+              <ButtonPrimary
                 type="submit"
                 disabled={loading}
-                variant="glass-primary"
                 className="w-full rounded-[10px]"
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
-              </Button>
+              </ButtonPrimary>
             </form>
           )}
 

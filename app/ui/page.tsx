@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/elements/button";
+import { ButtonPrimary } from "@/elements/button-primary";
+import { ButtonSecondary } from "@/elements/button-secondary";
 // UI primitives
 import { Input } from "@/elements/input";
 import { Badge } from "@/elements/badge";
@@ -102,8 +104,8 @@ export default function UIShowcasePage() {
         <FilterBar className="mb-6">
           <Input variant="glass" placeholder="Search…" className="w-[220px]" />
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="glass-accent" className="rounded-full">Filters</Button>
-            <Button variant="glass-primary" className="rounded-full">Create</Button>
+            <ButtonSecondary>Filters</ButtonSecondary>
+            <ButtonPrimary>Create</ButtonPrimary>
           </div>
         </FilterBar>
 
@@ -193,6 +195,31 @@ export default function UIShowcasePage() {
         {/* Catalogue: list and demo of design components */}
         <Section heading="Component catalogue" description="All reusable glass components available." className="mt-10">
           <div className="grid gap-6 md:grid-cols-2">
+            <GlassPanel heading="Color Set 1 - Blue Gradient" contentClassName="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonPrimary variant="default">Default</ButtonPrimary>
+                <ButtonPrimary variant="light">Light</ButtonPrimary>
+                <ButtonPrimary variant="outline">Outline</ButtonPrimary>
+                <ButtonPrimary variant="ghost">Ghost</ButtonPrimary>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonPrimary variant="default" size="sm">Small</ButtonPrimary>
+                <ButtonPrimary variant="default" size="lg">Large</ButtonPrimary>
+              </div>
+            </GlassPanel>
+
+            <GlassPanel heading="Color Set 2 - Orange Gradient" contentClassName="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonSecondary variant="default">Default</ButtonSecondary>
+                <ButtonSecondary variant="light">Light</ButtonSecondary>
+                <ButtonSecondary variant="outline">Outline</ButtonSecondary>
+                <ButtonSecondary variant="ghost">Ghost</ButtonSecondary>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <ButtonSecondary variant="default" size="sm">Small</ButtonSecondary>
+                <ButtonSecondary variant="default" size="lg">Large</ButtonSecondary>
+              </div>
+            </GlassPanel>
             <GlassPanel heading="Core wrappers" contentClassName="space-y-3">
               <ul className="list-disc list-inside text-white/80 text-sm">
                 <li>GlassPanel — frosted card wrapper</li>

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Textarea } from '@/elements/textarea';
 import { Label } from '@/elements/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
 import { Loader } from '@/elements/loader';
@@ -149,18 +150,9 @@ export default function UserProfileSettings() {
   return (
     <>
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs items={[{ label: 'Account Settings' }]} />
-            <form action="/api/auth/signout" method="POST">
-              <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-                Sign Out
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[{ label: 'Account Settings' }]}
+      />
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-8 py-10">
@@ -257,15 +249,14 @@ export default function UserProfileSettings() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
-                    variant="glass-primary"
                     disabled={saving}
                     className="gap-2"
                   >
                     <Save className="w-4 h-4" />
                     {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                  </ButtonPrimary>
                 </div>
               </form>
             </CardContent>
@@ -332,15 +323,14 @@ export default function UserProfileSettings() {
                 </div>
 
                 <div className="flex justify-end pt-4">
-                  <Button
+                  <ButtonPrimary
                     type="submit"
-                    variant="glass-primary"
                     disabled={saving}
                     className="gap-2"
                   >
                     <Key className="w-4 h-4" />
                     {saving ? 'Updating...' : 'Change Password'}
-                  </Button>
+                  </ButtonPrimary>
                 </div>
               </form>
             </CardContent>

@@ -64,7 +64,7 @@ export function Navbar({
                         key={it.href}
                         href={it.href}
                         className={cn(
-                          "px-4 py-2 text-sm rounded-full transition-colors",
+                          "px-4 py-2 text-sm rounded-full transition-colors cursor-pointer",
                           active
                             ? "bg-white/12 text-white shadow-inner"
                             : "text-white/80 hover:text-white hover:bg-white/8"

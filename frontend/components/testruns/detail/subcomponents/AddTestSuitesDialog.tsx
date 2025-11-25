@@ -7,9 +7,10 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { CheckboxListItem } from '@/elements/checkbox-list-item';
 import { Badge } from '@/elements/badge';
-import { Folder, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 interface TestSuite {
@@ -97,7 +98,20 @@ export function AddTestSuitesDialog({
               <div key={testSuite.id} className="border border-white/10 rounded-lg overflow-hidden">
                 {/* Suite Header */}
                 <div className="bg-white/5 p-4 hover:bg-white/10 transition-colors">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-2">
+                    {/* Dropdown Button */}
+                    <button
+                      onClick={() => toggleSuiteExpanded(testSuite.id)}
+                      className="text-white/60 hover:text-white p-1 transition-colors cursor-pointer shrink-0"
+                    >
+                      {expandedSuites.has(testSuite.id) ? (
+                        <ChevronDown className="w-5 h-5" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5" />
+                      )}
+                    </button>
+
+                    {/* CheckboxListItem */}
                     <CheckboxListItem
                       id={testSuite.id}
                       checked={selectedSuiteIds.includes(testSuite.id)}
@@ -114,16 +128,6 @@ export function AddTestSuitesDialog({
                       variant="compact"
                       onClick={() => toggleSuiteExpanded(testSuite.id)}
                     />
-                    <button
-                      onClick={() => toggleSuiteExpanded(testSuite.id)}
-                      className="text-white/60 hover:text-white p-1 transition-colors"
-                    >
-                      {expandedSuites.has(testSuite.id) ? (
-                        <ChevronDown className="w-5 h-5" />
-                      ) : (
-                        <ChevronRight className="w-5 h-5" />
-                      )}
-                    </button>
                   </div>
                 </div>
 
@@ -156,7 +160,7 @@ export function AddTestSuitesDialog({
                                     testCase.priority
                                   )}`}
                                 >
-                                  {testCase.priority}
+                                  {testCase.priority?.toUpperCase()}
                                 </Badge>
                                 <Badge
                                   variant="outline"
@@ -182,16 +186,16 @@ export function AddTestSuitesDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="glass" onClick={onCancel}>
+          <Button variant="glass" onClick={onCancel} className="cursor-pointer">
             Cancel
           </Button>
-          <Button
-            variant="glass-primary"
+          <ButtonPrimary
             onClick={onAdd}
             disabled={selectedSuiteIds.length === 0}
+            className="cursor-pointer"
           >
             Add {selectedSuiteIds.length > 0 && `(${selectedSuiteIds.length})`}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>

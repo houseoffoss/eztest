@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Badge } from '@/elements/badge';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design/TopBar';
 import { Mail, MapPin, Phone, Calendar, Briefcase, User } from 'lucide-react';
 
 interface UserProfile {
@@ -55,11 +56,7 @@ export default function UserProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a1628]">
-        <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-          <div className="px-8 py-4">
-            <Breadcrumbs items={[{ label: 'Profile' }]} />
-          </div>
-        </div>
+        <TopBar breadcrumbs={[{ label: 'Profile' }]} />
         <div className="max-w-4xl mx-auto px-8 pt-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-lg text-muted-foreground">Loading profile...</div>
@@ -72,18 +69,14 @@ export default function UserProfilePage() {
   if (error || !user) {
     return (
       <div className="min-h-screen bg-[#0a1628]">
-        <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-          <div className="px-8 py-4">
-            <Breadcrumbs items={[{ label: 'Profile' }]} />
-          </div>
-        </div>
+        <TopBar breadcrumbs={[{ label: 'Profile' }]} />
         <div className="max-w-4xl mx-auto px-8 pt-8">
           <Card variant="glass">
             <CardContent className="p-8 text-center">
               <p className="text-lg text-white/70 mb-4">{error || 'User not found'}</p>
-              <Button onClick={() => router.back()} variant="glass-primary">
+              <ButtonPrimary onClick={() => router.back()}>
                 Go Back
-              </Button>
+              </ButtonPrimary>
             </CardContent>
           </Card>
         </div>
@@ -93,17 +86,12 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#0a1628]">
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <Breadcrumbs
-            items={[
-              { label: 'Users' },
-              { label: user.name },
-            ]}
-          />
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Users' },
+          { label: user.name },
+        ]}
+      />
 
       <div className="max-w-4xl mx-auto px-8 pt-8 pb-8">
         {/* Profile Header Card */}

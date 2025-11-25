@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
@@ -119,6 +120,7 @@ export function TestStepsCard({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0 cursor-pointer hover:bg-red-400/10 hover:text-red-400"
                       onClick={() => onRemoveStep(step.stepNumber)}
                     >
                       <Trash2 className="w-4 h-4 text-red-400" />
@@ -157,9 +159,9 @@ export function TestStepsCard({
                 />
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="glass-primary" onClick={onAddStep}>
+                <ButtonPrimary size="sm" onClick={onAddStep} className="cursor-pointer">
                   Add
-                </Button>
+                </ButtonPrimary>
                 <Button
                   size="sm"
                   variant="glass"

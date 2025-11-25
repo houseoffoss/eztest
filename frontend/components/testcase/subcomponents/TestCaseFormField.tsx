@@ -68,7 +68,7 @@ export function TestCaseFormField({
             onChange(val);
           }}
           placeholder={placeholder}
-          className={baseInputClass}
+          className={`${baseInputClass} ${type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
         />
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>

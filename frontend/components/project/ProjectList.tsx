@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { Loader } from '@/elements/loader';
 import { ProjectCard } from './subcomponents/ProjectCard';
@@ -124,33 +125,18 @@ export default function ProjectList() {
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs 
-              items={[
-                { label: 'Projects' }
-              ]}
-            />
-            <div className="flex items-center gap-3">
-              {canCreateProject && (
-                <Button onClick={() => setTriggerCreateDialog(true)} variant="glass-primary">
-                  + New Project
-                </Button>
-              )}
-              <Button 
-                onClick={handleSignOut}
-                variant="glass-destructive" 
-                size="sm" 
-                className="px-5"
-              >
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TopBar 
+        breadcrumbs={[
+          { label: 'Projects' }
+        ]}
+        actions={
+          canCreateProject ? (
+            <ButtonPrimary onClick={() => setTriggerCreateDialog(true)} className="cursor-pointer">
+              + New Project
+            </ButtonPrimary>
+          ) : undefined
+        }
+      />
       
       {/* Page Header */}
       <div className="max-w-7xl mx-auto px-8 py-6 pt-8">

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -152,10 +155,10 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       <div className="flex items-center justify-end mb-6">
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="glass-primary" size="sm">
+            <ButtonPrimary size="default">
               <Plus className="w-4 h-4 mr-2" />
               Add Member
-            </Button>
+            </ButtonPrimary>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -202,9 +205,9 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                 <Button type="button" variant="glass" onClick={() => setAddDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={adding} variant="glass-primary">
+                <ButtonPrimary type="submit" disabled={adding}>
                   {adding ? 'Adding...' : 'Add Member'}
-                </Button>
+                </ButtonPrimary>
               </div>
             </form>
           </DialogContent>
@@ -227,10 +230,10 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
               <p className="text-white/60 mb-6">
                 Add team members to collaborate on this project
               </p>
-              <Button onClick={() => setAddDialogOpen(true)} variant="glass-primary">
+              <ButtonPrimary onClick={() => setAddDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Member
-              </Button>
+              </ButtonPrimary>
             </div>
           ) : (
             <div className="space-y-3">
@@ -259,7 +262,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                         {member.user.email}
                       </div>
                       <p className="text-xs text-white/50 mt-1">
-                        Joined {new Date(member.joinedAt).toLocaleDateString()}
+                        Joined {formatDate(member.joinedAt)}
                       </p>
                     </div>
                   </div>
@@ -299,7 +302,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
             <div className="flex gap-3 justify-end">
               <Button
                 type="button"
-                variant="glass"
+                variant="ghost"
                 onClick={() => {
                   setDeleteDialogOpen(false);
                   setMemberToDelete(null);
@@ -308,14 +311,13 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
               >
                 Cancel
               </Button>
-              <Button
+              <ButtonDestructive
                 type="button"
-                variant="glass-destructive"
                 onClick={confirmRemoveMember}
                 disabled={deleting}
               >
                 {deleting ? 'Removing...' : 'Remove Member'}
-              </Button>
+              </ButtonDestructive>
             </div>
           </div>
         </DialogContent>

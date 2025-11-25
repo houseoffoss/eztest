@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Label } from '@/elements/label';
 import { Project } from '../types';
@@ -19,13 +20,13 @@ export function ProjectInfoCard({ project }: ProjectInfoCardProps) {
           <div>
             <Label className="text-white/60 text-xs">Created At</Label>
             <p className="text-sm font-medium text-white">
-              {new Date(project.createdAt).toLocaleString()}
+              {formatDateTime(project.createdAt)}
             </p>
           </div>
           <div>
             <Label className="text-white/60 text-xs">Last Updated</Label>
             <p className="text-sm font-medium text-white">
-              {new Date(project.updatedAt).toLocaleString()}
+              {formatDateTime(project.updatedAt)}
             </p>
           </div>
           <div>

@@ -56,10 +56,41 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isMounted, setIsMounted] = React.useState(false);
   const [displayItems, setDisplayItems] = React.useState(items);
+  const [projectName, setProjectName] = React.useState<string | null>(null);
   const { setIsCollapsed: setContextCollapsed } = useSidebarCollapsed();
   const { testSuites } = useTestSuites(projectId || '');
   const { testRuns } = useTestRuns(projectId || '');
+
+  // Handle client-side mounting
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Fetch project name
+  React.useEffect(() => {
+    if (projectId) {
+      const fetchProjectName = async () => {
+        try {
+          const response = await fetch(`/api/projects/${projectId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setProjectName(data.data?.name || null);
+          } else if (response.status === 404) {
+            // Project was deleted or not found
+            setProjectName(null);
+          }
+        } catch (error) {
+          console.error('Failed to fetch project name:', error);
+          setProjectName(null);
+        }
+      };
+      fetchProjectName();
+    } else {
+      setProjectName(null);
+    }
+  }, [projectId]);
 
   // Update display items when test suites or test runs change
   React.useEffect(() => {
@@ -116,7 +147,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
     const icon = item.icon || iconMap[item.label];
     const uniqueKey = `${level}-${index}-${item.label}-${item.href || 'no-href'}`;
 
-    if (isCollapsed && level === 0) {
+    if (isMounted && isCollapsed && level === 0) {
       // Collapsed view - only show icons
       return (
         <div key={uniqueKey} title={item.label}>
@@ -300,12 +331,12 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
     <aside
       className={cn(
         'fixed left-0 top-0 h-screen bg-[#0f1623] border-r border-white/10 overflow-y-auto transition-all duration-300 flex flex-col',
-        isCollapsed ? 'w-20' : 'w-64',
+        isMounted && isCollapsed ? 'w-20' : 'w-64',
         className
       )}
     >
       {/* Logo & Toggle */}
-      <div className="p-4 border-b border-white/10 flex items-center justify-between gap-2">
+      <div className="p-4 border-b border-white/[0.08] flex items-center justify-between gap-2">
         {!isCollapsed ? (
           <>
             <Link href="/" className="flex items-center gap-3">
@@ -340,8 +371,40 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
         )}
       </div>
 
+      {/* Project Indicator - Show when on project page */}
+      {projectId && items.some(item => item.label === 'Test Suites') && (
+        <div className={cn(
+          'px-4 py-3 border-b border-white/[0.08]',
+          isCollapsed && 'px-2'
+        )}>
+          {!isCollapsed ? (
+            <>
+              <div className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-2">Current Project</div>
+              <Link 
+                href={`/projects/${projectId}`}
+                className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/15 border border-primary/30 hover:bg-primary/20 hover:border-primary/40 transition-all group"
+                title={projectName || projectId}
+              >
+                <Folder className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-sm font-medium text-primary truncate group-hover:text-primary/90">
+                  {projectName || `Project ${projectId.slice(0, 6)}...`}
+                </span>
+              </Link>
+            </>
+          ) : (
+            <Link 
+              href={`/projects/${projectId}`}
+              className="flex items-center justify-center p-2 rounded-md bg-primary/15 border border-primary/30 hover:bg-primary/20 hover:border-primary/40 transition-all"
+              title={projectName || projectId}
+            >
+              <Folder className="w-4 h-4 text-primary" />
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className={cn('p-4 space-y-1', isCollapsed && 'px-2')}>
+      <nav className={cn('p-4 space-y-1', isMounted && isCollapsed && 'px-2')}>
         {displayItems.map((item, index) => renderItem(item, 0, index))}
       </nav>
 
@@ -349,17 +412,17 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
       <div className="flex-1" />
 
       {/* User Account Section - Bottom */}
-      <div className={cn('border-t border-white/10 p-4', isCollapsed && 'px-2')}>
+      <div className={cn('border-t border-white/10 p-4', isMounted && isCollapsed && 'px-2')}>
         <Link
           href="/settings/profile"
           className={cn(
             'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all',
-            isCollapsed ? 'justify-center' : 'justify-start',
+            isMounted && isCollapsed ? 'justify-center' : 'justify-start',
             'text-white/70 hover:text-white hover:bg-white/5'
           )}
-          title={isCollapsed ? 'Account' : ''}
+          title={isMounted && isCollapsed ? 'Account' : ''}
         >
-          {isCollapsed ? (
+          {isMounted && isCollapsed ? (
             <Settings className="w-4 h-4" />
           ) : (
             <>

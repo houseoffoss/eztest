@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import {
   Dialog,
   DialogContent,
@@ -37,12 +38,12 @@ export function DeleteTestCaseDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="glass-destructive" onClick={onConfirm}>
+          <ButtonDestructive onClick={onConfirm}>
             Delete
-          </Button>
+          </ButtonDestructive>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,6 @@
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Play, Square } from 'lucide-react';
 
@@ -57,7 +58,7 @@ export function TestRunHeader({
               variant="outline"
               className="bg-purple-500/10 text-purple-500 border-purple-500/20"
             >
-              {testRun.environment}
+              {testRun.environment?.toUpperCase()}
             </Badge>
           )}
         </div>
@@ -65,26 +66,24 @@ export function TestRunHeader({
         {canUpdate && (
           <div className="flex gap-2 flex-wrap">
             {testRun.status === 'PLANNED' && (
-              <Button
-                variant="glass-primary"
-                size="sm"
+              <ButtonPrimary
+                size="default"
                 onClick={onStartTestRun}
                 disabled={actionLoading}
               >
                 <Play className="w-4 h-4 mr-2" />
                 Start Test Run
-              </Button>
+              </ButtonPrimary>
             )}
             {testRun.status === 'IN_PROGRESS' && (
-              <Button
-                variant="glass-primary"
-                size="sm"
+              <ButtonPrimary
+                size="default"
                 onClick={onCompleteTestRun}
                 disabled={actionLoading}
               >
                 <Square className="w-4 h-4 mr-2" />
                 Complete Test Run
-              </Button>
+              </ButtonPrimary>
             )}
           </div>
         )}

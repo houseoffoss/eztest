@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Plus } from 'lucide-react';
 import { Project } from '../types';
 
@@ -15,10 +15,10 @@ export function MembersHeader({ project, isAdminOrManager, onAddMember }: Member
     <div className="max-w-6xl mx-auto px-8 pt-8">
       <div className="flex items-center justify-end mb-4">
         {isAdminOrManager && (
-          <Button variant="glass-primary" size="sm" onClick={onAddMember}>
+          <ButtonPrimary onClick={onAddMember} className="cursor-pointer">
             <Plus className="w-4 h-4 mr-2" />
             Add Member
-          </Button>
+          </ButtonPrimary>
         )}
       </div>
       

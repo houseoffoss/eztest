@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent } from '@/elements/card';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
@@ -167,13 +168,12 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
           <Card variant="glass">
             <CardContent className="p-8 text-center">
               <p className="text-lg text-white/70">Project not found</p>
-              <Button
+              <ButtonPrimary
                 onClick={() => router.push('/projects')}
-                variant="glass-primary"
                 className="mt-4"
               >
                 Back to Projects
-              </Button>
+              </ButtonPrimary>
             </CardContent>
           </Card>
         </div>

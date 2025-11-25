@@ -2,8 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/elements/button';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
@@ -257,29 +256,20 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
       {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center justify-between p-4">
-          <Breadcrumbs
-            items={[
-              { label: 'Projects', href: '/projects' },
-              {
-                label: testCase.project.name,
-                href: `/projects/${testCase.project.id}`,
-              },
-              {
-                label: 'Test Cases',
-                href: `/projects/${testCase.project.id}/testcases`,
-              },
-              { label: testCase.title },
-            ]}
-          />
-          <form action="/api/auth/signout" method="POST" className="inline">
-            <Button type="submit" variant="glass-destructive" size="sm" className="px-5">
-              Sign Out
-            </Button>
-          </form>
-        </div>
-      </div>
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          {
+            label: testCase.project.name,
+            href: `/projects/${testCase.project.id}`,
+          },
+          {
+            label: 'Test Cases',
+            href: `/projects/${testCase.project.id}/testcases`,
+          },
+          { label: testCase.title },
+        ]}
+      />
 
       <div className="p-4 md:p-6 lg:p-8">
         <TestCaseHeader

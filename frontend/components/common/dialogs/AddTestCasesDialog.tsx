@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { CheckboxListItem } from '@/elements/checkbox-list-item';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
 
@@ -112,16 +113,17 @@ export function AddTestCasesDialog({
               onOpenChange(false);
               onSelectionChange([]);
             }}
+            className="cursor-pointer"
           >
             Cancel
           </Button>
-          <Button
-            variant="glass-primary"
+          <ButtonPrimary
             onClick={onSubmit}
             disabled={selectedIds.length === 0}
+            className="cursor-pointer"
           >
             Add {selectedIds.length > 0 && `(${selectedIds.length})`}
-          </Button>
+          </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
     </Dialog>
