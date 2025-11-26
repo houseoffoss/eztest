@@ -101,7 +101,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                   <h3 className="font-semibold text-primary">Company</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="https://demo.eztest.houseoffoss.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="https://belsterns.com/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         About
                       </Link>
                     </li>
@@ -127,12 +127,12 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
               <Separator className="my-6" />
 
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} EZTest. All rights reserved.</p>
+                <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Belsterns. All rights reserved.</p>
                 <div className="flex items-center gap-6 text-sm">
                   <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                     Privacy Policy
                   </Link>
-                  <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
+                  <Link href="https://github.com/houseoffoss/eztest/blob/main/LICENSE" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
                     License
                   </Link>
                 </div>
