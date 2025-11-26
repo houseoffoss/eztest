@@ -193,6 +193,7 @@ See [ROADMAP.md](./ROADMAP.md) for the complete feature roadmap.
    ```bash
    cp .env.example .env
    # Edit .env with your configuration (database, NextAuth secret, etc.)
+   # See docs/ENVIRONMENT_VARIABLES.md for detailed variable documentation
    ```
 
 3. **Start the application:**
@@ -225,6 +226,7 @@ For detailed Docker deployment, production setup, and advanced configuration, se
    ```bash
    cp .env.example .env
    # Update DATABASE_URL and other variables in .env
+   # See docs/ENVIRONMENT_VARIABLES.md for complete variable reference
    ```
 
 3. **Set up database:**
@@ -349,7 +351,8 @@ npx prisma db seed
 
 ### Deployment & Operations
 - **[Docker Deployment](./DOCKER.md)** - Production setup with Docker
-- **[Environment Configuration](./docs/ENVIRONMENT.md)** - Environment variables
+- **[Environment Configuration](./docs/ENVIRONMENT.md)** - Environment setup guide
+- **[Environment Variables](./docs/ENVIRONMENT_VARIABLES.md)** - Complete variable reference
 - **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
 ### Feature Documentation
@@ -389,7 +392,7 @@ We welcome contributions! Here's how you can help:
 
 This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
 
-**Copyright © 2025 House of FOSS**
+**Copyright © 2025 Belsterns*
 
 ---
 
