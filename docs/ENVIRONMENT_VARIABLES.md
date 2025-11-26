@@ -43,6 +43,8 @@ EzTest uses environment variables for configuration across development, testing,
 #### `DATABASE_URL`
 PostgreSQL connection string for Prisma ORM.
 
+**Required:** Yes
+
 **Format:**
 ```
 postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
@@ -75,6 +77,80 @@ DATABASE_URL="postgresql://user:pass@host:5432/eztest?schema=public&pool_size=10
 - Never expose publicly
 - Use SSL in production (`sslmode=require`)
 - Restrict database user permissions to only required operations
+
+---
+
+#### `POSTGRES_USER`
+PostgreSQL username (used in Docker Compose).
+
+```bash
+POSTGRES_USER=eztest
+POSTGRES_USER=postgres
+```
+
+**Default:** `eztest`
+
+**Note:** Only used when starting PostgreSQL with Docker Compose.
+
+---
+
+#### `POSTGRES_PASSWORD`
+PostgreSQL password (used in Docker Compose).
+
+```bash
+POSTGRES_PASSWORD=eztest_password
+POSTGRES_PASSWORD=your_secure_password
+```
+
+**Default:** `eztest_password`
+
+**Security:** Use a strong password in production!
+
+---
+
+#### `POSTGRES_DB`
+PostgreSQL database name (used in Docker Compose).
+
+```bash
+POSTGRES_DB=eztest
+POSTGRES_DB=test_management
+```
+
+**Default:** `eztest`
+
+---
+
+#### `DB_PORT`
+Host port mapping for PostgreSQL container.
+
+```bash
+DB_PORT=5433    # Maps host:5433 to container:5432
+DB_PORT=5432    # Use if no local PostgreSQL running
+```
+
+**Purpose:** Allows you to access PostgreSQL from your host machine.
+
+**Default:** `5433` (avoids conflict with local PostgreSQL on 5432)
+
+**Usage:**
+- Connect from host: `postgresql://eztest:password@localhost:5433/eztest`
+- Connect from container: Uses internal port 5432
+
+---
+
+#### `APP_PORT`
+Host port mapping for the application container.
+
+```bash
+APP_PORT=3000    # Access app at http://localhost:3000
+APP_PORT=8080    # Access app at http://localhost:8080
+```
+
+**Purpose:** Defines which port on your host machine maps to the app.
+
+**Default:** `3000`
+
+**Note:** Update `NEXTAUTH_URL` if you change this from 3000.
 
 ---
 
@@ -705,6 +781,11 @@ docker-compose up -d
 |----------|----------|---------|---------|
 | **Database** |
 | `DATABASE_URL` | ✅ Yes | - | `postgresql://user:pass@host:5432/eztest` |
+| `POSTGRES_USER` | No (Docker) | `eztest` | `eztest` |
+| `POSTGRES_PASSWORD` | No (Docker) | `eztest_password` | `secure_pass123` |
+| `POSTGRES_DB` | No (Docker) | `eztest` | `eztest` |
+| `DB_PORT` | No (Docker) | `5433` | `5433` |
+| `APP_PORT` | No (Docker) | `3000` | `3000` or `8080` |
 | **Authentication** |
 | `NEXTAUTH_SECRET` | ✅ Yes | - | `aBcDeFgH...32chars` |
 | `NEXTAUTH_URL` | ✅ Yes | - | `https://eztest.com` |

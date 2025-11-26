@@ -377,6 +377,65 @@ const Component = dynamic(() => import('./Component'));
 
 ## Docker Issues
 
+### Docker Desktop Not Running (Windows)
+
+**Problem**: Error `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.`
+
+**Cause**: Docker Desktop is not running on Windows.
+
+**Solutions:**
+
+```bash
+# 1. Start Docker Desktop
+# - Open Docker Desktop from Start Menu
+# - Wait for the whale icon to be steady in system tray
+# - Verify it's running: docker version
+
+# 2. Verify Docker is running
+docker version
+docker info
+
+# 3. If Docker Desktop won't start:
+# - Restart Windows
+# - Check if WSL 2 is installed and updated
+# - Reinstall Docker Desktop if needed
+
+# 4. Check Docker service status
+Get-Service -Name com.docker.service
+# Should show "Running"
+```
+
+---
+
+### Missing Environment Variables
+
+**Problem**: Warnings like `The "DB_PORT" variable is not set. Defaulting to a blank string.`
+
+**Cause**: Required environment variables not defined in `.env` file.
+
+**Solutions:**
+
+```bash
+# 1. Create .env file from example
+cp .env.example .env
+
+# 2. Ensure these variables are set:
+DB_PORT=5433
+APP_PORT=3000
+POSTGRES_USER=eztest
+POSTGRES_PASSWORD=eztest_password
+POSTGRES_DB=eztest
+
+# 3. Verify variables are loaded
+docker-compose config
+
+# 4. Restart compose with new variables
+docker-compose down
+docker-compose up -d
+```
+
+---
+
 ### Container Won't Start
 
 **Problem**: Container exits immediately or won't start

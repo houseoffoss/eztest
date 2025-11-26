@@ -4,7 +4,7 @@ services:
     container_name: eztest-postgres
     restart: unless-stopped
     env_file:
-      - .env.docker
+      - ./.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eztest}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eztest_password}
@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     # Port 5432 mapped to 5433 on host for local development (avoiding conflict with local PostgreSQL)
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U eztest -d eztest"]
       interval: 10s
@@ -43,9 +43,9 @@ services:
     container_name: eztest-app
     restart: unless-stopped
     env_file:
-      - .env.docker
+      - ./.env
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${APP_PORT}:3000"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://eztest:eztest_password@postgres:5432/eztest?schema=public}
       - NODE_ENV=production
