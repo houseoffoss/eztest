@@ -7,8 +7,8 @@ EzTest is a lightweight, self-hostable Test Management Application built with Ne
 ## 📚 Documentation Overview
 
 - **This Document**: General Docker guide for all platforms
-- **[DEPLOYMENT_LINUX.md](./DEPLOYMENT_LINUX.md)**: Complete Linux server deployment guide with production checklist
-- **[DOCKER_STATUS.md](./DOCKER_STATUS.md)**: Docker files compatibility summary and troubleshooting
+- **[DEPLOYMENT_LINUX.md](./docs/DEPLOYMENT_LINUX.md)**: Complete Linux server deployment guide with production checklist
+- **[DOCKER_STATUS.md](./docs/DOCKER_STATUS.md)**: Docker files compatibility summary and troubleshooting
 
 ---
 

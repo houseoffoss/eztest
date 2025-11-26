@@ -31,6 +31,7 @@ EzTest uses environment variables for configuration across development, testing,
 |------|---------|-------------|-----------|
 | `.env.example` | Template with defaults | ✅ Yes | Reference only |
 | `.env.production.example` | Production template | ✅ Yes | Reference only |
+| `.env.docker.example` | Docker configuration template | ✅ Yes | Docker Compose setup |
 
 
 ---
