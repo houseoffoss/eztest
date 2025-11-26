@@ -47,16 +47,16 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                   <h3 className="font-semibold text-primary">Product</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="/ui" className="text-muted-foreground hover:text-primary transition-colors">
+                      <Link href="/#features" className="text-muted-foreground hover:text-primary transition-colors">
                         Features
                       </Link>
                     </li>
                     <li>
-                      <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
-                        Pricing
+                      <Link href="/#why-choose" className="text-muted-foreground hover:text-primary transition-colors">
+                        Why We Choose?
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Documentation
                       </Link>
@@ -65,7 +65,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                       <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
                         Changelog
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
 
@@ -78,21 +78,21 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                         GitHub
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Community
                       </Link>
-                    </li>
+                    </li> */}
                     <li>
                       <Link href="https://github.com/houseoffoss/eztest/issues" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Support
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                         Status
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
 
@@ -110,16 +110,16 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                         Blog
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link href="/auth/register" className="text-muted-foreground hover:text-primary transition-colors">
                         Careers
                       </Link>
-                    </li>
-                    <li>
+                    </li> */}
+                    {/* <li>
                       <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                         Privacy Policy
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                 </div>
               </div>

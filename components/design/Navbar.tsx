@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
@@ -20,7 +21,7 @@ export function Navbar({
   brandHref = "/",
   brandLabel = (
     <div className="flex items-center gap-2">
-      <span className="text-2xl leading-none">🧪</span>
+      <Image src="/favicon.png" alt="EZTest" width={24} height={24} className="w-6 h-6" />
       <span className="text-lg font-semibold">EZTest</span>
     </div>
   ),

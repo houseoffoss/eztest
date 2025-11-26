@@ -22,11 +22,9 @@ export const metadata: Metadata = {
   description: "Lightweight, powerful test management platform that runs on minimal hardware. Perfect for teams who want control without complexity.",
   icons: {
     icon: [
-      {
-        url: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="0.9em" font-size="90">🧪</text></svg>',
-        type: 'image/svg+xml',
-      },
+      { url: '/favicon.png', type: 'image/png' },
     ],
+    apple: '/favicon.png',
   },
 };
 
