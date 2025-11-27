@@ -327,10 +327,10 @@ export default function PrivacyPolicyPage() {
               <li>
                 <strong className="text-white">Email:</strong>{' '}
                 <a 
-                  href="mailto:philip.moses@belsterns.com" 
+                  href="mailto:info@belsterns.com" 
                   className="text-blue-400 hover:text-blue-300 underline"
                 >
-                  philip.moses@belsterns.com
+                  info@belsterns.com
                 </a>
               </li>
               <li>
