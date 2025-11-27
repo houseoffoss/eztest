@@ -258,12 +258,12 @@ export default function PrivacyPolicyPage() {
             <p className="mb-4">
               We provide an official demo instance of EZTest for evaluation purposes at{' '}
               <a 
-                href="https://demo.eztest.houseoffoss.com" 
+                href="https://eztest.houseoffoss.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                demo.eztest.houseoffoss.com
+                eztest.houseoffoss.com
               </a>.
             </p>
             <p className="mb-4">
@@ -305,12 +305,12 @@ export default function PrivacyPolicyPage() {
               <li>
                 <strong className="text-white">Demo Instance:</strong>{' '}
                 <a 
-                  href="https://demo.eztest.houseoffoss.com" 
+                  href="https://eztest.houseoffoss.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-blue-400 hover:text-blue-300 underline"
                 >
-                  demo.eztest.houseoffoss.com
+                  eztest.houseoffoss.com
                 </a>
               </li>
               <li>
