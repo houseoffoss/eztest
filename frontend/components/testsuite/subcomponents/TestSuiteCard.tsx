@@ -95,7 +95,7 @@ export function TestSuiteCard({
         {hasChildren && (
           <button
             onClick={() => onToggleExpand?.(suite.id)}
-            className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+            className="text-white/60 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
           >
             <ChevronRight
               className={`w-4 h-4 transition-transform ${
@@ -150,7 +150,7 @@ export function TestSuiteCard({
           variant="ghost"
           size="icon"
           onClick={() => onView(suite.id)}
-          className="rounded-full border border-primary/30 text-primary hover:text-primary/80 hover:bg-primary/10 h-8 w-8"
+          className="rounded-full border border-primary/30 text-primary hover:text-primary/80 hover:bg-primary/10 h-8 w-8 cursor-pointer"
           title="View Suite"
         >
           <FolderOpen className="w-4 h-4" />
@@ -160,7 +160,7 @@ export function TestSuiteCard({
             variant="ghost"
             size="icon"
             onClick={() => onDelete(suite)}
-            className="rounded-full border border-red-400/30 text-red-400 hover:text-red-300 hover:bg-red-400/10 h-8 w-8"
+            className="rounded-full border border-red-400/30 text-red-400 hover:text-red-300 hover:bg-red-400/10 h-8 w-8 cursor-pointer"
             title="Delete Suite"
           >
             <Trash2 className="w-4 h-4" />

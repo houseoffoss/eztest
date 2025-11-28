@@ -9,7 +9,7 @@ export interface ButtonProps
 
 const ButtonSecondary = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
 
     const variants = {
       default: "bg-gradient-to-br from-[#4d3c32] to-[#342720] text-white border-2 border-transparent bg-clip-padding border-image-source-gradient rounded-full hover:shadow-lg hover:shadow-[#905320]/30 relative overflow-hidden dark:from-[#4d3c32] dark:to-[#342720]",
@@ -29,7 +29,7 @@ const ButtonSecondary = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return (
         <div className="relative inline-block rounded-full p-[1px] bg-gradient-to-r from-[#905320] via-[#905320] to-[#4b372c]">
           <button
-            className={cn("rounded-full bg-gradient-to-br from-[#4d3c32] to-[#342720] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#905320]/30 dark:from-[#4d3c32] dark:to-[#342720]", sizes[size], className)}
+            className={cn("rounded-full bg-gradient-to-br from-[#4d3c32] to-[#342720] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#905320]/30 dark:from-[#4d3c32] dark:to-[#342720] cursor-pointer", sizes[size], className)}
             ref={ref}
             suppressHydrationWarning
             {...props}

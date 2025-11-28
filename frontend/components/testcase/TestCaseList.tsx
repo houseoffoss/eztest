@@ -283,9 +283,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       <div className="max-w-7xl mx-auto px-8 py-4">
         {/* Test Cases List */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400">Loading test cases...</p>
-          </div>
+          <Loader fullScreen={false} text="Loading test cases..." />
         ) : filteredTestCases.length === 0 ? (
           <EmptyTestCaseState
             hasFilters={testCases.length > 0}

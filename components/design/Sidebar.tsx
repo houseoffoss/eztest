@@ -69,7 +69,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
     setIsMounted(true);
   }, []);
 
-  // Fetch project name
+  // Fetch project name and handle deleted projects
   React.useEffect(() => {
     if (projectId) {
       const fetchProjectName = async () => {
@@ -78,9 +78,16 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           if (response.ok) {
             const data = await response.json();
             setProjectName(data.data?.name || null);
-          } else if (response.status === 404) {
-            // Project was deleted or not found
-            setProjectName(null);
+          } else if (response.status === 404 || response.status === 403) {
+            // Project was deleted, not found, or no access
+            setProjectName('Project Undefined');
+            
+            // Redirect to projects page after a brief moment
+            if (typeof window !== 'undefined' && window.location.pathname.includes(`/projects/${projectId}`)) {
+              setTimeout(() => {
+                window.location.href = '/projects';
+              }, 1500);
+            }
           }
         } catch (error) {
           console.error('Failed to fetch project name:', error);
@@ -267,7 +274,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 toggleExpanded(item.label);
               }}
               className={cn(
-                'flex items-center px-3 py-2 rounded-r-md transition-all',
+                'flex items-center px-3 py-2 rounded-r-md transition-all cursor-pointer',
                 isActive
                   ? 'bg-white/[0.08] text-white'
                   : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
@@ -288,7 +295,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           <button
             onClick={() => hasChildren && toggleExpanded(item.label)}
             className={cn(
-              'w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-all text-left',
+              'w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md transition-all text-left cursor-pointer',
               level > 0 && 'pl-10',
               'text-white/70 hover:text-white hover:bg-white/[0.05]'
             )}
@@ -378,25 +385,50 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           'px-3 py-2 mb-1',
           isCollapsed && 'px-2'
         )}>
-          {!isCollapsed ? (
-            <Link 
-              href={`/projects/${projectId}`}
-              className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all group"
-              title={projectName || projectId}
-            >
-              <Folder className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="text-sm font-normal text-white/90 truncate">
-                {projectName || `Project ${projectId.slice(0, 6)}...`}
-              </span>
-            </Link>
+          {projectName === 'Project Undefined' ? (
+            // Show warning state for undefined project
+            !isCollapsed ? (
+              <div className="flex flex-col gap-2 px-3 py-2 rounded-md bg-red-500/10 border border-red-500/30">
+                <div className="flex items-center gap-2">
+                  <Folder className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <span className="text-sm font-normal text-red-400 truncate">
+                    Project Undefined
+                  </span>
+                </div>
+                <p className="text-xs text-red-300/80">
+                  Redirecting to projects...
+                </p>
+              </div>
+            ) : (
+              <div 
+                className="flex items-center justify-center p-2.5 rounded-md bg-red-500/10 border border-red-500/30"
+                title="Project Undefined - Redirecting..."
+              >
+                <Folder className="w-4 h-4 text-red-400" />
+              </div>
+            )
           ) : (
-            <Link 
-              href={`/projects/${projectId}`}
-              className="flex items-center justify-center p-2.5 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all"
-              title={projectName || projectId}
-            >
-              <Folder className="w-4 h-4 text-primary" />
-            </Link>
+            // Normal project indicator
+            !isCollapsed ? (
+              <Link 
+                href={`/projects/${projectId}`}
+                className="flex items-center gap-3 px-3 py-2 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all group"
+                title={projectName || projectId}
+              >
+                <Folder className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-sm font-normal text-white/90 truncate">
+                  {projectName || `Project ${projectId.slice(0, 6)}...`}
+                </span>
+              </Link>
+            ) : (
+              <Link 
+                href={`/projects/${projectId}`}
+                className="flex items-center justify-center p-2.5 rounded-md bg-white/[0.04] hover:bg-white/[0.06] transition-all"
+                title={projectName || projectId}
+              >
+                <Folder className="w-4 h-4 text-primary" />
+              </Link>
+            )
           )}
         </div>
       )}

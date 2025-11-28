@@ -19,7 +19,13 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const { data: session } = useSession();
   const [sidebarItems, setSidebarItems] = useState(mainSidebarItems);
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
+  const [lastProjectId, setLastProjectId] = useState<string | null>(() => {
+    // Initialize from sessionStorage on mount
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('lastProjectId');
+    }
+    return null;
+  });
   const { isCollapsed } = useSidebarCollapsed();
 
   // Pages that shouldn't have sidebar
@@ -46,6 +52,10 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       setSidebarItems(getAdminSidebarItems());
       setProjectId(null);
       setLastProjectId(null);
+      // Clear project context when going to admin
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('lastProjectId');
+      }
     } else if (pathname?.startsWith('/projects/')) {
       // Project detail page - extract project ID and show project menu with admin items if applicable
       const projectIdMatch = pathname.match(/\/projects\/([^\/]+)/);
@@ -54,6 +64,10 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         setProjectId(extractedProjectId);
         setLastProjectId(extractedProjectId);
         setSidebarItems(getProjectSidebarItems(extractedProjectId, isAdmin, canManageSettings));
+        // Store project ID in sessionStorage
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('lastProjectId', extractedProjectId);
+        }
       } else {
         setSidebarItems(mainSidebarItems);
       }

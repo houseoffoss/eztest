@@ -1,4 +1,4 @@
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { StatCard } from '@/components/design/StatCard';
 import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
 import { TestRunStats } from '../types';
@@ -53,12 +53,12 @@ export function TestRunStatsCards({
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-white/60">
               <Calendar className="w-3 h-3" />
-              Created {formatDate(testRun.createdAt)}
+              Created {formatDateTime(testRun.createdAt)}
             </div>
             {testRun.startedAt && (
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <Clock className="w-3 h-3" />
-                Started {formatDate(testRun.startedAt)}
+                Started {formatDateTime(testRun.startedAt)}
               </div>
             )}
           </div>

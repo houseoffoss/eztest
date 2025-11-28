@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
+import { Loader } from '@/elements/loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -142,11 +143,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
           return <Users className="w-3 h-3" />;
       }
     };  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-white/70">Loading members...</p>
-      </div>
-    );
+    return <Loader fullScreen text="Loading members..." />;
   }
 
   return (
@@ -262,7 +259,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                         {member.user.email}
                       </div>
                       <p className="text-xs text-white/50 mt-1">
-                        Joined {formatDate(member.joinedAt)}
+                        Joined {formatDateTime(member.joinedAt)}
                       </p>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { DataTable, type ColumnDef } from '@/components/design/DataTable';
 import { Badge } from '@/elements/badge';
@@ -157,7 +157,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
       render: (_, row: TestResult) => (
         <div className="flex items-center gap-1 text-xs text-white/70">
           <Calendar className="w-3 h-3" />
-          <span>{formatDate(row.executedAt)}</span>
+          <span>{formatDateTime(row.executedAt)}</span>
         </div>
       ),
     },

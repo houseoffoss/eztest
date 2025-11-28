@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { Loader } from '@/elements/loader';
 import { Card, CardContent, CardHeader } from '@/elements/card';
 import {
   Dialog,
@@ -420,9 +421,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
 
       {/* Test Cases List */}
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading test cases...</p>
-        </div>
+        <Loader fullScreen={false} text="Loading test cases..." />
       ) : filteredTestCases.length === 0 ? (
         <Card className="glass">
           <CardContent className="py-12 text-center">
@@ -477,7 +476,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                       asChild
                       onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="cursor-pointer">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>

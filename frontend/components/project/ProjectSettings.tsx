@@ -6,6 +6,7 @@ import { formatDateTime } from '@/lib/date-utils';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
+import { Loader } from '@/elements/loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Input } from '@/elements/input';
@@ -122,11 +123,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   };
 
   if (loading) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-white/70">Loading project settings...</p>
-      </div>
-    );
+    return <Loader fullScreen text="Loading project settings..." />;
   }
 
   if (!project) {

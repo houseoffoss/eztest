@@ -160,7 +160,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   };
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading..." />;
+    return <Loader fullScreen text="Loading test runs..." />;
   }
 
   const canCreateTestRun = hasPermissionCheck('testruns:create');

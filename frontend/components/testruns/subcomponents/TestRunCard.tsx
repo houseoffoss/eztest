@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/elements/dropdown-menu';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { Calendar, MoreVertical, Play, Trash2, User } from 'lucide-react';
 import { TestRun } from '../types';
 
@@ -202,7 +202,7 @@ export function TestRunCard({
       </div>
       <div className="flex items-center gap-1 text-xs text-white/60">
         <Calendar className="w-3 h-3" />
-        <span>{formatDate(testRun.createdAt)}</span>
+        <span>{formatDateTime(testRun.createdAt)}</span>
       </div>
     </>
   );

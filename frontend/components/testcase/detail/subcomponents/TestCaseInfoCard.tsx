@@ -2,7 +2,7 @@
 
 import { Badge } from '@/elements/badge';
 import { DetailCard } from '@/components/design/DetailCard';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { TestCase } from '../types';
 
 interface TestCaseInfoCardProps {
@@ -55,7 +55,7 @@ export function TestCaseInfoCard({ testCase }: TestCaseInfoCardProps) {
       <div>
         <h4 className="text-sm font-medium text-white/60 mb-1">Created</h4>
         <p className="text-white/90 text-sm">
-          {formatDate(testCase.createdAt)}
+          {formatDateTime(testCase.createdAt)}
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export function TestCaseInfoCard({ testCase }: TestCaseInfoCardProps) {
           Last Updated
         </h4>
         <p className="text-white/90 text-sm">
-          {formatDate(testCase.updatedAt)}
+          {formatDateTime(testCase.updatedAt)}
         </p>
       </div>
     </DetailCard>

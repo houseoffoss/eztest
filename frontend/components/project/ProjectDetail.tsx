@@ -58,6 +58,11 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
       if (response.ok) {
         const data = await response.json();
         setProject(data.data);
+      } else if (response.status === 404 || response.status === 403) {
+        // Project not found or no access - redirect after showing message
+        setTimeout(() => {
+          router.push('/projects');
+        }, 2000);
       }
     } catch (error) {
       console.error('Failed to fetch project:', error);
@@ -73,7 +78,21 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
   if (!project) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <p className="text-white/70">Project not found</p>
+        <div className="text-center max-w-md">
+          <div className="mb-6 flex justify-center">
+            <div className="p-4 bg-red-500/10 rounded-full border border-red-500/30">
+              <Folder className="w-12 h-12 text-red-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Project Not Found</h2>
+          <p className="text-white/70 mb-6">
+            The project you're looking for doesn't exist or has been deleted.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-blue-400">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+            <span>Redirecting to projects page...</span>
+          </div>
+        </div>
       </div>
     );
   }

@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus } from 'lucide-react';
-import { Button } from '@/elements/button';
+import { Plus, Users } from 'lucide-react';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { Card, CardContent } from '@/elements/card';
+import { Loader } from '@/elements/loader';
 import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { Project, ProjectMember } from './types';
@@ -53,6 +53,16 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       if (projectRes.ok) {
         const projectData = await projectRes.json();
         setProject(projectData.data);
+      } else if (projectRes.status === 404 || projectRes.status === 403) {
+        // Project not found or no access - redirect after showing message
+        setAlert({
+          type: 'error',
+          title: 'Project Not Found',
+          message: 'The project you\'re looking for doesn\'t exist or has been deleted. Redirecting...',
+        });
+        setTimeout(() => {
+          router.push('/projects');
+        }, 2000);
       }
 
       if (membersRes.ok) {
@@ -123,19 +133,38 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-white/70">Loading members...</p>
-      </div>
-    );
+    return <Loader fullScreen text="Loading project members..." />;
   }
 
   if (!project) {
     return (
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md">
+          <div className="mb-6 flex justify-center">
+            <div className="p-4 bg-red-500/10 rounded-full border border-red-500/30">
+              <Users className="w-12 h-12 text-red-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Project Not Found</h2>
+          <p className="text-white/70 mb-6">
+            The project you&apos;re trying to access doesn&apos;t exist or has been deleted.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-blue-400">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+            <span>Redirecting to projects page...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Old fallback - keeping for safety
+  if (false && !project) {
+    return (
       <div className="max-w-6xl mx-auto p-8">
           <Card variant="glass">
             <CardContent className="p-8 text-center">
-              <p className="text-lg text-white/70">Project not found</p>
+              <p className="text-lg text-white/70">Project not found (OLD)</p>
               <ButtonPrimary
                 onClick={() => router.push('/projects')}
                 className="mt-4"

@@ -88,7 +88,7 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
               {/* Suite Header - Collapsible */}
               <button
                 onClick={() => toggleSuite(suiteId)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors text-left"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors text-left cursor-pointer"
               >
                 <ChevronDown
                   className={`w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${
@@ -177,7 +177,7 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-white/70 hover:text-white hover:bg-white/10 h-5 w-5 p-0"
+                              className="text-white/70 hover:text-white hover:bg-white/10 h-5 w-5 p-0 cursor-pointer"
                             >
                               <MoreVertical className="w-3 h-3" />
                             </Button>
@@ -278,7 +278,7 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-white/70 hover:text-white hover:bg-white/10 h-5 w-5 p-0"
+                    className="text-white/70 hover:text-white hover:bg-white/10 h-5 w-5 p-0 cursor-pointer"
                   >
                     <MoreVertical className="w-3 h-3" />
                   </Button>

@@ -221,7 +221,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
 
         {/* Content */}
         {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
+          <Loader fullScreen={false} text="Loading test suites..." />
         ) : testSuites.length === 0 ? (
           <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
         ) : (

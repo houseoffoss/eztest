@@ -3,7 +3,7 @@
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Badge } from '@/elements/badge';
 import { DetailCard } from '@/components/design/DetailCard';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Mail, Calendar, Briefcase } from 'lucide-react';
 
@@ -92,7 +92,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Joined {formatDate(user.createdAt)}</span>
+                    <span>Joined {formatDateTime(user.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Briefcase className="w-4 h-4" />
@@ -142,7 +142,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wide text-muted-foreground">Member Since</label>
-                <p className="text-white font-medium mt-1">{formatDate(user.createdAt)}</p>
+                <p className="text-white font-medium mt-1">{formatDateTime(user.createdAt)}</p>
               </div>
             </div>
           </DetailCard>

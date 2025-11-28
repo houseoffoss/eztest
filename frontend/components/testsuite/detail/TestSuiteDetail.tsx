@@ -265,7 +265,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   };
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading..." />;
+    return <Loader fullScreen text="Loading test suite..." />;
   }
 
   // Check permissions

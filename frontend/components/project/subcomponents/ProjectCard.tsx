@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/elements/dropdown-menu';
@@ -48,30 +48,30 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
 
   const header = hasActionPermissions && (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 shrink-0 hover:bg-white/10">
           <MoreVertical className="w-3.5 h-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}`)} className="hover:bg-white/10">
+        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onNavigate(`/projects/${project.id}`); }} className="hover:bg-white/10">
           <Folder className="w-4 h-4 mr-2" />
           Open Project
         </DropdownMenuItem>
         {canUpdate && (
-          <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/settings`)} className="hover:bg-white/10">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onNavigate(`/projects/${project.id}/settings`); }} className="hover:bg-white/10">
             <Settings className="w-4 h-4 mr-2" />
             Settings
           </DropdownMenuItem>
         )}
         {canManageMembers && (
-          <DropdownMenuItem onClick={() => onNavigate(`/projects/${project.id}/members`)} className="hover:bg-white/10">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onNavigate(`/projects/${project.id}/members`); }} className="hover:bg-white/10">
             <Users className="w-4 h-4 mr-2" />
             Manage Members
           </DropdownMenuItem>
         )}
         {canDelete && (
-          <DropdownMenuItem onClick={onDelete} className="text-red-400 hover:bg-red-400/10">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-red-400 hover:bg-red-400/10">
             <Trash2 className="w-4 h-4 mr-2" />
             Delete
           </DropdownMenuItem>
@@ -136,7 +136,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
         </span>
       </div>
       <span className="text-xs text-white/50">
-        Updated {formatDate(project.updatedAt)}
+        Updated {formatDateTime(project.updatedAt)}
       </span>
     </>
   );

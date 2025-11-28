@@ -371,7 +371,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     executed > 0 ? Math.round((stats.passed / executed) * 100) : 0;
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading..." />;
+    return <Loader fullScreen text="Loading test run..." />;
   }
 
   if (!testRun) {

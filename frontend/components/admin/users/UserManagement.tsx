@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { TopBar, UserCard } from '@/components/design';
+import { Loader } from '@/elements/loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { 
   Users, 
@@ -219,9 +220,7 @@ export default function UserManagement() {
       {/* Users List */}
       <div className="max-w-7xl mx-auto px-8 pb-8">
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-white/70">Loading users...</p>
-          </div>
+          <Loader fullScreen={false} text="Loading users..." />
         ) : (
           <Card variant="glass">
             <CardHeader>

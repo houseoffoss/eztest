@@ -1,4 +1,4 @@
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Button } from '@/elements/button';
 import { Folder } from 'lucide-react';
@@ -63,7 +63,7 @@ export function TestSuiteInfoCard({
           Created
         </h4>
         <p className="text-white/90 text-sm">
-          {formatDate(createdAt)}
+          {formatDateTime(createdAt)}
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export function TestSuiteInfoCard({
           Last Updated
         </h4>
         <p className="text-white/90 text-sm">
-          {formatDate(updatedAt)}
+          {formatDateTime(updatedAt)}
         </p>
       </div>
     </DetailCard>

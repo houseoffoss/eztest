@@ -2,7 +2,7 @@
 
 import { Badge } from '@/elements/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { formatDate } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 
 interface ProjectMember {
   id: string;
@@ -61,13 +61,13 @@ export const ProjectOverviewCard = ({ project }: ProjectOverviewCardProps) => {
             <div className="flex justify-between py-2 border-b border-white/10">
               <span className="text-white/60">Created On</span>
               <span className="font-medium text-white">
-                {formatDate(project.createdAt)}
+                {formatDateTime(project.createdAt)}
               </span>
             </div>
             <div className="flex justify-between py-2 border-b border-white/10">
               <span className="text-white/60">Last Updated</span>
               <span className="font-medium text-white">
-                {formatDate(project.updatedAt)}
+                {formatDateTime(project.updatedAt)}
               </span>
             </div>
             <div className="flex justify-between py-2">

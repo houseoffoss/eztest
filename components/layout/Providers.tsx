@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { SidebarProvider } from '@/lib/sidebar-context';
+import { TimezoneProvider } from '@/frontend/context/TimezoneContext';
 import { ReactNode } from 'react';
 
 interface ProvidersProps {
@@ -11,9 +12,11 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <SidebarProvider>
-        {children}
-      </SidebarProvider>
+      <TimezoneProvider>
+        <SidebarProvider>
+          {children}
+        </SidebarProvider>
+      </TimezoneProvider>
     </SessionProvider>
   );
 }

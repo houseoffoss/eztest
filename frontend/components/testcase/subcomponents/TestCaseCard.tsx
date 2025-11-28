@@ -81,7 +81,7 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
               asChild
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
-              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 cursor-pointer">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
