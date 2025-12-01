@@ -220,6 +220,128 @@ export class TestSuiteController {
       );
     }
   }
+
+  /**
+   * Add a module to a test suite
+   * 
+   * Assigns the specified module to all test cases in the suite.
+   * This operation updates every test case in the suite to include the moduleId.
+   * 
+   * @param request - NextRequest containing the module ID in request body
+   * @param suiteId - ID of the test suite to add module to
+   * @param projectId - ID of the project (for validation)
+   * 
+   * @returns JSON response with:
+   *   - data: Updated test suite with all test cases now assigned to module
+   *   - message: Success or error message
+   *   - status: HTTP status code (200 for success)
+   * 
+   * @throws 400 - If moduleId is missing from request body
+   * @throws 404 - If test suite or module not found or doesn't belong to project
+   * @throws 500 - Internal server error
+   */
+  async addModuleToSuite(request: NextRequest, suiteId: string, projectId: string) {
+    try {
+      const body = await request.json();
+      const { moduleId } = body;
+
+      if (!moduleId) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.ModuleIDRequired },
+          { status: 400 }
+        );
+      }
+
+      const updatedSuite = await testSuiteService.addModuleToSuite(
+        suiteId,
+        moduleId,
+        projectId
+      );
+
+      return NextResponse.json({
+        data: updatedSuite,
+        message: TestSuiteMessages.ModuleAddedToSuiteSuccessfully,
+      });
+    } catch (error: unknown) {
+      console.error('Error adding module to suite:', error);
+      const message = error instanceof Error ? error.message : TestSuiteMessages.FailedToAddModuleToSuite;
+      return NextResponse.json(
+        { error: message },
+        { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 }
+      );
+    }
+  }
+
+  /**
+   * Update module for a test suite
+   */
+  async updateSuiteModule(request: NextRequest, suiteId: string, projectId: string) {
+    try {
+      const body = await request.json();
+      const { oldModuleId, newModuleId } = body;
+
+      if (!newModuleId) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.NewModuleIDRequired },
+          { status: 400 }
+        );
+      }
+
+      const updatedSuite = await testSuiteService.updateSuiteModule(
+        suiteId,
+        oldModuleId || null,
+        newModuleId,
+        projectId
+      );
+
+      return NextResponse.json({
+        data: updatedSuite,
+        message: TestSuiteMessages.ModuleUpdatedInSuiteSuccessfully,
+      });
+    } catch (error: unknown) {
+      console.error('Error updating suite module:', error);
+      const message = error instanceof Error ? error.message : TestSuiteMessages.FailedToUpdateModuleInSuite;
+      return NextResponse.json(
+        { error: message },
+        { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 }
+      );
+    }
+  }
+
+  /**
+   * Remove module from a test suite
+   */
+  async removeModuleFromSuite(request: NextRequest, suiteId: string, projectId: string) {
+    try {
+      const body = await request.json();
+      const { moduleId } = body;
+
+      if (!moduleId) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.ModuleIDRequired },
+          { status: 400 }
+        );
+      }
+
+      const updatedSuite = await testSuiteService.removeModuleFromSuite(
+        suiteId,
+        moduleId,
+        projectId
+      );
+
+      return NextResponse.json({
+        data: updatedSuite,
+        message: TestSuiteMessages.ModuleRemovedFromSuiteSuccessfully,
+      });
+    } catch (error: unknown) {
+      console.error('Error removing module from suite:', error);
+      const message = error instanceof Error ? error.message : TestSuiteMessages.FailedToRemoveModuleFromSuite;
+      return NextResponse.json(
+        { error: message },
+        { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 }
+      );
+    }
+  }
 }
 
 export const testSuiteController = new TestSuiteController();

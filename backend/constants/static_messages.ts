@@ -124,16 +124,25 @@ export class TestSuiteMessages {
   static TestSuiteDeletedSuccessfully = 'Test suite deleted successfully.';
   static TestSuitesReorderedSuccessfully = 'Test suites reordered successfully.';
   static TestCasesMovedSuccessfully = 'Test case(s) moved successfully.';
+  static ModuleAddedToSuiteSuccessfully = 'Module added to suite successfully.';
+  static ModuleUpdatedInSuiteSuccessfully = 'Module updated in suite successfully.';
+  static ModuleRemovedFromSuiteSuccessfully = 'Module removed from suite successfully.';
   static TestSuiteNotFound = 'Test suite not found.';
   static SuiteNameRequired = 'Suite name is required.';
   static SuiteNameCannotBeEmpty = 'Suite name cannot be empty.';
   static InvalidSuiteParent = 'Invalid suite parent.';
+  static ModuleNotFound = 'Module not found.';
+  static ModuleIDRequired = 'Module ID is required.';
+  static NewModuleIDRequired = 'New module ID is required.';
   static FailedToFetchTestSuite = 'Failed to fetch test suite.';
   static FailedToCreateTestSuite = 'Failed to create test suite.';
   static FailedToUpdateTestSuite = 'Failed to update test suite.';
   static FailedToDeleteTestSuite = 'Failed to delete test suite.';
   static FailedToMoveTestCases = 'Failed to move test cases.';
   static FailedToReorderTestSuites = 'Failed to reorder test suites.';
+  static FailedToAddModuleToSuite = 'Failed to add module to suite.';
+  static FailedToUpdateModuleInSuite = 'Failed to update module in suite.';
+  static FailedToRemoveModuleFromSuite = 'Failed to remove module from suite.';
   static AccessDeniedTestSuite = 'Access denied. Only project owners and admins can manage test suites.';
 }
 
