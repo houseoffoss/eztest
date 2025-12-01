@@ -215,6 +215,29 @@ export class TestCaseController {
   }
 
   /**
+   * Get test case history
+   * Permission already checked by route wrapper
+   */
+  async getTestCaseHistory(
+    request: CustomRequest,
+    testCaseId: string
+  ) {
+    try {
+      const history = await testCaseService.getTestCaseHistory(
+        testCaseId,
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
+      return { data: history };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        throw new NotFoundException(TestCaseMessages.TestCaseNotFound);
+      }
+      throw new InternalServerException(TestCaseMessages.FailedToFetchTestCase);
+    }
+  }
+
+  /**
    * Get test case statistics for a project
    */
   async getProjectTestCaseStats(projectId: string) {

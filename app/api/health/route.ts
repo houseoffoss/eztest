@@ -1,15 +1,20 @@
-import { NextResponse } from 'next/server';
+import { healthController } from '@/backend/controllers/health/controller';
 
+/**
+ * GET /api/health
+ * Health check endpoint
+ */
 export async function GET() {
   try {
-    return NextResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-    }, { status: 200 });
+    const result = await healthController.getHealth();
+    return Response.json(result, { status: 200 });
   } catch (error) {
-    return NextResponse.json({
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 503 });
+    return Response.json(
+      {
+        data: null,
+        error: error instanceof Error ? error.message : 'Health check failed',
+      },
+      { status: 503 }
+    );
   }
 }

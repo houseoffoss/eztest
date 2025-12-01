@@ -519,6 +519,66 @@ export class TestCaseService {
 
 
   /**
+   * Get test case history (all test results across test runs)
+   */
+  async getTestCaseHistory(testCaseId: string, userId: string, scope: string) {
+    // Build where clause based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    // Verify test case exists and user has access
+    const testCase = await prisma.testCase.findFirst({
+      where: whereClause,
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Fetch test results for this test case across all test runs
+    const results = await prisma.testResult.findMany({
+      where: {
+        testCaseId: testCaseId,
+      },
+      include: {
+        executedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        testRun: {
+          select: {
+            id: true,
+            name: true,
+            environment: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        executedAt: 'desc',
+      },
+    });
+
+    return results;
+  }
+
+  /**
    * Get test case statistics for a project
    */
   async getProjectTestCaseStats(projectId: string) {
