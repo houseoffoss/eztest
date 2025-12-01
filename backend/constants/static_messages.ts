@@ -53,6 +53,28 @@ export class TestCaseMessages {
   static FailedToUpdateTestSteps = 'Failed to update test steps.';
 }
 
+export class ModuleMessages {
+  static ModuleCreatedSuccessfully = 'Module created successfully.';
+  static ModulesFetchedSuccessfully = 'Modules fetched successfully.';
+  static ModuleFetchedSuccessfully = 'Module fetched successfully.';
+  static ModuleUpdatedSuccessfully = 'Module updated successfully.';
+  static ModuleDeletedSuccessfully = 'Module deleted successfully.';
+  static ModuleNotFound = 'Module not found.';
+  static ModulesReorderedSuccessfully = 'Modules reordered successfully.';
+  static NameRequired = 'Module name is required.';
+  static NameCannotBeEmpty = 'Module name cannot be empty.';
+  static NameAlreadyExists = 'A module with this name already exists in this project.';
+  static ModuleNameAlreadyExists = 'A module with this name already exists in this project.';
+  static InvalidModuleOrder = 'Invalid module order configuration.';
+  static ModuleContainsTestCases = 'Cannot delete module with associated test cases.';
+  static CannotDeleteModuleWithTestCases = 'Cannot delete module with associated test cases.';
+  static FailedToCreateModule = 'Failed to create module.';
+  static FailedToUpdateModule = 'Failed to update module.';
+  static FailedToDeleteModule = 'Failed to delete module.';
+  static FailedToReorderModules = 'Failed to reorder modules.';
+  static FailedToFetchModules = 'Failed to fetch modules.';
+}
+
 export class AuthMessages {
   static UserSignedInSuccessfully = 'User signed in successfully.';
   static LoginSuccessful = 'Login successful.';
@@ -92,4 +114,47 @@ export class GeneralMessages {
   static BadRequest = 'Bad request.';
   static Unauthorized = 'Unauthorized access.';
   static Forbidden = 'Access forbidden.';
+}
+
+export class TestSuiteMessages {
+  static TestSuitesFetchedSuccessfully = 'Test suites fetched successfully.';
+  static TestSuiteFetchedSuccessfully = 'Test suite fetched successfully.';
+  static TestSuiteCreatedSuccessfully = 'Test suite created successfully.';
+  static TestSuiteUpdatedSuccessfully = 'Test suite updated successfully.';
+  static TestSuiteDeletedSuccessfully = 'Test suite deleted successfully.';
+  static TestSuitesReorderedSuccessfully = 'Test suites reordered successfully.';
+  static TestCasesMovedSuccessfully = 'Test case(s) moved successfully.';
+  static TestSuiteNotFound = 'Test suite not found.';
+  static SuiteNameRequired = 'Suite name is required.';
+  static SuiteNameCannotBeEmpty = 'Suite name cannot be empty.';
+  static InvalidSuiteParent = 'Invalid suite parent.';
+  static FailedToFetchTestSuite = 'Failed to fetch test suite.';
+  static FailedToCreateTestSuite = 'Failed to create test suite.';
+  static FailedToUpdateTestSuite = 'Failed to update test suite.';
+  static FailedToDeleteTestSuite = 'Failed to delete test suite.';
+  static FailedToMoveTestCases = 'Failed to move test cases.';
+  static FailedToReorderTestSuites = 'Failed to reorder test suites.';
+  static AccessDeniedTestSuite = 'Access denied. Only project owners and admins can manage test suites.';
+}
+
+export class TestRunMessages {
+  static TestRunsFetchedSuccessfully = 'Test runs fetched successfully.';
+  static TestRunFetchedSuccessfully = 'Test run fetched successfully.';
+  static TestRunCreatedSuccessfully = 'Test run created successfully.';
+  static TestRunUpdatedSuccessfully = 'Test run updated successfully.';
+  static TestRunDeletedSuccessfully = 'Test run deleted successfully.';
+  static TestRunStartedSuccessfully = 'Test run started successfully.';
+  static TestRunCompletedSuccessfully = 'Test run completed successfully.';
+  static TestRunNotFound = 'Test run not found.';
+  static TestRunNameRequired = 'Test run name is required.';
+  static TestRunNameCannotBeEmpty = 'Test run name cannot be empty.';
+  static InvalidTestRunStatus = 'Invalid test run status.';
+  static NoTestCases = 'No test cases provided.';
+  static FailedToFetchTestRun = 'Failed to fetch test run.';
+  static FailedToCreateTestRun = 'Failed to create test run.';
+  static FailedToUpdateTestRun = 'Failed to update test run.';
+  static FailedToDeleteTestRun = 'Failed to delete test run.';
+  static FailedToStartTestRun = 'Failed to start test run.';
+  static FailedToCompleteTestRun = 'Failed to complete test run.';
+  static AccessDeniedTestRun = 'Access denied. Only project owners/admins can manage test runs.';
 }

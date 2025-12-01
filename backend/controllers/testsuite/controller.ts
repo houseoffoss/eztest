@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TestSuiteService } from '@/backend/services/testsuite/services';
+import { TestSuiteMessages } from '@/backend/constants/static_messages';
 
 const testSuiteService = new TestSuiteService();
 
@@ -7,18 +8,18 @@ export class TestSuiteController {
   /**
    * Get all test suites for a project
    */
-  async getProjectTestSuites(projectId: string, userId: string) {
+  async getProjectTestSuites(projectId: string) {
     try {
       const suites = await testSuiteService.getProjectTestSuites(projectId);
 
       return NextResponse.json({
         data: suites,
-        message: 'Test suites fetched successfully',
+        message: TestSuiteMessages.TestSuitesFetchedSuccessfully,
       });
     } catch (error) {
       console.error('Error fetching test suites:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch test suites' },
+        { error: TestSuiteMessages.FailedToFetchTestSuite },
         { status: 500 }
       );
     }
@@ -33,7 +34,7 @@ export class TestSuiteController {
       const hasAccess = await testSuiteService.hasAccessToTestSuite(suiteId, userId);
       if (!hasAccess) {
         return NextResponse.json(
-          { error: 'Access denied' },
+          { error: TestSuiteMessages.AccessDeniedTestSuite },
           { status: 403 }
         );
       }
@@ -42,19 +43,19 @@ export class TestSuiteController {
 
       if (!suite) {
         return NextResponse.json(
-          { error: 'Test suite not found' },
+          { error: TestSuiteMessages.TestSuiteNotFound },
           { status: 404 }
         );
       }
 
       return NextResponse.json({
         data: suite,
-        message: 'Test suite fetched successfully',
+        message: TestSuiteMessages.TestSuiteFetchedSuccessfully,
       });
     } catch (error) {
       console.error('Error fetching test suite:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch test suite' },
+        { error: TestSuiteMessages.FailedToFetchTestSuite },
         { status: 500 }
       );
     }
@@ -63,14 +64,14 @@ export class TestSuiteController {
   /**
    * Create a new test suite
    */
-  async createTestSuite(request: NextRequest, projectId: string, userId: string) {
+  async createTestSuite(request: NextRequest, projectId: string) {
     try {
       const body = await request.json();
       const { name, description, parentId, order } = body;
 
       if (!name || !name.trim()) {
         return NextResponse.json(
-          { error: 'Suite name is required' },
+          { error: TestSuiteMessages.SuiteNameRequired },
           { status: 400 }
         );
       }
@@ -85,12 +86,12 @@ export class TestSuiteController {
 
       return NextResponse.json({
         data: suite,
-        message: 'Test suite created successfully',
+        message: TestSuiteMessages.TestSuiteCreatedSuccessfully,
       });
     } catch (error) {
       console.error('Error creating test suite:', error);
       return NextResponse.json(
-        { error: 'Failed to create test suite' },
+        { error: TestSuiteMessages.FailedToCreateTestSuite },
         { status: 500 }
       );
     }
@@ -105,7 +106,7 @@ export class TestSuiteController {
       const canManage = await testSuiteService.canManageTestSuite(suiteId, userId);
       if (!canManage) {
         return NextResponse.json(
-          { error: 'Access denied. Only project owners and admins can update test suites.' },
+          { error: TestSuiteMessages.AccessDeniedTestSuite },
           { status: 403 }
         );
       }
@@ -122,12 +123,12 @@ export class TestSuiteController {
 
       return NextResponse.json({
         data: suite,
-        message: 'Test suite updated successfully',
+        message: TestSuiteMessages.TestSuiteUpdatedSuccessfully,
       });
     } catch (error) {
       console.error('Error updating test suite:', error);
       return NextResponse.json(
-        { error: 'Failed to update test suite' },
+        { error: TestSuiteMessages.FailedToUpdateTestSuite },
         { status: 500 }
       );
     }
@@ -142,7 +143,7 @@ export class TestSuiteController {
       const canManage = await testSuiteService.canManageTestSuite(suiteId, userId);
       if (!canManage) {
         return NextResponse.json(
-          { error: 'Access denied. Only project owners and admins can delete test suites.' },
+          { error: TestSuiteMessages.AccessDeniedTestSuite },
           { status: 403 }
         );
       }
@@ -150,12 +151,12 @@ export class TestSuiteController {
       await testSuiteService.deleteTestSuite(suiteId);
 
       return NextResponse.json({
-        message: 'Test suite deleted successfully',
+        message: TestSuiteMessages.TestSuiteDeletedSuccessfully,
       });
     } catch (error) {
       console.error('Delete test suite error:', error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'Failed to delete test suite' },
+        { error: TestSuiteMessages.FailedToDeleteTestSuite },
         { status: 500 }
       );
     }
@@ -164,14 +165,14 @@ export class TestSuiteController {
   /**
    * Move test cases to a suite
    */
-  async moveTestCasesToSuite(request: NextRequest, userId: string) {
+  async moveTestCasesToSuite(request: NextRequest) {
     try {
       const body = await request.json();
       const { testCaseIds, suiteId } = body;
 
       if (!Array.isArray(testCaseIds) || testCaseIds.length === 0) {
         return NextResponse.json(
-          { error: 'Test case IDs are required' },
+          { error: 'No test cases provided' },
           { status: 400 }
         );
       }
@@ -180,12 +181,12 @@ export class TestSuiteController {
 
       return NextResponse.json({
         data: result,
-        message: `${result.count} test case(s) moved successfully`,
+        message: `${result.count} ${TestSuiteMessages.TestCasesMovedSuccessfully}`,
       });
     } catch (error) {
       console.error('Error moving test cases:', error);
       return NextResponse.json(
-        { error: 'Failed to move test cases' },
+        { error: TestSuiteMessages.FailedToMoveTestCases },
         { status: 500 }
       );
     }
@@ -194,14 +195,14 @@ export class TestSuiteController {
   /**
    * Reorder suites
    */
-  async reorderSuites(request: NextRequest, userId: string) {
+  async reorderSuites(request: NextRequest) {
     try {
       const body = await request.json();
       const { updates } = body;
 
       if (!Array.isArray(updates) || updates.length === 0) {
         return NextResponse.json(
-          { error: 'Updates are required' },
+          { error: TestSuiteMessages.InvalidSuiteParent },
           { status: 400 }
         );
       }
@@ -209,12 +210,12 @@ export class TestSuiteController {
       await testSuiteService.reorderSuites(updates);
 
       return NextResponse.json({
-        message: 'Test suites reordered successfully',
+        message: TestSuiteMessages.TestSuitesReorderedSuccessfully,
       });
     } catch (error) {
       console.error('Error reordering test suites:', error);
       return NextResponse.json(
-        { error: 'Failed to reorder test suites' },
+        { error: TestSuiteMessages.FailedToUpdateTestSuite },
         { status: 500 }
       );
     }

@@ -3,6 +3,8 @@ import { CustomRequest } from '@/backend/utils/interceptor';
 import { NotFoundException, InternalServerException, ValidationException } from '@/backend/utils/exceptions';
 import { TestCaseMessages } from '@/backend/constants/static_messages';
 import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema } from '@/backend/validators';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 
 export class TestCaseController {
   /**
@@ -67,6 +69,7 @@ export class TestCaseController {
 
     const testCase = await testCaseService.createTestCase({
       projectId,
+      moduleId: validatedData.moduleId ?? undefined,
       suiteId: validatedData.suiteId ?? undefined,
       title: validatedData.title,
       description: validatedData.description,
@@ -243,6 +246,161 @@ export class TestCaseController {
   async getProjectTestCaseStats(projectId: string) {
     const stats = await testCaseService.getProjectTestCaseStats(projectId);
     return { data: stats };
+  }
+
+  /**
+   * Add test case to a module
+   * Access already checked by route wrapper
+   */
+  async addTestCaseToModule(req: CustomRequest, projectId: string, tcId: string) {
+    const body = await req.json();
+
+    // Validate moduleId
+    const schema = z.object({
+      moduleId: z.string().min(1, 'Module ID is required'),
+    });
+
+    const validation = schema.safeParse(body);
+    if (!validation.success) {
+      throw new ValidationException('Validation failed', validation.error.issues);
+    }
+
+    const { moduleId } = validation.data;
+
+    try {
+      // Verify test case exists and belongs to project
+      const testCase = await prisma.testCase.findFirst({
+        where: {
+          id: tcId,
+          projectId,
+        },
+      });
+
+      if (!testCase) {
+        throw new NotFoundException('Test case not found');
+      }
+
+      // Verify module exists and belongs to project
+      const mod = await prisma.module.findFirst({
+        where: {
+          id: moduleId,
+          projectId,
+        },
+      });
+
+      if (!mod) {
+        throw new NotFoundException('Module not found');
+      }
+
+      // Update test case with module
+      const updatedTestCase = await prisma.testCase.update({
+        where: { id: tcId },
+        data: {
+          moduleId,
+        },
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+              key: true,
+            },
+          },
+          suite: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+          steps: {
+            orderBy: {
+              stepNumber: 'asc',
+            },
+          },
+        },
+      });
+
+      return { data: updatedTestCase };
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error;
+      }
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerException('Failed to add test case to module');
+    }
+  }
+
+  /**
+   * Remove test case from its module
+   * Access already checked by route wrapper
+   */
+  async removeTestCaseFromModule(req: CustomRequest, projectId: string, tcId: string) {
+    try {
+      // Verify test case exists and belongs to project
+      const testCase = await prisma.testCase.findFirst({
+        where: {
+          id: tcId,
+          projectId,
+        },
+      });
+
+      if (!testCase) {
+        throw new NotFoundException('Test case not found');
+      }
+
+      // Update test case to remove module
+      const updatedTestCase = await prisma.testCase.update({
+        where: { id: tcId },
+        data: {
+          moduleId: null,
+        },
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+              key: true,
+            },
+          },
+          suite: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+          steps: {
+            orderBy: {
+              stepNumber: 'asc',
+            },
+          },
+        },
+      });
+
+      return { data: updatedTestCase };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerException('Failed to remove test case from module');
+    }
   }
 }
 

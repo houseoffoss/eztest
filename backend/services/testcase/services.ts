@@ -3,6 +3,7 @@ import { Priority, TestStatus } from '@prisma/client';
 
 interface CreateTestCaseInput {
   projectId: string;
+  moduleId?: string;
   suiteId?: string;
   title: string;
   description?: string;
@@ -29,6 +30,7 @@ interface UpdateTestCaseInput {
   estimatedTime?: number;
   preconditions?: string;
   postconditions?: string;
+  moduleId?: string | null;
   suiteId?: string | null;
 }
 
@@ -239,6 +241,17 @@ export class TestCaseService {
       }
     }
 
+    // Verify module exists if provided
+    if (data.moduleId) {
+      const moduleRecord = await prisma.module.findUnique({
+        where: { id: data.moduleId },
+      });
+
+      if (!moduleRecord || moduleRecord.projectId !== data.projectId) {
+        throw new Error('Module not found or does not belong to this project');
+      }
+    }
+
     // Generate unique test case ID with retry logic for race conditions
     let testCase;
     let attempts = 0;
@@ -253,6 +266,7 @@ export class TestCaseService {
           data: {
             tcId,
             projectId: data.projectId,
+            moduleId: data.moduleId,
             suiteId: data.suiteId,
             title: data.title,
             description: data.description,
@@ -286,6 +300,13 @@ export class TestCaseService {
               select: {
                 id: true,
                 name: true,
+              },
+            },
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
               },
             },
             createdBy: {

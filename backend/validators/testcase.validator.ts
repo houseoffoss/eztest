@@ -17,6 +17,7 @@ export const testStepSchema = z.object({
  * Test Case Creation Schema
  */
 export const createTestCaseSchema = z.object({
+  moduleId: z.string().optional().nullable(),
   suiteId: z.string().optional().nullable(),
   title: z.string().min(1, 'Title is required').trim(),
   description: z.string().optional(),
@@ -55,6 +56,7 @@ export const updateTestCaseSchema = z.object({
     .optional(),
   preconditions: z.string().optional(),
   postconditions: z.string().optional(),
+  moduleId: z.string().optional().nullable(),
   suiteId: z.string().optional().nullable(),
 });
 
