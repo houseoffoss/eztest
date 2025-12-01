@@ -5,11 +5,12 @@
 1. [Overview](#overview)
 2. [Database Schema](#database-schema)
 3. [API Endpoints](#api-endpoints)
-4. [Implementation Details](#implementation-details)
-5. [Test Case Integration](#test-case-integration)
-6. [Usage Examples](#usage-examples)
-7. [Error Handling](#error-handling)
-8. [Permissions](#permissions)
+4. [Test Suite Module Management](#test-suite-module-management)
+5. [Implementation Details](#implementation-details)
+6. [Test Case Integration](#test-case-integration)
+7. [Usage Examples](#usage-examples)
+8. [Error Handling](#error-handling)
+9. [Permissions](#permissions)
 
 ---
 
@@ -722,6 +723,154 @@ Response:
 
 ---
 
+## Test Suite Module Management
+
+### 9. Add Module to Test Suite
+
+**POST** `/api/projects/[id]/testsuites/[suiteId]/add-module`
+
+**Permission Required**: `testsuites:update`
+
+**Description**: Assign a module to all test cases in a test suite.
+
+**Request Body**:
+```json
+{
+  "moduleId": "module_123"
+}
+```
+
+**Validation Rules**:
+- `moduleId` (required): Valid CUID format, must exist and belong to the same project
+
+**Response**:
+```json
+{
+  "data": {
+    "id": "suite_1",
+    "projectId": "project_id",
+    "name": "User Authentication Tests",
+    "description": "Test suite for authentication flows",
+    "testCases": [
+      {
+        "id": "tc_1",
+        "tcId": "tc_001",
+        "title": "Test login",
+        "moduleId": "module_123",
+        "module": {
+          "id": "module_123",
+          "name": "Authentication",
+          "description": "Auth module"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: Module ID missing or validation error
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: Test suite or module not found
+
+---
+
+### 10. Update Module in Test Suite
+
+**POST** `/api/projects/[id]/testsuites/[suiteId]/update-module`
+
+**Permission Required**: `testsuites:update`
+
+**Description**: Change module assignment for all test cases in a test suite (move from old module to new module).
+
+**Request Body**:
+```json
+{
+  "oldModuleId": "module_old",
+  "newModuleId": "module_new"
+}
+```
+
+**Validation Rules**:
+- `newModuleId` (required): Valid CUID format, must exist and belong to the same project
+- `oldModuleId` (optional): Current module ID (can be null if test cases are unassigned)
+
+**Response**:
+```json
+{
+  "data": {
+    "id": "suite_1",
+    "projectId": "project_id",
+    "name": "User Authentication Tests",
+    "testCases": [
+      {
+        "id": "tc_1",
+        "tcId": "tc_001",
+        "title": "Test login",
+        "moduleId": "module_new",
+        "module": {
+          "id": "module_new",
+          "name": "Authentication v2",
+          "description": "Updated auth module"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: New module ID missing or validation error
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: Test suite or module not found
+
+---
+
+### 11. Remove Module from Test Suite
+
+**POST** `/api/projects/[id]/testsuites/[suiteId]/remove-module`
+
+**Permission Required**: `testsuites:update`
+
+**Description**: Remove module assignment from all test cases in a test suite (sets moduleId to null).
+
+**Request Body**:
+```json
+{
+  "moduleId": "module_123"
+}
+```
+
+**Validation Rules**:
+- `moduleId` (required): Valid CUID format
+
+**Response**:
+```json
+{
+  "data": {
+    "id": "suite_1",
+    "projectId": "project_id",
+    "name": "User Authentication Tests",
+    "testCases": [
+      {
+        "id": "tc_1",
+        "tcId": "tc_001",
+        "title": "Test login",
+        "moduleId": null,
+        "module": null
+      }
+    ]
+  }
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: Module ID missing
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: Test suite not found
+
+---
+
 ## Error Handling
 
 All endpoints follow consistent error handling patterns:
@@ -796,6 +945,9 @@ All module endpoints require specific RBAC permissions:
 | Reorder modules | `testcases:update` | Change module ordering |
 | Add test case to module | `testcases:update` | Assign test cases to modules |
 | Remove test case from module | `testcases:update` | Unassign test cases from modules |
+| Add module to test suite | `testsuites:update` | Assign module to all test cases in a suite |
+| Update module in test suite | `testsuites:update` | Change module assignment in a suite |
+| Remove module from test suite | `testsuites:update` | Remove module assignment from a suite |
 
 ### Permission Groups
 
