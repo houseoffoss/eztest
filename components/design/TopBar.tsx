@@ -4,6 +4,8 @@ import React, { ReactNode } from "react"
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/design"
 import { ButtonDestructive } from "@/elements/button-destructive"
 import { signOut } from "next-auth/react"
+import { LogOut } from 'lucide-react'
+import { ConfirmDialog } from '@/components/design/ConfirmDialog'
 
 export interface TopBarProps {
   breadcrumbs: BreadcrumbItem[]
@@ -23,14 +25,28 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
           <Breadcrumbs items={breadcrumbs} />
           <div className="flex items-center gap-3">
             {actions}
-            <ButtonDestructive 
-              type="button" 
-              size="default" 
-              className="px-5 cursor-pointer"
-              onClick={handleSignOut}
+            <ConfirmDialog
+              title="Sign Out"
+              description="Are you sure you want to sign out? You will need to log in again to access your account."
+              confirmLabel={
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </>
+              }
+              cancelLabel="Cancel"
+              onConfirm={handleSignOut}
+              variant="glass"
             >
-              Sign Out
-            </ButtonDestructive>
+              <ButtonDestructive 
+                type="button" 
+                size="default" 
+                className="px-5 cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </ButtonDestructive>
+            </ConfirmDialog>
           </div>
         </div>
       </div>

@@ -6,6 +6,8 @@ import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/elements/loader';
+import { ButtonSecondary } from '@/elements/button-secondary';
+import { TestTube2, Folder } from 'lucide-react';
 import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
 import { TestCaseHeader } from './subcomponents/TestCaseHeader';
 import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
@@ -266,6 +268,30 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           canUpdate={canUpdateTestCase}
           canDelete={canDeleteTestCase}
         />
+
+        {/* Quick Actions Buttons */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <ButtonSecondary
+            onClick={() => router.push(`/projects/${testCase.project.id}/testcases`)}
+          >
+            <TestTube2 className="w-4 h-4 mr-2" />
+            View All Test Cases
+          </ButtonSecondary>
+          {testCase.suite && (
+            <ButtonSecondary
+              onClick={() => router.push(`/projects/${testCase.project.id}/testsuites/${testCase.suite?.id}`)}
+            >
+              <Folder className="w-4 h-4 mr-2" />
+              View Test Suite
+            </ButtonSecondary>
+          )}
+          <ButtonSecondary
+            onClick={() => router.push(`/projects/${testCase.project.id}/testsuites`)}
+          >
+            <Folder className="w-4 h-4 mr-2" />
+            View All Test Suites
+          </ButtonSecondary>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

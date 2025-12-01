@@ -128,8 +128,8 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
       key: 'testRun',
       label: 'Test Run',
       render: (_, row: TestResult) => (
-        <div>
-          <p className="text-sm text-white/90 font-medium">{row.testRun.name}</p>
+        <div className="min-w-0">
+          <p className="text-sm text-white/90 font-medium truncate">{row.testRun.name}</p>
           {row.testRun.environment && (
             <Badge
               variant="outline"
@@ -145,9 +145,9 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
       key: 'executedBy',
       label: 'Executed By',
       render: (_, row: TestResult) => (
-        <div className="flex items-center gap-1 text-xs text-white/70">
-          <User className="w-3 h-3" />
-          <span>{row.executedBy.name}</span>
+        <div className="flex items-center gap-1 text-xs text-white/70 min-w-0">
+          <User className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">{row.executedBy.name}</span>
         </div>
       ),
     },

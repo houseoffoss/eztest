@@ -41,7 +41,7 @@ export function TestSuiteCard({
           </div>
           <div className="flex-1 min-w-0">
             <h4
-              className="text-sm text-white font-medium cursor-pointer hover:text-primary transition-colors"
+              className="text-sm text-white font-medium cursor-pointer hover:text-primary transition-colors truncate"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onView(suite.id);

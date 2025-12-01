@@ -48,7 +48,7 @@ export function TestCaseDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Description
               </h4>
-              <p className="text-white/90">{testCase.description}</p>
+              <p className="text-white/90 break-words">{testCase.description}</p>
             </div>
           )}
 
@@ -57,7 +57,7 @@ export function TestCaseDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Expected Result
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap">
+              <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.expectedResult}
               </p>
             </div>
@@ -80,7 +80,7 @@ export function TestCaseDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Preconditions
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap">
+              <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.preconditions}
               </p>
             </div>
@@ -91,7 +91,7 @@ export function TestCaseDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Postconditions
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap">
+              <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.postconditions}
               </p>
             </div>

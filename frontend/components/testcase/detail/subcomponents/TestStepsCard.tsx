@@ -89,7 +89,7 @@ export function TestStepsCard({
                           placeholder="Enter action"
                         />
                       ) : (
-                        <p className="text-white/90">{step.action}</p>
+                        <p className="text-white/90 break-words">{step.action}</p>
                       )}
                     </div>
                     <div>
@@ -110,7 +110,7 @@ export function TestStepsCard({
                             placeholder="Enter expected result"
                           />
                         ) : (
-                          <p className="text-white/90">{step.expectedResult}</p>
+                          <p className="text-white/90 break-words">{step.expectedResult}</p>
                         )}
                       </div>
                     </div>

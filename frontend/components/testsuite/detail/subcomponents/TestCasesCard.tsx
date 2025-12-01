@@ -31,8 +31,8 @@ export function TestCasesCard({
       key: 'title',
       label: 'Title',
       render: (_, row: TestCase) => (
-        <div>
-          <p className="font-medium text-white/90">{row.title}</p>
+        <div className="min-w-0">
+          <p className="font-medium text-white/90 truncate">{row.title}</p>
           {row.description && (
             <p className="text-xs text-white/60 line-clamp-1 mt-1">
               {row.description}

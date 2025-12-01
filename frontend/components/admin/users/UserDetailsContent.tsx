@@ -5,7 +5,7 @@ import { Badge } from '@/elements/badge';
 import { DetailCard } from '@/components/design/DetailCard';
 import { formatDateTime } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
-import { Mail, Calendar, Briefcase } from 'lucide-react';
+import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
 
 interface UserRole {
   id: string;
@@ -57,6 +57,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
             />
             <form action="/api/auth/signout" method="POST">
               <ButtonDestructive type="submit" size="default" className="px-5">
+                <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </ButtonDestructive>
             </form>

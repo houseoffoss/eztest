@@ -1,6 +1,7 @@
 import { Badge } from '@/elements/badge';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { GlassPanel } from '@/components/design/GlassPanel';
+import { LogOut } from 'lucide-react';
 
 export function SessionManagement() {
   return (
@@ -19,7 +20,10 @@ export function SessionManagement() {
             </div>
           </div>
         </div>
-        <ButtonDestructive className="w-full rounded-lg">Sign Out All Sessions</ButtonDestructive>
+        <ButtonDestructive className="w-full rounded-lg">
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out All Sessions
+        </ButtonDestructive>
       </div>
     </GlassPanel>
   );

@@ -8,8 +8,9 @@ import { TestSuiteDetailsCard } from './subcomponents/TestSuiteDetailsCard';
 import { TestCasesCard } from './subcomponents/TestCasesCard';
 import { ChildSuitesCard } from './subcomponents/ChildSuitesCard';
 import { TestSuiteInfoCard } from './subcomponents/TestSuiteInfoCard';
-import { QuickActionsCard } from './subcomponents/QuickActionsCard';
 import { DeleteTestSuiteDialog } from './subcomponents/DeleteTestSuiteDialog';
+import { ButtonSecondary } from '@/elements/button-secondary';
+import { Plus, TestTube2, Folder } from 'lucide-react';
 import { CreateTestCaseDialog } from '@/frontend/components/testcase/subcomponents/CreateTestCaseDialog';
 import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { DeleteTestCaseDialog } from '@/frontend/components/testcase/subcomponents/DeleteTestCaseDialog';
@@ -318,6 +319,41 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           canDelete={canDeleteSuite}
         />
 
+        {/* Quick Actions Buttons */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          {canCreateTestCase && (
+            <>
+              <ButtonSecondary
+                onClick={() => setCreateTestCaseDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Test Case
+              </ButtonSecondary>
+              <ButtonSecondary
+                onClick={() => {
+                  fetchAvailableTestCases();
+                  setAddTestCasesDialogOpen(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Test Cases
+              </ButtonSecondary>
+            </>
+          )}
+          <ButtonSecondary
+            onClick={() => router.push(`/projects/${testSuite.project.id}/testcases`)}
+          >
+            <TestTube2 className="w-4 h-4 mr-2" />
+            View All Test Cases
+          </ButtonSecondary>
+          <ButtonSecondary
+            onClick={() => router.push(`/projects/${testSuite.project.id}/testsuites`)}
+          >
+            <Folder className="w-4 h-4 mr-2" />
+            View All Test Suites
+          </ButtonSecondary>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <TestSuiteDetailsCard
@@ -368,26 +404,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                   `/projects/${testSuite.project.id}/testsuites/${parentId}`
                 )
               }
-            />
-
-            <QuickActionsCard
-              onCreateTestCase={() => {
-                setCreateTestCaseDialogOpen(true);
-              }}
-              onAddTestCase={() => {
-                setCreateTestCaseDialogOpen(true);
-              }}
-              onAddExistingTestCases={() => {
-                fetchAvailableTestCases();
-                setAddTestCasesDialogOpen(true);
-              }}
-              onViewAllTestCases={() =>
-                router.push(`/projects/${testSuite.project.id}/testcases`)
-              }
-              onViewAllSuites={() =>
-                router.push(`/projects/${testSuite.project.id}/testsuites`)
-              }
-              canCreateTestCase={canCreateTestCase}
             />
           </div>
         </div>
