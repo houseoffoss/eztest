@@ -1,7 +1,7 @@
 'use client';
 
 import type { FormFieldConfig } from '../subcomponents/TestCaseFormField';
-import { TestSuite } from '../types';
+import { Module } from '../types';
 
 export const PRIORITY_OPTIONS = [
   { label: 'Critical', value: 'CRITICAL' },
@@ -16,10 +16,10 @@ export const STATUS_OPTIONS = [
   { label: 'Deprecated', value: 'DEPRECATED' },
 ];
 
-export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldConfig[] {
-  const suiteOptions = testSuites.map((suite) => ({
-    label: suite.name,
-    value: suite.id,
+export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[] {
+  const moduleOptions = modules.map((module) => ({
+    label: module.name,
+    value: module.id,
   }));
 
   return [
@@ -37,13 +37,13 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
       options: PRIORITY_OPTIONS,
     },
     {
-      name: 'suiteId',
-      label: 'Test Suite',
+      name: 'moduleId',
+      label: 'Module',
       type: 'select',
-      placeholder: 'Select a test suite',
+      placeholder: 'Select a module',
       options: [
-        { label: 'None (No Suite)', value: 'none' },
-        ...suiteOptions,
+        { label: 'None (No Module)', value: 'none' },
+        ...moduleOptions,
       ],
     },
     {
@@ -90,14 +90,14 @@ export function getTestCaseFormFields(testSuites: TestSuite[] = []): FormFieldCo
 }
 
 export function getCreateTestCaseFormFields(
-  testSuites: TestSuite[] = []
+  modules: Module[] = []
 ): FormFieldConfig[] {
-  return getTestCaseFormFields(testSuites);
+  return getTestCaseFormFields(modules);
 }
 
 export function getEditTestCaseFormFields(
-  testSuites: TestSuite[] = []
+  modules: Module[] = []
 ): FormFieldConfig[] {
   // Same as create, but could be extended for edit-specific fields
-  return getTestCaseFormFields(testSuites);
+  return getTestCaseFormFields(modules);
 }

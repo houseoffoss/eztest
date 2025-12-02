@@ -75,6 +75,7 @@ model Project {
   testCases   TestCase[]
   testRuns    TestRun[]
   requirements Requirement[]
+  modules     Module[]
 
   @@index([key])
   @@index([createdById])
@@ -96,6 +97,23 @@ model ProjectMember {
 }
 
 // Test Management
+model Module {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCases   TestCase[]
+
+  @@unique([id, projectId]) // Required for composite FK from TestCase
+  @@unique([projectId, name])
+  @@index([projectId])
+}
+
 model TestSuite {
   id          String   @id @default(cuid())
   projectId   String
@@ -120,6 +138,7 @@ model TestCase {
   id            String   @id @default(cuid())
   tcId          String   // Test case ID like tc1, tc2, etc. (unique per project)
   projectId     String
+  moduleId      String?
   suiteId       String?
   title         String
   description   String?
@@ -134,6 +153,7 @@ model TestCase {
   updatedAt     DateTime @updatedAt
 
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  module        Module?  @relation(fields: [moduleId, projectId], references: [id, projectId], onDelete: SetNull)
   suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   createdBy     User     @relation(fields: [createdById], references: [id])
   steps         TestStep[]
@@ -144,6 +164,7 @@ model TestCase {
 
   @@unique([projectId, tcId])
   @@index([projectId])
+  @@index([moduleId])
   @@index([suiteId])
   @@index([createdById])
   @@index([status])

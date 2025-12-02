@@ -7,6 +7,7 @@ export interface TestStep {
 
 export interface TestCase {
   id: string;
+  tcId: string;
   title: string;
   description?: string;
   expectedResult?: string;
@@ -24,6 +25,11 @@ export interface TestCase {
     id: string;
     name: string;
   };
+  moduleId?: string;
+  module?: {
+    id: string;
+    name: string;
+  };
   createdBy: {
     id: string;
     name: string;
@@ -32,9 +38,11 @@ export interface TestCase {
   };
   steps: TestStep[];
   _count: {
+    steps: number;
     results: number;
-    comments: number;
-    attachments: number;
+    requirements: number;
+    comments?: number;
+    attachments?: number;
   };
   createdAt: string;
   updatedAt: string;
@@ -50,6 +58,7 @@ export interface TestCaseFormData {
   preconditions: string;
   postconditions: string;
   suiteId: string | null;
+  moduleId: string | null;
 }
 
 export interface TestSuite {

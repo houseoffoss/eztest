@@ -1,6 +1,5 @@
+import { roleController } from '@/backend/controllers/role/controller';
 import { hasPermission } from '@/lib/rbac/hasPermission';
-import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
 
 /**
  * GET /api/roles
@@ -8,35 +7,8 @@ import { NextResponse } from 'next/server';
  * Required permission: users:read (only admins need to see roles)
  */
 export const GET = hasPermission(
-  async (request) => {
-    try {
-      const roles = await prisma.role.findMany({
-        include: {
-          _count: {
-            select: {
-              users: true,
-            },
-          },
-        },
-        orderBy: {
-          name: 'asc',
-        },
-      });
-
-      return NextResponse.json({
-        data: roles,
-        error: null,
-      });
-    } catch (error) {
-      console.error('Error fetching roles:', error);
-      return NextResponse.json(
-        {
-          data: null,
-          error: 'Failed to fetch roles',
-        },
-        { status: 500 }
-      );
-    }
+  async () => {
+    return roleController.getAllRoles();
   },
   'users',
   'read'

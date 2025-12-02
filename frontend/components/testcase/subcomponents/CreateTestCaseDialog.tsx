@@ -1,13 +1,14 @@
 'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
-import { TestCase, TestSuite } from '../types';
+import { TestCase, Module } from '../types';
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../constants/testCaseFormConfig';
+import { useEffect, useState } from 'react';
 
 interface CreateTestCaseDialogProps {
   projectId: string;
-  testSuites: TestSuite[];
-  defaultSuiteId?: string;
+  defaultModuleId?: string;
+  open?: boolean;
   triggerOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   onTestCaseCreated: (testCase: TestCase) => void;
@@ -15,15 +16,32 @@ interface CreateTestCaseDialogProps {
 
 export function CreateTestCaseDialog({
   projectId,
-  testSuites,
-  defaultSuiteId,
+  defaultModuleId,
+  open,
   triggerOpen,
   onOpenChange,
   onTestCaseCreated,
 }: CreateTestCaseDialogProps) {
-  const suiteOptions = testSuites.map((suite) => ({
-    value: suite.id,
-    label: suite.name,
+  const [modules, setModules] = useState<Module[]>([]);
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        const response = await fetch(`/api/projects/${projectId}/modules`);
+        const data = await response.json();
+        if (data.data) {
+          setModules(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching modules:', error);
+      }
+    };
+    fetchModules();
+  }, [projectId]);
+
+  const moduleOptions = modules.map((module) => ({
+    value: module.id,
+    label: module.name,
   }));
 
   const fields: BaseDialogField[] = [
@@ -54,14 +72,14 @@ export function CreateTestCaseDialog({
       cols: 1,
     },
     {
-      name: 'suiteId',
-      label: 'Test Suite',
+      name: 'moduleId',
+      label: 'Module',
       type: 'select',
-      placeholder: 'Select a test suite',
-      defaultValue: defaultSuiteId || 'none',
+      placeholder: 'Select a module',
+      defaultValue: defaultModuleId || 'none',
       options: [
-        { value: 'none', label: 'None (No Suite)' },
-        ...suiteOptions,
+        { value: 'none', label: 'None (No Module)' },
+        ...moduleOptions,
       ],
       cols: 1,
     },
@@ -123,7 +141,7 @@ export function CreateTestCaseDialog({
         estimatedTime,
         preconditions: formData.preconditions || undefined,
         postconditions: formData.postconditions || undefined,
-        suiteId: formData.suiteId !== 'none' ? formData.suiteId : undefined,
+        moduleId: formData.moduleId !== 'none' ? formData.moduleId : undefined,
       }),
     });
 
@@ -142,7 +160,7 @@ export function CreateTestCaseDialog({
     fields,
     submitLabel: 'Create Test Case',
     cancelLabel: 'Cancel',
-    triggerOpen,
+    triggerOpen: open !== undefined ? open : triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,
     onSuccess: (testCase) => {

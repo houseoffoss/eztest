@@ -83,6 +83,7 @@ model Project {
   createdBy   User             // Project creator
   members     ProjectMember[]  // Team members
   testSuites  TestSuite[]      // Test organization
+  modules     Module[]         // Test case modules
   testCases   TestCase[]       // All test cases
   testRuns    TestRun[]        // Test executions
   requirements Requirement[]   // Linked requirements
@@ -147,6 +148,36 @@ model TestSuite {
 - Order field for custom sorting
 - Cascading deletes with parent
 
+### Module
+
+Represents modules for organizing test cases within a project.
+
+```prisma
+model Module {
+  id          String     @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCases   TestCase[] // Test cases in this module
+
+  @@unique([projectId, name])  // Unique module name per project
+  @@index([projectId])         // For efficient project queries
+}
+```
+
+**Features:**
+- Project-scoped organization
+- Unique module names per project
+- Custom ordering for display
+- Test case grouping
+- Cascade deletion with project
+
 ### TestCase
 
 Represents individual test cases.
@@ -156,6 +187,7 @@ model TestCase {
   id            String     @id @default(cuid())
   projectId     String
   suiteId       String?              // Can be in suite or standalone
+  moduleId      String?              // Optional module assignment
   title         String
   description   String?
   priority      Priority   @default(MEDIUM)
@@ -170,6 +202,7 @@ model TestCase {
   // Relations
   project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   suite         TestSuite?   @relation(fields: [suiteId], references: [id], onDelete: SetNull)
+  module        Module?      @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   createdBy     User         @relation(fields: [createdById], references: [id])
   steps         TestStep[]   // Test execution steps
   results       TestResult[] // Execution history

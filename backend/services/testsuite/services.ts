@@ -21,12 +21,24 @@ export class TestSuiteService {
           },
         },
         testCases: {
+          include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
           select: {
             id: true,
+            tcId: true,
             title: true,
             description: true,
             priority: true,
             status: true,
+            moduleId: true,
+            module: true,
           },
         },
         _count: {
@@ -75,6 +87,13 @@ export class TestSuiteService {
         },
         testCases: {
           include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
             createdBy: {
               select: {
                 id: true,
@@ -279,5 +298,166 @@ export class TestSuiteService {
     const member = suite.project.members[0];
     // Check if user is a member of the project (role-based permissions handled by hasPermission)
     return !!member;
+  }
+
+  /**
+   * Add a module to a test suite (assign module to test cases in the suite)
+   */
+  async addModuleToSuite(suiteId: string, moduleId: string, projectId: string) {
+    // Verify suite exists and belongs to project
+    const suite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+    });
+
+    if (!suite || suite.projectId !== projectId) {
+      throw new Error('Test suite not found or does not belong to this project');
+    }
+
+    // Verify module exists and belongs to project
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id: moduleId },
+    });
+
+    if (!moduleRecord || moduleRecord.projectId !== projectId) {
+      throw new Error('Module not found or does not belong to this project');
+    }
+
+    // Get all test cases in this suite and assign them to the module
+    await prisma.testCase.updateMany({
+      where: {
+        suiteId: suiteId,
+      },
+      data: {
+        moduleId: moduleId,
+      },
+    });
+
+    // Return updated suite with test cases
+    const updatedSuite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+      include: {
+        testCases: {
+          include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedSuite;
+  }
+
+  /**
+   * Update module for a test suite (change module assignment)
+   */
+  async updateSuiteModule(suiteId: string, oldModuleId: string | null, newModuleId: string, projectId: string) {
+    // Verify suite exists and belongs to project
+    const suite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+    });
+
+    if (!suite || suite.projectId !== projectId) {
+      throw new Error('Test suite not found or does not belong to this project');
+    }
+
+    // Verify new module exists and belongs to project
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id: newModuleId },
+    });
+
+    if (!moduleRecord || moduleRecord.projectId !== projectId) {
+      throw new Error('Module not found or does not belong to this project');
+    }
+
+    // Update test cases in suite from old module to new module
+    await prisma.testCase.updateMany({
+      where: {
+        suiteId: suiteId,
+        moduleId: oldModuleId,
+      },
+      data: {
+        moduleId: newModuleId,
+      },
+    });
+
+    // Return updated suite
+    const updatedSuite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+      include: {
+        testCases: {
+          include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedSuite;
+  }
+
+  /**
+   * Remove module from a test suite (unassign module from test cases)
+   */
+  async removeModuleFromSuite(suiteId: string, moduleId: string, projectId: string) {
+    // Verify suite exists and belongs to project
+    const suite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+    });
+
+    if (!suite || suite.projectId !== projectId) {
+      throw new Error('Test suite not found or does not belong to this project');
+    }
+
+    // Verify module exists and belongs to project
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id: moduleId },
+    });
+
+    if (!moduleRecord || moduleRecord.projectId !== projectId) {
+      throw new Error('Module not found or does not belong to this project');
+    }
+
+    // Remove module from all test cases in this suite
+    await prisma.testCase.updateMany({
+      where: {
+        suiteId: suiteId,
+        moduleId: moduleId,
+      },
+      data: {
+        moduleId: null,
+      },
+    });
+
+    // Return updated suite
+    const updatedSuite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+      include: {
+        testCases: {
+          include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedSuite;
   }
 }

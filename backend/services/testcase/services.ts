@@ -3,6 +3,7 @@ import { Priority, TestStatus } from '@prisma/client';
 
 interface CreateTestCaseInput {
   projectId: string;
+  moduleId?: string;
   suiteId?: string;
   title: string;
   description?: string;
@@ -29,6 +30,7 @@ interface UpdateTestCaseInput {
   estimatedTime?: number;
   preconditions?: string;
   postconditions?: string;
+  moduleId?: string | null;
   suiteId?: string | null;
 }
 
@@ -111,6 +113,12 @@ export class TestCaseService {
       where,
       include: {
         suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
           select: {
             id: true,
             name: true,
@@ -239,6 +247,17 @@ export class TestCaseService {
       }
     }
 
+    // Verify module exists if provided
+    if (data.moduleId) {
+      const moduleRecord = await prisma.module.findUnique({
+        where: { id: data.moduleId },
+      });
+
+      if (!moduleRecord || moduleRecord.projectId !== data.projectId) {
+        throw new Error('Module not found or does not belong to this project');
+      }
+    }
+
     // Generate unique test case ID with retry logic for race conditions
     let testCase;
     let attempts = 0;
@@ -253,6 +272,7 @@ export class TestCaseService {
           data: {
             tcId,
             projectId: data.projectId,
+            moduleId: data.moduleId,
             suiteId: data.suiteId,
             title: data.title,
             description: data.description,
@@ -286,6 +306,13 @@ export class TestCaseService {
               select: {
                 id: true,
                 name: true,
+              },
+            },
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
               },
             },
             createdBy: {
@@ -372,6 +399,20 @@ export class TestCaseService {
       // If suiteId is null, it's valid - just removing from suite
     }
 
+    // Verify module if being changed
+    if (data.moduleId !== undefined) {
+      if (data.moduleId) {
+        const module = await prisma.module.findUnique({
+          where: { id: data.moduleId },
+        });
+
+        if (!module || module.projectId !== existing.projectId) {
+          throw new Error('Module not found or does not belong to this project');
+        }
+      }
+      // If moduleId is null, it's valid - just removing from module
+    }
+
     const updateData: Record<string, unknown> = {};
     
     if (data.title !== undefined) updateData.title = data.title;
@@ -383,6 +424,7 @@ export class TestCaseService {
     if (data.preconditions !== undefined) updateData.preconditions = data.preconditions;
     if (data.postconditions !== undefined) updateData.postconditions = data.postconditions;
     if (data.suiteId !== undefined) updateData.suiteId = data.suiteId;
+    if (data.moduleId !== undefined) updateData.moduleId = data.moduleId;
 
     return await prisma.testCase.update({
       where: { id: testCaseId },
@@ -519,6 +561,66 @@ export class TestCaseService {
 
 
   /**
+   * Get test case history (all test results across test runs)
+   */
+  async getTestCaseHistory(testCaseId: string, userId: string, scope: string) {
+    // Build where clause based on scope
+    let whereClause: Record<string, unknown> = { id: testCaseId };
+
+    if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+      };
+    }
+    // 'all' scope: no additional filtering
+
+    // Verify test case exists and user has access
+    const testCase = await prisma.testCase.findFirst({
+      where: whereClause,
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Fetch test results for this test case across all test runs
+    const results = await prisma.testResult.findMany({
+      where: {
+        testCaseId: testCaseId,
+      },
+      include: {
+        executedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        testRun: {
+          select: {
+            id: true,
+            name: true,
+            environment: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        executedAt: 'desc',
+      },
+    });
+
+    return results;
+  }
+
+  /**
    * Get test case statistics for a project
    */
   async getProjectTestCaseStats(projectId: string) {
@@ -549,6 +651,161 @@ export class TestCaseService {
         return acc;
       }, {} as Record<string, number>),
     };
+  }
+
+  /**
+   * Add test case to a module
+   */
+  async addTestCaseToModule(
+    projectId: string,
+    tcId: string,
+    moduleId: string
+  ) {
+    // Verify test case exists and belongs to project
+    const testCase = await prisma.testCase.findFirst({
+      where: {
+        tcId: tcId,
+        projectId,
+      },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Verify module exists and belongs to project
+    const mod = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        projectId,
+      },
+    });
+
+    if (!mod) {
+      throw new Error('Module not found');
+    }
+
+    // Update test case with module
+    const updatedTestCase = await prisma.testCase.update({
+      where: { id: testCase.id },
+      data: {
+        moduleId,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+          },
+        },
+        suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        steps: {
+          orderBy: {
+            stepNumber: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            steps: true,
+            results: true,
+            requirements: true,
+          },
+        },
+      },
+    });
+
+    return updatedTestCase;
+  }
+
+  /**
+   * Remove test case from its module
+   */
+  async removeTestCaseFromModule(
+    projectId: string,
+    tcId: string
+  ) {
+    // Verify test case exists and belongs to project
+    const testCase = await prisma.testCase.findFirst({
+      where: {
+        tcId: tcId,
+        projectId,
+      },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Update test case to remove module
+    const updatedTestCase = await prisma.testCase.update({
+      where: { id: testCase.id },
+      data: {
+        moduleId: null,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+          },
+        },
+        suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        steps: {
+          orderBy: {
+            stepNumber: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            steps: true,
+            results: true,
+            requirements: true,
+          },
+        },
+      },
+    });
+
+    return updatedTestCase;
   }
 }
 

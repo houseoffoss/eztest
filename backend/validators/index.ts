@@ -6,3 +6,4 @@
 
 export * from './project.validator';
 export * from './testcase.validator';
+export * from './module.validator';

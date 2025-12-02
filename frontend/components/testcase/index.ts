@@ -6,6 +6,7 @@ export { default as TestCaseDetail } from './detail/TestCaseDetail';
 export {
   CreateTestCaseDialog,
   DeleteTestCaseDialog,
+  CreateModuleDialog,
   TestCaseCard,
   TestCaseFilters,
   TestCaseTable,
@@ -18,6 +19,7 @@ export {
 export type {
   CreateTestCaseDialogProps,
   DeleteTestCaseDialogProps,
+  CreateModuleDialogProps,
   TestCaseCardProps,
   FormFieldConfig,
 } from './subcomponents';
@@ -34,4 +36,4 @@ export {
 } from './constants';
 
 // Types
-export type { TestCase, TestSuite, TestCaseFormData, Project } from './types';
+export type { TestCase, TestSuite, TestCaseFormData, Project, Module } from './types';

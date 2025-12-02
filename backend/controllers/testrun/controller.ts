@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { testRunService } from '@/backend/services/testrun/services';
 import { TestRunStatus, TestResultStatus } from '@prisma/client';
+import { TestRunMessages } from '@/backend/constants/static_messages';
 
 export class TestRunController {
   /**
@@ -26,7 +27,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Get test runs error:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch test runs' },
+        { error: TestRunMessages.FailedToFetchTestRun },
         { status: 500 }
       );
     }
@@ -48,7 +49,7 @@ export class TestRunController {
 
       if (!hasAccess) {
         return NextResponse.json(
-          { error: 'Access denied' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -57,7 +58,7 @@ export class TestRunController {
 
       if (!testRun) {
         return NextResponse.json(
-          { error: 'Test run not found' },
+          { error: TestRunMessages.TestRunNotFound },
           { status: 404 }
         );
       }
@@ -77,7 +78,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Get test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch test run' },
+        { error: TestRunMessages.FailedToFetchTestRun },
         { status: 500 }
       );
     }
@@ -99,7 +100,7 @@ export class TestRunController {
       // Validation
       if (!name) {
         return NextResponse.json(
-          { error: 'Name is required' },
+          { error: TestRunMessages.TestRunNameRequired },
           { status: 400 }
         );
       }
@@ -123,7 +124,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Create test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to create test run' },
+        { error: TestRunMessages.FailedToCreateTestRun },
         { status: 500 }
       );
     }
@@ -146,7 +147,7 @@ export class TestRunController {
 
       if (!canManage) {
         return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can update test runs' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -164,7 +165,7 @@ export class TestRunController {
         ];
         if (!validStatuses.includes(status)) {
           return NextResponse.json(
-            { error: 'Invalid status' },
+            { error: TestRunMessages.InvalidTestRunStatus },
             { status: 400 }
           );
         }
@@ -182,7 +183,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Update test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to update test run' },
+        { error: TestRunMessages.FailedToUpdateTestRun },
         { status: 500 }
       );
     }
@@ -204,7 +205,7 @@ export class TestRunController {
 
       if (!canManage) {
         return NextResponse.json(
-          { error: 'Access denied. Only project owners/admins can delete test runs' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -212,13 +213,13 @@ export class TestRunController {
       await testRunService.deleteTestRun(testRunId);
 
       return NextResponse.json(
-        { message: 'Test run deleted successfully' },
+        { message: TestRunMessages.TestRunDeletedSuccessfully },
         { status: 200 }
       );
     } catch (error) {
       console.error('Delete test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to delete test run' },
+        { error: TestRunMessages.FailedToDeleteTestRun },
         { status: 500 }
       );
     }
@@ -240,7 +241,7 @@ export class TestRunController {
 
       if (!hasAccess) {
         return NextResponse.json(
-          { error: 'Access denied' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -251,7 +252,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Start test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to start test run' },
+        { error: TestRunMessages.FailedToStartTestRun },
         { status: 500 }
       );
     }
@@ -273,7 +274,7 @@ export class TestRunController {
 
       if (!hasAccess) {
         return NextResponse.json(
-          { error: 'Access denied' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -284,7 +285,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Complete test run error:', error);
       return NextResponse.json(
-        { error: 'Failed to complete test run' },
+        { error: TestRunMessages.FailedToCompleteTestRun },
         { status: 500 }
       );
     }
@@ -307,7 +308,7 @@ export class TestRunController {
 
       if (!hasAccess) {
         return NextResponse.json(
-          { error: 'Access denied' },
+          { error: TestRunMessages.AccessDeniedTestRun },
           { status: 403 }
         );
       }
@@ -325,7 +326,7 @@ export class TestRunController {
       // Validation
       if (!testCaseId || !status) {
         return NextResponse.json(
-          { error: 'Test case ID and status are required' },
+          { error: TestRunMessages.InvalidTestRunStatus },
           { status: 400 }
         );
       }
@@ -340,7 +341,7 @@ export class TestRunController {
       ];
       if (!validStatuses.includes(status)) {
         return NextResponse.json(
-          { error: 'Invalid status' },
+          { error: TestRunMessages.InvalidTestRunStatus },
           { status: 400 }
         );
       }
@@ -362,7 +363,7 @@ export class TestRunController {
     } catch (error) {
       console.error('Add test result error:', error);
       return NextResponse.json(
-        { error: 'Failed to add test result' },
+        { error: TestRunMessages.FailedToCompleteTestRun },
         { status: 500 }
       );
     }

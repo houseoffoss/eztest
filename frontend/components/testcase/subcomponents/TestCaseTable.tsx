@@ -11,27 +11,33 @@ import {
 } from '@/elements/dropdown-menu';
 import { MoreVertical, Trash2, ChevronDown } from 'lucide-react';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
-import { TestCase } from '../types';
+import { TestCase, Module } from '../types';
+import { useRouter } from 'next/navigation';
 
 interface TestCaseTableProps {
   testCases: TestCase[];
   groupedByTestSuite?: boolean;
+  groupedByModule?: boolean;
+  modules?: Module[];
   onDelete: (testCase: TestCase) => void;
   onClick: (testCaseId: string) => void;
   canDelete?: boolean;
+  projectId?: string;
+  enableModuleLink?: boolean;
 }
 
-export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete, onClick, canDelete = true }: TestCaseTableProps) {
-  const [expandedSuites, setExpandedSuites] = useState<Set<string>>(new Set());
+export function TestCaseTable({ testCases, groupedByTestSuite = false, groupedByModule = false, modules = [], onDelete, onClick, canDelete = true, projectId, enableModuleLink = false }: TestCaseTableProps) {
+  const router = useRouter();
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  const toggleSuite = (suiteId: string) => {
-    const newExpanded = new Set(expandedSuites);
-    if (newExpanded.has(suiteId)) {
-      newExpanded.delete(suiteId);
+  const toggleGroup = (groupId: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupId)) {
+      newExpanded.delete(groupId);
     } else {
-      newExpanded.add(suiteId);
+      newExpanded.add(groupId);
     }
-    setExpandedSuites(newExpanded);
+    setExpandedGroups(newExpanded);
   };
 
   const getStatusColor = (status: string) => {
@@ -47,22 +53,54 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
     }
   };
 
-  // If grouped by test suite, organize test cases
-  const groupedCases = groupedByTestSuite
-    ? testCases.reduce((acc, testCase) => {
-        const suiteId = testCase.suiteId || 'no-suite';
-        const suiteName = testCase.suite?.name || 'Ungrouped';
+  // Group by module or test suite
+  const groupedCases = groupedByModule
+    ? (() => {
+        // First, create groups from test cases
+        const groups = testCases.reduce((acc, testCase) => {
+          const groupId = testCase.moduleId || 'no-module';
+          const groupName = testCase.module?.name || 'Ungrouped';
+          
+          if (!acc[groupId]) {
+            acc[groupId] = {
+              groupName,
+              testCases: [],
+            };
+          }
+          
+          acc[groupId].testCases.push(testCase);
+          return acc;
+        }, {} as Record<string, { groupName: string; testCases: TestCase[] }>);
         
-        if (!acc[suiteId]) {
-          acc[suiteId] = {
-            suiteName,
+        // Then, add empty modules if modules prop is provided
+        if (modules && modules.length > 0) {
+          modules.forEach(module => {
+            if (!groups[module.id]) {
+              groups[module.id] = {
+                groupName: module.name,
+                testCases: [],
+              };
+            }
+          });
+        }
+        
+        return groups;
+      })()
+    : groupedByTestSuite
+    ? testCases.reduce((acc, testCase) => {
+        const groupId = testCase.suiteId || 'no-suite';
+        const groupName = testCase.suite?.name || 'Ungrouped';
+        
+        if (!acc[groupId]) {
+          acc[groupId] = {
+            groupName,
             testCases: [],
           };
         }
         
-        acc[suiteId].testCases.push(testCase);
+        acc[groupId].testCases.push(testCase);
         return acc;
-      }, {} as Record<string, { suiteName: string; testCases: TestCase[] }>)
+      }, {} as Record<string, { groupName: string; testCases: TestCase[] }>)
     : null;
 
   return (
@@ -80,31 +118,45 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
 
       {/* Test Case Rows */}
       {groupedCases ? (
-        // Grouped by test suite with collapsible dropdowns
-        Object.entries(groupedCases).map(([suiteId, { suiteName, testCases: cases }]) => {
-          const isExpanded = expandedSuites.has(suiteId);
+        // Grouped by module or test suite with collapsible dropdowns
+        Object.entries(groupedCases).map(([groupId, { groupName, testCases: cases }]) => {
+          const isExpanded = expandedGroups.has(groupId);
           return (
-            <div key={suiteId} className="space-y-1">
-              {/* Suite Header - Collapsible */}
-              <button
-                onClick={() => toggleSuite(suiteId)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors text-left cursor-pointer"
-              >
-                <ChevronDown
-                  className={`w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${
-                    isExpanded ? 'rotate-180' : ''
-                  }`}
-                />
-                <span className="text-sm font-semibold text-white/80">
-                  {suiteName}
-                </span>
-                <span className="text-xs text-white/50 ml-auto">
+            <div key={groupId} className="space-y-1">
+              {/* Group Header - Collapsible */}
+              <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors">
+                <button
+                  onClick={() => toggleGroup(groupId)}
+                  className="flex items-center gap-2 flex-1 text-left cursor-pointer"
+                >
+                  <ChevronDown
+                    className={`w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${
+                      isExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
+                  {enableModuleLink && groupedByModule && groupId !== 'no-module' && projectId ? (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/projects/${projectId}/modules/${groupId}`);
+                      }}
+                      className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer hover:underline"
+                    >
+                      {groupName}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-white/80">
+                      {groupName}
+                    </span>
+                  )}
+                </button>
+                <span className="text-xs text-white/50">
                   ({cases.length} test case{cases.length !== 1 ? 's' : ''})
                 </span>
-              </button>
+              </div>
 
               {/* Test Cases - Hidden when collapsed */}
-              {isExpanded && (
+              {isExpanded && cases.length > 0 && (
                 <div className="space-y-0.5 pl-3">
                   {cases.map((testCase) => (
                     <div
@@ -200,6 +252,13 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, onDelete,
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Empty state when expanded but no test cases */}
+              {isExpanded && cases.length === 0 && (
+                <div className="pl-6 py-4 text-sm text-white/50 italic">
+                  No test cases in this module yet
                 </div>
               )}
             </div>
