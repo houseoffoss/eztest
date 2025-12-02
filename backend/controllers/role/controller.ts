@@ -13,7 +13,7 @@ export class RoleController {
       const roles = await roleService.getAllRoles();
       return { data: roles };
     } catch {
-      throw new InternalServerException(AuthorizationMessages.PrivilegesFetchedSuccessfully);
+      throw new InternalServerException(AuthorizationMessages.FailedToFetchRoles);
     }
   }
 

@@ -99,6 +99,7 @@ export class UserMessages {
 export class AuthorizationMessages {
   static PrivilegesFetchedSuccessfully = 'Privileges fetched successfully.';
   static RoleNotFound = 'Role not found.';
+  static FailedToFetchRoles = 'Failed to fetch roles.';
   static MenuListFetchedSuccessfully = 'Menu list fetched successfully.';
   static AccessListFetchedSuccessfully = 'Access list fetched successfully.';
   static NotAuthorized = 'You are not authorized to access this resource.';

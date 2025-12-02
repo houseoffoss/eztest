@@ -109,6 +109,7 @@ model Module {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   testCases   TestCase[]
 
+  @@unique([id, projectId]) // Required for composite FK from TestCase
   @@unique([projectId, name])
   @@index([projectId])
 }
@@ -152,7 +153,7 @@ model TestCase {
   updatedAt     DateTime @updatedAt
 
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  module        Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  module        Module?  @relation(fields: [moduleId, projectId], references: [id, projectId], onDelete: SetNull)
   suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   createdBy     User     @relation(fields: [createdById], references: [id])
   steps         TestStep[]
