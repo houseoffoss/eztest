@@ -9,7 +9,7 @@ import { hasPermission } from '@/lib/rbac';
 export const GET = hasPermission(
   async (request, context) => {
     const { id } = await context!.params;
-    return testSuiteController.getProjectTestSuites(id, request.userInfo.id);
+    return testSuiteController.getProjectTestSuites(id);
   },
   'testsuites',
   'read'
@@ -23,7 +23,7 @@ export const GET = hasPermission(
 export const POST = hasPermission(
   async (request, context) => {
     const { id } = await context!.params;
-    return testSuiteController.createTestSuite(request, id, request.userInfo.id);
+    return testSuiteController.createTestSuite(request, id);
   },
   'testsuites',
   'create'

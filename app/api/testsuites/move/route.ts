@@ -8,7 +8,7 @@ import { hasPermission } from '@/lib/rbac';
  */
 export const POST = hasPermission(
   async (request) => {
-    return testSuiteController.moveTestCasesToSuite(request, request.userInfo.id);
+    return testSuiteController.moveTestCasesToSuite(request);
   },
   'testcases',
   'update'

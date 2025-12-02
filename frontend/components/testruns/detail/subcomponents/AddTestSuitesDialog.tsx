@@ -14,7 +14,7 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { Checkbox } from '@/elements/checkbox';
 import { Badge } from '@/elements/badge';
 import { ChevronDown, ChevronRight, FolderOpen, TestTube2 } from 'lucide-react';
-import { PriorityBadge } from '@/components/design/PriorityBadge';
+import { PriorityBadge, Priority } from '@/components/design/PriorityBadge';
 
 interface TestSuite {
   id: string;
@@ -24,7 +24,7 @@ interface TestSuite {
     id: string;
     title?: string;
     name?: string;
-    priority: string;
+    priority: Priority;
     status: string;
     description?: string;
   }>;
@@ -160,7 +160,7 @@ export function AddTestSuitesDialog({
                                 </p>
                               )}
                               <div className="flex gap-2 mt-2">
-                                <PriorityBadge priority={testCase.priority} size="sm" />
+                                <PriorityBadge priority={testCase.priority} />
                                 <Badge
                                   variant="outline"
                                   className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20"
