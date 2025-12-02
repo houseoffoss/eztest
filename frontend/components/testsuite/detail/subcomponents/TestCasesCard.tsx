@@ -1,12 +1,13 @@
 import { DetailCard } from '@/components/design/DetailCard';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { Plus } from 'lucide-react';
-import { TestCase } from '@/frontend/components/testcase/types';
+import { TestCase, Module } from '@/frontend/components/testcase/types';
 import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
 
 interface TestCasesCardProps {
   testCases: TestCase[];
   testCasesCount: number;
+  modules?: Module[];
   onAddTestCase: () => void;
   onTestCaseClick: (testCaseId: string) => void;
   onRemoveTestCase?: (testCase: TestCase) => void;
@@ -17,6 +18,7 @@ interface TestCasesCardProps {
 export function TestCasesCard({
   testCases,
   testCasesCount,
+  modules = [],
   onAddTestCase,
   onTestCaseClick,
   onRemoveTestCase,
@@ -29,6 +31,7 @@ export function TestCasesCard({
         <TestCaseTable
           testCases={testCases}
           groupedByModule={true}
+          modules={modules}
           onClick={onTestCaseClick}
           onDelete={onRemoveTestCase}
           canDelete={canDelete}

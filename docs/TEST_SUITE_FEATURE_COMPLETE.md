@@ -763,26 +763,104 @@ DELETE http://localhost:3000/api/testsuites/suite_123
 
 ---
 
-## 12. Metrics & Reporting
+## 12. Module Integration in Test Suites
 
-### 12.1 Suite Metrics
+### 12.1 Overview
+
+Test suites support module-based organization where test cases are grouped by their assigned modules. This provides dual-level organization: hierarchical suite structure and functional module grouping within suites.
+
+### 12.2 Module Display in Suite Detail
+
+When viewing a test suite, test cases are automatically grouped by their modules:
+
+```
+Test Suite: Authentication
+├── Module: Authentication Module (4 test cases)
+│   ├── tc1 - User Login with Valid Credentials
+│   ├── tc2 - Password Reset Flow
+│   ├── tc3 - User Logout
+│   └── tc4 - Session Timeout
+├── Module: Security Module (2 test cases)
+│   ├── tc5 - Two-Factor Authentication
+│   └── tc6 - Account Lockout
+└── Ungrouped (1 test case)
+    └── tc7 - General Authentication Test
+```
+
+### 12.3 Module Count Display
+
+- Each module header shows the count of test cases within that module **in the current suite**
+- Example: "Authentication Module (4 test cases)" indicates 4 test cases from this module are in the suite
+- Empty modules (with no test cases in the suite) are not displayed
+- Module counts are dynamically calculated from the test cases present in the suite
+
+### 12.4 Implementation Details
+
+**Frontend Component:** `TestCasesCard`
+- Extracts unique modules from test cases in the suite
+- Calculates test case count per module within the suite context
+- Passes module data with counts to `TestCaseTable` component
+
+**Code Example:**
+```typescript
+// Extract modules with counts from suite test cases
+const modules = (() => {
+  const moduleMap = new Map<string, Module>();
+  testSuite.testCases.forEach(tc => {
+    if (tc.module && tc.moduleId) {
+      if (!moduleMap.has(tc.moduleId)) {
+        const count = testSuite.testCases.filter(t => t.moduleId === tc.moduleId).length;
+        moduleMap.set(tc.moduleId, {
+          ...tc.module,
+          _count: { testCases: count }
+        });
+      }
+    }
+  });
+  return Array.from(moduleMap.values());
+})();
+```
+
+### 12.5 Features
+
+- **Collapsible Module Groups:** Click to expand/collapse test cases under each module
+- **Module Navigation:** Click module name to navigate to module detail page (when enabled)
+- **Visual Hierarchy:** Clear separation between modules with count badges
+- **Hover Cards:** Truncated test case titles show full text on hover
+
+### 12.6 Adding Test Cases with Modules
+
+When adding test cases to a suite:
+1. Use "Add Modules & Test Cases" dialog
+2. Select modules to include
+3. All test cases from selected modules are added to the suite
+4. Existing module assignments are preserved
+
+---
+
+## 13. Metrics & Reporting
+
+### 13.1 Suite Metrics
 
 - Total suites per project
 - Average test cases per suite
 - Suite depth
 - Suite utilization
 - Nested structure statistics
+- Module distribution per suite
+- Test cases per module in suite
 
-### 12.2 Hierarchy Reports
+### 13.2 Hierarchy Reports
 
 - Suite structure export
 - Test coverage by suite
 - Execution status per suite
 - Pass rate by suite
+- Module coverage in suites
 
 ---
 
-## 13. Roadmap & Future Enhancements
+## 14. Roadmap & Future Enhancements
 
 - [ ] Drag-and-drop suite reorganization
 - [ ] Suite templates/blueprints

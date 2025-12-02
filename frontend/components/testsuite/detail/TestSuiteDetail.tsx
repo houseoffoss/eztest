@@ -35,7 +35,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [addModulesDialogOpen, setAddModulesDialogOpen] = useState(false);
   const [deleteTestCaseDialogOpen, setDeleteTestCaseDialogOpen] = useState(false);
   const [testCaseToDelete, setTestCaseToDelete] = useState<TestCase | null>(null);
-  const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
   const [availableModules, setAvailableModules] = useState<(Module & { testCases?: TestCase[] })[]>([]);
   const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<string[]>([]);
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([]);
@@ -156,23 +155,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     }
   };
 
-
-
-  const fetchAvailableTestCases = async () => {
-    try {
-      const response = await fetch(`/api/projects/${testSuite?.project.id}/testcases`);
-      const data = await response.json();
-      if (data.data) {
-        // Filter out test cases that are already in this suite
-        const alreadyInSuite = testSuite?.testCases.map(tc => tc.id) || [];
-        const available = data.data.filter((tc: TestCase) => !alreadyInSuite.includes(tc.id));
-        setAvailableTestCases(available);
-      }
-    } catch (error) {
-      console.error('Error fetching available test cases:', error);
-    }
-  };
-
   const fetchAvailableModules = async () => {
     try {
       // Fetch all modules with their test cases
@@ -284,9 +266,9 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       
       // Add all test cases from selected modules
       for (const moduleId of selectedModuleIds) {
-        const module = availableModules.find(m => m.id === moduleId);
-        if (module?.testCases) {
-          for (const testCase of module.testCases) {
+        const selectedModule = availableModules.find(m => m.id === moduleId);
+        if (selectedModule?.testCases) {
+          for (const testCase of selectedModule.testCases) {
             const response = await fetch(`/api/testcases/${testCase.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
@@ -300,7 +282,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               setAlert({
                 type: 'error',
                 title: 'Failed to Add Test Cases from Module',
-                message: errorData.error || `Failed to add test cases from module "${module.name}"`,
+                message: errorData.error || `Failed to add test cases from module "${selectedModule.name}"`,
               });
               return;
             }
@@ -311,8 +293,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       
       // Add individually selected test cases (that are not part of selected modules)
       const testCasesInSelectedModules = selectedModuleIds.flatMap(moduleId => {
-        const module = availableModules.find(m => m.id === moduleId);
-        return module?.testCases?.map(tc => tc.id) || [];
+        const moduleItem = availableModules.find(m => m.id === moduleId);
+        return moduleItem?.testCases?.map(tc => tc.id) || [];
       });
       
       const individualTestCaseIds = selectedTestCaseIds.filter(
@@ -501,6 +483,25 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
             <TestCasesCard
               testCases={testSuite.testCases}
               testCasesCount={testSuite._count.testCases}
+              modules={(() => {
+                // Extract unique modules from test cases with their counts
+                const moduleMap = new Map<string, Module>();
+                testSuite.testCases.forEach(tc => {
+                  if (tc.module && tc.moduleId) {
+                    if (!moduleMap.has(tc.moduleId)) {
+                      const count = testSuite.testCases.filter(t => t.moduleId === tc.moduleId).length;
+                      moduleMap.set(tc.moduleId, {
+                        id: tc.module.id,
+                        name: tc.module.name,
+                        description: tc.module.description,
+                        projectId: testSuite.projectId,
+                        _count: { testCases: count }
+                      });
+                    }
+                  }
+                });
+                return Array.from(moduleMap.values());
+              })()}
               onAddTestCase={() => {
                 fetchAvailableModules();
                 setAddModulesDialogOpen(true);
@@ -552,7 +553,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         {/* Add Test Cases Dialog (deprecated - kept for backward compatibility) */}
         <AddTestCasesDialog
           open={addTestCasesDialogOpen}
-          testCases={availableTestCases}
+          testCases={[]}
           selectedIds={selectedTestCaseIds}
           onOpenChange={setAddTestCasesDialogOpen}
           onSelectionChange={setSelectedTestCaseIds}
