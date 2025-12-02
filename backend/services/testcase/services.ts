@@ -652,6 +652,161 @@ export class TestCaseService {
       }, {} as Record<string, number>),
     };
   }
+
+  /**
+   * Add test case to a module
+   */
+  async addTestCaseToModule(
+    projectId: string,
+    tcId: string,
+    moduleId: string
+  ) {
+    // Verify test case exists and belongs to project
+    const testCase = await prisma.testCase.findFirst({
+      where: {
+        tcId: tcId,
+        projectId,
+      },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Verify module exists and belongs to project
+    const mod = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        projectId,
+      },
+    });
+
+    if (!mod) {
+      throw new Error('Module not found');
+    }
+
+    // Update test case with module
+    const updatedTestCase = await prisma.testCase.update({
+      where: { id: testCase.id },
+      data: {
+        moduleId,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+          },
+        },
+        suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        steps: {
+          orderBy: {
+            stepNumber: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            steps: true,
+            results: true,
+            requirements: true,
+          },
+        },
+      },
+    });
+
+    return updatedTestCase;
+  }
+
+  /**
+   * Remove test case from its module
+   */
+  async removeTestCaseFromModule(
+    projectId: string,
+    tcId: string
+  ) {
+    // Verify test case exists and belongs to project
+    const testCase = await prisma.testCase.findFirst({
+      where: {
+        tcId: tcId,
+        projectId,
+      },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Update test case to remove module
+    const updatedTestCase = await prisma.testCase.update({
+      where: { id: testCase.id },
+      data: {
+        moduleId: null,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+          },
+        },
+        suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        steps: {
+          orderBy: {
+            stepNumber: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            steps: true,
+            results: true,
+            requirements: true,
+          },
+        },
+      },
+    });
+
+    return updatedTestCase;
+  }
 }
 
 export const testCaseService = new TestCaseService();

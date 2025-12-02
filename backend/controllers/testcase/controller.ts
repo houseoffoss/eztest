@@ -4,7 +4,6 @@ import { NotFoundException, InternalServerException, ValidationException } from 
 import { TestCaseMessages } from '@/backend/constants/static_messages';
 import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema } from '@/backend/validators';
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
 
 export class TestCaseController {
   /**
@@ -269,73 +268,22 @@ export class TestCaseController {
     const { moduleId } = validation.data;
 
     try {
-      // Verify test case exists and belongs to project
-      const testCase = await prisma.testCase.findFirst({
-        where: {
-          tcId: tcId,
-          projectId,
-        },
-      });
-
-      if (!testCase) {
-        throw new NotFoundException('Test case not found');
-      }
-
-      // Verify module exists and belongs to project
-      const mod = await prisma.module.findFirst({
-        where: {
-          id: moduleId,
-          projectId,
-        },
-      });
-
-      if (!mod) {
-        throw new NotFoundException('Module not found');
-      }
-
-      // Update test case with module
-      const updatedTestCase = await prisma.testCase.update({
-        where: { id: testCase.id },
-        data: {
-          moduleId,
-        },
-        include: {
-          project: {
-            select: {
-              id: true,
-              name: true,
-              key: true,
-            },
-          },
-          suite: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          steps: {
-            orderBy: {
-              stepNumber: 'asc',
-            },
-          },
-        },
-      });
+      const updatedTestCase = await testCaseService.addTestCaseToModule(
+        projectId,
+        tcId,
+        moduleId
+      );
 
       return { data: updatedTestCase };
     } catch (error) {
       if (error instanceof ValidationException) {
         throw error;
       }
-      if (error instanceof NotFoundException) {
-        throw error;
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
+      }
+      if (error instanceof Error && error.message === 'Module not found') {
+        throw new NotFoundException('Module not found');
       }
       throw new InternalServerException('Failed to add test case to module');
     }
@@ -347,58 +295,15 @@ export class TestCaseController {
    */
   async removeTestCaseFromModule(req: CustomRequest, projectId: string, tcId: string) {
     try {
-      // Verify test case exists and belongs to project
-      const testCase = await prisma.testCase.findFirst({
-        where: {
-          tcId: tcId,
-          projectId,
-        },
-      });
-
-      if (!testCase) {
-        throw new NotFoundException('Test case not found');
-      }
-
-      // Update test case to remove module
-      const updatedTestCase = await prisma.testCase.update({
-        where: { id: testCase.id },
-        data: {
-          moduleId: null,
-        },
-        include: {
-          project: {
-            select: {
-              id: true,
-              name: true,
-              key: true,
-            },
-          },
-          suite: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          steps: {
-            orderBy: {
-              stepNumber: 'asc',
-            },
-          },
-        },
-      });
+      const updatedTestCase = await testCaseService.removeTestCaseFromModule(
+        projectId,
+        tcId
+      );
 
       return { data: updatedTestCase };
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
       }
       throw new InternalServerException('Failed to remove test case from module');
     }
