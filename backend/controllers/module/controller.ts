@@ -139,6 +139,22 @@ export class ModuleController {
       throw new InternalServerException(ModuleMessages.FailedToUpdateModule);
     }
   }
+
+  /**
+   * Get test cases for a specific module
+   * Access already checked by route wrapper
+   */
+  async getModuleTestCases(req: CustomRequest, projectId: string, moduleId: string) {
+    try {
+      const testCases = await moduleService.getModuleTestCases(moduleId, projectId);
+      return { data: testCases };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        throw new NotFoundException(ModuleMessages.ModuleNotFound);
+      }
+      throw new InternalServerException(ModuleMessages.FailedToFetchModules);
+    }
+  }
 }
 
 export const moduleController = new ModuleController();

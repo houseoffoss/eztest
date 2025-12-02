@@ -43,6 +43,15 @@ export function TestCaseDetailsCard({
         />
       ) : (
         <>
+          {testCase.module && (
+            <div>
+              <h4 className="text-sm font-medium text-white/60 mb-1">
+                Module
+              </h4>
+              <p className="text-white/90">{testCase.module.name}</p>
+            </div>
+          )}
+
           {testCase.description && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">

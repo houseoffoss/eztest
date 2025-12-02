@@ -6,6 +6,12 @@ export interface TestCase {
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   status: 'ACTIVE' | 'DEPRECATED' | 'DRAFT';
   estimatedTime?: number;
+  moduleId?: string;
+  module?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
   createdAt: string;
   updatedAt: string;
   createdBy: {

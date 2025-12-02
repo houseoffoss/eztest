@@ -11,7 +11,7 @@ import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { TestCase, TestSuite, Project, Module } from './types';
-import { TestCaseTable } from './subcomponents/TestCaseTable';
+import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
 import { CreateModuleDialog } from './subcomponents/CreateModuleDialog';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';
@@ -49,6 +49,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPagesCount, setTotalPagesCount] = useState(1);
 
   // Alert state
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
@@ -160,9 +161,52 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   };
 
   const applyPagination = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    setPaginatedTestCases(filteredTestCases.slice(startIndex, endIndex));
+    // Group by module first
+    const grouped = filteredTestCases.reduce((acc, tc) => {
+      const moduleId = tc.moduleId || 'no-module';
+      if (!acc[moduleId]) {
+        acc[moduleId] = [];
+      }
+      acc[moduleId].push(tc);
+      return acc;
+    }, {} as Record<string, TestCase[]>);
+
+    // Convert to array of module groups
+    const moduleGroups = Object.values(grouped);
+    
+    // Build pages by complete module groups
+    const pages: TestCase[][] = [];
+    let currentPageItems: TestCase[] = [];
+    
+    for (const group of moduleGroups) {
+      // If adding this module would exceed page size and we already have items
+      if (currentPageItems.length > 0 && currentPageItems.length + group.length > itemsPerPage) {
+        // Save current page and start a new one
+        pages.push(currentPageItems);
+        currentPageItems = [];
+      }
+      
+      // Add entire module group to current page
+      currentPageItems = currentPageItems.concat(group);
+      
+      // If this single module fills or exceeds the page size, create a page for it
+      if (currentPageItems.length >= itemsPerPage) {
+        pages.push(currentPageItems);
+        currentPageItems = [];
+      }
+    }
+    
+    // Add any remaining test cases as the last page
+    if (currentPageItems.length > 0) {
+      pages.push(currentPageItems);
+    }
+    
+    // Store total pages count
+    setTotalPagesCount(pages.length);
+    
+    // Get the appropriate page (currentPage state is 1-indexed)
+    const pageIndex = currentPage - 1;
+    setPaginatedTestCases(pages[pageIndex] || []);
   };
 
   const handlePageChange = (page: number) => {
@@ -174,7 +218,10 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setCurrentPage(1); // Reset to first page when items per page changes
   };
 
-  const totalPages = Math.ceil(filteredTestCases.length / itemsPerPage);
+  // Get modules that have test cases in the current page
+  const modulesInCurrentPage = modules.filter(module => 
+    paginatedTestCases.some(tc => tc.moduleId === module.id)
+  );
 
   const handleTestCaseCreated = (newTestCase: TestCase) => {
     setAlert({
@@ -330,7 +377,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             <TestCaseTable
               testCases={paginatedTestCases}
               groupedByModule={true}
-              modules={modules}
+              modules={modulesInCurrentPage}
               onDelete={handleDeleteClick}
               onClick={handleCardClick}
               canDelete={canDeleteTestCase}
@@ -343,7 +390,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
               <div className="mt-6">
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={totalPages}
+                  totalPages={totalPagesCount}
                   totalItems={filteredTestCases.length}
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}

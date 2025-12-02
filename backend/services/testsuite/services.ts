@@ -21,15 +21,6 @@ export class TestSuiteService {
           },
         },
         testCases: {
-          include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-              },
-            },
-          },
           select: {
             id: true,
             tcId: true,
@@ -38,7 +29,13 @@ export class TestSuiteService {
             priority: true,
             status: true,
             moduleId: true,
-            module: true,
+            module: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
           },
         },
         _count: {
