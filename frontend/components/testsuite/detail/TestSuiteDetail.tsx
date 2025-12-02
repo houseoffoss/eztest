@@ -11,11 +11,11 @@ import { TestSuiteInfoCard } from './subcomponents/TestSuiteInfoCard';
 import { DeleteTestSuiteDialog } from './subcomponents/DeleteTestSuiteDialog';
 import { ButtonSecondary } from '@/elements/button-secondary';
 import { Plus, TestTube2, Folder } from 'lucide-react';
-import { CreateTestCaseDialog } from '@/frontend/components/testcase/subcomponents/CreateTestCaseDialog';
 import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
+import { AddModulesAndTestCasesDialog } from '@/components/common/dialogs/AddModulesAndTestCasesDialog';
 import { DeleteTestCaseDialog } from '@/frontend/components/testcase/subcomponents/DeleteTestCaseDialog';
 import { TestSuite, TestSuiteFormData } from './types';
-import { TestCase } from '@/frontend/components/testcase/types';
+import { TestCase, Module } from '@/frontend/components/testcase/types';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestSuiteDetailProps {
@@ -31,12 +31,14 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
-  const [createTestCaseDialogOpen, setCreateTestCaseDialogOpen] = useState(false);
   const [addTestCasesDialogOpen, setAddTestCasesDialogOpen] = useState(false);
+  const [addModulesDialogOpen, setAddModulesDialogOpen] = useState(false);
   const [deleteTestCaseDialogOpen, setDeleteTestCaseDialogOpen] = useState(false);
   const [testCaseToDelete, setTestCaseToDelete] = useState<TestCase | null>(null);
   const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
+  const [availableModules, setAvailableModules] = useState<(Module & { testCases?: TestCase[] })[]>([]);
   const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<string[]>([]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([]);
 
   const [formData, setFormData] = useState<TestSuiteFormData>({
     name: '',
@@ -171,6 +173,51 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     }
   };
 
+  const fetchAvailableModules = async () => {
+    try {
+      // Fetch all modules with their test cases
+      const modulesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules`);
+      const modulesData = await modulesResponse.json();
+      
+      if (modulesData.data) {
+        // Fetch test cases for each module
+        const modulesWithTestCases = await Promise.all(
+          modulesData.data.map(async (module: Module) => {
+            try {
+              const testCasesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules/${module.id}/testcases`);
+              const testCasesData = await testCasesResponse.json();
+              
+              // Filter out test cases that are already assigned to ANY test suite (not just this one)
+              const availableTestCases = testCasesData.data?.testCases?.filter(
+                (tc: TestCase) => !tc.suiteId
+              ) || [];
+              
+              return {
+                ...module,
+                testCases: availableTestCases,
+              };
+            } catch (error) {
+              console.error(`Error fetching test cases for module ${module.id}:`, error);
+              return {
+                ...module,
+                testCases: [],
+              };
+            }
+          })
+        );
+        
+        // Only show modules that have available test cases (not assigned to any suite)
+        const modulesWithAvailableTestCases = modulesWithTestCases.filter(
+          module => module.testCases && module.testCases.length > 0
+        );
+        
+        setAvailableModules(modulesWithAvailableTestCases);
+      }
+    } catch (error) {
+      console.error('Error fetching available modules:', error);
+    }
+  };
+
   const handleAddTestCases = async () => {
     if (selectedTestCaseIds.length === 0) {
       setAlert({
@@ -219,6 +266,98 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         message: errorMessage,
       });
       console.error('Error adding test cases:', error);
+    }
+  };
+
+  const handleAddModulesAndTestCases = async () => {
+    if (selectedModuleIds.length === 0 && selectedTestCaseIds.length === 0) {
+      setAlert({
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please select at least one module or test case',
+      });
+      return;
+    }
+
+    try {
+      let addedCount = 0;
+      
+      // Add all test cases from selected modules
+      for (const moduleId of selectedModuleIds) {
+        const module = availableModules.find(m => m.id === moduleId);
+        if (module?.testCases) {
+          for (const testCase of module.testCases) {
+            const response = await fetch(`/api/testcases/${testCase.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                suiteId: suiteId,
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              setAlert({
+                type: 'error',
+                title: 'Failed to Add Test Cases from Module',
+                message: errorData.error || `Failed to add test cases from module "${module.name}"`,
+              });
+              return;
+            }
+            addedCount++;
+          }
+        }
+      }
+      
+      // Add individually selected test cases (that are not part of selected modules)
+      const testCasesInSelectedModules = selectedModuleIds.flatMap(moduleId => {
+        const module = availableModules.find(m => m.id === moduleId);
+        return module?.testCases?.map(tc => tc.id) || [];
+      });
+      
+      const individualTestCaseIds = selectedTestCaseIds.filter(
+        id => !testCasesInSelectedModules.includes(id)
+      );
+      
+      for (const testCaseId of individualTestCaseIds) {
+        const response = await fetch(`/api/testcases/${testCaseId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            suiteId: suiteId,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          setAlert({
+            type: 'error',
+            title: 'Failed to Add Test Case',
+            message: errorData.error || 'Failed to add test case',
+          });
+          return;
+        }
+        addedCount++;
+      }
+
+      setAddModulesDialogOpen(false);
+      setSelectedTestCaseIds([]);
+      setSelectedModuleIds([]);
+      setAlert({
+        type: 'success',
+        title: 'Success',
+        message: `${addedCount} test case(s) added successfully`,
+      });
+      setTimeout(() => setAlert(null), 5000);
+      fetchTestSuite();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
+      console.error('Error adding modules and test cases:', error);
     }
   };
 
@@ -324,19 +463,13 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           {canCreateTestCase && (
             <>
               <ButtonSecondary
-                onClick={() => setCreateTestCaseDialogOpen(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Test Case
-              </ButtonSecondary>
-              <ButtonSecondary
                 onClick={() => {
-                  fetchAvailableTestCases();
-                  setAddTestCasesDialogOpen(true);
+                  fetchAvailableModules();
+                  setAddModulesDialogOpen(true);
                 }}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Test Cases
+                Add Modules & Test Cases
               </ButtonSecondary>
             </>
           )}
@@ -369,7 +502,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               testCases={testSuite.testCases}
               testCasesCount={testSuite._count.testCases}
               onAddTestCase={() => {
-                setCreateTestCaseDialogOpen(true);
+                fetchAvailableModules();
+                setAddModulesDialogOpen(true);
               }}
               onTestCaseClick={(testCaseId) =>
                 router.push(
@@ -415,26 +549,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           onConfirm={handleDeleteTestSuite}
         />
 
-        {/* Create Test Case Dialog */}
-        <CreateTestCaseDialog
-          projectId={testSuite.project.id}
-          testSuites={testSuite ? [{ id: testSuite.id, name: testSuite.name, parentId: testSuite.parentId || null, _count: { testCases: testSuite._count.testCases } }] : []}
-          defaultSuiteId={suiteId}
-          triggerOpen={createTestCaseDialogOpen}
-          onOpenChange={setCreateTestCaseDialogOpen}
-          onTestCaseCreated={() => {
-            setCreateTestCaseDialogOpen(false);
-            setAlert({
-              type: 'success',
-              title: 'Success',
-              message: 'Test case created successfully',
-            });
-            setTimeout(() => setAlert(null), 5000);
-            fetchTestSuite();
-          }}
-        />
-
-        {/* Add Test Cases Dialog */}
+        {/* Add Test Cases Dialog (deprecated - kept for backward compatibility) */}
         <AddTestCasesDialog
           open={addTestCasesDialogOpen}
           testCases={availableTestCases}
@@ -444,6 +559,22 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           onSubmit={handleAddTestCases}
           context="suite"
           showPriority={false}
+        />
+
+        {/* Add Modules & Test Cases Dialog */}
+        <AddModulesAndTestCasesDialog
+          open={addModulesDialogOpen}
+          modules={availableModules}
+          selectedModuleIds={selectedModuleIds}
+          selectedTestCaseIds={selectedTestCaseIds}
+          onOpenChange={setAddModulesDialogOpen}
+          onModuleSelectionChange={setSelectedModuleIds}
+          onTestCaseSelectionChange={setSelectedTestCaseIds}
+          onSubmit={handleAddModulesAndTestCases}
+          title="Add Modules & Test Cases to Suite"
+          description="Select entire modules or individual test cases to add to this test suite"
+          submitButtonText="Add Selected"
+          emptyMessage="No modules or test cases available to add"
         />
 
         {/* Delete Test Case Dialog */}

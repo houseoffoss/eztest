@@ -184,6 +184,12 @@ export class TestCaseService {
             name: true,
           },
         },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         createdBy: {
           select: {
             id: true,

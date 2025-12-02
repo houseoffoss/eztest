@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,10 +11,10 @@ import {
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
-import { CheckboxListItem } from '@/elements/checkbox-list-item';
+import { Checkbox } from '@/elements/checkbox';
 import { Badge } from '@/elements/badge';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronDown, ChevronRight, FolderOpen, TestTube2 } from 'lucide-react';
+import { PriorityBadge } from '@/components/design/PriorityBadge';
 
 interface TestSuite {
   id: string;
@@ -40,6 +43,10 @@ interface AddTestSuitesDialogProps {
   onCancel: () => void;
 }
 
+/**
+ * Reusable dialog for selecting test suites to add to a test run
+ * Shows expandable test suites with their test cases
+ */
 export function AddTestSuitesDialog({
   open,
   availableTestSuites,
@@ -54,28 +61,15 @@ export function AddTestSuitesDialog({
   );
 
   const toggleSuiteExpanded = (suiteId: string) => {
-    const newExpanded = new Set(expandedSuites);
-    if (newExpanded.has(suiteId)) {
-      newExpanded.delete(suiteId);
-    } else {
-      newExpanded.add(suiteId);
-    }
-    setExpandedSuites(newExpanded);
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority?.toUpperCase()) {
-      case 'CRITICAL':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'HIGH':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'MEDIUM':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'LOW':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      default:
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-    }
+    setExpandedSuites((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(suiteId)) {
+        newExpanded.delete(suiteId);
+      } else {
+        newExpanded.add(suiteId);
+      }
+      return newExpanded;
+    });
   };
 
   return (
@@ -98,11 +92,12 @@ export function AddTestSuitesDialog({
               <div key={testSuite.id} className="border border-white/10 rounded-lg overflow-hidden">
                 {/* Suite Header */}
                 <div className="bg-white/5 p-4 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {/* Dropdown Button */}
                     <button
                       onClick={() => toggleSuiteExpanded(testSuite.id)}
                       className="text-white/60 hover:text-white p-1 transition-colors cursor-pointer shrink-0"
+                      aria-label="Toggle suite"
                     >
                       {expandedSuites.has(testSuite.id) ? (
                         <ChevronDown className="w-5 h-5" />
@@ -111,23 +106,36 @@ export function AddTestSuitesDialog({
                       )}
                     </button>
 
-                    {/* CheckboxListItem */}
-                    <CheckboxListItem
-                      id={testSuite.id}
-                      checked={selectedSuiteIds.includes(testSuite.id)}
-                      onCheckedChange={(checked) =>
-                        onToggleTestSuite(testSuite.id, checked)
-                      }
-                      label={testSuite.name}
-                      description={testSuite.description}
-                      rightContent={
-                        <Badge variant="outline" className="text-xs">
-                          {testSuite._count?.testCases || testSuite.testCases?.length || 0} test cases
-                        </Badge>
-                      }
-                      variant="compact"
-                      onClick={() => toggleSuiteExpanded(testSuite.id)}
-                    />
+                    {/* Suite Checkbox and Info */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Checkbox
+                        id={`suite-${testSuite.id}`}
+                        checked={selectedSuiteIds.includes(testSuite.id)}
+                        onCheckedChange={(checked) =>
+                          onToggleTestSuite(testSuite.id, checked as boolean)
+                        }
+                        className="cursor-pointer"
+                      />
+                      
+                      <label
+                        htmlFor={`suite-${testSuite.id}`}
+                        className="flex-1 min-w-0 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4 text-blue-400 shrink-0" />
+                          <span className="font-medium text-white/90">{testSuite.name}</span>
+                        </div>
+                        {testSuite.description && (
+                          <p className="text-sm text-white/60 mt-1 line-clamp-1">
+                            {testSuite.description}
+                          </p>
+                        )}
+                      </label>
+
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {testSuite._count?.testCases || testSuite.testCases?.length || 0} test cases
+                      </Badge>
+                    </div>
                   </div>
                 </div>
 
@@ -141,9 +149,7 @@ export function AddTestSuitesDialog({
                           className="p-3 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="text-xs text-white/50 mt-1 min-w-fit">
-                              TC
-                            </div>
+                            <TestTube2 className="w-4 h-4 text-white/50 mt-1 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-white/90 line-clamp-1">
                                 {testCase.title || testCase.name}
@@ -154,14 +160,7 @@ export function AddTestSuitesDialog({
                                 </p>
                               )}
                               <div className="flex gap-2 mt-2">
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${getPriorityColor(
-                                    testCase.priority
-                                  )}`}
-                                >
-                                  {testCase.priority?.toUpperCase()}
-                                </Badge>
+                                <PriorityBadge priority={testCase.priority} size="sm" />
                                 <Badge
                                   variant="outline"
                                   className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20"

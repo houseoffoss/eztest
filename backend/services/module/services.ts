@@ -246,6 +246,76 @@ export class ModuleService {
       },
     });
   }
+
+  /**
+   * Get test cases for a specific module
+   */
+  async getModuleTestCases(moduleId: string, projectId: string) {
+    // Verify module exists and belongs to project
+    const mod = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        projectId,
+      },
+    });
+
+    if (!mod) {
+      throw new Error('Module not found');
+    }
+
+    // Get test cases
+    const testCases = await prisma.testCase.findMany({
+      where: { moduleId },
+      select: {
+        id: true,
+        tcId: true,
+        title: true,
+        description: true,
+        priority: true,
+        status: true,
+        estimatedTime: true,
+        suiteId: true,
+        _count: {
+          select: {
+            steps: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+        suite: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        tcId: 'asc',
+      },
+    });
+
+    return {
+      testCases,
+      module: {
+        id: mod.id,
+        name: mod.name,
+        description: mod.description,
+      },
+      total: testCases.length,
+    };
+  }
 }
 
 export const moduleService = new ModuleService();
