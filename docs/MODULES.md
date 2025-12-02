@@ -956,6 +956,107 @@ All module endpoints require specific RBAC permissions:
 
 ---
 
+## UI Components and Features
+
+### Module List Page
+
+**Location**: `/projects/[id]/modules`
+
+**Features**:
+- View all modules in a project
+- Create new modules via dialog
+- Edit module name and description
+- Delete modules (only if empty)
+- Reorder modules via drag-and-drop
+- View test case count per module
+- Navigate to module detail page
+
+**Components**:
+- `ModuleList.tsx` - Main module list page
+- `CreateModuleDialog.tsx` - Dialog for creating new modules
+- `ModuleTable.tsx` - Table displaying modules with actions
+
+### Module Detail Page
+
+**Location**: `/projects/[id]/modules/[moduleId]`
+
+**Features**:
+- View module details (name, description, test case count)
+- Create new test cases directly in the module
+- View all test cases assigned to the module
+- Edit test cases inline
+- Delete test cases
+- Empty state when no test cases exist
+- Navigate to test case detail page
+
+**Components**:
+- `ModuleDetail.tsx` - Main module detail page
+- `ModuleTestCasesCard.tsx` - Card displaying test cases with DataTable
+- `DataTable.tsx` - Reusable table component for test cases
+
+### Test Case List Integration
+
+**Location**: `/projects/[id]/testcases`
+
+**Features**:
+- Filter test cases by module (dropdown)
+- Group test cases by module (collapsible sections)
+- Show empty modules in grouped view
+- Create module from test case list
+- Module count display for each group
+- Empty state message for modules without test cases
+
+**Components**:
+- `TestCaseList.tsx` - Main test case list with module filter
+- `TestCaseTable.tsx` - Table with module grouping support
+- `CreateModuleDialog.tsx` - Quick module creation
+
+### Test Case Detail Page Integration
+
+**Location**: `/projects/[id]/testcases/[testcaseId]`
+
+**Features**:
+- Display assigned module
+- Edit module assignment via dropdown
+- Navigate to module detail page (if assigned)
+- Update module in test case edit form
+
+**Components**:
+- `TestCaseDetail.tsx` - Main test case detail page
+- `TestCaseDetailsCard.tsx` - Card displaying test case details with module
+- `testCaseFormConfig.ts` - Form configuration with module field
+
+### Dialog Width Standards
+
+- **List/Selection Dialogs**: `max-w-3xl` - Used for Create Module, Add Test Case
+- **Confirmation Dialogs**: `sm:max-w-[425px]` - Used for delete confirmations
+
+### UI Behaviors
+
+**Empty Modules Display**:
+- Empty modules appear in grouped view with "0 test cases" count
+- Clicking empty module expands to show "No test cases in this module yet" message
+- Empty modules are collapsible like modules with test cases
+
+**Module Navigation**:
+- Module names in test case list are clickable links (blue, underline on hover)
+- Clicking module name navigates to module detail page
+- Module links only enabled when `enableModuleLink` prop is true
+
+**Test Case Assignment**:
+- Test cases can be assigned to modules during creation
+- Test cases can be reassigned via edit form
+- Module dropdown shows all project modules
+- Unassigned test cases show in "Ungrouped" section
+
+**Module Management**:
+- Modules can only be deleted if empty (no test cases)
+- Module name must be unique per project
+- Module description is optional
+- Module order determines display sequence
+
+---
+
 ## Related Documentation
 
 - [Test Cases Documentation](./TEST_CASES_FEATURE.md)

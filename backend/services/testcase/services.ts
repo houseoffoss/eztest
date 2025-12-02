@@ -118,6 +118,12 @@ export class TestCaseService {
             name: true,
           },
         },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         createdBy: {
           select: {
             id: true,
@@ -393,6 +399,20 @@ export class TestCaseService {
       // If suiteId is null, it's valid - just removing from suite
     }
 
+    // Verify module if being changed
+    if (data.moduleId !== undefined) {
+      if (data.moduleId) {
+        const module = await prisma.module.findUnique({
+          where: { id: data.moduleId },
+        });
+
+        if (!module || module.projectId !== existing.projectId) {
+          throw new Error('Module not found or does not belong to this project');
+        }
+      }
+      // If moduleId is null, it's valid - just removing from module
+    }
+
     const updateData: Record<string, unknown> = {};
     
     if (data.title !== undefined) updateData.title = data.title;
@@ -404,6 +424,7 @@ export class TestCaseService {
     if (data.preconditions !== undefined) updateData.preconditions = data.preconditions;
     if (data.postconditions !== undefined) updateData.postconditions = data.postconditions;
     if (data.suiteId !== undefined) updateData.suiteId = data.suiteId;
+    if (data.moduleId !== undefined) updateData.moduleId = data.moduleId;
 
     return await prisma.testCase.update({
       where: { id: testCaseId },

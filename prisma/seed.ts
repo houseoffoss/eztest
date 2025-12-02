@@ -114,6 +114,37 @@ async function main() {
     });
     console.log('   ✅ Test Suite: API Testing');
 
+    // Create demo modules
+    const authModule = await prisma.module.create({
+      data: {
+        name: 'Authentication Module',
+        description: 'All authentication-related test cases',
+        projectId: demoProject.id,
+        order: 1,
+      },
+    });
+    console.log('   ✅ Module: Authentication Module');
+
+    const uiModule = await prisma.module.create({
+      data: {
+        name: 'User Interface Module',
+        description: 'UI/UX testing module',
+        projectId: demoProject.id,
+        order: 2,
+      },
+    });
+    console.log('   ✅ Module: User Interface Module');
+
+    const apiModule = await prisma.module.create({
+      data: {
+        name: 'API Module',
+        description: 'Backend API testing module',
+        projectId: demoProject.id,
+        order: 3,
+      },
+    });
+    console.log('   ✅ Module: API Module');
+
     // Create demo test cases for Authentication suite
     let testCaseCounter = 1;
     const loginTestCase = await prisma.testCase.create({
@@ -124,6 +155,7 @@ async function main() {
         expectedResult: 'User is successfully authenticated and dashboard is displayed',
         projectId: demoProject.id,
         suiteId: authSuite.id,
+        moduleId: authModule.id,
         priority: 'CRITICAL',
         status: 'ACTIVE',
         estimatedTime: 5,
@@ -141,6 +173,7 @@ async function main() {
         expectedResult: 'User session is terminated and redirected to login page',
         projectId: demoProject.id,
         suiteId: authSuite.id,
+        moduleId: authModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
         estimatedTime: 3,
@@ -158,6 +191,7 @@ async function main() {
         expectedResult: 'Reset email is sent and user can set new password successfully',
         projectId: demoProject.id,
         suiteId: authSuite.id,
+        moduleId: authModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
         estimatedTime: 10,
@@ -177,6 +211,7 @@ async function main() {
         expectedResult: 'All dashboard widgets are visible and properly formatted',
         projectId: demoProject.id,
         suiteId: uiSuite.id,
+        moduleId: uiModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
         estimatedTime: 7,
@@ -194,6 +229,7 @@ async function main() {
         expectedResult: 'All menu items navigate to their respective pages without errors',
         projectId: demoProject.id,
         suiteId: uiSuite.id,
+        moduleId: uiModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
         estimatedTime: 5,
@@ -213,6 +249,7 @@ async function main() {
         expectedResult: 'HTTP 200 response with valid JWT token in response body',
         projectId: demoProject.id,
         suiteId: apiSuite.id,
+        moduleId: apiModule.id,
         priority: 'CRITICAL',
         status: 'ACTIVE',
         estimatedTime: 8,
@@ -230,6 +267,7 @@ async function main() {
         expectedResult: 'HTTP 200 response with projects array containing user projects',
         projectId: demoProject.id,
         suiteId: apiSuite.id,
+        moduleId: apiModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
         estimatedTime: 6,

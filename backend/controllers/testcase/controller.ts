@@ -145,6 +145,7 @@ export class TestCaseController {
           preconditions: validatedData.preconditions,
           postconditions: validatedData.postconditions,
           suiteId: validatedData.suiteId,
+          moduleId: validatedData.moduleId,
         }
       );
 
@@ -271,7 +272,7 @@ export class TestCaseController {
       // Verify test case exists and belongs to project
       const testCase = await prisma.testCase.findFirst({
         where: {
-          id: tcId,
+          tcId: tcId,
           projectId,
         },
       });
@@ -294,7 +295,7 @@ export class TestCaseController {
 
       // Update test case with module
       const updatedTestCase = await prisma.testCase.update({
-        where: { id: tcId },
+        where: { id: testCase.id },
         data: {
           moduleId,
         },
@@ -349,7 +350,7 @@ export class TestCaseController {
       // Verify test case exists and belongs to project
       const testCase = await prisma.testCase.findFirst({
         where: {
-          id: tcId,
+          tcId: tcId,
           projectId,
         },
       });
@@ -360,7 +361,7 @@ export class TestCaseController {
 
       // Update test case to remove module
       const updatedTestCase = await prisma.testCase.update({
-        where: { id: tcId },
+        where: { id: testCase.id },
         data: {
           moduleId: null,
         },

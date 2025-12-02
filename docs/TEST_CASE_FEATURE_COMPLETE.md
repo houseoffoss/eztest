@@ -27,6 +27,9 @@ model TestCase {
   suiteId         String?  // Optional parent test suite
   suite           TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   
+  moduleId        String?  // Optional module assignment
+  module          Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  
   preconditions   String?  // Setup required before test execution
   postconditions  String?  // Cleanup after test execution
   estimatedTime   Int?     // Estimated time in minutes
@@ -126,6 +129,7 @@ enum TestStatus {
 
 **Query Parameters:**
 - `suiteId` (optional): Filter by test suite
+- `moduleId` (optional): Filter by module
 - `priority` (optional): Filter by priority (CRITICAL, HIGH, MEDIUM, LOW)
 - `status` (optional): Filter by status (ACTIVE, DRAFT, DEPRECATED)
 - `search` (optional): Search by title/description
@@ -147,6 +151,11 @@ enum TestStatus {
       "suite": {
         "id": "suite_123",
         "name": "Authentication"
+      },
+      "moduleId": "module_456",
+      "module": {
+        "id": "module_456",
+        "name": "User Authentication"
       },
       "preconditions": "User account exists in system",
       "postconditions": "User session is created",
@@ -186,6 +195,7 @@ enum TestStatus {
   "status": "ACTIVE",
   "estimatedTime": 5,
   "suiteId": "suite_123",
+  "moduleId": "module_456",
   "preconditions": "User account exists in system",
   "postconditions": "User session is created",
   "steps": [
@@ -285,6 +295,12 @@ enum TestStatus {
     "suite": {
       "id": "suite_123",
       "name": "Authentication"
+    },
+    "moduleId": "module_456",
+    "module": {
+      "id": "module_456",
+      "name": "User Authentication",
+      "description": "Module for user authentication test cases"
     },
     "preconditions": "User account exists in system",
     "postconditions": "User session is created",
@@ -446,7 +462,7 @@ enum TestStatus {
 
 **Features:**
 - Display all test cases in table format
-- Columns: ID, Title, Priority, Status, Suite, Created By, Actions
+- Columns: ID, Title, Priority, Status, Module, Created By, Runs, Actions
 - Search by title/description
 - Filter by priority (dropdown)
 - Filter by status (dropdown)
@@ -618,6 +634,12 @@ export interface TestCase {
   suite?: {
     id: string;
     name: string;
+  };
+  moduleId?: string;
+  module?: {
+    id: string;
+    name: string;
+    description?: string;
   };
   preconditions?: string;
   postconditions?: string;
@@ -819,8 +841,9 @@ Each project maintains sequential test case IDs:
 
 ### 7.4 Organization
 
-- Group related tests in suites
-- Keep test count manageable (50-200 per suite)
+- Group related tests in modules
+- Keep test count manageable (20-50 per module)
+- Use modules for functional areas (e.g., Authentication, User Management)
 - Archive deprecated tests rather than deleting
 - Maintain test-to-requirement traceability
 

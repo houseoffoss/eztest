@@ -8,7 +8,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';
 import { TestTube2, Folder } from 'lucide-react';
-import { TestCase, TestCaseFormData, TestStep, TestSuite } from './types';
+import { TestCase, TestCaseFormData, TestStep } from './types';
+import { Module } from '../types';
 import { TestCaseHeader } from './subcomponents/TestCaseHeader';
 import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
 import { TestStepsCard } from './subcomponents/TestStepsCard';
@@ -27,7 +28,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
 
   const [formData, setFormData] = useState<TestCaseFormData>({
     title: '',
@@ -39,6 +40,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     preconditions: '',
     postconditions: '',
     suiteId: null,
+    moduleId: null,
   });
 
   const [steps, setSteps] = useState<TestStep[]>([]);
@@ -79,19 +81,20 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           preconditions: data.data.preconditions || '',
           postconditions: data.data.postconditions || '',
           suiteId: data.data.suiteId || null,
+          moduleId: data.data.moduleId || null,
         });
         setSteps(data.data.steps || []);
         
-        // Fetch test suites for the project
+        // Fetch modules for the project
         if (data.data.project?.id) {
           try {
-            const suitesResponse = await fetch(`/api/projects/${data.data.project.id}/testsuites`);
-            const suitesData = await suitesResponse.json();
-            if (suitesData.data) {
-              setTestSuites(suitesData.data);
+            const modulesResponse = await fetch(`/api/projects/${data.data.project.id}/modules`);
+            const modulesData = await modulesResponse.json();
+            if (modulesData.data) {
+              setModules(modulesData.data);
             }
           } catch (error) {
-            console.error('Error fetching test suites:', error);
+            console.error('Error fetching modules:', error);
           }
         }
       }
@@ -299,7 +302,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               testCase={testCase}
               isEditing={isEditing}
               formData={formData}
-              testSuites={testSuites}
+              modules={modules}
               onFormChange={setFormData}
             />
 

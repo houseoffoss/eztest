@@ -2,7 +2,7 @@
 
 import { DetailCard } from '@/components/design/DetailCard';
 import { Clock } from 'lucide-react';
-import { TestCase, TestCaseFormData } from '../types';
+import { TestCase, TestCaseFormData, Module } from '../../types';
 import { TestCaseFormBuilder } from '../../subcomponents/TestCaseFormBuilder';
 import { getEditTestCaseFormFields } from '../../constants/testCaseFormConfig';
 
@@ -11,7 +11,7 @@ interface TestCaseDetailsCardProps {
   isEditing: boolean;
   formData: TestCaseFormData;
   errors?: Record<string, string>;
-  testSuites?: any[];
+  modules?: Module[];
   onFormChange: (data: TestCaseFormData) => void;
   onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
 }
@@ -21,7 +21,7 @@ export function TestCaseDetailsCard({
   isEditing,
   formData,
   errors = {},
-  testSuites = [],
+  modules = [],
   onFormChange,
   onFieldChange,
 }: TestCaseDetailsCardProps) {
@@ -29,7 +29,7 @@ export function TestCaseDetailsCard({
     onFormChange({ ...formData, [field]: value });
   });
 
-  const fields = getEditTestCaseFormFields(testSuites);
+  const fields = getEditTestCaseFormFields(modules);
 
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
