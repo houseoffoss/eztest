@@ -144,6 +144,13 @@ export class TestSuiteMessages {
   static FailedToAddModuleToSuite = 'Failed to add module to suite.';
   static FailedToUpdateModuleInSuite = 'Failed to update module in suite.';
   static FailedToRemoveModuleFromSuite = 'Failed to remove module from suite.';
+  static TestCasesAddedToSuiteSuccessfully = 'Test cases added to suite successfully.';
+  static TestCasesRemovedFromSuiteSuccessfully = 'Test cases removed from suite successfully.';
+  static TestCasesCheckedSuccessfully = 'Test cases checked successfully.';
+  static TestCaseIDsRequired = 'Test case IDs are required.';
+  static FailedToAddTestCasesToSuite = 'Failed to add test cases to suite.';
+  static FailedToRemoveTestCasesFromSuite = 'Failed to remove test cases from suite.';
+  static FailedToCheckTestCasesInSuite = 'Failed to check test cases in suite.';
   static AccessDeniedTestSuite = 'Access denied. Only project owners and admins can manage test suites.';
 }
 

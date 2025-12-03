@@ -82,41 +82,60 @@ export class TestSuiteService {
             { name: 'asc' },
           ],
         },
-        testCases: {
+        testCaseSuites: {
           include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-              },
-            },
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-            _count: {
-              select: {
-                steps: true,
-                results: true,
+            testCase: {
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
+                createdBy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+                _count: {
+                  select: {
+                    steps: true,
+                    results: true,
+                  },
+                },
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { addedAt: 'desc' },
         },
         _count: {
           select: { 
-            testCases: true,
+            testCaseSuites: true,
             children: true,
           },
         },
       },
     });
 
-    return suite;
+    if (!suite) return null;
+
+    // Transform the data to maintain backward compatibility
+    const transformedSuite = {
+      ...suite,
+      testCases: suite.testCaseSuites.map(tcs => ({
+        ...tcs.testCase,
+        suiteId: suite.id, // Add suiteId for backward compatibility
+      })),
+      _count: {
+        ...suite._count,
+        testCases: suite._count.testCaseSuites,
+      },
+    };
+
+    return transformedSuite;
   }
 
   /**
@@ -213,7 +232,81 @@ export class TestSuiteService {
   }
 
   /**
-   * Move test cases to a suite
+   * Add test cases to a suite (many-to-many relationship)
+   */
+  async addTestCasesToSuite(testCaseIds: string[], suiteId: string) {
+    // Create TestCaseSuite records for each test case
+    // Use createMany with skipDuplicates to avoid errors if already added
+    const result = await prisma.testCaseSuite.createMany({
+      data: testCaseIds.map(testCaseId => ({
+        testCaseId,
+        testSuiteId: suiteId,
+      })),
+      skipDuplicates: true,
+    });
+
+    return { success: true, count: result.count };
+  }
+
+  /**
+   * Remove test cases from a suite
+   */
+  async removeTestCasesFromSuite(testCaseIds: string[], suiteId: string) {
+    const result = await prisma.testCaseSuite.deleteMany({
+      where: {
+        testCaseId: {
+          in: testCaseIds,
+        },
+        testSuiteId: suiteId,
+      },
+    });
+
+    return { success: true, count: result.count };
+  }
+
+  /**
+   * Check which test cases from a list are in this suite
+   */
+  async checkTestCasesInSuite(testCaseIds: string[], suiteId: string) {
+    // Find which test cases are in this suite (check both new join table and legacy suiteId)
+    const testCaseSuites = await prisma.testCaseSuite.findMany({
+      where: {
+        testSuiteId: suiteId,
+        testCaseId: {
+          in: testCaseIds,
+        },
+      },
+      select: {
+        testCaseId: true,
+      },
+    });
+
+    // Also check legacy suiteId field for backward compatibility
+    const testCasesWithLegacySuiteId = await prisma.testCase.findMany({
+      where: {
+        id: {
+          in: testCaseIds,
+        },
+        suiteId: suiteId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // Combine both sources
+    const testCaseIdsFromJoinTable = new Set(testCaseSuites.map(tcs => tcs.testCaseId));
+    const testCaseIdsFromLegacy = new Set(testCasesWithLegacySuiteId.map(tc => tc.id));
+    const allTestCaseIdsInSuite = [...testCaseIdsFromJoinTable, ...testCaseIdsFromLegacy];
+    
+    // Remove duplicates
+    const uniqueTestCaseIds = [...new Set(allTestCaseIdsInSuite)];
+
+    return { testCaseIds: uniqueTestCaseIds };
+  }
+
+  /**
+   * Move test cases to a suite (legacy - kept for backward compatibility)
    */
   async moveTestCasesToSuite(testCaseIds: string[], suiteId: string | null) {
     await prisma.testCase.updateMany({
@@ -458,3 +551,5 @@ export class TestSuiteService {
     return updatedSuite;
   }
 }
+
+export const testSuiteService = new TestSuiteService();

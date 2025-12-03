@@ -171,26 +171,41 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               const testCasesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules/${module.id}/testcases`);
               const testCasesData = await testCasesResponse.json();
               
-              // Filter out test cases that are already assigned to ANY test suite (not just this one)
+              // Get all test cases from the module (including those in other suites)
+              // Check which test cases are already in this suite via the join table
+              const testCasesInSuiteResponse = await fetch(`/api/testsuites/${suiteId}/testcases/check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  testCaseIds: testCasesData.data?.testCases?.map((tc: TestCase) => tc.id) || [],
+                }),
+              });
+              
+              const testCasesInSuiteData = await testCasesInSuiteResponse.json();
+              const testCaseIdsInSuite = new Set(testCasesInSuiteData.data?.testCaseIds || []);
+              
+              // Filter out test cases that are already in THIS suite
               const availableTestCases = testCasesData.data?.testCases?.filter(
-                (tc: TestCase) => !tc.suiteId
+                (tc: TestCase) => !testCaseIdsInSuite.has(tc.id)
               ) || [];
               
               return {
                 ...module,
                 testCases: availableTestCases,
+                allTestCases: testCasesData.data?.testCases || [], // Keep all test cases for count
               };
             } catch (error) {
               console.error(`Error fetching test cases for module ${module.id}:`, error);
               return {
                 ...module,
                 testCases: [],
+                allTestCases: [],
               };
             }
           })
         );
         
-        // Only show modules that have available test cases (not assigned to any suite)
+        // Show all modules that have test cases (even if they're all in other suites)
         modulesWithAvailableTestCases = modulesWithTestCases.filter(
           module => module.testCases && module.testCases.length > 0
         );
@@ -202,10 +217,31 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         const ungroupedData = await ungroupedResponse.json();
         
         if (ungroupedData.data) {
-          // Filter for test cases that have no module and no suite
-          const ungroupedTestCases = ungroupedData.data.filter(
-            (tc: TestCase) => !tc.moduleId && !tc.suiteId
+          // Filter for test cases that have no module
+          const ungroupedWithoutModule = ungroupedData.data.filter(
+            (tc: TestCase) => !tc.moduleId
           );
+          
+          let ungroupedTestCases: TestCase[] = [];
+          
+          // Check which ungrouped test cases are already in this suite
+          if (ungroupedWithoutModule.length > 0) {
+            const testCasesInSuiteResponse = await fetch(`/api/testsuites/${suiteId}/testcases/check`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                testCaseIds: ungroupedWithoutModule.map((tc: TestCase) => tc.id),
+              }),
+            });
+            
+            const testCasesInSuiteData = await testCasesInSuiteResponse.json();
+            const testCaseIdsInSuite = new Set(testCasesInSuiteData.data?.testCaseIds || []);
+            
+            // Filter out test cases already in this suite
+            ungroupedTestCases = ungroupedWithoutModule.filter(
+              (tc: TestCase) => !testCaseIdsInSuite.has(tc.id)
+            );
+          }
           
           // If there are ungrouped test cases, add them as a virtual "Ungrouped" module
           if (ungroupedTestCases.length > 0) {
@@ -299,62 +335,49 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       
       // Add all test cases from selected modules (excluding the virtual "ungrouped" module)
       const realModuleIds = selectedModuleIds.filter(id => id !== 'ungrouped');
+      const testCaseIdsToAdd: string[] = [];
+
       for (const moduleId of realModuleIds) {
         const selectedModule = availableModules.find(m => m.id === moduleId);
         if (selectedModule?.testCases) {
-          for (const testCase of selectedModule.testCases) {
-            const response = await fetch(`/api/testcases/${testCase.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                suiteId: suiteId,
-              }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({}));
-              setAlert({
-                type: 'error',
-                title: 'Failed to Add Test Cases from Module',
-                message: errorData.error || `Failed to add test cases from module "${selectedModule.name}"`,
-              });
-              return;
-            }
-            addedCount++;
-          }
+          testCaseIdsToAdd.push(...selectedModule.testCases.map(tc => tc.id));
         }
       }
       
-      // Add individually selected test cases (that are not part of selected modules)
-      const testCasesInSelectedModules = selectedModuleIds.flatMap(moduleId => {
+      // Add individually selected test cases (that are not part of real selected modules)
+      // Note: Test cases from the virtual "ungrouped" module should be treated as individual selections
+      const testCasesInSelectedRealModules = realModuleIds.flatMap(moduleId => {
         const moduleItem = availableModules.find(m => m.id === moduleId);
         return moduleItem?.testCases?.map(tc => tc.id) || [];
       });
       
       const individualTestCaseIds = selectedTestCaseIds.filter(
-        id => !testCasesInSelectedModules.includes(id)
+        id => !testCasesInSelectedRealModules.includes(id)
       );
       
-      for (const testCaseId of individualTestCaseIds) {
-        const response = await fetch(`/api/testcases/${testCaseId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            suiteId: suiteId,
-          }),
-        });
+      testCaseIdsToAdd.push(...individualTestCaseIds);
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          setAlert({
-            type: 'error',
-            title: 'Failed to Add Test Case',
-            message: errorData.error || 'Failed to add test case',
-          });
-          return;
-        }
-        addedCount++;
+      // Add all test cases to the suite using the new many-to-many endpoint
+      const response = await fetch(`/api/testsuites/${suiteId}/testcases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          testCaseIds: testCaseIdsToAdd,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setAlert({
+          type: 'error',
+          title: 'Failed to Add Test Cases',
+          message: errorData.error || 'Failed to add test cases to suite',
+        });
+        return;
       }
+
+      const data = await response.json();
+      addedCount = data.data?.count || testCaseIdsToAdd.length;
 
       setAddModulesDialogOpen(false);
       setSelectedTestCaseIds([]);
@@ -386,12 +409,11 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     if (!testCaseToDelete) return;
 
     try {
-      const response = await fetch(`/api/testsuites/move`, {
-        method: 'POST',
+      const response = await fetch(`/api/testsuites/${suiteId}/testcases`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           testCaseIds: [testCaseToDelete.id],
-          suiteId: null,
         }),
       });
 
@@ -400,6 +422,12 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       if (response.ok) {
         setDeleteTestCaseDialogOpen(false);
         setTestCaseToDelete(null);
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Test case removed from suite successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
         await fetchTestSuite();
       } else {
         console.error('Remove test case error:', data);
@@ -427,7 +455,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   // Check permissions
   const canUpdateSuite = hasPermissionCheck('testsuites:update');
   const canDeleteSuite = hasPermissionCheck('testsuites:delete');
-  const canCreateTestCase = hasPermissionCheck('testcases:create');
+  const canManageTestCases = canUpdateSuite; // Can add/remove test cases if can update suite
 
   if (!testSuite) {
     return (
@@ -476,7 +504,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
         {/* Quick Actions Buttons */}
         <div className="flex flex-wrap gap-3 mb-6">
-          {canCreateTestCase && (
+          {canManageTestCases && (
             <>
               <ButtonSecondary
                 onClick={() => {
@@ -546,8 +574,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 )
               }
               onRemoveTestCase={handleRemoveTestCase}
-              canAdd={canCreateTestCase}
-              canDelete={canCreateTestCase}
+              canAdd={canManageTestCases}
+              canDelete={canManageTestCases}
             />
 
             <ChildSuitesCard

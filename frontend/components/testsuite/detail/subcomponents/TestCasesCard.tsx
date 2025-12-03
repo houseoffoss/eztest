@@ -26,7 +26,10 @@ export function TestCasesCard({
   canDelete = false,
 }: TestCasesCardProps) {
   return (
-    <DetailCard title={`Test Cases (${testCasesCount})`} contentClassName="">
+    <DetailCard 
+      title={`Test Cases (${testCasesCount})`} 
+      contentClassName=""
+    >
       {testCases && testCases.length > 0 ? (
         <TestCaseTable
           testCases={testCases}

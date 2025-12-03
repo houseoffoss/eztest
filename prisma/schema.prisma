@@ -127,7 +127,8 @@ model TestSuite {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   parent      TestSuite? @relation("NestedSuites", fields: [parentId], references: [id], onDelete: Cascade)
   children    TestSuite[] @relation("NestedSuites")
-  testCases   TestCase[]
+  testCases   TestCase[] // Legacy: Keep for backward compatibility, will be deprecated
+  testCaseSuites TestCaseSuite[] // New many-to-many relation
   testRuns    TestRunSuite[]
 
   @@index([projectId])
@@ -139,7 +140,7 @@ model TestCase {
   tcId          String   // Test case ID like tc1, tc2, etc. (unique per project)
   projectId     String
   moduleId      String?
-  suiteId       String?
+  suiteId       String?  // Legacy: Keep for backward compatibility, will be deprecated
   title         String
   description   String?
   expectedResult String?  // Overall expected result for the test case
@@ -154,8 +155,9 @@ model TestCase {
 
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   module        Module?  @relation(fields: [moduleId, projectId], references: [id, projectId], onDelete: SetNull)
-  suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull)
+  suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull) // Legacy
   createdBy     User     @relation(fields: [createdById], references: [id])
+  testCaseSuites TestCaseSuite[] // New many-to-many relation
   steps         TestStep[]
   results       TestResult[]
   requirements  Requirement[]
@@ -168,6 +170,21 @@ model TestCase {
   @@index([suiteId])
   @@index([createdById])
   @@index([status])
+}
+
+// Join table for many-to-many relationship between TestCase and TestSuite
+model TestCaseSuite {
+  id          String   @id @default(cuid())
+  testCaseId  String
+  testSuiteId String
+  addedAt     DateTime @default(now())
+
+  testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  testSuite   TestSuite @relation(fields: [testSuiteId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, testSuiteId])
+  @@index([testCaseId])
+  @@index([testSuiteId])
 }
 
 model TestStep {

@@ -126,6 +126,13 @@ export function TestCaseTable({
           });
         }
 
+        // For groups not in modules list (like 'no-module'), set totalCount to actual length
+        Object.keys(groups).forEach((groupId) => {
+          if (groups[groupId].totalCount === 0) {
+            groups[groupId].totalCount = groups[groupId].testCases.length;
+          }
+        });
+
         return groups;
       })()
     : null;
