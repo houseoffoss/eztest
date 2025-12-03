@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/elements/select';
 import { InlineError } from '@/components/utils/InlineError';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 export interface BaseDialogField {
   name: string;
@@ -42,6 +43,10 @@ export interface BaseDialogConfig<T = unknown> {
   onSubmit: (formData: Record<string, string>) => Promise<T>;
   onSuccess?: (result?: T) => void;
   children?: ReactNode; // For custom content before form
+  /** Unique key for form persistence (auto-generated if not provided) */
+  formPersistenceKey?: string;
+  /** Disable form persistence (default: false) */
+  disablePersistence?: boolean;
 }
 
 export const BaseDialog = <T = unknown,>({
@@ -55,17 +60,37 @@ export const BaseDialog = <T = unknown,>({
   onSubmit,
   onSuccess,
   children,
+  formPersistenceKey,
+  disablePersistence = false,
 }: BaseDialogConfig<T>) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState<Record<string, string>>(() => {
+
+  // Generate initial data from fields
+  const getInitialData = () => {
     const initial: Record<string, string> = {};
     fields.forEach((field) => {
       initial[field.name] = field.defaultValue || '';
     });
     return initial;
-  });
+  };
+
+  // Generate persistence key from title if not provided
+  const persistenceKey = formPersistenceKey || `dialog-${title.toLowerCase().replace(/\s+/g, '-')}`;
+
+  // Use form persistence hook
+  // useFormPersistence returns [formData, setFormData, clearFormData, resetFormData].
+  // Only the first three are needed in this component.
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    persistenceKey,
+    getInitialData(),
+    {
+      enabled: !disablePersistence,
+      expiryMs: 60 * 60 * 1000, // 1 hour
+      excludeFields: [], // Include all fields by default
+    }
+  );
 
   // Check if any field has cols property to determine layout
   const hasMultiColumnLayout = fields.some((field) => field.cols !== undefined);
@@ -73,14 +98,8 @@ export const BaseDialog = <T = unknown,>({
   useEffect(() => {
     if (triggerOpen) {
       setOpen(true);
-      // Reinitialize form data when dialog opens with new fields
-      const initial: Record<string, string> = {};
-      fields.forEach((field) => {
-        initial[field.name] = field.defaultValue || '';
-      });
-      setFormData(initial);
     }
-  }, [triggerOpen, fields]);
+  }, [triggerOpen]);
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
@@ -120,12 +139,8 @@ export const BaseDialog = <T = unknown,>({
     try {
       const result = await onSubmit(formData);
       
-      // Reset form
-      const resetData: Record<string, string> = {};
-      fields.forEach((field) => {
-        resetData[field.name] = '';
-      });
-      setFormData(resetData);
+      // Clear form data after successful submission
+      clearFormData();
       handleOpenChange(false);
       
       if (onSuccess) {

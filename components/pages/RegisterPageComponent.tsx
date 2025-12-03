@@ -9,6 +9,7 @@ import { Navbar } from '@/components/design/Navbar';
 import { RegisterForm } from './subcomponents/RegisterForm';
 import { RegisterLeftPanel } from './subcomponents/RegisterLeftPanel';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const navItems = [
   { label: 'Features', href: '/#features' },
@@ -25,11 +26,14 @@ interface FieldErrors {
 export default function RegisterPageComponent() {
   const router = useRouter();
   const [stars, setStars] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData, clearFormData] = useFormPersistence('register-form', {
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+  }, {
+    excludeFields: ['password', 'confirmPassword'], // Don't persist passwords for security
+    expiryMs: 24 * 60 * 60 * 1000, // 24 hours
   });
 
   useEffect(() => {
@@ -239,6 +243,9 @@ export default function RegisterPageComponent() {
         title: 'Success',
         message: 'Registration successful!',
       });
+
+      // Clear form data on successful registration
+      clearFormData();
 
       // Auto sign in after successful registration
       const result = await signIn('credentials', {

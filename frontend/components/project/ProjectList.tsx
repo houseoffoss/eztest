@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import { Button } from '@/elements/button';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { TopBar } from '@/components/design';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
@@ -17,7 +16,6 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 export default function ProjectList() {
   const router = useRouter();
-  const pathname = usePathname();
   const { status } = useSession();
   const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -101,10 +99,6 @@ export default function ProjectList() {
   const openDeleteDialog = (project: Project) => {
     setProjectToDelete({ id: project.id, name: project.name });
     setDeleteDialogOpen(true);
-  };
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/auth/login' });
   };
 
   const handleCreateProject = () => {

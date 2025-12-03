@@ -30,6 +30,7 @@ interface AddModulesAndTestCasesDialogProps {
   description?: string;
   submitButtonText?: string;
   emptyMessage?: string;
+  loading?: boolean;
 }
 
 /**
@@ -61,9 +62,10 @@ export function AddModulesAndTestCasesDialog({
   onTestCaseSelectionChange,
   onSubmit,
   title = 'Add Modules & Test Cases',
-  description = 'Select entire modules or individual test cases',
+  description = 'Select modules and test cases to add',
   submitButtonText = 'Add Selected',
   emptyMessage = 'No modules or test cases available',
+  loading = false,
 }: AddModulesAndTestCasesDialogProps) {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
@@ -161,7 +163,12 @@ export function AddModulesAndTestCasesDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto pr-2">
-          {modules.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-3">
+              <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="text-white/60 text-sm">Loading available modules and test cases...</p>
+            </div>
+          ) : modules.length === 0 ? (
             <p className="text-white/60 text-center py-8">
               {emptyMessage}
             </p>
@@ -174,9 +181,17 @@ export function AddModulesAndTestCasesDialog({
                 const testCaseCount = moduleItem.testCases?.length || 0;
 
                 return (
-                  <div key={moduleItem.id} className="border border-white/10 rounded-lg overflow-hidden">
+                  <div key={moduleItem.id} className={`border rounded-lg overflow-hidden ${
+                    moduleItem.id === 'ungrouped' 
+                      ? 'border-purple-500/30 bg-purple-500/5' 
+                      : 'border-white/10'
+                  }`}>
                     {/* Module Header */}
-                    <div className="bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className={`transition-colors ${
+                      moduleItem.id === 'ungrouped'
+                        ? 'bg-purple-500/10 hover:bg-purple-500/15'
+                        : 'bg-white/5 hover:bg-white/10'
+                    }`}>
                       <div className="flex items-center gap-3 p-3">
                         {/* Expand/Collapse Button */}
                         <button
@@ -204,12 +219,16 @@ export function AddModulesAndTestCasesDialog({
                         />
 
                         {/* Module Icon */}
-                        <FolderOpen className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                        {moduleItem.id === 'ungrouped' ? (
+                          <TestTube2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                        ) : (
+                          <FolderOpen className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                        )}
 
                         {/* Module Name & Description */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-white truncate">
+                            <p className={`font-medium truncate ${moduleItem.id === 'ungrouped' ? 'text-purple-300' : 'text-white'}`}>
                               {moduleItem.name}
                             </p>
                             {isPartiallySelected && (

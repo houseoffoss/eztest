@@ -6,6 +6,7 @@ import { DetailCard } from '@/components/design/DetailCard';
 import { formatDateTime } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface UserRole {
   id: string;
@@ -27,6 +28,12 @@ interface UserDetailsContentProps {
 }
 
 export default function UserDetailsContent({ user }: UserDetailsContentProps) {
+  const handleSignOut = () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
+    // Let the form submit naturally to /api/auth/signout
+  };
+
   const getRoleBadgeColor = (roleName: string) => {
     switch (roleName) {
       case 'ADMIN':
@@ -55,7 +62,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
                 { label: user.name },
               ]}
             />
-            <form action="/api/auth/signout" method="POST">
+            <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
               <ButtonDestructive type="submit" size="default" className="px-5">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out

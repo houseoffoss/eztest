@@ -11,12 +11,14 @@ export interface TestResult {
   };
 }
 
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
 export interface TestCase {
   id: string;
   name?: string;
   title?: string;
   description?: string;
-  priority: string;
+  priority: Priority | string;
   status: string;
 }
 
@@ -46,9 +48,19 @@ export interface TestRun {
   completedAt?: string;
 }
 
-export interface ResultFormData {
+export interface ResultFormData extends Record<string, string> {
   status: string;
   comment: string;
+}
+
+export interface TestSuite {
+  id: string;
+  name: string;
+  description?: string;
+  testCases: TestCase[];
+  _count?: {
+    testCases: number;
+  };
 }
 
 export interface TestRunStats {

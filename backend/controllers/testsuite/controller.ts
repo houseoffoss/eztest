@@ -342,6 +342,116 @@ export class TestSuiteController {
       );
     }
   }
+
+  /**
+   * Add test cases to a test suite
+   */
+  async addTestCasesToSuite(request: NextRequest, suiteId: string) {
+    try {
+      const body = await request.json();
+      const { testCaseIds } = body;
+
+      if (!testCaseIds || !Array.isArray(testCaseIds) || testCaseIds.length === 0) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.TestCaseIDsRequired },
+          { status: 400 }
+        );
+      }
+
+      const result = await testSuiteService.addTestCasesToSuite(testCaseIds, suiteId);
+
+      return NextResponse.json({
+        data: result,
+        message: TestSuiteMessages.TestCasesAddedToSuiteSuccessfully,
+      });
+    } catch (error) {
+      console.error('Error adding test cases to suite:', error);
+      return NextResponse.json(
+        { error: TestSuiteMessages.FailedToAddTestCasesToSuite },
+        { status: 500 }
+      );
+    }
+  }
+
+  /**
+   * Remove test cases from a test suite
+   */
+  async removeTestCasesFromSuite(request: NextRequest, suiteId: string) {
+    try {
+      const body = await request.json();
+      const { testCaseIds } = body;
+
+      if (!testCaseIds || !Array.isArray(testCaseIds) || testCaseIds.length === 0) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.TestCaseIDsRequired },
+          { status: 400 }
+        );
+      }
+
+      const result = await testSuiteService.removeTestCasesFromSuite(testCaseIds, suiteId);
+
+      return NextResponse.json({
+        data: result,
+        message: TestSuiteMessages.TestCasesRemovedFromSuiteSuccessfully,
+      });
+    } catch (error) {
+      console.error('Error removing test cases from suite:', error);
+      return NextResponse.json(
+        { error: TestSuiteMessages.FailedToRemoveTestCasesFromSuite },
+        { status: 500 }
+      );
+    }
+  }
+
+  /**
+   * Check which test cases are in a test suite
+   */
+  async checkTestCasesInSuite(request: NextRequest, suiteId: string) {
+    try {
+      const body = await request.json();
+      const { testCaseIds } = body;
+
+      if (!Array.isArray(testCaseIds) || testCaseIds.length === 0) {
+        return NextResponse.json(
+          { error: TestSuiteMessages.TestCaseIDsRequired },
+          { status: 400 }
+        );
+      }
+
+      const testCasesInSuite = await testSuiteService.checkTestCasesInSuite(testCaseIds, suiteId);
+
+      return NextResponse.json({
+        data: testCasesInSuite,
+        message: TestSuiteMessages.TestCasesCheckedSuccessfully,
+      });
+    } catch (error) {
+      console.error('Error checking test cases in suite:', error);
+      return NextResponse.json(
+        { error: TestSuiteMessages.FailedToCheckTestCasesInSuite },
+        { status: 500 }
+      );
+    }
+  }
+
+  /**
+   * Get available modules and test cases for adding to suite
+   */
+  async getAvailableTestCases(suiteId: string) {
+    try {
+      const result = await testSuiteService.getAvailableTestCases(suiteId);
+
+      return NextResponse.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      console.error('Error fetching available test cases:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch available test cases' },
+        { status: 500 }
+      );
+    }
+  }
 }
 
 export const testSuiteController = new TestSuiteController();

@@ -82,41 +82,60 @@ export class TestSuiteService {
             { name: 'asc' },
           ],
         },
-        testCases: {
+        testCaseSuites: {
           include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-              },
-            },
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-            _count: {
-              select: {
-                steps: true,
-                results: true,
+            testCase: {
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
+                createdBy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+                _count: {
+                  select: {
+                    steps: true,
+                    results: true,
+                  },
+                },
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { addedAt: 'desc' },
         },
         _count: {
           select: { 
-            testCases: true,
+            testCaseSuites: true,
             children: true,
           },
         },
       },
     });
 
-    return suite;
+    if (!suite) return null;
+
+    // Transform the data to maintain backward compatibility
+    const transformedSuite = {
+      ...suite,
+      testCases: suite.testCaseSuites.map(tcs => ({
+        ...tcs.testCase,
+        suiteId: suite.id, // Add suiteId for backward compatibility
+      })),
+      _count: {
+        ...suite._count,
+        testCases: suite._count.testCaseSuites,
+      },
+    };
+
+    return transformedSuite;
   }
 
   /**
@@ -213,7 +232,162 @@ export class TestSuiteService {
   }
 
   /**
-   * Move test cases to a suite
+   * Add test cases to a suite (many-to-many relationship)
+   */
+  async addTestCasesToSuite(testCaseIds: string[], suiteId: string) {
+    // Create TestCaseSuite records for each test case
+    // Use createMany with skipDuplicates to avoid errors if already added
+    const result = await prisma.testCaseSuite.createMany({
+      data: testCaseIds.map(testCaseId => ({
+        testCaseId,
+        testSuiteId: suiteId,
+      })),
+      skipDuplicates: true,
+    });
+
+    return { success: true, count: result.count };
+  }
+
+  /**
+   * Remove test cases from a suite
+   */
+  async removeTestCasesFromSuite(testCaseIds: string[], suiteId: string) {
+    const result = await prisma.testCaseSuite.deleteMany({
+      where: {
+        testCaseId: {
+          in: testCaseIds,
+        },
+        testSuiteId: suiteId,
+      },
+    });
+
+    return { success: true, count: result.count };
+  }
+
+  /**
+   * Check which test cases from a list are in this suite
+   */
+  async checkTestCasesInSuite(testCaseIds: string[], suiteId: string) {
+    // Find which test cases are in this suite (check both new join table and legacy suiteId)
+    const testCaseSuites = await prisma.testCaseSuite.findMany({
+      where: {
+        testSuiteId: suiteId,
+        testCaseId: {
+          in: testCaseIds,
+        },
+      },
+      select: {
+        testCaseId: true,
+      },
+    });
+
+    // Also check legacy suiteId field for backward compatibility
+    const testCasesWithLegacySuiteId = await prisma.testCase.findMany({
+      where: {
+        id: {
+          in: testCaseIds,
+        },
+        suiteId: suiteId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // Combine both sources
+    const testCaseIdsFromJoinTable = new Set(testCaseSuites.map(tcs => tcs.testCaseId));
+    const testCaseIdsFromLegacy = new Set(testCasesWithLegacySuiteId.map(tc => tc.id));
+    const allTestCaseIdsInSuite = [...testCaseIdsFromJoinTable, ...testCaseIdsFromLegacy];
+    
+    // Remove duplicates
+    const uniqueTestCaseIds = [...new Set(allTestCaseIdsInSuite)];
+
+    return { testCaseIds: uniqueTestCaseIds };
+  }
+
+  /**
+   * Get available modules and test cases for adding to a suite
+   */
+  async getAvailableTestCases(suiteId: string) {
+    // Get all test cases already in this suite
+    const testCasesInSuite = await prisma.testCaseSuite.findMany({
+      where: { testSuiteId: suiteId },
+      select: { testCaseId: true },
+    });
+    const testCaseIdsInSuite = new Set(testCasesInSuite.map(tc => tc.testCaseId));
+
+    // Also check legacy suiteId field
+    const legacyTestCases = await prisma.testCase.findMany({
+      where: { suiteId },
+      select: { id: true },
+    });
+    legacyTestCases.forEach(tc => testCaseIdsInSuite.add(tc.id));
+
+    // Get the project ID from the suite
+    const suite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+      select: { projectId: true },
+    });
+
+    if (!suite) {
+      throw new Error('Test suite not found');
+    }
+
+    // Fetch all modules with their test cases in one query
+    const modules = await prisma.module.findMany({
+      where: { projectId: suite.projectId },
+      include: {
+        testCases: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: { testCases: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // Fetch ungrouped test cases
+    const ungroupedTestCases = await prisma.testCase.findMany({
+      where: {
+        projectId: suite.projectId,
+        moduleId: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Filter out test cases already in this suite
+    const modulesWithAvailableTestCases = modules
+      .map(module => ({
+        ...module,
+        testCases: module.testCases.filter(tc => !testCaseIdsInSuite.has(tc.id)),
+      }))
+      .filter(module => module.testCases.length > 0);
+
+    // Add ungrouped test cases if any are available
+    const availableUngroupedTestCases = ungroupedTestCases.filter(
+      tc => !testCaseIdsInSuite.has(tc.id)
+    );
+
+    if (availableUngroupedTestCases.length > 0) {
+      modulesWithAvailableTestCases.push({
+        id: 'ungrouped',
+        name: 'Ungrouped Test Cases',
+        description: 'Test cases not assigned to any module',
+        projectId: suite.projectId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        order: 9999,
+        testCases: availableUngroupedTestCases,
+        _count: { testCases: availableUngroupedTestCases.length },
+      });
+    }
+
+    return modulesWithAvailableTestCases;
+  }
+
+  /**
+   * Move test cases to a suite (legacy - kept for backward compatibility)
    */
   async moveTestCasesToSuite(testCaseIds: string[], suiteId: string | null) {
     await prisma.testCase.updateMany({
@@ -458,3 +632,5 @@ export class TestSuiteService {
     return updatedSuite;
   }
 }
+
+export const testSuiteService = new TestSuiteService();

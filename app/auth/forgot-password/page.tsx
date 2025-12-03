@@ -7,13 +7,18 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { GlassPanel } from '@/components/design';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 export default function ForgotPasswordPage() {
   useEffect(() => {
     document.title = 'Forgot Password | EZTest';
   }, []);
 
-  const [email, setEmail] = useState('');
+  const [formData, setFormData, clearFormData] = useFormPersistence('forgot-password-form', {
+    email: '',
+  }, {
+    expiryMs: 60 * 60 * 1000, // 1 hour
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -29,7 +34,7 @@ export default function ForgotPasswordPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: formData.email }),
       });
 
       if (!response.ok) {
@@ -38,7 +43,7 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(true);
-      setEmail('');
+      clearFormData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -62,7 +67,7 @@ export default function ForgotPasswordPage() {
             <div className="rounded-lg p-4 mb-6 border border-green-500/40 bg-green-500/10">
               <h3 className="font-semibold text-green-400 mb-2 text-sm">Check your email</h3>
               <p className="text-green-300/90 text-sm mb-3">
-                We&apos;ve sent a password reset link to <strong>{email}</strong>.
+                We&apos;ve sent a password reset link to <strong>{formData.email}</strong>.
                 Please check your email and follow the link to reset your password.
               </p>
               <p className="text-green-300/90 text-sm mb-3">
@@ -91,8 +96,10 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                   placeholder="you@example.com"
                 />
