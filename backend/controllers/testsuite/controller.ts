@@ -432,6 +432,26 @@ export class TestSuiteController {
       );
     }
   }
+
+  /**
+   * Get available modules and test cases for adding to suite
+   */
+  async getAvailableTestCases(suiteId: string) {
+    try {
+      const result = await testSuiteService.getAvailableTestCases(suiteId);
+
+      return NextResponse.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      console.error('Error fetching available test cases:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch available test cases' },
+        { status: 500 }
+      );
+    }
+  }
 }
 
 export const testSuiteController = new TestSuiteController();

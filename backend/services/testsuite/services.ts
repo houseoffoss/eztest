@@ -306,6 +306,87 @@ export class TestSuiteService {
   }
 
   /**
+   * Get available modules and test cases for adding to a suite
+   */
+  async getAvailableTestCases(suiteId: string) {
+    // Get all test cases already in this suite
+    const testCasesInSuite = await prisma.testCaseSuite.findMany({
+      where: { testSuiteId: suiteId },
+      select: { testCaseId: true },
+    });
+    const testCaseIdsInSuite = new Set(testCasesInSuite.map(tc => tc.testCaseId));
+
+    // Also check legacy suiteId field
+    const legacyTestCases = await prisma.testCase.findMany({
+      where: { suiteId },
+      select: { id: true },
+    });
+    legacyTestCases.forEach(tc => testCaseIdsInSuite.add(tc.id));
+
+    // Get the project ID from the suite
+    const suite = await prisma.testSuite.findUnique({
+      where: { id: suiteId },
+      select: { projectId: true },
+    });
+
+    if (!suite) {
+      throw new Error('Test suite not found');
+    }
+
+    // Fetch all modules with their test cases in one query
+    const modules = await prisma.module.findMany({
+      where: { projectId: suite.projectId },
+      include: {
+        testCases: {
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: { testCases: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    // Fetch ungrouped test cases
+    const ungroupedTestCases = await prisma.testCase.findMany({
+      where: {
+        projectId: suite.projectId,
+        moduleId: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Filter out test cases already in this suite
+    const modulesWithAvailableTestCases = modules
+      .map(module => ({
+        ...module,
+        testCases: module.testCases.filter(tc => !testCaseIdsInSuite.has(tc.id)),
+      }))
+      .filter(module => module.testCases.length > 0);
+
+    // Add ungrouped test cases if any are available
+    const availableUngroupedTestCases = ungroupedTestCases.filter(
+      tc => !testCaseIdsInSuite.has(tc.id)
+    );
+
+    if (availableUngroupedTestCases.length > 0) {
+      modulesWithAvailableTestCases.push({
+        id: 'ungrouped',
+        name: 'Ungrouped Test Cases',
+        description: 'Test cases not assigned to any module',
+        projectId: suite.projectId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        order: 9999,
+        testCases: availableUngroupedTestCases,
+        _count: { testCases: availableUngroupedTestCases.length },
+      });
+    }
+
+    return modulesWithAvailableTestCases;
+  }
+
+  /**
    * Move test cases to a suite (legacy - kept for backward compatibility)
    */
   async moveTestCasesToSuite(testCaseIds: string[], suiteId: string | null) {

@@ -38,6 +38,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const [availableModules, setAvailableModules] = useState<(Module & { testCases?: TestCase[] })[]>([]);
   const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<string[]>([]);
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([]);
+  const [loadingAvailableModules, setLoadingAvailableModules] = useState(false);
 
   const [formData, setFormData] = useState<TestSuiteFormData>({
     name: '',
@@ -52,7 +53,10 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   useEffect(() => {
     if (testSuite) {
       document.title = `${testSuite.name} | EZTest`;
+      // Preload available modules immediately
+      fetchAvailableModules();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testSuite]);
 
   const fetchTestSuite = async () => {
@@ -156,116 +160,32 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   };
 
   const fetchAvailableModules = async () => {
+    setLoadingAvailableModules(true);
     try {
-      // Fetch all modules with their test cases
-      const modulesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules`);
-      const modulesData = await modulesResponse.json();
+      // Use optimized endpoint that fetches everything in one call
+      const response = await fetch(`/api/testsuites/${suiteId}/available-testcases`);
       
-      let modulesWithAvailableTestCases: (Module & { testCases?: TestCase[] })[] = [];
-      
-      if (modulesData.data) {
-        // Fetch test cases for each module
-        const modulesWithTestCases = await Promise.all(
-          modulesData.data.map(async (module: Module) => {
-            try {
-              const testCasesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules/${module.id}/testcases`);
-              const testCasesData = await testCasesResponse.json();
-              
-              // Get all test cases from the module (including those in other suites)
-              // Check which test cases are already in this suite via the join table
-              const testCasesInSuiteResponse = await fetch(`/api/testsuites/${suiteId}/testcases/check`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  testCaseIds: testCasesData.data?.testCases?.map((tc: TestCase) => tc.id) || [],
-                }),
-              });
-              
-              const testCasesInSuiteData = await testCasesInSuiteResponse.json();
-              const testCaseIdsInSuite = new Set(testCasesInSuiteData.data?.testCaseIds || []);
-              
-              // Filter out test cases that are already in THIS suite
-              const availableTestCases = testCasesData.data?.testCases?.filter(
-                (tc: TestCase) => !testCaseIdsInSuite.has(tc.id)
-              ) || [];
-              
-              return {
-                ...module,
-                testCases: availableTestCases,
-                allTestCases: testCasesData.data?.testCases || [], // Keep all test cases for count
-              };
-            } catch (error) {
-              console.error(`Error fetching test cases for module ${module.id}:`, error);
-              return {
-                ...module,
-                testCases: [],
-                allTestCases: [],
-              };
-            }
-          })
-        );
-        
-        // Show all modules that have test cases (even if they're all in other suites)
-        modulesWithAvailableTestCases = modulesWithTestCases.filter(
-          module => module.testCases && module.testCases.length > 0
-        );
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch available modules:', errorData.error || response.statusText);
+        setAvailableModules([]);
+        return;
       }
       
-      // Fetch ungrouped test cases (test cases without a module)
-      try {
-        const ungroupedResponse = await fetch(`/api/projects/${testSuite?.project.id}/testcases`);
-        const ungroupedData = await ungroupedResponse.json();
-        
-        if (ungroupedData.data) {
-          // Filter for test cases that have no module
-          const ungroupedWithoutModule = ungroupedData.data.filter(
-            (tc: TestCase) => !tc.moduleId
-          );
-          
-          let ungroupedTestCases: TestCase[] = [];
-          
-          // Check which ungrouped test cases are already in this suite
-          if (ungroupedWithoutModule.length > 0) {
-            const testCasesInSuiteResponse = await fetch(`/api/testsuites/${suiteId}/testcases/check`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                testCaseIds: ungroupedWithoutModule.map((tc: TestCase) => tc.id),
-              }),
-            });
-            
-            const testCasesInSuiteData = await testCasesInSuiteResponse.json();
-            const testCaseIdsInSuite = new Set(testCasesInSuiteData.data?.testCaseIds || []);
-            
-            // Filter out test cases already in this suite
-            ungroupedTestCases = ungroupedWithoutModule.filter(
-              (tc: TestCase) => !testCaseIdsInSuite.has(tc.id)
-            );
-          }
-          
-          // If there are ungrouped test cases, add them as a virtual "Ungrouped" module
-          if (ungroupedTestCases.length > 0) {
-            const ungroupedModule: Module & { testCases?: TestCase[] } = {
-              id: 'ungrouped',
-              name: 'Ungrouped Test Cases',
-              description: 'Test cases not assigned to any module',
-              projectId: testSuite?.project.id || '',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              testCases: ungroupedTestCases,
-            };
-            
-            // Add ungrouped module at the end
-            modulesWithAvailableTestCases.push(ungroupedModule);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching ungrouped test cases:', error);
-      }
+      const data = await response.json();
+
       
-      setAvailableModules(modulesWithAvailableTestCases);
+      if (data.data) {
+        setAvailableModules(data.data);
+      } else {
+        console.log('No data.data in response');
+        setAvailableModules([]);
+      }
     } catch (error) {
       console.error('Error fetching available modules:', error);
+      setAvailableModules([]);
+    } finally {
+      setLoadingAvailableModules(false);
     }
   };
 
@@ -638,6 +558,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
           description="Select entire modules or individual test cases to add to this test suite"
           submitButtonText="Add Selected"
           emptyMessage="No modules or test cases available to add"
+          loading={loadingAvailableModules}
         />
 
         {/* Delete Test Case Dialog */}

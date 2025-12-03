@@ -30,6 +30,7 @@ interface AddModulesAndTestCasesDialogProps {
   description?: string;
   submitButtonText?: string;
   emptyMessage?: string;
+  loading?: boolean;
 }
 
 /**
@@ -61,9 +62,10 @@ export function AddModulesAndTestCasesDialog({
   onTestCaseSelectionChange,
   onSubmit,
   title = 'Add Modules & Test Cases',
-  description = 'Select entire modules or individual test cases',
+  description = 'Select modules and test cases to add',
   submitButtonText = 'Add Selected',
   emptyMessage = 'No modules or test cases available',
+  loading = false,
 }: AddModulesAndTestCasesDialogProps) {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
@@ -161,7 +163,12 @@ export function AddModulesAndTestCasesDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto pr-2">
-          {modules.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-3">
+              <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="text-white/60 text-sm">Loading available modules and test cases...</p>
+            </div>
+          ) : modules.length === 0 ? (
             <p className="text-white/60 text-center py-8">
               {emptyMessage}
             </p>
