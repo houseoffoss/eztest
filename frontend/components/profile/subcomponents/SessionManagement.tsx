@@ -2,8 +2,15 @@ import { Badge } from '@/elements/badge';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { LogOut } from 'lucide-react';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export function SessionManagement() {
+  const handleSignOutAll = () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
+    // Additional logic for signing out all sessions would go here
+  };
+
   return (
     <GlassPanel heading="Session Management" contentClassName="space-y-4">
       <div className="space-y-3">
@@ -20,7 +27,7 @@ export function SessionManagement() {
             </div>
           </div>
         </div>
-        <ButtonDestructive className="w-full rounded-lg">
+        <ButtonDestructive className="w-full rounded-lg" onClick={handleSignOutAll}>
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out All Sessions
         </ButtonDestructive>

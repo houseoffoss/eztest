@@ -161,6 +161,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       const modulesResponse = await fetch(`/api/projects/${testSuite?.project.id}/modules`);
       const modulesData = await modulesResponse.json();
       
+      let modulesWithAvailableTestCases: (Module & { testCases?: TestCase[] })[] = [];
+      
       if (modulesData.data) {
         // Fetch test cases for each module
         const modulesWithTestCases = await Promise.all(
@@ -189,12 +191,43 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         );
         
         // Only show modules that have available test cases (not assigned to any suite)
-        const modulesWithAvailableTestCases = modulesWithTestCases.filter(
+        modulesWithAvailableTestCases = modulesWithTestCases.filter(
           module => module.testCases && module.testCases.length > 0
         );
-        
-        setAvailableModules(modulesWithAvailableTestCases);
       }
+      
+      // Fetch ungrouped test cases (test cases without a module)
+      try {
+        const ungroupedResponse = await fetch(`/api/projects/${testSuite?.project.id}/testcases`);
+        const ungroupedData = await ungroupedResponse.json();
+        
+        if (ungroupedData.data) {
+          // Filter for test cases that have no module and no suite
+          const ungroupedTestCases = ungroupedData.data.filter(
+            (tc: TestCase) => !tc.moduleId && !tc.suiteId
+          );
+          
+          // If there are ungrouped test cases, add them as a virtual "Ungrouped" module
+          if (ungroupedTestCases.length > 0) {
+            const ungroupedModule: Module & { testCases?: TestCase[] } = {
+              id: 'ungrouped',
+              name: 'Ungrouped Test Cases',
+              description: 'Test cases not assigned to any module',
+              projectId: testSuite?.project.id || '',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              testCases: ungroupedTestCases,
+            };
+            
+            // Add ungrouped module at the end
+            modulesWithAvailableTestCases.push(ungroupedModule);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching ungrouped test cases:', error);
+      }
+      
+      setAvailableModules(modulesWithAvailableTestCases);
     } catch (error) {
       console.error('Error fetching available modules:', error);
     }
@@ -264,8 +297,9 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     try {
       let addedCount = 0;
       
-      // Add all test cases from selected modules
-      for (const moduleId of selectedModuleIds) {
+      // Add all test cases from selected modules (excluding the virtual "ungrouped" module)
+      const realModuleIds = selectedModuleIds.filter(id => id !== 'ungrouped');
+      for (const moduleId of realModuleIds) {
         const selectedModule = availableModules.find(m => m.id === moduleId);
         if (selectedModule?.testCases) {
           for (const testCase of selectedModule.testCases) {

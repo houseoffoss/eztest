@@ -1,11 +1,12 @@
 'use client';
 
-import React, { ReactNode } from "react"
+import React, { ReactNode, useState } from "react"
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/design"
 import { ButtonDestructive } from "@/elements/button-destructive"
 import { signOut } from "next-auth/react"
 import { LogOut } from 'lucide-react'
-import { ConfirmDialog } from '@/components/design/ConfirmDialog'
+import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog'
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence'
 
 export interface TopBarProps {
   breadcrumbs: BreadcrumbItem[]
@@ -14,7 +15,11 @@ export interface TopBarProps {
 }
 
 export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
+  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
+
   const handleSignOut = async () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
     await signOut({ callbackUrl: '/auth/login', redirect: true });
   };
 
@@ -25,28 +30,26 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
           <Breadcrumbs items={breadcrumbs} />
           <div className="flex items-center gap-3">
             {actions}
-            <ConfirmDialog
+            <ButtonDestructive 
+              type="button" 
+              size="default" 
+              className="px-5 cursor-pointer"
+              onClick={() => setSignOutDialogOpen(true)}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </ButtonDestructive>
+            
+            <BaseConfirmDialog
               title="Sign Out"
               description="Are you sure you want to sign out? You will need to log in again to access your account."
-              confirmLabel={
-                <>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </>
-              }
+              submitLabel="Sign Out"
               cancelLabel="Cancel"
-              onConfirm={handleSignOut}
-              variant="glass"
-            >
-              <ButtonDestructive 
-                type="button" 
-                size="default" 
-                className="px-5 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </ButtonDestructive>
-            </ConfirmDialog>
+              triggerOpen={signOutDialogOpen}
+              onOpenChange={setSignOutDialogOpen}
+              onSubmit={handleSignOut}
+              destructive={true}
+            />
           </div>
         </div>
       </div>

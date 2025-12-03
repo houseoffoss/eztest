@@ -1,4 +1,3 @@
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
@@ -14,15 +13,15 @@ import {
   AlertCircle,
   Circle,
 } from 'lucide-react';
-import { TestRun, TestCase, ResultFormData, TestRunStats } from './types';
+import { TestRun, TestCase, ResultFormData, TestRunStats, TestSuite } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface TestRunDetailProps {
   testRunId: string;
 }
 
 export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
-  const router = useRouter();
   const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [testRun, setTestRun] = useState<TestRun | null>(null);
@@ -37,13 +36,19 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [actionLoading, setActionLoading] = useState(false);
   const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
-  const [availableTestSuites, setAvailableTestSuites] = useState<any[]>([]);
+  const [availableTestSuites, setAvailableTestSuites] = useState<TestSuite[]>([]);
   const [selectedSuiteIds, setSelectedSuiteIds] = useState<string[]>([]);
 
-  const [resultForm, setResultForm] = useState<ResultFormData>({
-    status: '',
-    comment: '',
-  });
+  const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
+    `testrun-result-${testRunId}`,
+    {
+      status: '',
+      comment: '',
+    },
+    {
+      expiryMs: 30 * 60 * 1000, // 30 minutes
+    }
+  );
 
   useEffect(() => {
     fetchTestRun();
@@ -158,7 +163,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       if (data.data) {
         setResultDialogOpen(false);
         setSelectedTestCase(null);
-        setResultForm({ status: '', comment: '' });
+        clearResultForm(); // Clear persisted form data after successful submission
         fetchTestRun();
       } else {
         alert(data.error || 'Failed to save result');
@@ -233,10 +238,10 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         
         // Process each suite to include test case details and count new test cases
         const availableSuites = data.data
-          .map((suite: any) => {
+          .map((suite: TestSuite) => {
             // Filter test cases that are not already in the test run
             const newTestCases = (suite.testCases || []).filter(
-              (tc: any) => !existingTestCaseIds.has(tc.id)
+              (tc: TestCase) => !existingTestCaseIds.has(tc.id)
             );
             
             return {
@@ -248,7 +253,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             };
           })
           // Only include suites that have new test cases
-          .filter((suite: any) => suite.testCases.length > 0);
+          .filter((suite: TestSuite) => suite.testCases.length > 0);
 
         setAvailableTestSuites(availableSuites);
       }
@@ -271,7 +276,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       suiteIds.forEach((suiteId) => {
         const suite = availableTestSuites.find((s) => s.id === suiteId);
         if (suite && suite.testCases) {
-          suite.testCases.forEach((testCase: any) => {
+          suite.testCases.forEach((testCase: TestCase) => {
             if (!testRun?.results.find((r) => r.testCaseId === testCase.id)) {
               testCaseIds.push(testCase.id);
             }
@@ -383,7 +388,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   }
 
   const canUpdateTestRun = hasPermissionCheck('testruns:update');
-  const canDeleteTestRun = hasPermissionCheck('testruns:delete');
   const canCreateTestRun = hasPermissionCheck('testruns:create');
 
   return (
@@ -442,7 +446,12 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testCaseName={selectedTestCase?.testCaseName || ''}
           formData={resultForm}
           onOpenChange={setResultDialogOpen}
-          onFormChange={(data) => setResultForm({ ...resultForm, ...data })}
+          onFormChange={(data) => {
+            const filteredData = Object.fromEntries(
+              Object.entries(data).filter(([, value]) => value !== undefined)
+            ) as Record<string, string>;
+            setResultForm({ ...resultForm, ...filteredData } as ResultFormData);
+          }}
           onSubmit={handleSubmitResult}
         />
 
@@ -459,7 +468,22 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
         <AddTestSuitesDialog
           open={addSuitesDialogOpen}
-          availableTestSuites={availableTestSuites}
+          availableTestSuites={availableTestSuites as Array<{
+            id: string;
+            name: string;
+            description?: string;
+            testCases: Array<{
+              id: string;
+              title?: string;
+              name?: string;
+              priority: 'low' | 'medium' | 'high' | 'critical';
+              status: string;
+              description?: string;
+            }>;
+            _count?: {
+              testCases: number;
+            };
+          }>}
           selectedSuiteIds={selectedSuiteIds}
           onOpenChange={setAddSuitesDialogOpen}
           onToggleTestSuite={(suiteId, checked) => {

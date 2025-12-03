@@ -41,6 +41,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface TestCase {
   id: string;
@@ -84,15 +85,21 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    priority: 'MEDIUM',
-    status: 'DRAFT',
-    estimatedTime: '',
-    preconditions: '',
-    postconditions: '',
-  });
+  const [formData, setFormData, clearFormData] = useFormPersistence(
+    `create-testcase-${projectId}`,
+    {
+      title: '',
+      description: '',
+      priority: 'MEDIUM',
+      status: 'DRAFT',
+      estimatedTime: '',
+      preconditions: '',
+      postconditions: '',
+    },
+    {
+      expiryMs: 60 * 60 * 1000, // 1 hour
+    }
+  );
 
   useEffect(() => {
     fetchTestCases();
@@ -161,15 +168,8 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
 
       if (data.data) {
         setCreateDialogOpen(false);
-        setFormData({
-          title: '',
-          description: '',
-          priority: 'MEDIUM',
-          status: 'DRAFT',
-          estimatedTime: '',
-          preconditions: '',
-          postconditions: '',
-        });
+        // Clear persisted form data after successful creation
+        clearFormData();
         fetchTestCases();
       } else {
         alert(data.error || 'Failed to create test case');

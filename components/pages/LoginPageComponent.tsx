@@ -9,6 +9,7 @@ import { Navbar } from '@/components/design/Navbar';
 import { LoginForm } from './subcomponents/LoginForm';
 import { LoginLeftPanel } from './subcomponents/LoginLeftPanel';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const navItems = [
   { label: 'Features', href: '/#features' },
@@ -23,9 +24,12 @@ interface FieldErrors {
 export default function LoginPageComponent() {
   const router = useRouter();
   const [stars, setStars] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData, clearFormData] = useFormPersistence('login-form', {
     email: '',
     password: '',
+  }, {
+    excludeFields: ['password'], // Don't persist password for security
+    expiryMs: 24 * 60 * 60 * 1000, // 24 hours
   });
 
   useEffect(() => {
@@ -148,6 +152,8 @@ export default function LoginPageComponent() {
       }
 
       if (result?.ok) {
+        // Clear form data on successful login
+        clearFormData();
         setAlert({
           type: 'success',
           title: 'Success',

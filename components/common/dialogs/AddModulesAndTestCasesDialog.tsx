@@ -174,9 +174,17 @@ export function AddModulesAndTestCasesDialog({
                 const testCaseCount = moduleItem.testCases?.length || 0;
 
                 return (
-                  <div key={moduleItem.id} className="border border-white/10 rounded-lg overflow-hidden">
+                  <div key={moduleItem.id} className={`border rounded-lg overflow-hidden ${
+                    moduleItem.id === 'ungrouped' 
+                      ? 'border-purple-500/30 bg-purple-500/5' 
+                      : 'border-white/10'
+                  }`}>
                     {/* Module Header */}
-                    <div className="bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className={`transition-colors ${
+                      moduleItem.id === 'ungrouped'
+                        ? 'bg-purple-500/10 hover:bg-purple-500/15'
+                        : 'bg-white/5 hover:bg-white/10'
+                    }`}>
                       <div className="flex items-center gap-3 p-3">
                         {/* Expand/Collapse Button */}
                         <button
@@ -204,12 +212,16 @@ export function AddModulesAndTestCasesDialog({
                         />
 
                         {/* Module Icon */}
-                        <FolderOpen className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                        {moduleItem.id === 'ungrouped' ? (
+                          <TestTube2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                        ) : (
+                          <FolderOpen className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                        )}
 
                         {/* Module Name & Description */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-white truncate">
+                            <p className={`font-medium truncate ${moduleItem.id === 'ungrouped' ? 'text-purple-300' : 'text-white'}`}>
                               {moduleItem.name}
                             </p>
                             {isPartiallySelected && (
