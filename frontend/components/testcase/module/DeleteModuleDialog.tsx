@@ -25,7 +25,7 @@ export function DeleteModuleDialog({
           <span className="font-semibold">Module:</span> {module.name}
         </p>
         {module.description && (
-          <p className="text-sm text-white/60 mb-2">{module.description}</p>
+          <p className="text-sm text-white/60 mb-2 break-words line-clamp-2">{module.description}</p>
         )}
         <p className="text-sm text-white/80">
           <span className="font-semibold">Test Cases:</span> {testCaseCount}

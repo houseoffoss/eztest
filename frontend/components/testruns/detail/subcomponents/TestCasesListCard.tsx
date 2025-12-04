@@ -62,7 +62,7 @@ export function TestCasesListCard({
         <div>
           <p className="font-medium text-white/90">{row.testCase.title}</p>
           {row.comment && (
-            <p className="text-xs text-white/60 line-clamp-1 mt-1">
+            <p className="text-xs text-white/60 mt-1 break-words whitespace-pre-wrap">
               {row.comment}
             </p>
           )}

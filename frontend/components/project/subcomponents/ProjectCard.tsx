@@ -145,6 +145,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
     <ItemCard
       title={project.name}
       description={project.description || undefined}
+      descriptionClassName="line-clamp-2 break-words text-sm text-white/60 min-h-5"
       badges={badges}
       header={header}
       content={content}

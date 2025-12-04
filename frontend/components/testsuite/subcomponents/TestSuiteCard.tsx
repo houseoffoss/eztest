@@ -115,15 +115,15 @@ export function TestSuiteCard({
         </div>
 
         {/* Suite Info - Single Line */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           <h3
-            className="text-sm text-white font-semibold cursor-pointer hover:text-primary transition-colors truncate"
+            className="text-sm text-white font-semibold cursor-pointer hover:text-primary transition-colors truncate flex-shrink-0"
             onClick={() => onView(suite.id)}
           >
             {suite.name}
           </h3>
           {suite.description && (
-            <span className="text-xs text-white/60 truncate hidden md:block">
+            <span className="text-xs text-white/60 truncate hidden md:block overflow-hidden text-ellipsis whitespace-nowrap">
               {suite.description}
             </span>
           )}

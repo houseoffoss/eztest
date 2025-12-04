@@ -181,7 +181,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     <DetailCard title="Execution History" contentClassName="">
       {loading ? (
         <div className="py-8 flex justify-center">
-          <Loader text="Loading history..." />
+          <Loader fullScreen={false} text="Loading history..." />
         </div>
       ) : history.length === 0 ? (
         <div className="text-center py-8">

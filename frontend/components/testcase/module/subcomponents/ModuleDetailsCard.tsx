@@ -32,7 +32,7 @@ export function ModuleDetailsCard({
             className="w-full bg-white/5 border-white/10 text-white placeholder:text-white/30"
           />
         ) : (
-          <div className="text-white/90 whitespace-pre-wrap break-words">
+          <div className="text-white/90 whitespace-pre-wrap break-words line-clamp-3">
             {module.description || (
               <span className="text-white/40 italic">No description provided</span>
             )}

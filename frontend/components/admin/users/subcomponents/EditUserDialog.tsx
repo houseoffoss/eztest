@@ -59,6 +59,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
       type: 'textarea',
       rows: 3,
       cols: 2,
+      maxLength: 250,
       defaultValue: user?.bio || '',
     },
   ];

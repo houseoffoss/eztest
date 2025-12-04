@@ -14,11 +14,11 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     {
       name: 'name',
       label: 'Project Name',
-      placeholder: 'E-Commerce Platform',
+      placeholder: 'My Awesome Project',
       type: 'text',
       required: true,
       minLength: 3,
-      maxLength: 255,
+      maxLength: 50,
     },
     {
       name: 'key',
@@ -37,6 +37,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
       placeholder: 'Brief description of the project...',
       type: 'textarea',
       rows: 3,
+      maxLength: 250,
     },
   ];
 

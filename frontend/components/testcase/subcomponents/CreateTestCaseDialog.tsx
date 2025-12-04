@@ -52,7 +52,7 @@ export function CreateTestCaseDialog({
       type: 'text',
       required: true,
       minLength: 3,
-      maxLength: 255,
+      maxLength: 50,
       cols: 2,
     },
     {
@@ -97,6 +97,7 @@ export function CreateTestCaseDialog({
       placeholder: 'Enter test case description',
       rows: 3,
       cols: 1,
+      maxLength: 250,
     },
     {
       name: 'expectedResult',
@@ -105,6 +106,7 @@ export function CreateTestCaseDialog({
       placeholder: 'Enter the expected result or outcome',
       rows: 3,
       cols: 1,
+      maxLength: 250,
     },
     {
       name: 'preconditions',
@@ -113,6 +115,7 @@ export function CreateTestCaseDialog({
       placeholder: 'Enter preconditions',
       rows: 3,
       cols: 1,
+      maxLength: 250,
     },
     {
       name: 'postconditions',
@@ -121,6 +124,7 @@ export function CreateTestCaseDialog({
       placeholder: 'Enter postconditions',
       rows: 3,
       cols: 1,
+      maxLength: 250,
     },
   ];
 

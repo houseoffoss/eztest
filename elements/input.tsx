@@ -15,8 +15,8 @@ function Input({ className, type, variant = "default", ...props }: InputProps) {
       className={cn(
         "file:text-foreground placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground h-10 w-full min-w-0 rounded-[10px] border px-4 py-2 text-base transition-all outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl",
         variant === "glass"
-          ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
-          : "border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent",
+          ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+          : "border-border bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent",
         className
       )}
       {...props}

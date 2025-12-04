@@ -4,42 +4,30 @@ import { cn } from "@/lib/utils"
 
 type TextareaProps = React.ComponentProps<"textarea"> & {
   variant?: "default" | "glass"
-  maxWords?: number
-  showWordCount?: boolean
+  maxLength?: number
+  showCharCount?: boolean
 }
 
 function Textarea({ 
   className, 
   variant = "default", 
-  maxWords = 250,
-  showWordCount = true,
+  maxLength,
+  showCharCount = true,
   value,
   onChange,
   ...props 
 }: TextareaProps) {
-  const [wordCount, setWordCount] = React.useState(0);
+  const [charCount, setCharCount] = React.useState(0);
   const [isOverLimit, setIsOverLimit] = React.useState(false);
-
-  const countWords = (text: string) => {
-    const trimmed = text.trim();
-    if (trimmed === '') return 0;
-    return trimmed.split(/\s+/).length;
-  };
 
   React.useEffect(() => {
     const text = typeof value === 'string' ? value : '';
-    const count = countWords(text);
-    setWordCount(count);
-    setIsOverLimit(count > maxWords);
-  }, [value, maxWords]);
+    setCharCount(text.length);
+    setIsOverLimit(maxLength ? text.length > maxLength : false);
+  }, [value, maxLength]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    const count = countWords(text);
-    
-    if (count <= maxWords) {
-      onChange?.(e);
-    }
+    onChange?.(e);
   };
 
   return (
@@ -58,14 +46,15 @@ function Textarea({
         )}
         value={value}
         onChange={handleChange}
+        maxLength={maxLength}
         {...props}
       />
-      {showWordCount && (
+      {showCharCount && maxLength && (
         <div className={cn(
           "text-xs mt-1 text-right",
           isOverLimit ? "text-red-500" : "text-white/60"
         )}>
-          {wordCount}/{maxWords} words
+          {charCount}/{maxLength} characters
         </div>
       )}
     </div>

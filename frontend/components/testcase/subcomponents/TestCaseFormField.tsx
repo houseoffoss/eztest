@@ -27,6 +27,7 @@ export interface FormFieldConfig {
   rows?: number;
   options?: SelectOption[];
   error?: string;
+  maxLength?: number;
 }
 
 interface TestCaseFormFieldProps extends FormFieldConfig {
@@ -47,6 +48,7 @@ export function TestCaseFormField({
   value,
   onChange,
   variant = 'glass',
+  maxLength,
 }: TestCaseFormFieldProps) {
   const baseInputClass = 'w-full';
 
@@ -91,6 +93,7 @@ export function TestCaseFormField({
           }
           placeholder={placeholder}
           rows={rows || 3}
+          maxLength={maxLength}
           className={baseInputClass}
         />
         {error && <p className="text-xs text-red-500">{error}</p>}

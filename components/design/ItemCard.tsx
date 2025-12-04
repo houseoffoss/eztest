@@ -6,6 +6,7 @@ import { ReactNode } from 'react';
 interface ItemCardProps {
   title: string;
   description?: string;
+  descriptionClassName?: string;
   badges?: ReactNode;
   header?: ReactNode;
   content: ReactNode;
@@ -22,6 +23,7 @@ interface ItemCardProps {
 export const ItemCard = ({
   title,
   description,
+  descriptionClassName,
   badges,
   header,
   content,
@@ -46,7 +48,7 @@ export const ItemCard = ({
             <CardTitle className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1 text-white">
               {title}
             </CardTitle>
-            <CardDescription className="line-clamp-1 text-sm text-white/60 min-h-5">
+            <CardDescription className={descriptionClassName || "line-clamp-1 text-sm text-white/60 min-h-5"}>
               {description || ''}
             </CardDescription>
           </div>
