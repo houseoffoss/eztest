@@ -40,7 +40,7 @@ export const ProjectOverviewCard = ({ project }: ProjectOverviewCardProps) => {
       <CardContent className="space-y-6">
         <div>
           <h3 className="font-semibold mb-2 text-white">Description</h3>
-          <p className="text-white/70">
+          <p className="text-white/70 break-words whitespace-pre-wrap line-clamp-3">
             {project.description || 'No description provided'}
           </p>
         </div>

@@ -293,7 +293,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   };
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading..." />;
+    return <Loader fullScreen text="Loading test cases..." />;
   }
 
   // Check permissions

@@ -211,6 +211,7 @@ export function TestRunCard({
     <ItemCard
       title={testRun.name}
       description={testRun.description || undefined}
+      descriptionClassName="line-clamp-2 break-words"
       badges={badges}
       header={header}
       content={content}

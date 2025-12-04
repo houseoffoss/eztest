@@ -39,7 +39,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Team Members - ${project.name} | EZTest`;
+      document.title = `Project Members - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -204,7 +204,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white mb-1">Project Members</h1>
           <p className="text-white/70 text-sm">
-            Manage team members for <span className="font-semibold text-white">{project.name}</span>
+            Manage project members for <span className="font-semibold text-white">{project.name}</span>
             {!isAdminOrManager && (
               <span className="text-white/50 ml-2">(Project managers and admins can manage members)</span>
             )}

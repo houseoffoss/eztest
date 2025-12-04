@@ -141,7 +141,7 @@ export function AddTestCaseDialog({
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center py-12">
-            <Loader text="Loading test cases..." />
+            <Loader fullScreen={false} text="Loading test cases..." />
           </div>
         ) : testCases.length === 0 ? (
           <div className="flex-1 flex items-center justify-center py-12">
@@ -191,7 +191,7 @@ export function AddTestCaseDialog({
                   <div className="flex-1">
                     <p className="text-white font-medium">{testCase.title}</p>
                     {testCase.description && (
-                      <p className="text-white/60 text-sm mt-1 line-clamp-2">
+                      <p className="text-white/60 text-sm mt-1 break-words line-clamp-2">
                         {testCase.description}
                       </p>
                     )}

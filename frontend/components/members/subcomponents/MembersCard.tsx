@@ -38,7 +38,7 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
   return (
     <div className="max-w-6xl mx-auto px-8 pb-8">
       <DetailCard
-        title={`Team Members (${members.length})`}
+        title={`Project Members (${members.length})`}
         description="People who have access to this project"
         contentClassName=""
       >
@@ -47,7 +47,7 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
               <Users className="w-16 h-16 text-white/50 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-white">No members yet</h3>
               <p className="text-white/60 mb-6">
-                {isAdminOrManager ? 'Add team members to collaborate on this project' : 'Waiting for project manager or admin to add members'}
+                {isAdminOrManager ? 'Add project members to collaborate on this project' : 'Waiting for project manager or admin to add members'}
               </p>
             </div>
           ) : (

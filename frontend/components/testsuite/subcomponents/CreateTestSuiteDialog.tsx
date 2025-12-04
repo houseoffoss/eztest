@@ -34,7 +34,7 @@ export function CreateTestSuiteDialog({
       type: 'text',
       required: true,
       minLength: 3,
-      maxLength: 255,
+      maxLength: 50,
     },
     {
       name: 'description',
@@ -42,6 +42,7 @@ export function CreateTestSuiteDialog({
       placeholder: 'Brief description of the test suite...',
       type: 'textarea',
       rows: 3,
+      maxLength: 250,
     },
     {
       name: 'parentId',

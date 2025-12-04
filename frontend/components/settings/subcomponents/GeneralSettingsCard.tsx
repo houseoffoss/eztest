@@ -39,6 +39,7 @@ export function GeneralSettingsCard({
             </Label>
             <Input
               id="name"
+              variant="glass"
               value={formData.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 onFormChange({ ...formData, name: e.target.value })
@@ -47,7 +48,6 @@ export function GeneralSettingsCard({
               minLength={3}
               maxLength={255}
               placeholder="Demo Project"
-              className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
             />
           </div>
 
@@ -57,9 +57,9 @@ export function GeneralSettingsCard({
             </Label>
             <Input
               id="key"
+              variant="glass"
               value={project.key}
               disabled
-              className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent cursor-not-allowed opacity-50"
             />
             <p className="text-xs text-muted-foreground">
               Project key cannot be changed after creation
@@ -72,13 +72,13 @@ export function GeneralSettingsCard({
             </Label>
             <Textarea
               id="description"
+              variant="glass"
               value={formData.description}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 onFormChange({ ...formData, description: e.target.value })
               }
               rows={4}
               placeholder="Welcome to EZTest! This is a demo project to help you get started. Feel free to explore the features and create your own test suites, test cases, and test plans."
-              className="w-full px-4 py-2.5 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none text-sm leading-relaxed"
             />
           </div>
 

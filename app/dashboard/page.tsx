@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Button } from '@/elements/button';
+import { Card, CardContent } from '@/elements/card';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { TopBar } from '@/components/design/TopBar';
 import { Metadata } from 'next';
@@ -78,15 +79,17 @@ export default async function DashboardPage() {
           </div>
         </GlassPanel>
         {/* Glassy footer panel for dashboard */}
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] px-6 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Dashboard</p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="hidden sm:inline">Glass theme active</span>
-              <span className="text-primary">v0.1.0</span>
+        <Card variant="glass" className="mt-12">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Dashboard</p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="hidden sm:inline">Glass theme active</span>
+                <span className="text-primary">v0.1.0</span>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
+import { Input } from '@/elements/input';
+import { Label } from '@/elements/label';
+import { Alert, AlertDescription } from '@/elements/alert';
 import { GlassPanel } from '@/components/design/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
 import { Loader } from '@/elements/loader';
@@ -200,15 +203,15 @@ export default function AccountSettingsPage() {
         )}
 
         {error && (
-          <div className="mb-6 p-4 rounded-md border border-red-500/40 bg-red-500/10">
-            <p className="text-red-300">{error}</p>
-          </div>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {success && (
-          <div className="mb-6 p-4 rounded-md border border-green-500/40 bg-green-500/10">
-            <p className="text-green-300">{success}</p>
-          </div>
+          <Alert className="mb-6 border-green-500/40 bg-green-500/10">
+            <AlertDescription className="text-green-300">{success}</AlertDescription>
+          </Alert>
         )}
 
         {/* Change Password Section */}
@@ -224,11 +227,12 @@ export default function AccountSettingsPage() {
               <form onSubmit={handleChangePassword} className="space-y-4">
                 {/* Current Password */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <Label className="block text-sm font-medium text-muted-foreground mb-2">
                     Current Password
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="password"
+                    variant="glass"
                     value={passwordData.currentPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
@@ -237,18 +241,18 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter your current password"
                   />
                 </div>
 
                 {/* New Password */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <Label className="block text-sm font-medium text-muted-foreground mb-2">
                     New Password
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="password"
+                    variant="glass"
                     value={passwordData.newPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
@@ -257,18 +261,18 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Enter new password (min 8 characters)"
                   />
                 </div>
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  <Label className="block text-sm font-medium text-muted-foreground mb-2">
                     Confirm New Password
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="password"
+                    variant="glass"
                     value={passwordData.confirmPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                       setPasswordData((prev) => ({
@@ -277,7 +281,6 @@ export default function AccountSettingsPage() {
                       }))
                     }
                     required
-                    className="w-full px-4 py-2 rounded-[10px] border border-border bg-transparent focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     placeholder="Confirm your new password"
                   />
                 </div>
@@ -310,7 +313,7 @@ export default function AccountSettingsPage() {
                       });
                     }}
                     variant="glass"
-                    className="flex-1 rounded-[10px]"
+                    className="flex-1 rounded-[10px] cursor-pointer"
                   >
                     Cancel
                   </Button>
@@ -428,8 +431,8 @@ export default function AccountSettingsPage() {
                   setPassword('');
                   setError(null);
                 }}
-                variant="ghost"
-                className="rounded-[10px]"
+                variant="glass"
+                className="rounded-[10px] cursor-pointer"
               >
                 Cancel
               </Button>

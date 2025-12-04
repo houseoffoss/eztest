@@ -96,7 +96,7 @@ export function AddTestCasesDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="glass" onClick={onCancel}>
+          <Button variant="glass" onClick={onCancel} className="cursor-pointer">
             Cancel
           </Button>
           <ButtonPrimary

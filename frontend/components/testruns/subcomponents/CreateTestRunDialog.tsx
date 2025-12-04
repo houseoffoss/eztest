@@ -25,7 +25,7 @@ export function CreateTestRunDialog({
       type: 'text',
       required: true,
       minLength: 3,
-      maxLength: 255,
+      maxLength: 50,
       cols: 2,
     },
     {
@@ -48,6 +48,7 @@ export function CreateTestRunDialog({
       type: 'textarea',
       rows: 3,
       cols: 2,
+      maxLength: 250,
     },
   ];
 

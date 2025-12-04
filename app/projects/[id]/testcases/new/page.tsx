@@ -507,6 +507,7 @@ export default function NewTestCasePage() {
                         <Button
                           size="sm"
                           variant="glass"
+                          className="cursor-pointer"
                           onClick={() => {
                             setAddingStep(false);
                             setNewStep({ action: '', expectedResult: '' });
@@ -539,7 +540,7 @@ export default function NewTestCasePage() {
                 </ButtonPrimary>
                 <Button
                   variant="glass"
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   onClick={() =>
                     router.push(`/projects/${projectId}/testcases`)
                   }

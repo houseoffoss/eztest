@@ -18,6 +18,7 @@ export function getTestSuiteFormFields(parentSuites: TestSuite[] = []): FormFiel
       type: 'text',
       placeholder: 'Enter test suite name',
       required: true,
+      maxLength: 50,
     },
     {
       name: 'description',
@@ -25,6 +26,7 @@ export function getTestSuiteFormFields(parentSuites: TestSuite[] = []): FormFiel
       type: 'textarea',
       placeholder: 'Enter suite description',
       rows: 3,
+      maxLength: 250,
     },
     {
       name: 'parentId',

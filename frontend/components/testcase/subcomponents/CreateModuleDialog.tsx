@@ -24,7 +24,7 @@ export function CreateModuleDialog({
       type: 'text',
       required: true,
       minLength: 1,
-      maxLength: 255,
+      maxLength: 50,
       cols: 2,
     },
     {
@@ -34,6 +34,7 @@ export function CreateModuleDialog({
       placeholder: 'Enter module description (optional)',
       rows: 3,
       cols: 2,
+      maxLength: 250,
     },
   ];
 

@@ -282,8 +282,9 @@ export function AddModulesAndTestCasesDialog({
             </p>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="glass"
                 onClick={() => onOpenChange(false)}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>

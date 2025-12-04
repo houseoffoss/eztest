@@ -103,7 +103,7 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
       
       <CardContent className="py-3 px-4">
         {testCase.description && (
-          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+          <p className="text-sm text-gray-400 mb-3 break-words line-clamp-2">
             {testCase.description}
           </p>
         )}

@@ -162,7 +162,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
   const rootSuites = testSuites.filter(s => !s.parentId);
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading..." />;
+    return <Loader fullScreen text="Loading test suites..." />;
   }
 
   // Check if user can create, update, or delete test suites

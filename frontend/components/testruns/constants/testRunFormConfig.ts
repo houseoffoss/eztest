@@ -25,6 +25,7 @@ export function getTestRunFormFields(): FormFieldConfig[] {
       type: 'text',
       required: true,
       placeholder: 'Enter test run name',
+      maxLength: 50,
     },
     {
       name: 'description',
@@ -32,6 +33,7 @@ export function getTestRunFormFields(): FormFieldConfig[] {
       type: 'textarea',
       required: false,
       placeholder: 'Enter test run description',
+      maxLength: 250,
     },
     {
       name: 'environment',

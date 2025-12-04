@@ -57,7 +57,7 @@ export function TestCaseDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Description
               </h4>
-              <p className="text-white/90 break-words">{testCase.description}</p>
+              <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
             </div>
           )}
 

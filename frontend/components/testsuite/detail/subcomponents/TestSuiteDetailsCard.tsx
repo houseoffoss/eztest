@@ -35,7 +35,7 @@ export function TestSuiteDetailsCard({
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Description
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap">
+              <p className="text-white/90 whitespace-pre-wrap break-words">
                 {description}
               </p>
             </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { BaseDialog, type BaseDialogField } from '@/components/design/BaseDialog';
 import { Role, User, EditUserFormData } from '../types';
 
@@ -12,6 +13,15 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: EditUserDialogProps) {
+  const [key, setKey] = useState(0);
+
+  // Reset the dialog when user changes or dialog opens
+  useEffect(() => {
+    if (open && user) {
+      setKey((prev) => prev + 1);
+    }
+  }, [open, user?.id]);
+
   const fields: BaseDialogField[] = [
     {
       name: 'name',
@@ -59,6 +69,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
       type: 'textarea',
       rows: 3,
       cols: 2,
+      maxLength: 250,
       defaultValue: user?.bio || '',
     },
   ];
@@ -78,6 +89,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
 
   return (
     <BaseDialog
+      key={key}
       title="Edit User"
       description="Update user information and role"
       fields={fields}
@@ -85,6 +97,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
       triggerOpen={open}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}
+      disablePersistence={true}
     />
   );
 }

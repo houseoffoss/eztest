@@ -28,7 +28,7 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
         <h1 className="text-2xl font-bold text-white">{project.name}</h1>
       </div>
       {project.description && (
-        <p className="text-white/70 text-sm mb-2">{project.description}</p>
+        <p className="text-white/70 text-sm mb-2 break-words line-clamp-2">{project.description}</p>
       )}
       <div className="flex items-center gap-4 text-xs text-white/60">
         <div>
