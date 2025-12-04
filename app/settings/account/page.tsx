@@ -310,7 +310,7 @@ export default function AccountSettingsPage() {
                       });
                     }}
                     variant="glass"
-                    className="flex-1 rounded-[10px]"
+                    className="flex-1 rounded-[10px] cursor-pointer"
                   >
                     Cancel
                   </Button>
@@ -428,8 +428,8 @@ export default function AccountSettingsPage() {
                   setPassword('');
                   setError(null);
                 }}
-                variant="ghost"
-                className="rounded-[10px]"
+                variant="glass"
+                className="rounded-[10px] cursor-pointer"
               >
                 Cancel
               </Button>

@@ -69,7 +69,7 @@ export function SecuritySettings({
 
         <div className="flex gap-2 pt-2">
           <ButtonPrimary className="rounded-lg">Update Password</ButtonPrimary>
-          <Button variant="glass" className="rounded-lg">Cancel</Button>
+          <Button variant="glass" className="rounded-lg cursor-pointer">Cancel</Button>
         </div>
       </div>
     </GlassPanel>

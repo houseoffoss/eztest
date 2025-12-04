@@ -359,7 +359,7 @@ export default function UIShowcasePage() {
                     <Input id="dlg-email" variant="glass" placeholder="you@example.com" />
                   </div>
                   <DialogFooter>
-                    <ButtonSecondary variant="ghost">Cancel</ButtonSecondary>
+                    <Button variant="glass" className="cursor-pointer">Cancel</Button>
                     <ButtonPrimary>Save</ButtonPrimary>
                   </DialogFooter>
                 </DialogContent>

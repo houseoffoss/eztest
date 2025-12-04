@@ -1,6 +1,7 @@
 'use client';
 
 import { Textarea } from '@/elements/textarea';
+import { Label } from '@/elements/label';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Module } from '../../types';
 
@@ -18,27 +19,42 @@ export function ModuleDetailsCard({
   onFormChange,
 }: ModuleDetailsCardProps) {
   return (
-    <DetailCard title="Module Details" contentClassName="space-y-4">
-      <div>
-        <h4 className="text-sm font-medium text-white/60 mb-2">
-          Description
-        </h4>
-        {isEditing ? (
+    <DetailCard title="Details" contentClassName="space-y-4">
+      {isEditing ? (
+        <div className="space-y-2">
+          <Label>Description</Label>
           <Textarea
+            variant="glass"
             value={formData.description}
             onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
-            placeholder="Describe the purpose of this module..."
-            rows={5}
-            className="w-full bg-white/5 border-white/10 text-white placeholder:text-white/30"
+            placeholder="Enter description"
+            rows={3}
+            maxLength={250}
+            className="w-full"
           />
-        ) : (
-          <div className="text-white/90 whitespace-pre-wrap break-words line-clamp-3">
-            {module.description || (
-              <span className="text-white/40 italic">No description provided</span>
-            )}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          {module.description && (
+            <div>
+              <h4 className="text-sm font-medium text-white/60 mb-1">
+                Description
+              </h4>
+              <p className="text-white/90 whitespace-pre-wrap break-words">
+                {module.description}
+              </p>
+            </div>
+          )}
+          {!module.description && (
+            <div>
+              <h4 className="text-sm font-medium text-white/60 mb-1">
+                Description
+              </h4>
+              <p className="text-white/40 italic">No description provided</p>
+            </div>
+          )}
+        </>
+      )}
     </DetailCard>
   );
 }
