@@ -4,7 +4,6 @@ import { Badge } from '@/elements/badge';
 import { Input } from '@/elements/input';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonSecondary } from '@/elements/button-secondary';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Edit, Save, X, Trash2 } from 'lucide-react';
 import { Module } from '../../types';
@@ -84,10 +83,10 @@ export function ModuleHeader({
           ) : (
             <>
               {canUpdate && (
-                <ButtonSecondary onClick={onEdit}>
+                <Button variant="glass" onClick={onEdit} className="cursor-pointer">
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
-                </ButtonSecondary>
+                </Button>
               )}
               {canDelete && (
                 <ButtonDestructive onClick={onDelete}>
