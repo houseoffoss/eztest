@@ -74,42 +74,47 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
 
       <div className="max-w-4xl mx-auto px-8 py-10">
         {/* Profile Header Card */}
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                <div className="w-32 h-32 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-5xl font-bold text-white">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
+        <DetailCard 
+          title="Profile" 
+          description="User account overview"
+          className="mb-8"
+          contentClassName="p-0"
+        >
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <div className="w-32 h-32 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-5xl font-bold text-white">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="mb-4">
+                <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
+                <Badge variant="outline" className={`border ${getRoleBadgeColor(user.role.name)} cursor-default`}>
+                  <Briefcase className="w-3 h-3 mr-1" />
+                  {user.role.name}
+                </Badge>
               </div>
 
-              {/* Info */}
-              <div className="flex-1 text-center md:text-left">
-                <div className="mb-4">
-                  <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
-                  <Badge variant="outline" className={`border ${getRoleBadgeColor(user.role.name)} cursor-default`}>
-                    <Briefcase className="w-3 h-3 mr-1" />
-                    {user.role.name}
-                  </Badge>
+              <div className="space-y-2 text-sm text-white/70">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  <span>{user.email}</span>
                 </div>
-
-                <div className="space-y-2 text-sm text-white/70">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    <span>{user.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Joined {formatDateTime(user.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" />
-                    <span>{user._count.createdProjects} projects created</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Joined {formatDateTime(user.createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  <span>{user._count.createdProjects} projects created</span>
                 </div>
               </div>
             </div>
-        </div>
+          </div>
+        </DetailCard>
 
         {/* Details Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -157,7 +162,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] px-6 py-6">
+        <DetailCard title="About" className="mt-12" contentClassName="p-0">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Admin</p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -165,7 +170,7 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               <span className="text-primary">v0.1.0</span>
             </div>
           </div>
-        </div>
+        </DetailCard>
       </div>
     </>
   );

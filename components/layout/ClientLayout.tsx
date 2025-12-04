@@ -71,8 +71,8 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       } else {
         setSidebarItems(mainSidebarItems);
       }
-    } else if (pathname === '/projects' || pathname?.startsWith('/testcases') || pathname?.startsWith('/testruns') || pathname?.startsWith('/settings') || pathname?.startsWith('/profile')) {
-      // Projects list, test cases, test runs, settings, or profile pages
+    } else if (pathname === '/projects' || pathname?.startsWith('/testcases') || pathname?.startsWith('/testruns')) {
+      // Projects list, test cases, test runs pages
       // Keep last project context in sidebar if available
       if (lastProjectId) {
         setProjectId(lastProjectId);
@@ -81,6 +81,17 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         setSidebarItems(pathname === '/projects' ? getProjectsPageSidebarItems(isAdmin) : mainSidebarItems);
         setProjectId(null);
       }
+    } else if (pathname?.startsWith('/settings') || pathname?.startsWith('/profile')) {
+      // Settings or profile pages - show admin menu for admin users
+      if (isAdmin) {
+        setSidebarItems(getAdminSidebarItems());
+      } else if (lastProjectId) {
+        setProjectId(lastProjectId);
+        setSidebarItems(getProjectSidebarItems(lastProjectId, isAdmin, canManageSettings));
+      } else {
+        setSidebarItems(mainSidebarItems);
+      }
+      setProjectId(null);
     } else {
       // Other main pages - show main items with admin items if applicable
       if (isAdmin) {

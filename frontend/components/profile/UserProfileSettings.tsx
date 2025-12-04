@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { Textarea } from '@/elements/textarea';
 import { Label } from '@/elements/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import { TopBar } from '@/components/design';
+import { DetailCard } from '@/components/design/DetailCard';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
 import { Loader } from '@/elements/loader';
@@ -119,7 +119,7 @@ export default function UserProfileSettings() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to change password');
+        throw new Error(errorData.message || errorData.error || 'Failed to change password');
       }
 
       setAlert({
@@ -336,6 +336,16 @@ export default function UserProfileSettings() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Footer */}
+        <DetailCard title="About" className="mt-12" contentClassName="p-0">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Belsterns Technologies</p>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="text-primary">v0.1.0</span>
+            </div>
+          </div>
+        </DetailCard>
       </div>
 
       {/* Alerts */}

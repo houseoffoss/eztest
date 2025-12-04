@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DetailCard } from '@/components/design';
 import { TopBar } from '@/components/design';
 import {
   ProfileInformation,
@@ -81,7 +82,7 @@ export default function ProfilePageContent() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-2xl ring-1 ring-white/5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] px-6 py-6">
+        <DetailCard title="About" className="mt-12" contentClassName="p-0">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Account Settings</p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -89,7 +90,7 @@ export default function ProfilePageContent() {
               <span className="text-primary">v0.1.0</span>
             </div>
           </div>
-        </div>
+        </DetailCard>
       </div>
     </>
   );
