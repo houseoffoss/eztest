@@ -16,7 +16,7 @@ export class TestSuiteService {
         children: {
           include: {
             _count: {
-              select: { testCases: true },
+              select: { testCaseSuites: true },
             },
           },
         },
@@ -39,7 +39,7 @@ export class TestSuiteService {
           },
         },
         _count: {
-          select: { testCases: true },
+          select: { testCaseSuites: true },
         },
       },
       orderBy: [
@@ -48,7 +48,23 @@ export class TestSuiteService {
       ],
     });
 
-    return suites;
+    // Transform the data to maintain backward compatibility
+    const transformedSuites = suites.map(suite => ({
+      ...suite,
+      _count: {
+        ...suite._count,
+        testCases: suite._count.testCaseSuites,
+      },
+      children: suite.children.map(child => ({
+        ...child,
+        _count: {
+          ...child._count,
+          testCases: child._count.testCaseSuites,
+        },
+      })),
+    }));
+
+    return transformedSuites;
   }
 
   /**

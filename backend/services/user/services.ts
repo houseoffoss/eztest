@@ -121,6 +121,34 @@ export class UserService {
       },
     });
   }
+
+  /**
+   * Get user details by ID (for admin use)
+   */
+  async getUserDetailsById(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        bio: true,
+        phone: true,
+        location: true,
+        createdAt: true,
+        updatedAt: true,
+        role: true,
+        _count: {
+          select: {
+            createdProjects: true,
+          },
+        },
+      },
+    });
+
+    return user;
+  }
 }
 
 export const userService = new UserService();

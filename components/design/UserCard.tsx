@@ -6,6 +6,7 @@ import { Avatar } from '@/elements/avatar';
 import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { Mail, Calendar, Briefcase, Edit, Trash2, Eye } from 'lucide-react';
+import { formatDateTime } from '@/lib/date-utils';
 
 export interface UserCardProps {
   user: {
@@ -107,7 +108,7 @@ export function UserCard({
             )}
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              Joined {new Date(user.createdAt).toLocaleDateString()}
+              Joined {formatDateTime(user.createdAt)}
             </div>
           </div>
         </div>

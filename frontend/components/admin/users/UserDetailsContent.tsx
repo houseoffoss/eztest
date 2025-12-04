@@ -1,8 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Badge } from '@/elements/badge';
 import { DetailCard } from '@/components/design/DetailCard';
+import { Loader } from '@/elements/loader';
 import { formatDateTime } from '@/lib/date-utils';
 import { Breadcrumbs } from '@/components/design/Breadcrumbs';
 import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
@@ -13,21 +16,60 @@ interface UserRole {
   name: string;
 }
 
-interface UserDetailsContentProps {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
-    role: UserRole;
-    createdAt: Date;
-    _count: {
-      createdProjects: number;
-    };
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  bio?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  role: UserRole;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: {
+    createdProjects: number;
   };
 }
 
-export default function UserDetailsContent({ user }: UserDetailsContentProps) {
+interface UserDetailsContentProps {
+  userId: string;
+}
+
+export default function UserDetailsContent({ userId }: UserDetailsContentProps) {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUser();
+  }, [userId]);
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}`);
+      const data = await response.json();
+
+      if (response.ok && data.data) {
+        setUser(data.data);
+      } else {
+        router.push('/admin/users');
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      router.push('/admin/users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <Loader fullScreen text="Loading user details..." />;
+  }
+
+  if (!user) {
+    return null;
+  }
   const handleSignOut = () => {
     // Clear all persisted form data before signing out
     clearAllPersistedForms();
@@ -138,6 +180,24 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
                 <label className="text-xs uppercase tracking-wide text-muted-foreground">Role</label>
                 <p className="text-white font-medium mt-1">{user.role.name}</p>
               </div>
+              {user.phone && (
+                <div>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Phone</label>
+                  <p className="text-white font-medium mt-1">{user.phone}</p>
+                </div>
+              )}
+              {user.location && (
+                <div>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Location</label>
+                  <p className="text-white font-medium mt-1">{user.location}</p>
+                </div>
+              )}
+              {user.bio && (
+                <div>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Bio</label>
+                  <p className="text-white font-medium mt-1">{user.bio}</p>
+                </div>
+              )}
             </div>
           </DetailCard>
 
@@ -156,6 +216,10 @@ export default function UserDetailsContent({ user }: UserDetailsContentProps) {
               <div>
                 <label className="text-xs uppercase tracking-wide text-muted-foreground">Member Since</label>
                 <p className="text-white font-medium mt-1">{formatDateTime(user.createdAt)}</p>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">Last Updated</label>
+                <p className="text-white font-medium mt-1">{formatDateTime(user.updatedAt)}</p>
               </div>
             </div>
           </DetailCard>

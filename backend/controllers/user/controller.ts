@@ -90,6 +90,20 @@ export class UserController {
       throw error;
     }
   }
+
+  /**
+   * Get user details by ID (admin only)
+   * Permission already checked by route wrapper
+   */
+  async getUserById(userId: string) {
+    const user = await userService.getUserDetailsById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return { data: user };
+  }
 }
 
 export const userController = new UserController();

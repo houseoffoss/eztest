@@ -4,7 +4,6 @@ import { Badge } from '@/elements/badge';
 import { Button } from '@/elements/button';
 import { DetailCard } from '@/components/design/DetailCard';
 import { UserCard } from '@/components/design/UserCard';
-import { formatDate } from '@/lib/date-utils';
 import { Trash2, Shield, Eye, Users } from 'lucide-react';
 import { ProjectMember } from '../types';
 

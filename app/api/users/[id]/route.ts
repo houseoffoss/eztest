@@ -1,6 +1,21 @@
 import { hasPermission } from '@/lib/rbac/hasPermission';
+import { userController } from '@/backend/controllers/user/controller';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+
+/**
+ * GET /api/users/[id]
+ * Get user details by ID (admin only)
+ * Required permission: users:read
+ */
+export const GET = hasPermission(
+  async (request, context) => {
+    const { id } = await context!.params;
+    return userController.getUserById(id);
+  },
+  'users',
+  'read'
+);
 
 /**
  * PUT /api/users/[id]
