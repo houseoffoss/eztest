@@ -48,7 +48,7 @@ export function CreateAddMemberDialog({
 
   const config: BaseDialogConfig = {
     title: 'Add Project Member',
-    description: 'Add a team member to this project',
+    description: 'Add a project member to this project',
     fields,
     submitLabel: 'Add Member',
     cancelLabel: 'Cancel',
