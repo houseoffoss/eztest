@@ -51,7 +51,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
 
   // Sorting
-  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortField, setSortField] = useState<SortField>('defectId');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Pagination
@@ -76,7 +76,7 @@ export default function DefectList({ projectId }: DefectListProps) {
         setPriorityFilter(typeof filters.priorityFilter === 'string' ? filters.priorityFilter : 'all');
         setStatusFilter(typeof filters.statusFilter === 'string' ? filters.statusFilter : 'all');
         setAssigneeFilter(typeof filters.assigneeFilter === 'string' ? filters.assigneeFilter : 'all');
-        setSortField(filters.sortField || 'createdAt');
+        setSortField(filters.sortField || 'defectId');
         setSortOrder(filters.sortOrder || 'desc');
       } catch (error) {
         console.error('Error restoring filters:', error);
@@ -211,16 +211,19 @@ export default function DefectList({ projectId }: DefectListProps) {
 
     // Sorting
     filtered.sort((a, b) => {
-      let compareA: string | number = a[sortField] as string | number;
-      let compareB: string | number = b[sortField] as string | number;
+      let compareA: string | number;
+      let compareB: string | number;
 
       // Handle special cases
       if (sortField === 'assignedTo') {
         compareA = a.assignedTo?.name || '';
         compareB = b.assignedTo?.name || '';
-      } else if (sortField === 'createdAt' || sortField === 'updatedAt') {
-        compareA = new Date(compareA).getTime();
-        compareB = new Date(compareB).getTime();
+      } else if (sortField === 'reporter') {
+        compareA = a.createdBy?.name || '';
+        compareB = b.createdBy?.name || '';
+      } else {
+        compareA = a[sortField] as string | number;
+        compareB = b[sortField] as string | number;
       }
 
       if (compareA < compareB) return sortOrder === 'asc' ? -1 : 1;

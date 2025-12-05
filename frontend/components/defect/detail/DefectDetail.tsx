@@ -35,6 +35,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   const [formData, setFormData] = useState<DefectFormData>({
     title: '',
     description: '',
+    defectType: 'BUG',
     severity: 'MEDIUM',
     priority: 'MEDIUM',
     status: 'OPEN',
@@ -75,6 +76,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         setFormData({
           title: data.data.title,
           description: data.data.description || '',
+          defectType: data.data.defectType || 'BUG',
           severity: data.data.severity,
           priority: data.data.priority,
           status: data.data.status,
@@ -200,6 +202,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
             setFormData({
               title: defect.title,
               description: defect.description || '',
+              defectType: defect.defectType || 'BUG',
               severity: defect.severity,
               priority: defect.priority,
               status: defect.status,
