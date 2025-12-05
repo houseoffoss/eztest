@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Folder,
   Shield,
+  Bug,
 } from 'lucide-react';
 import { Button } from '@/elements/button';
 
@@ -47,6 +48,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Test Cases': <FileCheck className="w-4 h-4" />,
   'Test Plans': <ClipboardList className="w-4 h-4" />,
   'Test Runs': <PlayCircle className="w-4 h-4" />,
+  Defects: <Bug className="w-4 h-4" />,
   Members: <Users className="w-4 h-4" />,
   Settings: <Settings className="w-4 h-4" />,
   Admin: <Shield className="w-4 h-4" />,

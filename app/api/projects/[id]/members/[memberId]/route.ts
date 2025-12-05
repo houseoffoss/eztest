@@ -9,7 +9,7 @@ import { hasProjectMemberAccess } from '@/lib/rbac';
  */
 export const DELETE = hasProjectMemberAccess(
   async (request, context) => {
-    const { id, memberId } = context.params;
+    const { id, memberId } = await context.params;
     return projectController.removeProjectMember(request, id, memberId);
   },
   'projects',

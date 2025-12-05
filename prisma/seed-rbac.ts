@@ -49,6 +49,13 @@ export async function seedRBAC() {
     { name: 'requirements:create', description: 'Create new requirements' },
     { name: 'requirements:update', description: 'Update requirements' },
     { name: 'requirements:delete', description: 'Delete requirements' },
+    
+    // Defect permissions
+    { name: 'defects:read', description: 'View defects' },
+    { name: 'defects:create', description: 'Create new defects' },
+    { name: 'defects:update', description: 'Update defects' },
+    { name: 'defects:delete', description: 'Delete defects' },
+    { name: 'defects:assign', description: 'Assign defects to users' },
   ];
 
   // Upsert all permissions
@@ -126,6 +133,11 @@ export async function seedRBAC() {
       'requirements:create',
       'requirements:update',
       'requirements:delete',
+      'defects:read',
+      'defects:create',
+      'defects:update',
+      'defects:delete',
+      'defects:assign',
       'users:read',
     ].includes(perm.name)
   );
@@ -160,6 +172,11 @@ export async function seedRBAC() {
       'requirements:create',
       'requirements:update',
       'requirements:delete',
+      'defects:read',
+      'defects:create',
+      'defects:update',
+      'defects:delete',
+      'defects:assign',
       'users:read',
     ].includes(perm.name)
   );
@@ -170,7 +187,7 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ TESTER: Full access to test operations (cannot create, update, or delete projects or manage members)');
+  console.log('    ✅ TESTER: Full access to test operations and defects (cannot create, update, or delete projects or manage members)');
 
   // Assign permissions to VIEWER (read-only)
   const viewerPermissions = permissionRecords.filter((perm) =>
@@ -180,6 +197,7 @@ export async function seedRBAC() {
       'testcases:read',
       'testruns:read',
       'requirements:read',
+      'defects:read',
       'users:read',
     ].includes(perm.name)
   );
@@ -196,7 +214,7 @@ export async function seedRBAC() {
 }
 
 // Run if executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   seedRBAC()
     .catch((e) => {
       console.error('❌ Error seeding RBAC:', e);

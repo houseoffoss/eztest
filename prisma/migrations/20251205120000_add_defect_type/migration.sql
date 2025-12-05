@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "DefectType" AS ENUM ('BUG', 'IMPROVEMENT', 'UI_ISSUE', 'BACKEND_ISSUE', 'PERFORMANCE', 'SECURITY', 'DATA_ISSUE', 'OTHER');
+
+-- AlterTable
+ALTER TABLE "Defect" ADD COLUMN "defectType" "DefectType" NOT NULL DEFAULT 'BUG';

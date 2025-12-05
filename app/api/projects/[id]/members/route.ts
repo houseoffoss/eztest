@@ -8,7 +8,7 @@ import { hasProjectMemberAccess, hasPermission } from '@/lib/rbac';
  */
 export const GET = hasPermission(
   async (request, context) => {
-    const { id } = context.params;
+    const { id } = await context.params;
     return projectController.getProjectMembers(request, id);
   },
   'projects',
@@ -23,7 +23,7 @@ export const GET = hasPermission(
  */
 export const POST = hasProjectMemberAccess(
   async (request, context) => {
-    const { id } = context.params;
+    const { id } = await context.params;
     return projectController.addProjectMember(request, id);
   },
   'projects',

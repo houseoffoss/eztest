@@ -48,6 +48,10 @@ export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = fal
       children: [], // Will be populated dynamically
     },
     {
+      label: 'Defects',
+      href: `/projects/${projectId}/defects`,
+    },
+    {
       label: 'Members',
       href: `/projects/${projectId}/members`,
     },
@@ -94,6 +98,10 @@ export const getProjectsPageSidebarItems = (isAdmin: boolean = false): SidebarIt
     {
       label: 'Test Runs',
       children: [],
+    },
+    {
+      label: 'Defects',
+      href: '#',
     },
     {
       label: 'Members',

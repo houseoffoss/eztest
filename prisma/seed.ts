@@ -63,7 +63,9 @@ async function main() {
 
   if (demoProject) {
     console.log('✅ Demo project already exists for admin user');
-  } else {
+  }
+  
+  if (!demoProject) {
     // Create demo project for admin user
     demoProject = await prisma.project.create({
       data: {
@@ -526,6 +528,187 @@ async function main() {
     console.log('   ✅ Test Run: Sprint 1 Regression Testing');
     console.log('      - 8 tests executed (7 passed, 1 failed)');
     console.log('      - 3 tests pending');
+  }
+
+  // Create sample defects (outside the demo project creation block)
+  if (demoProject) {
+    const existingDefects = await prisma.defect.count({
+      where: { projectId: demoProject.id },
+    });
+
+    if (existingDefects === 0) {
+      console.log('\n📝 Creating sample defects...');
+      
+      // Get test cases for linking (if they exist)
+      const passwordResetTestCase = await prisma.testCase.findFirst({
+        where: { projectId: demoProject.id, title: 'Password reset functionality' },
+      });
+      
+      const dashboardTestCase = await prisma.testCase.findFirst({
+        where: { projectId: demoProject.id, title: 'Dashboard data display' },
+      });
+      
+      const formValidationTestCase = await prisma.testCase.findFirst({
+        where: { projectId: demoProject.id, title: 'Form field validation' },
+      });
+      
+      const navigationTestCase = await prisma.testCase.findFirst({
+        where: { projectId: demoProject.id, title: 'Navigation between pages' },
+      });
+      
+      const sessionManagementTestCase = await prisma.testCase.findFirst({
+        where: { projectId: demoProject.id, title: 'Session timeout handling' },
+      });
+      
+      const testRun = await prisma.testRun.findFirst({
+        where: { projectId: demoProject.id },
+      });
+      
+      await prisma.defect.create({
+      data: {
+        defectId: 'DEF-1',
+        projectId: demoProject.id,
+        testCaseId: passwordResetTestCase?.id,
+        testRunId: testRun?.id,
+        title: 'Password reset email not delivered',
+        description: 'Users report not receiving password reset emails. Tested with multiple email providers (Gmail, Outlook, Yahoo).',
+        stepsToReproduce: '1. Navigate to login page\n2. Click "Forgot Password"\n3. Enter valid email address\n4. Click "Send Reset Link"\n5. Check email inbox and spam folder',
+        expectedResult: 'Password reset email should be delivered within 5 minutes',
+        actualResult: 'No email received after 30 minutes of waiting',
+        severity: 'HIGH',
+        priority: 'HIGH',
+        status: 'NEW',
+        assignedToId: adminUser.id,
+        createdById: adminUser.id,
+        environment: 'Production',
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-2',
+        projectId: demoProject.id,
+        testCaseId: dashboardTestCase?.id,
+        title: 'Dashboard widgets not responsive on mobile',
+        description: 'Dashboard widgets overflow on mobile devices with screen width less than 375px.',
+        stepsToReproduce: '1. Login to application\n2. Navigate to dashboard\n3. Open Chrome DevTools\n4. Set viewport to 320x568 (iPhone SE)\n5. Observe widget layout',
+        expectedResult: 'Dashboard widgets should be responsive and fit within mobile viewport',
+        actualResult: 'Widgets overflow horizontally, requiring horizontal scrolling',
+        severity: 'MEDIUM',
+        priority: 'MEDIUM',
+        status: 'IN_PROGRESS',
+        assignedToId: adminUser.id,
+        createdById: adminUser.id,
+        environment: 'Staging',
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-3',
+        projectId: demoProject.id,
+        testCaseId: formValidationTestCase?.id,
+        title: 'Form validation error messages not accessible',
+        description: 'Screen readers cannot properly announce form validation errors, making the application inaccessible to visually impaired users.',
+        stepsToReproduce: '1. Enable screen reader (NVDA/JAWS)\n2. Navigate to any form\n3. Submit form with invalid data\n4. Listen to screen reader announcement',
+        expectedResult: 'Screen reader should announce error messages with proper ARIA labels',
+        actualResult: 'Screen reader does not announce validation errors',
+        severity: 'MEDIUM',
+        priority: 'HIGH',
+        status: 'NEW',
+        createdById: adminUser.id,
+        environment: 'Production',
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-4',
+        projectId: demoProject.id,
+        title: 'API rate limiting not enforced',
+        description: 'API endpoints do not enforce rate limiting, allowing potential DDoS attacks.',
+        stepsToReproduce: '1. Use API testing tool (Postman/curl)\n2. Send 1000 requests per second to /api/projects endpoint\n3. Observe response codes',
+        expectedResult: 'After 100 requests per minute, should return 429 Too Many Requests',
+        actualResult: 'All requests processed successfully without rate limiting',
+        severity: 'CRITICAL',
+        priority: 'CRITICAL',
+        status: 'NEW',
+        assignedToId: adminUser.id,
+        createdById: adminUser.id,
+        environment: 'Production',
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-5',
+        projectId: demoProject.id,
+        testCaseId: navigationTestCase?.id,
+        title: 'Breadcrumb navigation broken on deep routes',
+        description: 'Breadcrumb navigation does not display correctly when navigating more than 3 levels deep.',
+        stepsToReproduce: '1. Navigate to Projects > Demo Project > Test Cases > Edit Test Case\n2. Observe breadcrumb navigation\n3. Try clicking on breadcrumb items',
+        expectedResult: 'Full breadcrumb trail should be visible and clickable',
+        actualResult: 'Only last 2 breadcrumb items are visible, earlier items are truncated',
+        severity: 'LOW',
+        priority: 'LOW',
+        status: 'FIXED',
+        assignedToId: adminUser.id,
+        createdById: adminUser.id,
+        environment: 'QA',
+        resolvedAt: new Date(Date.now() - 86400000), // 1 day ago
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-6',
+        projectId: demoProject.id,
+        testCaseId: sessionManagementTestCase?.id,
+        title: 'Session not invalidated after password change',
+        description: 'User sessions remain active even after password is changed, posing a security risk.',
+        stepsToReproduce: '1. Login to application in two different browsers\n2. In Browser A, change password\n3. In Browser B, try to access protected pages',
+        expectedResult: 'Browser B session should be invalidated, requiring re-login',
+        actualResult: 'Browser B session remains active, can access all pages',
+        severity: 'HIGH',
+        priority: 'CRITICAL',
+        status: 'TESTED',
+        assignedToId: adminUser.id,
+        createdById: adminUser.id,
+        environment: 'Staging',
+        resolvedAt: new Date(Date.now() - 172800000), // 2 days ago
+      },
+    });
+
+    await prisma.defect.create({
+      data: {
+        defectId: 'DEF-7',
+        projectId: demoProject.id,
+        title: 'Dark mode toggle causes flash of unstyled content',
+        description: 'Switching between light and dark mode causes a brief flash of unstyled content (FOUC).',
+        stepsToReproduce: '1. Navigate to Settings\n2. Toggle dark mode switch multiple times\n3. Observe visual behavior',
+        expectedResult: 'Smooth transition between light and dark mode without visual glitches',
+        actualResult: 'Brief flash of white background before dark mode applies',
+        severity: 'LOW',
+        priority: 'MEDIUM',
+        status: 'CLOSED',
+        createdById: adminUser.id,
+        environment: 'Production',
+        resolvedAt: new Date(Date.now() - 259200000), // 3 days ago
+        closedAt: new Date(Date.now() - 172800000), // 2 days ago
+      },
+    });
+
+    console.log('   ✅ Created 7 sample defects:');
+    console.log('      - DEF-1: Password reset email (HIGH/NEW)');
+    console.log('      - DEF-2: Dashboard mobile responsive (MEDIUM/IN_PROGRESS)');
+    console.log('      - DEF-3: Form accessibility (MEDIUM/NEW)');
+    console.log('      - DEF-4: API rate limiting (CRITICAL/NEW)');
+    console.log('      - DEF-5: Breadcrumb navigation (LOW/FIXED)');
+    console.log('      - DEF-6: Session invalidation (HIGH/TESTED)');
+    console.log('      - DEF-7: Dark mode FOUC (LOW/CLOSED)');
+    } else {
+      console.log('✅ Sample defects already exist for demo project');
+    }
   }
 
   console.log('\n🎉 Database seeding completed successfully!');

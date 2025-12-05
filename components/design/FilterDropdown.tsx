@@ -31,11 +31,15 @@ export function FilterDropdown({
   icon = <Filter className="w-4 h-4 mr-2" />,
   className = '',
 }: FilterDropdownProps) {
+  // Find the selected option label
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayValue = selectedOption ? selectedOption.label : placeholder;
+
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className={className}>
         {icon}
-        <SelectValue placeholder={placeholder} />
+        <span className="flex-1 text-left">{displayValue}</span>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
