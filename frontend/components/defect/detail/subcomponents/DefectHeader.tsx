@@ -5,7 +5,7 @@ import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Input } from '@/elements/input';
-import { Edit, Trash2, Save, X } from 'lucide-react';
+import { Edit, Trash2, Save, X, RotateCcw } from 'lucide-react';
 import { Defect, DefectFormData } from '../types';
 
 interface DefectHeaderProps {
@@ -16,6 +16,7 @@ interface DefectHeaderProps {
   onCancel: () => void;
   onSave: () => void;
   onDelete: () => void;
+  onReopen: () => void;
   onFormChange: (data: DefectFormData) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
@@ -29,6 +30,7 @@ export function DefectHeader({
   onCancel,
   onSave,
   onDelete,
+  onReopen,
   onFormChange,
   canUpdate = true,
   canDelete = true,
@@ -120,46 +122,37 @@ export function DefectHeader({
         </div>
 
         <div className="flex gap-2">
-          {!isEditing ? (
+          {isEditing ? (
             <>
+              <Button variant="glass" onClick={onCancel} className="cursor-pointer">
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <ButtonPrimary onClick={onSave} className="cursor-pointer">
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </ButtonPrimary>
+            </>
+          ) : (
+            <>
+              {defect.status === 'CLOSED' && canUpdate && (
+                <Button variant="glass" onClick={onReopen} className="cursor-pointer">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reopen
+                </Button>
+              )}
               {canUpdate && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEdit}
-                  className="gap-2"
-                >
-                  <Edit className="w-4 h-4" />
+                <Button variant="glass" onClick={onEdit}>
+                  <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
               )}
               {canDelete && (
-                <ButtonDestructive
-                  variant="outline"
-                  size="sm"
-                  onClick={onDelete}
-                  className="gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
+                <ButtonDestructive onClick={onDelete} className="cursor-pointer">
+                  <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </ButtonDestructive>
               )}
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onCancel}
-                className="gap-2"
-              >
-                <X className="w-4 h-4" />
-                Cancel
-              </Button>
-              <ButtonPrimary size="sm" onClick={onSave} className="gap-2">
-                <Save className="w-4 h-4" />
-                Save Changes
-              </ButtonPrimary>
             </>
           )}
         </div>

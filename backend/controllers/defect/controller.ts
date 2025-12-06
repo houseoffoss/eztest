@@ -59,8 +59,15 @@ export class DefectController {
    * Create a new defect
    */
   async createDefect(req: CustomRequest, projectId: string, body: unknown) {
+    console.log('📝 Defect creation payload:', JSON.stringify(body, null, 2));
     const validationResult = createDefectSchema.safeParse(body);
     if (!validationResult.success) {
+      console.log('❌ Validation errors:');
+      validationResult.error.issues.forEach((issue) => {
+        console.log(`   - Field: ${issue.path.join('.')}`);
+        console.log(`     Error: ${issue.message}`);
+        console.log(`     Code: ${issue.code}`);
+      });
       throw new ValidationException(
         'Validation failed',
         validationResult.error.issues
@@ -206,6 +213,54 @@ export class DefectController {
     return {
       data: { message: `${validatedData.defectIds.length} defect(s) assigned successfully` },
     };
+  }
+
+  /**
+   * Get all comments for a defect
+   */
+  async getDefectComments(req: CustomRequest, defectId: string) {
+    // Verify defect exists
+    const defect = await defectService.getDefectById(defectId);
+    if (!defect) {
+      throw new ValidationException('Defect not found');
+    }
+
+    const comments = await defectService.getDefectComments(defectId);
+    return { data: comments };
+  }
+
+  /**
+   * Add a comment to a defect
+   */
+  async addDefectComment(req: CustomRequest, defectId: string, body: unknown) {
+    // Verify defect exists
+    const defect = await defectService.getDefectById(defectId);
+    if (!defect) {
+      throw new ValidationException('Defect not found');
+    }
+
+    // Validate comment content
+    if (!body || typeof body !== 'object' || !('content' in body)) {
+      throw new ValidationException('Comment content is required');
+    }
+
+    const { content } = body as { content: string };
+    if (!content || typeof content !== 'string' || content.trim() === '') {
+      throw new ValidationException('Comment content cannot be empty');
+    }
+
+    const userId = req.userInfo?.id;
+    if (!userId) {
+      throw new ValidationException('User not authenticated');
+    }
+
+    const comment = await defectService.addDefectComment(
+      defectId,
+      userId,
+      content.trim()
+    );
+
+    return { data: comment };
   }
 }
 

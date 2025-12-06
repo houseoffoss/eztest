@@ -47,15 +47,21 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
         </div>
       )}
 
-      {defect.testCase && (
+      {defect.testCases && defect.testCases.length > 0 && (
         <div>
           <h4 className="text-sm font-medium text-white/60 mb-1">
-            Related Test Case
+            Related Test Cases
           </h4>
-          <Badge variant="outline" className="font-mono">
-            {defect.testCase.testCaseId}
-          </Badge>
-          <p className="text-white/70 text-xs mt-1">{defect.testCase.title}</p>
+          <div className="space-y-2">
+            {defect.testCases.map((tc) => (
+              <div key={tc.id}>
+                <Badge variant="outline" className="font-mono">
+                  {tc.testCase.tcId}
+                </Badge>
+                <p className="text-white/70 text-xs mt-1">{tc.testCase.title}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -167,7 +167,7 @@ model TestCase {
   requirements  Requirement[]
   comments      Comment[]
   attachments   Attachment[]
-  defects       Defect[]
+  defects       TestCaseDefect[] // Many-to-many relation
 
   @@unique([projectId, tcId])
   @@index([projectId])
@@ -414,17 +414,14 @@ model Defect {
   projectId     String
   title         String
   description   String?       @db.Text
-  defectType    DefectType    @default(BUG)
   severity      DefectSeverity @default(MEDIUM)
   priority      Priority      @default(MEDIUM)
   status        DefectStatus  @default(NEW)
   assignedToId  String?
-  testCaseId    String?       // Optional link to test case
   testRunId     String?       // Optional link to test run
   environment   String?       // e.g., "Production", "Staging", "QA"
-  stepsToReproduce String?    @db.Text
-  actualResult  String?       @db.Text
-  expectedResult String?      @db.Text
+  dueDate       DateTime?     // Optional due date for the defect
+  progressPercentage Int?      // Optional progress percentage (0-100)
   createdById   String
   resolvedAt    DateTime?
   closedAt      DateTime?
@@ -434,8 +431,8 @@ model Defect {
   project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignedTo    User?         @relation("DefectAssignedTo", fields: [assignedToId], references: [id])
   createdBy     User          @relation("DefectCreatedBy", fields: [createdById], references: [id])
-  testCase      TestCase?     @relation(fields: [testCaseId], references: [id])
   testRun       TestRun?      @relation(fields: [testRunId], references: [id])
+  testCases     TestCaseDefect[] // Many-to-many relation
   attachments   DefectAttachment[]
   comments      DefectComment[]
 
@@ -443,7 +440,6 @@ model Defect {
   @@index([projectId])
   @@index([assignedToId])
   @@index([createdById])
-  @@index([testCaseId])
   @@index([testRunId])
   @@index([status])
   @@index([severity])
@@ -479,6 +475,21 @@ model DefectComment {
   @@index([userId])
 }
 
+// Join table for many-to-many relationship between TestCase and Defect
+model TestCaseDefect {
+  id          String   @id @default(cuid())
+  testCaseId  String
+  defectId    String
+  linkedAt    DateTime @default(now())
+
+  testCase    TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  defect      Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, defectId])
+  @@index([testCaseId])
+  @@index([defectId])
+}
+
 enum DefectSeverity {
   CRITICAL
   HIGH
@@ -492,15 +503,4 @@ enum DefectStatus {
   FIXED
   TESTED
   CLOSED
-}
-
-enum DefectType {
-  BUG
-  IMPROVEMENT
-  UI_ISSUE
-  BACKEND_ISSUE
-  PERFORMANCE
-  SECURITY
-  DATA_ISSUE
-  OTHER
 }

@@ -308,6 +308,48 @@ export class TestCaseController {
       throw new InternalServerException('Failed to remove test case from module');
     }
   }
+
+  /**
+   * Get defects linked to a test case
+   * Permission already checked by route wrapper
+   */
+  async getTestCaseDefects(req: CustomRequest, testCaseId: string) {
+    try {
+      const defects = await testCaseService.getTestCaseDefects(testCaseId);
+      return { data: defects };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
+      }
+      throw new InternalServerException('Failed to get test case defects');
+    }
+  }
+
+  /**
+   * Link defects to a test case
+   * Permission already checked by route wrapper
+   */
+  async linkDefectsToTestCase(
+    req: CustomRequest,
+    testCaseId: string,
+    body: unknown
+  ) {
+    try {
+      const result = await testCaseService.linkDefectsToTestCase(testCaseId, body);
+      return {
+        data: result,
+        statusCode: 201,
+      };
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error;
+      }
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
+      }
+      throw new InternalServerException('Failed to link defects to test case');
+    }
+  }
 }
 
 export const testCaseController = new TestCaseController();

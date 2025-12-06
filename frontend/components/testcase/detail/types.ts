@@ -37,6 +37,17 @@ export interface TestCase {
     avatar?: string;
   };
   steps: TestStep[];
+  defects: {
+    id: string;
+    defect: {
+      id: string;
+      defectId: string;
+      title: string;
+      severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+      priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+      status: string;
+    };
+  }[];
   _count: {
     steps: number;
     results: number;

@@ -212,6 +212,20 @@ export class TestCaseService {
             status: true,
           },
         },
+        defects: {
+          include: {
+            defect: {
+              select: {
+                id: true,
+                defectId: true,
+                title: true,
+                severity: true,
+                priority: true,
+                status: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             results: true,
@@ -408,11 +422,11 @@ export class TestCaseService {
     // Verify module if being changed
     if (data.moduleId !== undefined) {
       if (data.moduleId) {
-        const module = await prisma.module.findUnique({
+        const moduleData = await prisma.module.findUnique({
           where: { id: data.moduleId },
         });
 
-        if (!module || module.projectId !== existing.projectId) {
+        if (!moduleData || moduleData.projectId !== existing.projectId) {
           throw new Error('Module not found or does not belong to this project');
         }
       }
@@ -812,6 +826,78 @@ export class TestCaseService {
     });
 
     return updatedTestCase;
+  }
+
+  /**
+   * Get defects linked to a test case
+   */
+  async getTestCaseDefects(testCaseId: string) {
+    // Verify test case exists
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Get linked defects
+    const testCaseDefects = await prisma.testCaseDefect.findMany({
+      where: { testCaseId },
+      include: {
+        defect: {
+          select: {
+            id: true,
+            defectId: true,
+            title: true,
+            severity: true,
+            priority: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return testCaseDefects.map((tcd) => tcd.defect);
+  }
+
+  /**
+   * Link defects to a test case
+   */
+  async linkDefectsToTestCase(testCaseId: string, body: unknown) {
+    // Validate input
+    if (!body || typeof body !== 'object') {
+      throw new Error('Invalid request body');
+    }
+
+    const { defectIds } = body as { defectIds?: string[] };
+
+    if (!defectIds || !Array.isArray(defectIds) || defectIds.length === 0) {
+      throw new Error('defectIds array is required');
+    }
+
+    // Verify test case exists
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Create TestCaseDefect links
+    const links = await prisma.testCaseDefect.createMany({
+      data: defectIds.map((defectId: string) => ({
+        defectId,
+        testCaseId,
+      })),
+      skipDuplicates: true, // Skip if already linked
+    });
+
+    return {
+      message: 'Defects linked successfully',
+      count: links.count,
+    };
   }
 }
 

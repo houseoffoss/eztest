@@ -22,7 +22,6 @@ export interface Defect {
   defectId: string;
   title: string;
   description: string | null;
-  defectType: 'BUG' | 'IMPROVEMENT' | 'UI_ISSUE' | 'BACKEND_ISSUE' | 'PERFORMANCE' | 'SECURITY' | 'DATA_ISSUE' | 'OTHER';
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   status: 'OPEN' | 'IN_PROGRESS' | 'FIXED' | 'RETEST' | 'CLOSED' | 'REOPENED';
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -163,7 +162,7 @@ export function DefectTable({
       {/* Header Row - Sticky */}
       <div
         className="sticky top-0 z-10 bg-[#0a1628]/95 backdrop-blur-sm grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10"
-        style={{ gridTemplateColumns: '40px 100px 2fr 110px 110px 110px 150px 100px 140px 50px' }}
+        style={{ gridTemplateColumns: '40px 100px 2fr 110px 110px 110px 150px 150px 50px' }}
       >
         <div className="flex items-center justify-center">
           <Checkbox
@@ -215,9 +214,6 @@ export function DefectTable({
           ASSIGNEE
           <SortIcon field="assignedTo" />
         </button>
-        <div className="flex items-center text-white/60">
-          TYPE
-        </div>
         <button 
           onClick={() => onSort?.('reporter')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
@@ -240,7 +236,7 @@ export function DefectTable({
             className={`grid gap-3 px-3 py-2.5 rounded hover:bg-white/5 border-b border-white/10 hover:border-blue-500/30 transition-colors items-center text-sm ${
               selectedDefects.has(defect.id) ? 'bg-primary/5 border-primary/20' : ''
             }`}
-            style={{ gridTemplateColumns: '40px 100px 2fr 110px 110px 110px 150px 100px 140px 50px' }}
+            style={{ gridTemplateColumns: '40px 100px 2fr 110px 110px 110px 150px 150px 50px' }}
           >
             {/* Checkbox Column */}
             <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
@@ -333,16 +329,6 @@ export function DefectTable({
               )}
             </div>
 
-            {/* Type Column */}
-            <div onClick={() => onClick(defect.id)} className="cursor-pointer">
-              <Badge
-                variant="outline"
-                className="w-fit text-xs px-2 py-0.5 border-white/20 text-white/70"
-              >
-                {defect.defectType.replace('_', ' ')}
-              </Badge>
-            </div>
-
             {/* Reporter Column */}
             <div onClick={() => onClick(defect.id)} className="min-w-0 cursor-pointer">
               <HoverCard openDelay={200}>
@@ -356,7 +342,6 @@ export function DefectTable({
                     <h4 className="text-xs font-semibold text-white/60">Reporter</h4>
                     <p className="text-sm text-white/90">{defect.createdBy.name}</p>
                     <p className="text-xs text-white/60">{defect.createdBy.email}</p>
-                    <p className="text-xs text-white/50 mt-2">Created: {new Date(defect.createdAt).toLocaleString()}</p>
                   </div>
                 </HoverCardContent>
               </HoverCard>

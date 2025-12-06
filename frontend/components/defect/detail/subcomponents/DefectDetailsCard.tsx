@@ -4,6 +4,13 @@ import { DetailCard } from '@/components/design/DetailCard';
 import { Defect, DefectFormData } from '../types';
 import { Textarea } from '@/elements/textarea';
 import { Label } from '@/elements/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/elements/select';
 import { useEffect, useState } from 'react';
 
 interface DefectDetailsCardProps {
@@ -33,7 +40,16 @@ export function DefectDetailsCard({
     if (isEditing) {
       fetch(`/api/projects/${defect.projectId}/members`)
         .then((res) => res.json())
-        .then((data) => setUsers(data.members || []))
+        .then((data) => {
+          if (data.data && Array.isArray(data.data)) {
+            const mappedUsers = data.data.map((member: any) => ({
+              id: member.user.id,
+              name: member.user.name,
+              email: member.user.email,
+            }));
+            setUsers(mappedUsers);
+          }
+        })
         .catch((err) => console.error('Failed to fetch users:', err));
     }
   }, [isEditing, defect.projectId]);
@@ -60,145 +76,120 @@ export function DefectDetailsCard({
     { value: 'CLOSED', label: 'Closed' },
   ];
 
-  const DEFECT_TYPE_OPTIONS = [
-    { value: 'BUG', label: 'Bug' },
-    { value: 'IMPROVEMENT', label: 'Improvement' },
-    { value: 'UI_ISSUE', label: 'UI Issue' },
-    { value: 'BACKEND_ISSUE', label: 'Backend Issue' },
-    { value: 'PERFORMANCE', label: 'Performance' },
-    { value: 'SECURITY', label: 'Security' },
-    { value: 'DATA_ISSUE', label: 'Data Issue' },
-    { value: 'OTHER', label: 'Other' },
-  ];
-
   return (
-    <DetailCard title="Details" contentClassName="space-y-4">
+    <DetailCard title="Details" contentClassName="space-y-6">
       {isEditing ? (
         <>
           {/* Severity */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="severity">Severity *</Label>
-            <select
-              id="severity"
+            <Select
               value={formData.severity}
-              onChange={(e) =>
-                onFormChange({ ...formData, severity: e.target.value })
+              onValueChange={(value) =>
+                onFormChange({ ...formData, severity: value })
               }
               required
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <option value="">Select Severity</option>
-              {SEVERITY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger variant="glass">
+                <SelectValue placeholder="Select Severity" />
+              </SelectTrigger>
+              <SelectContent variant="glass">
+                {SEVERITY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.severity && (
               <p className="text-xs text-red-400 mt-1">{errors.severity}</p>
             )}
           </div>
 
           {/* Priority */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="priority">Priority *</Label>
-            <select
-              id="priority"
+            <Select
               value={formData.priority}
-              onChange={(e) =>
-                onFormChange({ ...formData, priority: e.target.value })
+              onValueChange={(value) =>
+                onFormChange({ ...formData, priority: value })
               }
               required
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <option value="">Select Priority</option>
-              {PRIORITY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger variant="glass">
+                <SelectValue placeholder="Select Priority" />
+              </SelectTrigger>
+              <SelectContent variant="glass">
+                {PRIORITY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.priority && (
               <p className="text-xs text-red-400 mt-1">{errors.priority}</p>
             )}
           </div>
 
           {/* Status */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="status">Status *</Label>
-            <select
-              id="status"
+            <Select
               value={formData.status}
-              onChange={(e) =>
-                onFormChange({ ...formData, status: e.target.value })
+              onValueChange={(value) =>
+                onFormChange({ ...formData, status: value })
               }
               required
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <option value="">Select Status</option>
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger variant="glass">
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent variant="glass">
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.status && (
               <p className="text-xs text-red-400 mt-1">{errors.status}</p>
             )}
           </div>
 
-          {/* Defect Type */}
-          <div>
-            <Label htmlFor="defectType">Type *</Label>
-            <select
-              id="defectType"
-              value={formData.defectType}
-              onChange={(e) =>
-                onFormChange({ ...formData, defectType: e.target.value })
-              }
-              required
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <option value="">Select Type</option>
-              {DEFECT_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {errors.defectType && (
-              <p className="text-xs text-red-400 mt-1">{errors.defectType}</p>
-            )}
-          </div>
-
           {/* Assigned To */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="assignedToId">Assigned To</Label>
-            <select
-              id="assignedToId"
-              value={formData.assignedToId || ''}
-              onChange={(e) =>
+            <Select
+              value={formData.assignedToId || 'unassigned'}
+              onValueChange={(value) =>
                 onFormChange({
                   ...formData,
-                  assignedToId: e.target.value || null,
+                  assignedToId: value === 'unassigned' ? null : value,
                 })
               }
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <option value="">Not Assigned</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name} ({user.email})
-                </option>
-              ))}
-            </select>
+              <SelectTrigger variant="glass">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent variant="glass">
+                <SelectItem value="unassigned">Not Assigned</SelectItem>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name} ({user.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Environment */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="environment">Environment</Label>
             <Textarea
               id="environment"
+              variant="glass"
               value={formData.environment || ''}
               onChange={(e) =>
                 onFormChange({ ...formData, environment: e.target.value })
@@ -208,62 +199,56 @@ export function DefectDetailsCard({
             />
           </div>
 
+          {/* Due Date */}
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Due Date</Label>
+            <input
+              type="date"
+              id="dueDate"
+              value={formData.dueDate || ''}
+              onChange={(e) =>
+                onFormChange({ ...formData, dueDate: e.target.value || null })
+              }
+              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+            />
+          </div>
+
+          {/* Progress Percentage */}
+          <div className="space-y-2">
+            <Label htmlFor="progressPercentage">Progress (%)</Label>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              id="progressPercentage"
+              value={formData.progressPercentage ?? ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                const numValue = value ? Number(value) : null;
+                if (numValue === null || (numValue >= 0 && numValue <= 100)) {
+                  onFormChange({
+                    ...formData,
+                    progressPercentage: numValue,
+                  });
+                }
+              }}
+              placeholder="0-100"
+              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+
           {/* Description */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
+              variant="glass"
               value={formData.description || ''}
               onChange={(e) =>
                 onFormChange({ ...formData, description: e.target.value })
               }
               rows={4}
               placeholder="Detailed description of the defect"
-            />
-          </div>
-
-          {/* Steps to Reproduce */}
-          <div>
-            <Label htmlFor="stepsToReproduce">Steps to Reproduce</Label>
-            <Textarea
-              id="stepsToReproduce"
-              value={formData.stepsToReproduce || ''}
-              onChange={(e) =>
-                onFormChange({
-                  ...formData,
-                  stepsToReproduce: e.target.value,
-                })
-              }
-              rows={4}
-              placeholder="1. Navigate to..."
-            />
-          </div>
-
-          {/* Expected Result */}
-          <div>
-            <Label htmlFor="expectedResult">Expected Result</Label>
-            <Textarea
-              id="expectedResult"
-              value={formData.expectedResult || ''}
-              onChange={(e) =>
-                onFormChange({ ...formData, expectedResult: e.target.value })
-              }
-              rows={3}
-              placeholder="What should happen"
-            />
-          </div>
-
-          {/* Actual Result */}
-          <div>
-            <Label htmlFor="actualResult">Actual Result</Label>
-            <Textarea
-              id="actualResult"
-              value={formData.actualResult || ''}
-              onChange={(e) =>
-                onFormChange({ ...formData, actualResult: e.target.value })
-              }
-              rows={3}
-              placeholder="What actually happened"
             />
           </div>
         </>
@@ -291,36 +276,33 @@ export function DefectDetailsCard({
             </div>
           )}
 
-          {defect.stepsToReproduce && (
+          {defect.dueDate && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Steps to Reproduce
+                Due Date
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {defect.stepsToReproduce}
+              <p className="text-white/90">
+                {new Date(defect.dueDate).toLocaleDateString()}
               </p>
             </div>
           )}
 
-          {defect.expectedResult && (
+          {defect.progressPercentage !== null && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Expected Result
+                Progress
               </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {defect.expectedResult}
-              </p>
-            </div>
-          )}
-
-          {defect.actualResult && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Actual Result
-              </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {defect.actualResult}
-              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${defect.progressPercentage}%` }}
+                  />
+                </div>
+                <span className="text-sm text-white/90 min-w-[3rem] text-right">
+                  {defect.progressPercentage}%
+                </span>
+              </div>
             </div>
           )}
         </>

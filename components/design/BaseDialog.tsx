@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/elements/select';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { InlineError } from '@/components/utils/InlineError';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
@@ -20,7 +21,7 @@ export interface BaseDialogField {
   name: string;
   label: string;
   placeholder?: string;
-  type?: 'text' | 'textarea' | 'email' | 'password' | 'number' | 'select';
+  type?: 'text' | 'textarea' | 'email' | 'password' | 'number' | 'select' | 'date' | 'custom';
   required?: boolean;
   minLength?: number;
   maxLength?: number;
@@ -30,6 +31,11 @@ export interface BaseDialogField {
   options?: Array<{ value: string; label: string }>; // For select type
   transform?: 'uppercase' | 'lowercase' | 'capitalize'; // Text transformation
   defaultValue?: string; // Default value for the field
+  validate?: (value: string, formData?: Record<string, string>) => string | undefined; // Custom validation function
+  min?: number; // For number type
+  max?: number; // For number type
+  readOnly?: boolean; // Make field read-only
+  customRender?: (value: string, onChange: (value: string) => void) => React.ReactNode; // Custom field renderer
 }
 
 export interface BaseDialogConfig<T = unknown> {
@@ -66,6 +72,109 @@ export const BaseDialog = <T = unknown,>({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Validate a single field
+  const validateField = (field: BaseDialogField, value: string, currentFormData?: Record<string, string>): string | undefined => {
+    const dataToUse = currentFormData || formData;
+    
+    // Custom validation function takes priority
+    if (field.validate) {
+      return field.validate(value, dataToUse);
+    }
+
+    // Required validation
+    if (field.required && !value.trim()) {
+      return `${field.label} is required`;
+    }
+
+    // Skip other validations if field is empty and not required
+    if (!value.trim() && !field.required) {
+      return undefined;
+    }
+
+    // Email validation
+    if (field.type === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        return 'Please enter a valid email address';
+      }
+    }
+
+    // Min/Max length validation
+    if (field.minLength && value.trim().length < field.minLength) {
+      return `${field.label} must be at least ${field.minLength} characters`;
+    }
+    if (field.maxLength && value.trim().length > field.maxLength) {
+      return `${field.label} must be less than ${field.maxLength} characters`;
+    }
+
+    // Number validation
+    if (field.type === 'number') {
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        return `${field.label} must be a valid number`;
+      }
+      if (field.min !== undefined && numValue < field.min) {
+        return `${field.label} must be at least ${field.min}`;
+      }
+      if (field.max !== undefined && numValue > field.max) {
+        return `${field.label} must be at most ${field.max}`;
+      }
+    }
+
+    // Date validation
+    if (field.type === 'date' && value) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(value)) {
+        return 'Date must be in YYYY-MM-DD format';
+      }
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return 'Please enter a valid date';
+      }
+    }
+
+    // Pattern validation
+    if (field.pattern && value) {
+      const regex = new RegExp(field.pattern);
+      if (!regex.test(value)) {
+        return `${field.label} format is invalid`;
+      }
+    }
+
+    return undefined;
+  };
+
+  // Validate all fields
+  const validateAllFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    fields.forEach((field) => {
+      const error = validateField(field, formData[field.name] || '', formData);
+      if (error) {
+        errors[field.name] = error;
+      }
+    });
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle field blur for validation
+  const handleFieldBlur = (field: BaseDialogField) => {
+    const error = validateField(field, formData[field.name] || '', formData);
+    setFieldErrors((prev) => {
+      const newErrors = { ...prev };
+      if (error) {
+        newErrors[field.name] = error;
+      } else {
+        delete newErrors[field.name];
+      }
+      return newErrors;
+    });
+  };
 
   // Generate initial data from fields
   const getInitialData = () => {
@@ -134,6 +243,17 @@ export const BaseDialog = <T = unknown,>({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate all fields before submission
+    if (!validateAllFields()) {
+      setAlert({
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please fix the validation errors before submitting',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -148,6 +268,11 @@ export const BaseDialog = <T = unknown,>({
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      setAlert({
+        type: 'error',
+        title: 'Submission Failed',
+        message: errorMessage,
+      });
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -155,20 +280,37 @@ export const BaseDialog = <T = unknown,>({
   };
 
   const renderField = (field: BaseDialogField) => {
+    const hasError = !!fieldErrors[field.name];
     const commonProps = {
       id: field.name,
       name: field.name,
       placeholder: field.placeholder,
       value: formData[field.name],
       onChange: handleInputChange,
+      onBlur: () => handleFieldBlur(field),
       required: field.required,
       minLength: field.minLength,
       maxLength: field.maxLength,
       pattern: field.pattern,
+      readOnly: field.readOnly,
+      disabled: field.readOnly,
     };
 
     // Add uppercase class if transform is uppercase
     const upperCaseClass = field.transform === 'uppercase' ? 'uppercase' : '';
+    const errorBorderClass = hasError ? 'border-red-500' : '';
+
+    if (field.type === 'custom' && field.customRender) {
+      return field.customRender(formData[field.name] || '', (value: string) => {
+        const syntheticEvent = {
+          target: {
+            name: field.name,
+            value: value,
+          },
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleInputChange(syntheticEvent);
+      });
+    }
 
     if (field.type === 'textarea') {
       return (
@@ -176,15 +318,15 @@ export const BaseDialog = <T = unknown,>({
           key={field.name}
           {...commonProps}
           rows={field.rows || 3}
-          className={`bg-[#0f172a] border-[#334155] ${upperCaseClass}`}
+          className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${errorBorderClass}`}
         />
       );
     }
 
     if (field.type === 'select') {
-      const selectedOption = field.options?.find((opt) => opt.value === formData[field.name]);
+      const selectValue = formData[field.name] || undefined;
       return (
-        <Select key={field.name} value={formData[field.name]} onValueChange={(value) => {
+        <Select key={field.name} value={selectValue} onValueChange={(value) => {
           const syntheticEvent = {
             target: {
               name: field.name,
@@ -192,8 +334,10 @@ export const BaseDialog = <T = unknown,>({
             },
           } as unknown as React.ChangeEvent<HTMLInputElement>;
           handleInputChange(syntheticEvent);
+          // Validate on change for select
+          setTimeout(() => handleFieldBlur(field), 0);
         }}>
-          <SelectTrigger className="bg-[#0f172a] border-[#334155]">
+          <SelectTrigger className={`bg-[#0f172a] border-[#334155] ${errorBorderClass}`}>
             <SelectValue placeholder={field.placeholder} />
           </SelectTrigger>
           <SelectContent variant="glass">
@@ -210,9 +354,9 @@ export const BaseDialog = <T = unknown,>({
     return (
       <Input
         key={field.name}
-        type={field.type || 'text'}
+        type={field.type === 'date' ? 'date' : field.type || 'text'}
         {...commonProps}
-        className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
+        className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${errorBorderClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
       />
     );
   };
@@ -247,10 +391,16 @@ export const BaseDialog = <T = unknown,>({
                   {field.required && <span className="text-red-500">*</span>}
                 </label>
                 {renderField(field)}
-                {field.type === 'text' && field.minLength && (
-                  <p className="text-xs text-muted-foreground">
-                    {field.minLength}-{field.maxLength || '∞'} characters
+                {fieldErrors[field.name] ? (
+                  <p className="text-xs text-red-400">
+                    {fieldErrors[field.name]}
                   </p>
+                ) : (
+                  field.type === 'text' && field.minLength && (
+                    <p className="text-xs text-muted-foreground">
+                      {field.minLength}-{field.maxLength || '∞'} characters
+                    </p>
+                  )
                 )}
               </div>
             ))}
@@ -277,6 +427,7 @@ export const BaseDialog = <T = unknown,>({
           </div>
         </form>
       </DialogContent>
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
     </Dialog>
   );
 };

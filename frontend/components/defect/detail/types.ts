@@ -4,20 +4,17 @@ export interface Defect {
   projectId: string;
   title: string;
   description: string | null;
-  defectType: 'BUG' | 'IMPROVEMENT' | 'UI_ISSUE' | 'BACKEND_ISSUE' | 'PERFORMANCE' | 'SECURITY' | 'DATA_ISSUE' | 'OTHER';
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   status: 'NEW' | 'IN_PROGRESS' | 'FIXED' | 'TESTED' | 'CLOSED';
   assignedToId: string | null;
-  testCaseId: string | null;
   testRunId: string | null;
   environment: string | null;
-  stepsToReproduce: string | null;
-  actualResult: string | null;
-  expectedResult: string | null;
   createdById: string;
   resolvedAt: Date | null;
   closedAt: Date | null;
+  dueDate: Date | null;
+  progressPercentage: number | null;
   createdAt: Date;
   updatedAt: Date;
   project: {
@@ -37,11 +34,15 @@ export interface Defect {
     email: string;
     avatar: string | null;
   };
-  testCase: {
+  testCases: {
     id: string;
-    title: string;
-    testCaseId: string;
-  } | null;
+    testCase: {
+      id: string;
+      title: string;
+      tcId: string;
+    };
+    failureCount: number;
+  }[];
   testRun: {
     id: string;
     name: string;
@@ -82,15 +83,12 @@ export interface DefectComment {
 export interface DefectFormData {
   title: string;
   description: string;
-  defectType: string;
   severity: string;
   priority: string;
   status: string;
   assignedToId: string | null;
-  testCaseId: string | null;
   testRunId: string | null;
   environment: string;
-  stepsToReproduce: string;
-  actualResult: string;
-  expectedResult: string;
+  dueDate: string | null;
+  progressPercentage: number | null;
 }

@@ -17,6 +17,8 @@ function Input({ className, type, variant = "default", ...props }: InputProps) {
         variant === "glass"
           ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
           : "border-border bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent",
+        // Date input specific styles - make calendar icon visible with theme colors
+        type === "date" && "[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-[0.7] [&::-webkit-calendar-picker-indicator]:hover:brightness-[0.9] [&::-webkit-calendar-picker-indicator]:transition-all",
         className
       )}
       {...props}

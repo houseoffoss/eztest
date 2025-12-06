@@ -2,6 +2,9 @@
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
 import { useEffect, useState } from 'react';
+import { SearchableSelect } from '@/elements/searchable-select';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import React from 'react';
 
 interface Defect {
   id: string;
@@ -15,6 +18,9 @@ interface CreateDefectDialogProps {
   triggerOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   onDefectCreated: (defect: Defect) => void;
+  // Context-specific props for auto-population
+  testCaseId?: string; // When creating from test run with failed test case
+  testRunEnvironment?: string; // When creating from test run, auto-populate environment
 }
 
 const SEVERITY_OPTIONS = [
@@ -31,51 +37,69 @@ const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low' },
 ];
 
-const DEFECT_TYPE_OPTIONS = [
-  { value: 'BUG', label: 'Bug' },
-  { value: 'IMPROVEMENT', label: 'Improvement' },
-  { value: 'UI_ISSUE', label: 'UI Issue' },
-  { value: 'BACKEND_ISSUE', label: 'Backend Issue' },
-  { value: 'PERFORMANCE', label: 'Performance' },
-  { value: 'SECURITY', label: 'Security' },
-  { value: 'DATA_ISSUE', label: 'Data Issue' },
-  { value: 'OTHER', label: 'Other' },
-];
-
 export function CreateDefectDialog({
   projectId,
   triggerOpen,
   onOpenChange,
   onDefectCreated,
+  testCaseId,
+  testRunEnvironment,
 }: CreateDefectDialogProps) {
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [assignees, setAssignees] = useState<Array<{ id: string; name: string }>>([]);
+  const [testCases, setTestCases] = useState<Array<{ id: string; testCaseId: string; title: string }>>([]);
 
   useEffect(() => {
-    const fetchAssignees = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/projects/${projectId}/members`);
-        const data = await response.json();
-        if (data.data) {
+        // Fetch assignees
+        const assigneesResponse = await fetch(`/api/projects/${projectId}/members`);
+        const assigneesData = await assigneesResponse.json();
+        if (assigneesData.data) {
           setAssignees(
-            data.data.map((member: { user: { id: string; name: string } }) => ({
+            assigneesData.data.map((member: { user: { id: string; name: string } }) => ({
               id: member.user.id,
               name: member.user.name,
             }))
           );
         }
+
+        // Fetch test cases for the project
+        const testCasesResponse = await fetch(`/api/projects/${projectId}/testcases`);
+        const testCasesData = await testCasesResponse.json();
+        
+        if (testCasesData.data && Array.isArray(testCasesData.data)) {
+          const mappedTestCases = testCasesData.data.map((tc: any) => ({
+            id: tc.id,
+            testCaseId: tc.tcId, // Use tcId from database
+            title: tc.title,
+          }));
+          setTestCases(mappedTestCases);
+        }
       } catch (error) {
-        console.error('Error fetching assignees:', error);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchAssignees();
+    fetchData();
   }, [projectId]);
 
-  const assigneeOptions = [
-    { value: 'unassigned', label: 'Unassigned' },
-    ...assignees.map((assignee) => ({
-      value: assignee.id,
-      label: assignee.name,
-    })),
+  // Convert test cases to SearchableSelect options (for searchable dropdown)
+  const testCaseOptions = testCases.map(tc => ({
+    id: tc.id,
+    label: tc.testCaseId,
+    subtitle: tc.title,
+  }));
+
+  const assigneeOptions = assignees.map((assignee) => ({
+    value: assignee.id,
+    label: assignee.name,
+  }));
+
+  const ENVIRONMENT_OPTIONS = [
+    { value: 'Production', label: 'Production' },
+    { value: 'Staging', label: 'Staging' },
+    { value: 'QA', label: 'QA' },
+    { value: 'Development', label: 'Development' },
   ];
 
   const fields: BaseDialogField[] = [
@@ -87,8 +111,37 @@ export function CreateDefectDialog({
       required: true,
       minLength: 5,
       maxLength: 200,
-      cols: 2,
+      cols: 1,
     },
+    // Test Case field - searchable select when from defect list, text input when from test run
+    ...(testCaseId ? [{
+      name: 'testCaseId',
+      label: 'Test Case (Auto-populated)',
+      type: 'text' as const,
+      defaultValue: testCaseId,
+      readOnly: true,
+      cols: 1,
+      placeholder: testCases.find(tc => tc.id === testCaseId) 
+        ? `${testCases.find(tc => tc.id === testCaseId)!.testCaseId} - ${testCases.find(tc => tc.id === testCaseId)!.title}`
+        : 'Loading test case...',
+    }] : [{
+      name: 'testCaseId',
+      label: 'Test Case (Optional)',
+      type: 'custom' as const,
+      cols: 1,
+      customRender: (value: string, onChange: (value: string) => void) => (
+        <SearchableSelect
+          options={testCaseOptions}
+          value={value}
+          onValueChange={onChange}
+          label=""
+          id="testCaseSearch"
+          searchPlaceholder="Search by TC-ID or title..."
+          emptyMessage="No test cases found matching"
+          maxResults={10}
+        />
+      ),
+    }]),
     {
       name: 'severity',
       label: 'Severity',
@@ -108,36 +161,38 @@ export function CreateDefectDialog({
       cols: 1,
     },
     {
-      name: 'defectType',
-      label: 'Type',
-      type: 'select',
-      required: true,
-      defaultValue: 'BUG',
-      options: DEFECT_TYPE_OPTIONS,
-      cols: 1,
-    },
-    {
       name: 'assignedToId',
       label: 'Assignee',
       type: 'select',
       placeholder: 'Select assignee',
-      defaultValue: 'unassigned',
       options: assigneeOptions,
       cols: 1,
     },
+    // Environment field - dropdown if from defect list, auto-populated if from test run
     {
       name: 'environment',
-      label: 'Environment',
-      placeholder: 'e.g., Production, Staging, QA',
-      type: 'text',
+      label: testRunEnvironment ? 'Environment (Auto-populated)' : 'Environment',
+      type: testRunEnvironment ? 'text' : 'select',
+      placeholder: testRunEnvironment ? testRunEnvironment : 'Select environment',
+      defaultValue: testRunEnvironment,
+      options: testRunEnvironment ? undefined : ENVIRONMENT_OPTIONS,
+      readOnly: !!testRunEnvironment,
       maxLength: 100,
       cols: 1,
     },
     {
-      name: 'testCaseId',
-      label: 'Related Test Case ID (Optional)',
-      placeholder: 'Enter test case ID if applicable',
-      type: 'text',
+      name: 'dueDate',
+      label: 'Due Date (optional)',
+      type: 'date',
+      cols: 1,
+    },
+    {
+      name: 'progressPercentage',
+      label: 'Progress % (optional)',
+      type: 'number',
+      placeholder: '0-100',
+      min: 0,
+      max: 100,
       cols: 1,
     },
     {
@@ -149,34 +204,13 @@ export function CreateDefectDialog({
       cols: 2,
       maxLength: 2000,
     },
-    {
-      name: 'stepsToReproduce',
-      label: 'Steps to Reproduce',
-      type: 'textarea',
-      placeholder: 'List the steps to reproduce the defect...',
-      rows: 4,
-      cols: 2,
-      maxLength: 2000,
-    },
-    {
-      name: 'expectedResult',
-      label: 'Expected Result',
-      type: 'textarea',
-      placeholder: 'What should happen...',
-      rows: 2,
-      cols: 1,
-      maxLength: 1000,
-    },
-    {
-      name: 'actualResult',
-      label: 'Actual Result',
-      type: 'textarea',
-      placeholder: 'What actually happens...',
-      rows: 2,
-      cols: 1,
-      maxLength: 1000,
-    },
   ];
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(open);
+    }
+  };
 
   const config: BaseDialogConfig = {
     title: 'Create New Defect',
@@ -185,22 +219,23 @@ export function CreateDefectDialog({
     submitLabel: 'Create Defect',
     cancelLabel: 'Cancel',
     triggerOpen,
-    onOpenChange,
+    onOpenChange: handleDialogOpenChange,
     formPersistenceKey: `create-defect-${projectId}`,
     onSubmit: async (formData) => {
+      // Get test case ID from form data
+      const finalTestCaseId = formData.testCaseId || null;
+      
       const payload = {
         title: formData.title,
         description: formData.description || null,
         severity: formData.severity,
         priority: formData.priority,
-        defectType: formData.defectType,
-        assignedToId: formData.assignedToId === 'unassigned' ? null : formData.assignedToId,
-        environment: formData.environment || null,
-        testCaseId: formData.testCaseId || null,
-        stepsToReproduce: formData.stepsToReproduce || null,
-        expectedResult: formData.expectedResult || null,
-        actualResult: formData.actualResult || null,
+        assignedToId: formData.assignedToId && formData.assignedToId.trim() !== '' ? formData.assignedToId : null,
+        environment: formData.environment && formData.environment.trim() !== '' ? formData.environment : null,
+        dueDate: formData.dueDate ? new Date(formData.dueDate as string).toISOString() : undefined,
+        progressPercentage: formData.progressPercentage ? Number(formData.progressPercentage) : undefined,
         status: 'NEW', // Always start as NEW as per lifecycle requirements
+        testCaseIds: finalTestCaseId ? [finalTestCaseId] : undefined, // Link test case during creation
       };
 
       const response = await fetch(`/api/projects/${projectId}/defects`, {
@@ -219,10 +254,21 @@ export function CreateDefectDialog({
     },
     onSuccess: (result) => {
       if (result) {
-        onDefectCreated(result as Defect);
+        const defect = result as Defect;
+        setAlert({
+          type: 'success',
+          title: 'Defect Created',
+          message: `Defect ${defect.defectId} has been created successfully`,
+        });
+        onDefectCreated(defect);
       }
     },
   };
 
-  return <BaseDialog {...config} />;
+  return (
+    <>
+      <BaseDialog {...config} />
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+    </>
+  );
 }

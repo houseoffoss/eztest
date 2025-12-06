@@ -15,6 +15,7 @@ import { TestCaseDetailsCard } from './subcomponents/TestCaseDetailsCard';
 import { TestStepsCard } from './subcomponents/TestStepsCard';
 import { TestCaseInfoCard } from './subcomponents/TestCaseInfoCard';
 import { TestCaseHistoryCard } from './subcomponents/TestCaseHistoryCard';
+import { LinkedDefectsCard } from './subcomponents/LinkedDefectsCard';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';
 
 interface TestCaseDetailProps {
@@ -317,6 +318,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               onAddStep={handleAddStep}
               onRemoveStep={handleRemoveStep}
             />
+
+            <LinkedDefectsCard testCase={testCase} />
 
             <TestCaseHistoryCard testCaseId={testCaseId} />
           </div>

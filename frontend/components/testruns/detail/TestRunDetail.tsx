@@ -7,6 +7,7 @@ import { TestCasesListCard } from './subcomponents/TestCasesListCard';
 import { RecordResultDialog } from './subcomponents/RecordResultDialog';
 import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { AddTestSuitesDialog } from './subcomponents/AddTestSuitesDialog';
+import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
 import {
   CheckCircle,
   XCircle,
@@ -29,6 +30,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [resultDialogOpen, setResultDialogOpen] = useState(false);
   const [addCasesDialogOpen, setAddCasesDialogOpen] = useState(false);
   const [addSuitesDialogOpen, setAddSuitesDialogOpen] = useState(false);
+  const [createDefectDialogOpen, setCreateDefectDialogOpen] = useState(false);
+  const [selectedTestCaseForDefect, setSelectedTestCaseForDefect] = useState<string | null>(null);
   const [selectedTestCase, setSelectedTestCase] = useState<{
     testCaseId: string;
     testCaseName: string;
@@ -312,6 +315,18 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
   };
 
+  const handleCreateDefect = (testCaseId: string) => {
+    setSelectedTestCaseForDefect(testCaseId);
+    setCreateDefectDialogOpen(true);
+  };
+
+  const handleDefectCreated = () => {
+    setCreateDefectDialogOpen(false);
+    setSelectedTestCaseForDefect(null);
+    // Optionally refresh test run data if needed
+    fetchTestRun();
+  };
+
   const getResultIcon = (status?: string) => {
     switch (status) {
       case 'PASSED':
@@ -438,12 +453,16 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             setAddSuitesDialogOpen(true);
           }}
           onExecuteTestCase={handleOpenResultDialog}
+          onCreateDefect={handleCreateDefect}
           getResultIcon={getResultIcon}
         />
 
         <RecordResultDialog
           open={resultDialogOpen}
           testCaseName={selectedTestCase?.testCaseName || ''}
+          testCaseId={selectedTestCase?.testCaseId || ''}
+          projectId={testRun.project.id}
+          testRunEnvironment={testRun.environment}
           formData={resultForm}
           onOpenChange={setResultDialogOpen}
           onFormChange={(data) => {
@@ -499,6 +518,17 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             setSelectedSuiteIds([]);
           }}
         />
+
+        {selectedTestCaseForDefect && (
+          <CreateDefectDialog
+            projectId={testRun.project.id}
+            triggerOpen={createDefectDialogOpen}
+            onOpenChange={setCreateDefectDialogOpen}
+            onDefectCreated={handleDefectCreated}
+            testCaseId={selectedTestCaseForDefect}
+            testRunEnvironment={testRun.environment}
+          />
+        )}
       </div>
     </div>
   );

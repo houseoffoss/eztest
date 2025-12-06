@@ -10,13 +10,15 @@ import {
 import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';
-import { Bug, List } from 'lucide-react';
+import { Bug, List, TestTube2, PlayCircle } from 'lucide-react';
 import { Defect, DefectFormData } from './types';
 import {
   DefectHeader,
   DefectDetailsCard,
   DefectInfoCard,
   DeleteDefectDialog,
+  LinkedTestCasesCard,
+  DefectCommentsCard,
 } from './subcomponents';
 
 interface DefectDetailProps {
@@ -35,17 +37,14 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   const [formData, setFormData] = useState<DefectFormData>({
     title: '',
     description: '',
-    defectType: 'BUG',
     severity: 'MEDIUM',
     priority: 'MEDIUM',
     status: 'OPEN',
     assignedToId: null,
-    testCaseId: null,
     testRunId: null,
     environment: '',
-    stepsToReproduce: '',
-    expectedResult: '',
-    actualResult: '',
+    dueDate: null,
+    progressPercentage: null,
   });
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
@@ -72,21 +71,20 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
       const data = await response.json();
 
       if (data.data) {
+        console.log('📋 Defect data received:', data.data);
+        console.log('🔗 Test cases:', data.data.testCases);
         setDefect(data.data);
         setFormData({
           title: data.data.title,
           description: data.data.description || '',
-          defectType: data.data.defectType || 'BUG',
           severity: data.data.severity,
           priority: data.data.priority,
           status: data.data.status,
           assignedToId: data.data.assignedToId || null,
-          testCaseId: data.data.testCaseId || null,
           testRunId: data.data.testRunId || null,
           environment: data.data.environment || '',
-          stepsToReproduce: data.data.stepsToReproduce || '',
-          expectedResult: data.data.expectedResult || '',
-          actualResult: data.data.actualResult || '',
+          dueDate: data.data.dueDate ? new Date(data.data.dueDate).toISOString().split('T')[0] : null,
+          progressPercentage: data.data.progressPercentage ?? null,
         });
       }
     } catch (error) {
@@ -155,6 +153,43 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
     }
   };
 
+  const handleReopen = async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/defects/${defectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'IN_PROGRESS' }),
+      });
+
+      const data = await response.json();
+
+      if (data.data) {
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Defect reopened successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
+        fetchDefect();
+      } else {
+        setAlert({
+          type: 'error',
+          title: 'Failed to Reopen Defect',
+          message: data.error || 'Failed to reopen defect',
+        });
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
+      console.error('Error reopening defect:', error);
+    }
+  };
+
   if (loading) {
     return <Loader fullScreen text="Loading defect..." />;
   }
@@ -202,21 +237,19 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
             setFormData({
               title: defect.title,
               description: defect.description || '',
-              defectType: defect.defectType || 'BUG',
               severity: defect.severity,
               priority: defect.priority,
               status: defect.status,
               assignedToId: defect.assignedToId || null,
-              testCaseId: defect.testCaseId || null,
               testRunId: defect.testRunId || null,
               environment: defect.environment || '',
-              stepsToReproduce: defect.stepsToReproduce || '',
-              expectedResult: defect.expectedResult || '',
-              actualResult: defect.actualResult || '',
+              dueDate: defect.dueDate ? new Date(defect.dueDate).toISOString().split('T')[0] : null,
+              progressPercentage: defect.progressPercentage ?? null,
             });
           }}
           onSave={handleSave}
           onDelete={() => setDeleteDialogOpen(true)}
+          onReopen={handleReopen}
           onFormChange={setFormData}
           canUpdate={canUpdateDefect}
           canDelete={canDeleteDefect}
@@ -232,18 +265,22 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
             <List className="w-4 h-4 mr-2" />
             View All Defects
           </ButtonSecondary>
-          {defect.testCase && (
-            <ButtonSecondary
-              onClick={() =>
-                router.push(
-                  `/projects/${defect.project.id}/testcases/${defect.testCase?.id}`
-                )
-              }
-            >
-              <Bug className="w-4 h-4 mr-2" />
-              View Test Case
-            </ButtonSecondary>
-          )}
+          <ButtonSecondary
+            onClick={() =>
+              router.push(`/projects/${defect.project.id}/testcases`)
+            }
+          >
+            <TestTube2 className="w-4 h-4 mr-2" />
+            View All Test Cases
+          </ButtonSecondary>
+          <ButtonSecondary
+            onClick={() =>
+              router.push(`/projects/${defect.project.id}/testruns`)
+            }
+          >
+            <PlayCircle className="w-4 h-4 mr-2" />
+            View All Test Runs
+          </ButtonSecondary>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -254,6 +291,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               formData={formData}
               onFormChange={setFormData}
             />
+            <LinkedTestCasesCard defect={defect} onRefresh={fetchDefect} />
+            <DefectCommentsCard projectId={projectId} defectId={defectId} />
           </div>
 
           <div className="space-y-6">

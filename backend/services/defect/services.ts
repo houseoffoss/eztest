@@ -1,38 +1,33 @@
 import { prisma } from '@/lib/prisma';
-import { DefectSeverity, DefectStatus, DefectType, Priority } from '@prisma/client';
+import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 
 interface CreateDefectInput {
   projectId: string;
-  testCaseId?: string;
-  testRunId?: string;
+  testRunId?: string | null;
   title: string;
-  description?: string;
-  defectType: DefectType;
-  stepsToReproduce?: string;
-  expectedResult?: string;
-  actualResult?: string;
+  description?: string | null;
   severity: DefectSeverity;
   priority: Priority;
   status?: DefectStatus;
-  assignedToId?: string;
+  assignedToId?: string | null;
   createdById: string;
-  environment?: string;
+  environment?: string | null;
+  dueDate?: string | null;
+  progressPercentage?: number | null;
+  testCaseIds?: string[];
 }
 
 interface UpdateDefectInput {
   title?: string;
   description?: string | null;
-  defectType?: DefectType;
-  stepsToReproduce?: string | null;
-  expectedResult?: string | null;
-  actualResult?: string | null;
   severity?: DefectSeverity;
   priority?: Priority;
   status?: DefectStatus;
   assignedToId?: string | null;
   environment?: string | null;
-  testCaseId?: string | null;
   testRunId?: string | null;
+  dueDate?: string | null;
+  progressPercentage?: number | null;
 }
 
 interface DefectFilters {
@@ -153,11 +148,15 @@ export class DefectService {
             email: true,
           },
         },
-        testCase: {
-          select: {
-            id: true,
-            tcId: true,
-            title: true,
+        testCases: {
+          include: {
+            testCase: {
+              select: {
+                id: true,
+                tcId: true,
+                title: true,
+              },
+            },
           },
         },
         testRun: {
@@ -185,19 +184,23 @@ export class DefectService {
       data: {
         defectId,
         projectId: data.projectId,
-        testCaseId: data.testCaseId,
         testRunId: data.testRunId,
         title: data.title,
         description: data.description,
-        stepsToReproduce: data.stepsToReproduce,
-        expectedResult: data.expectedResult,
-        actualResult: data.actualResult,
         severity: data.severity,
         priority: data.priority,
         status: data.status || 'NEW',
         assignedToId: data.assignedToId,
         createdById: data.createdById,
         environment: data.environment,
+        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        progressPercentage: data.progressPercentage,
+        // Create DefectTestCase links if testCaseIds provided
+        testCases: data.testCaseIds && data.testCaseIds.length > 0 ? {
+          create: data.testCaseIds.map(testCaseId => ({
+            testCaseId,
+          })),
+        } : undefined,
       },
       include: {
         assignedTo: {
@@ -214,11 +217,15 @@ export class DefectService {
             email: true,
           },
         },
-        testCase: {
-          select: {
-            id: true,
-            tcId: true,
-            title: true,
+        testCases: {
+          include: {
+            testCase: {
+              select: {
+                id: true,
+                tcId: true,
+                title: true,
+              },
+            },
           },
         },
         testRun: {
@@ -256,11 +263,15 @@ export class DefectService {
             avatar: true,
           },
         },
-        testCase: {
-          select: {
-            id: true,
-            tcId: true,
-            title: true,
+        testCases: {
+          include: {
+            testCase: {
+              select: {
+                id: true,
+                tcId: true,
+                title: true,
+              },
+            },
           },
         },
         testRun: {
@@ -296,10 +307,33 @@ export class DefectService {
     });
 
     if (!defect) {
-      throw new Error('Defect not found');
+      return null;
     }
 
-    return defect;
+    console.log('🔍 Backend - Raw testCases from DB:', defect.testCases);
+    console.log('🔍 Backend - testCases count:', defect.testCases.length);
+
+    // Get failure count for each linked test case
+    const testCasesWithFailureCount = await Promise.all(
+      defect.testCases.map(async (tc) => {
+        const failureCount = await prisma.testResult.count({
+          where: {
+            testCaseId: tc.testCase.id,
+            status: 'FAILED',
+          },
+        });
+
+        return {
+          ...tc,
+          failureCount,
+        };
+      })
+    );
+
+    return {
+      ...defect,
+      testCases: testCasesWithFailureCount,
+    };
   }
 
   /**
@@ -311,16 +345,14 @@ export class DefectService {
       data: {
         title: data.title,
         description: data.description,
-        stepsToReproduce: data.stepsToReproduce,
-        expectedResult: data.expectedResult,
-        actualResult: data.actualResult,
         severity: data.severity,
         priority: data.priority,
         status: data.status,
         assignedToId: data.assignedToId,
         environment: data.environment,
-        testCaseId: data.testCaseId,
         testRunId: data.testRunId,
+        dueDate: data.dueDate !== undefined ? (data.dueDate ? new Date(data.dueDate) : null) : undefined,
+        progressPercentage: data.progressPercentage,
       },
       include: {
         assignedTo: {
@@ -337,11 +369,15 @@ export class DefectService {
             email: true,
           },
         },
-        testCase: {
-          select: {
-            id: true,
-            tcId: true,
-            title: true,
+        testCases: {
+          include: {
+            testCase: {
+              select: {
+                id: true,
+                tcId: true,
+                title: true,
+              },
+            },
           },
         },
         testRun: {
@@ -394,6 +430,53 @@ export class DefectService {
       byStatus,
       byPriority,
     };
+  }
+
+  /**
+   * Get all comments for a defect
+   */
+  async getDefectComments(defectId: string) {
+    const comments = await prisma.defectComment.findMany({
+      where: { defectId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return comments;
+  }
+
+  /**
+   * Add a comment to a defect
+   */
+  async addDefectComment(defectId: string, userId: string, content: string) {
+    const comment = await prisma.defectComment.create({
+      data: {
+        defectId,
+        userId,
+        content,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return comment;
   }
 }
 
