@@ -69,7 +69,7 @@ export function CreateDefectDialog({
         const testCasesData = await testCasesResponse.json();
         
         if (testCasesData.data && Array.isArray(testCasesData.data)) {
-          const mappedTestCases = testCasesData.data.map((tc: any) => ({
+          const mappedTestCases = testCasesData.data.map((tc: { id: string; tcId: string; title: string }) => ({
             id: tc.id,
             testCaseId: tc.tcId, // Use tcId from database
             title: tc.title,
