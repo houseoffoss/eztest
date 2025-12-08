@@ -9,7 +9,6 @@ import { Plus } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
-import { DetailCard } from '@/components/design/DetailCard';
 import { TestSuite, Project } from './types';
 import { TestSuiteTreeItem } from './subcomponents/TestSuiteTreeItem';
 import { CreateTestSuiteDialog } from './subcomponents/CreateTestSuiteDialog';
@@ -197,32 +196,49 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         />
       )}
 
-      <div className="max-w-7xl mx-auto px-8 pt-8 pb-8">
-        <DetailCard
-          title={`Test Suites (${testSuites.length})`}
-          description="Organize test cases into hierarchical suites"
-          contentClassName=""
-        >
-          {loading ? (
-            <Loader fullScreen={false} text="Loading test suites..." />
-          ) : testSuites.length === 0 ? (
-            <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {rootSuites.map((suite) => (
-                <TestSuiteTreeItem
-                  key={suite.id}
-                  suite={suite}
-                  isExpanded={expandedSuites.has(suite.id)}
-                  onToggleExpand={toggleExpanded}
-                  onView={handleViewSuite}
-                  onDelete={handleDeleteClick}
-                  canDelete={canDeleteTestSuite}
-                />
-              ))}
-            </div>
-          )}
-        </DetailCard>
+      <div className="max-w-7xl mx-auto px-8 pt-8">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            {project && (
+              <Badge variant="outline" className="font-mono border-primary/40 bg-primary/10 text-primary text-xs px-2.5 py-0.5">
+                {project.key}
+              </Badge>
+            )}
+            <h1 className="text-2xl font-bold text-white">Test Suites</h1>
+          </div>
+          <p className="text-gray-400">
+            Organize test cases into hierarchical suites
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-sm text-gray-400">
+            {testSuites.length} suite{testSuites.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <Loader fullScreen={false} text="Loading test suites..." />
+        ) : testSuites.length === 0 ? (
+          <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
+        ) : (
+          <div className="space-y-6">
+            {rootSuites.map((suite) => (
+              <TestSuiteTreeItem
+                key={suite.id}
+                suite={suite}
+                isExpanded={expandedSuites.has(suite.id)}
+                onToggleExpand={toggleExpanded}
+                onView={handleViewSuite}
+                onDelete={handleDeleteClick}
+                canDelete={canDeleteTestSuite}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Dialogs */}
