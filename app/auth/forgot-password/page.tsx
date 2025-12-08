@@ -8,6 +8,7 @@ import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { GlassPanel } from '@/components/design';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 
 export default function ForgotPasswordPage() {
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +41,34 @@ export default function ForgotPasswordPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send reset email');
+        const errorMessage = errorData.error || 'Failed to send reset email';
+        setError(errorMessage);
+        setAlert({
+          type: 'error',
+          title: 'Failed to Send Reset Link',
+          message: errorMessage,
+        });
+        throw new Error(errorMessage);
       }
 
+      const data = await response.json();
       setSuccess(true);
+      setAlert({
+        type: 'success',
+        title: 'Reset Link Sent',
+        message: data.message || 'Password reset instructions have been sent to your email.',
+      });
       clearFormData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      if (!alert) {
+        setAlert({
+          type: 'error',
+          title: 'Error',
+          message: errorMessage,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -131,6 +154,9 @@ export default function ForgotPasswordPage() {
           <p>If you need further assistance, please contact support.</p>
         </div>
       </div>
+
+      {/* Floating Alert */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
     </div>
   );
 }

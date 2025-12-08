@@ -1,5 +1,8 @@
 import { getSessionUser } from '@/lib/auth/getSessionUser';
+import { authController } from '@/backend/controllers/auth/controller';
 import { NextResponse } from 'next/server';
+import { ValidationException } from '@/backend/utils/exceptions';
+import { CustomRequest } from '@/backend/utils/interceptor';
 
 /**
  * API endpoint to get the current user's permissions
@@ -16,18 +19,19 @@ export async function GET() {
       );
     }
 
-    // Extract permission names from user's role
-    const permissions = user.role?.permissions?.map(
-      (rp) => rp.permission.name
-    ) || [];
+    const result = await authController.getUserPermissions({} as unknown as CustomRequest, user.id);
 
-    return NextResponse.json({
-      success: true,
-      role: user.role?.name || 'UNKNOWN',
-      permissions
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching permissions:', error);
+    
+    if (error instanceof ValidationException) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
