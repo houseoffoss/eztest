@@ -41,6 +41,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
   const [availableTestSuites, setAvailableTestSuites] = useState<TestSuite[]>([]);
   const [selectedSuiteIds, setSelectedSuiteIds] = useState<string[]>([]);
+  const [defectRefreshTrigger, setDefectRefreshTrigger] = useState(0);
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -323,6 +324,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleDefectCreated = () => {
     setCreateDefectDialogOpen(false);
     setSelectedTestCaseForDefect(null);
+    // Trigger defect list refresh in RecordResultDialog
+    setDefectRefreshTrigger(prev => prev + 1);
     // Optionally refresh test run data if needed
     fetchTestRun();
   };
@@ -472,6 +475,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             setResultForm({ ...resultForm, ...filteredData } as ResultFormData);
           }}
           onSubmit={handleSubmitResult}
+          refreshTrigger={defectRefreshTrigger}
         />
 
         <AddTestCasesDialog

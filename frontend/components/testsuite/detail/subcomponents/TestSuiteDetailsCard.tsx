@@ -1,33 +1,47 @@
 import { DetailCard } from '@/components/design/DetailCard';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
+import { FormBuilder, FormFieldConfig } from '@/frontend/components/form';
+import { TestSuiteFormData } from '../types';
 
 interface TestSuiteDetailsCardProps {
   isEditing: boolean;
   description?: string;
-  formData: { description: string };
-  onDescriptionChange: (description: string) => void;
+  formData: TestSuiteFormData;
+  onFormChange: (data: TestSuiteFormData) => void;
+  errors?: Record<string, string>;
 }
 
 export function TestSuiteDetailsCard({
   isEditing,
   description,
   formData,
-  onDescriptionChange,
+  onFormChange,
+  errors = {},
 }: TestSuiteDetailsCardProps) {
+  const fields: FormFieldConfig[] = [
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea',
+      placeholder: 'Enter description',
+      rows: 3,
+      cols: 1,
+    },
+  ];
+
+  const handleFieldChange = (field: keyof TestSuiteFormData, value: string | number | null) => {
+    onFormChange({ ...formData, [field]: value });
+  };
+
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
       {isEditing ? (
-        <div className="space-y-2">
-          <Label>Description</Label>
-          <Textarea
-            variant="glass"
-            value={formData.description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            rows={3}
-            placeholder="Enter description"
-          />
-        </div>
+        <FormBuilder
+          fields={fields}
+          formData={formData}
+          errors={errors}
+          onFieldChange={handleFieldChange}
+          variant="glass"
+        />
       ) : (
         <>
           {description ? (

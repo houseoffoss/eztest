@@ -51,7 +51,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
 
   // Sorting
-  const [sortField, setSortField] = useState<SortField>('defectId');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Pagination
@@ -76,11 +76,13 @@ export default function DefectList({ projectId }: DefectListProps) {
         setPriorityFilter(typeof filters.priorityFilter === 'string' ? filters.priorityFilter : 'all');
         setStatusFilter(typeof filters.statusFilter === 'string' ? filters.statusFilter : 'all');
         setAssigneeFilter(typeof filters.assigneeFilter === 'string' ? filters.assigneeFilter : 'all');
-        setSortField(filters.sortField || 'defectId');
-        setSortOrder(filters.sortOrder || 'desc');
+        
+        console.log('🔄 Restored filters from sessionStorage');
       } catch (error) {
         console.error('Error restoring filters:', error);
       }
+    } else {
+      console.log('🔄 No sessionStorage found, using defaults');
     }
   }, [projectId]);
 
@@ -93,12 +95,10 @@ export default function DefectList({ projectId }: DefectListProps) {
         priorityFilter,
         statusFilter,
         assigneeFilter,
-        sortField,
-        sortOrder,
       };
       sessionStorage.setItem(`defects-filters-${projectId}`, JSON.stringify(filters));
     }
-  }, [mounted, projectId, searchQuery, severityFilter, priorityFilter, statusFilter, assigneeFilter, sortField, sortOrder]);
+  }, [mounted, projectId, searchQuery, severityFilter, priorityFilter, statusFilter, assigneeFilter]);
 
   useEffect(() => {
     fetchProject();
@@ -141,6 +141,11 @@ export default function DefectList({ projectId }: DefectListProps) {
       const response = await fetch(`/api/projects/${projectId}/defects`);
       const data = await response.json();
       if (data.data) {
+        console.log('📥 Defects fetched from backend:');
+        console.log('  Total count:', data.data.length);
+        data.data.forEach((d: Defect, idx: number) => {
+          console.log(`  [${idx}] ${d.defectId}: createdAt=${d.createdAt}`);
+        });
         setDefects(data.data);
       } else {
         setDefects([]);
@@ -214,16 +219,49 @@ export default function DefectList({ projectId }: DefectListProps) {
       let compareA: string | number;
       let compareB: string | number;
 
-      // Handle special cases
-      if (sortField === 'assignedTo') {
-        compareA = a.assignedTo?.name || '';
-        compareB = b.assignedTo?.name || '';
-      } else if (sortField === 'reporter') {
-        compareA = a.createdBy?.name || '';
-        compareB = b.createdBy?.name || '';
-      } else {
-        compareA = a[sortField] as string | number;
-        compareB = b[sortField] as string | number;
+      switch (sortField) {
+        case 'createdAt':
+          compareA = new Date(a.createdAt).getTime();
+          compareB = new Date(b.createdAt).getTime();
+          break;
+        case 'defectId':
+          // Extract numeric part for proper sorting (e.g., DEF-2 vs DEF-19)
+          const numA = parseInt(a.defectId.split('-')[1] || '0', 10);
+          const numB = parseInt(b.defectId.split('-')[1] || '0', 10);
+          compareA = numA;
+          compareB = numB;
+          break;
+        case 'assignedTo':
+          compareA = (a.assignedTo?.name || '').toLowerCase();
+          compareB = (b.assignedTo?.name || '').toLowerCase();
+          break;
+        case 'reporter':
+          compareA = (a.createdBy?.name || '').toLowerCase();
+          compareB = (b.createdBy?.name || '').toLowerCase();
+          break;
+        case 'title':
+          compareA = a.title.toLowerCase();
+          compareB = b.title.toLowerCase();
+          break;
+        case 'severity':
+          // Define severity order: CRITICAL > HIGH > MEDIUM > LOW
+          const severityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+          compareA = severityOrder[a.severity as keyof typeof severityOrder] || 0;
+          compareB = severityOrder[b.severity as keyof typeof severityOrder] || 0;
+          break;
+        case 'priority':
+          // Define priority order: CRITICAL > HIGH > MEDIUM > LOW
+          const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+          compareA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+          compareB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          break;
+        case 'status':
+          compareA = a.status.toLowerCase();
+          compareB = b.status.toLowerCase();
+          break;
+        default:
+          compareA = '';
+          compareB = '';
       }
 
       if (compareA < compareB) return sortOrder === 'asc' ? -1 : 1;
@@ -259,7 +297,7 @@ export default function DefectList({ projectId }: DefectListProps) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder('desc'); // Default to desc when changing field
     }
   };
 
@@ -281,15 +319,6 @@ export default function DefectList({ projectId }: DefectListProps) {
     } else {
       setSelectedDefects(new Set());
     }
-  };
-
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSeverityFilter('all');
-    setPriorityFilter('all');
-    setStatusFilter('all');
-    setAssigneeFilter('all');
-    setSelectedDefects(new Set());
   };
 
   const handleDefectClick = (defectId: string) => {

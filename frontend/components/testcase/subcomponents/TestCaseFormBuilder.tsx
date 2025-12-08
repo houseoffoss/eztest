@@ -10,6 +10,7 @@ interface TestCaseFormBuilderProps<T = Record<string, unknown>> {
   onFormChange?: (data: Partial<T>) => void;
   variant?: 'glass' | 'default';
   className?: string;
+  columns?: 1 | 2 | 3;
 }
 
 export function TestCaseFormBuilder<T = Record<string, unknown>>({
@@ -18,23 +19,36 @@ export function TestCaseFormBuilder<T = Record<string, unknown>>({
   errors = {},
   onFieldChange,
   variant = 'glass',
-  className = 'space-y-4',
+  columns = 1,
+  className,
 }: TestCaseFormBuilderProps<T>) {
   const handleChange = (fieldName: keyof T, value: string | number | null) => {
     onFieldChange(fieldName, value);
   };
 
-  // Determine if a field should span full width
-  const shouldSpanFull = (field: FormFieldConfig) => {
-    return field.name === 'expectedResult';
+  // Determine grid layout based on columns prop
+  const gridClass = columns === 1 
+    ? 'space-y-4' 
+    : columns === 2 
+    ? 'grid gap-4 grid-cols-2' 
+    : 'grid gap-4 grid-cols-3';
+  
+  const finalClassName = className || gridClass;
+
+  // Calculate field span based on field cols and grid columns
+  const getFieldColSpan = (field: FormFieldConfig): string => {
+    const fieldCols = field.cols || 1;
+    if (columns === 1) return '';
+    if (fieldCols >= columns) return `col-span-${columns}`;
+    return `col-span-${fieldCols}`;
   };
 
   return (
-    <div className={className}>
+    <div className={finalClassName}>
       {fields.map((field) => (
         <div
           key={field.name}
-          className={shouldSpanFull(field) ? 'col-span-2' : ''}
+          className={getFieldColSpan(field)}
         >
           <TestCaseFormField
             {...field}

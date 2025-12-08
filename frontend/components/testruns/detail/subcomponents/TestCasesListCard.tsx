@@ -31,7 +31,6 @@ interface ResultRow {
 export function TestCasesListCard({
   results,
   testRunStatus,
-  canUpdate = true,
   canCreate = true,
   onAddTestCases,
   onAddTestSuites,
@@ -120,24 +119,25 @@ export function TestCasesListCard({
       label: 'Actions',
       render: (_, row: ResultRow) => (
         <div className="flex items-center gap-2 justify-end">
-          <Button
-            variant="glass"
-            size="sm"
-            onClick={() => onExecuteTestCase(row.testCase)}
-            disabled={
-              testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'
-            }
-            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-          >
-            {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
-          </Button>
-          {row.status === 'FAILED' && onCreateDefect && (
-            <ButtonPrimary
-              size="sm"
-              onClick={() => onCreateDefect(row.testCase.id)}
-            >
-              Create Defect
-            </ButtonPrimary>
+          {testRunStatus === 'IN_PROGRESS' && (
+            <>
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={() => onExecuteTestCase(row.testCase)}
+                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+              >
+                {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
+              </Button>
+              {row.status === 'FAILED' && onCreateDefect && (
+                <ButtonPrimary
+                  size="sm"
+                  onClick={() => onCreateDefect(row.testCase.id)}
+                >
+                  Create Defect
+                </ButtonPrimary>
+              )}
+            </>
           )}
         </div>
       ),

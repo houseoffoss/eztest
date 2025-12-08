@@ -2,15 +2,7 @@
 
 import { DetailCard } from '@/components/design/DetailCard';
 import { Defect, DefectFormData } from '../types';
-import { Textarea } from '@/elements/textarea';
-import { Label } from '@/elements/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/elements/select';
+import { FormBuilder, FormFieldConfig, SelectOption } from '@/frontend/components/form';
 import { useEffect, useState } from 'react';
 
 interface DefectDetailsCardProps {
@@ -40,9 +32,9 @@ export function DefectDetailsCard({
     if (isEditing) {
       fetch(`/api/projects/${defect.projectId}/members`)
         .then((res) => res.json())
-        .then((data) => {
+        .then((data: { data?: Array<{ user: { id: string; name: string; email: string } }> }) => {
           if (data.data && Array.isArray(data.data)) {
-            const mappedUsers = data.data.map((member: any) => ({
+            const mappedUsers = data.data.map((member) => ({
               id: member.user.id,
               name: member.user.name,
               email: member.user.email,
@@ -54,21 +46,21 @@ export function DefectDetailsCard({
     }
   }, [isEditing, defect.projectId]);
 
-  const SEVERITY_OPTIONS = [
+  const SEVERITY_OPTIONS: SelectOption[] = [
     { value: 'CRITICAL', label: 'Critical' },
     { value: 'HIGH', label: 'High' },
     { value: 'MEDIUM', label: 'Medium' },
     { value: 'LOW', label: 'Low' },
   ];
 
-  const PRIORITY_OPTIONS = [
+  const PRIORITY_OPTIONS: SelectOption[] = [
     { value: 'CRITICAL', label: 'Critical' },
     { value: 'HIGH', label: 'High' },
     { value: 'MEDIUM', label: 'Medium' },
     { value: 'LOW', label: 'Low' },
   ];
 
-  const STATUS_OPTIONS = [
+  const STATUS_OPTIONS: SelectOption[] = [
     { value: 'NEW', label: 'New' },
     { value: 'IN_PROGRESS', label: 'In Progress' },
     { value: 'FIXED', label: 'Fixed' },
@@ -76,182 +68,106 @@ export function DefectDetailsCard({
     { value: 'CLOSED', label: 'Closed' },
   ];
 
+  const assignedToOptions: SelectOption[] = [
+    { value: 'unassigned', label: 'Not Assigned' },
+    ...users.map((user) => ({
+      value: user.id,
+      label: `${user.name} (${user.email})`,
+    })),
+  ];
+
+  const fields: FormFieldConfig[] = [
+    {
+      name: 'severity',
+      label: 'Severity',
+      type: 'select',
+      options: SEVERITY_OPTIONS,
+      required: true,
+      cols: 1,
+    },
+    {
+      name: 'priority',
+      label: 'Priority',
+      type: 'select',
+      options: PRIORITY_OPTIONS,
+      required: true,
+      cols: 1,
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      options: STATUS_OPTIONS,
+      required: true,
+      cols: 1,
+    },
+    {
+      name: 'assignedToId',
+      label: 'Assigned To',
+      type: 'select',
+      options: assignedToOptions,
+      cols: 1,
+    },
+    {
+      name: 'environment',
+      label: 'Environment',
+      type: 'textarea',
+      placeholder: 'e.g., Production, Staging, Development',
+      rows: 2,
+      cols: 1,
+    },
+    {
+      name: 'dueDate',
+      label: 'Due Date',
+      type: 'date',
+      cols: 1,
+    },
+    {
+      name: 'progressPercentage',
+      label: 'Progress (%)',
+      type: 'number',
+      placeholder: '0-100',
+      cols: 1,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea',
+      placeholder: 'Detailed description of the defect',
+      rows: 4,
+      cols: 1,
+    },
+  ];
+
+  const handleFieldChange = (field: keyof DefectFormData, value: string | number | null) => {
+    if (field === 'assignedToId' && value === 'unassigned') {
+      onFormChange({ ...formData, assignedToId: null });
+    } else if (field === 'progressPercentage') {
+      const numValue = value !== null && value !== '' ? Number(value) : null;
+      if (numValue === null || (numValue >= 0 && numValue <= 100)) {
+        onFormChange({ ...formData, [field]: numValue });
+      }
+    } else if (field === 'dueDate') {
+      // Keep as date string for form display, only convert to ISO datetime on actual save
+      const dateStr = typeof value === 'string' ? value : null;
+      console.log(`Field changed: ${String(field)} = ${dateStr} (kept as date string)`);
+      onFormChange({ ...formData, [field]: dateStr });
+    } else {
+      console.log(`Field changed: ${String(field)} = ${value}`);
+      onFormChange({ ...formData, [field]: value });
+    }
+  };
+
   return (
     <DetailCard title="Details" contentClassName="space-y-6">
       {isEditing ? (
-        <>
-          {/* Severity */}
-          <div className="space-y-2">
-            <Label htmlFor="severity">Severity *</Label>
-            <Select
-              value={formData.severity}
-              onValueChange={(value) =>
-                onFormChange({ ...formData, severity: value })
-              }
-              required
-            >
-              <SelectTrigger variant="glass">
-                <SelectValue placeholder="Select Severity" />
-              </SelectTrigger>
-              <SelectContent variant="glass">
-                {SEVERITY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.severity && (
-              <p className="text-xs text-red-400 mt-1">{errors.severity}</p>
-            )}
-          </div>
-
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority *</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value) =>
-                onFormChange({ ...formData, priority: value })
-              }
-              required
-            >
-              <SelectTrigger variant="glass">
-                <SelectValue placeholder="Select Priority" />
-              </SelectTrigger>
-              <SelectContent variant="glass">
-                {PRIORITY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.priority && (
-              <p className="text-xs text-red-400 mt-1">{errors.priority}</p>
-            )}
-          </div>
-
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Status *</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) =>
-                onFormChange({ ...formData, status: value })
-              }
-              required
-            >
-              <SelectTrigger variant="glass">
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
-              <SelectContent variant="glass">
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.status && (
-              <p className="text-xs text-red-400 mt-1">{errors.status}</p>
-            )}
-          </div>
-
-          {/* Assigned To */}
-          <div className="space-y-2">
-            <Label htmlFor="assignedToId">Assigned To</Label>
-            <Select
-              value={formData.assignedToId || 'unassigned'}
-              onValueChange={(value) =>
-                onFormChange({
-                  ...formData,
-                  assignedToId: value === 'unassigned' ? null : value,
-                })
-              }
-            >
-              <SelectTrigger variant="glass">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent variant="glass">
-                <SelectItem value="unassigned">Not Assigned</SelectItem>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Environment */}
-          <div className="space-y-2">
-            <Label htmlFor="environment">Environment</Label>
-            <Textarea
-              id="environment"
-              variant="glass"
-              value={formData.environment || ''}
-              onChange={(e) =>
-                onFormChange({ ...formData, environment: e.target.value })
-              }
-              rows={2}
-              placeholder="e.g., Production, Staging, Development"
-            />
-          </div>
-
-          {/* Due Date */}
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
-            <input
-              type="date"
-              id="dueDate"
-              value={formData.dueDate || ''}
-              onChange={(e) =>
-                onFormChange({ ...formData, dueDate: e.target.value || null })
-              }
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-            />
-          </div>
-
-          {/* Progress Percentage */}
-          <div className="space-y-2">
-            <Label htmlFor="progressPercentage">Progress (%)</Label>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              id="progressPercentage"
-              value={formData.progressPercentage ?? ''}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                const numValue = value ? Number(value) : null;
-                if (numValue === null || (numValue >= 0 && numValue <= 100)) {
-                  onFormChange({
-                    ...formData,
-                    progressPercentage: numValue,
-                  });
-                }
-              }}
-              placeholder="0-100"
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-sm whitespace-nowrap transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 h-10 bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-xl hover:bg-[#101a2b]/80 hover:border-white/20 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              variant="glass"
-              value={formData.description || ''}
-              onChange={(e) =>
-                onFormChange({ ...formData, description: e.target.value })
-              }
-              rows={4}
-              placeholder="Detailed description of the defect"
-            />
-          </div>
-        </>
+        <FormBuilder
+          fields={fields}
+          formData={formData}
+          errors={errors}
+          onFieldChange={handleFieldChange}
+          variant="glass"
+        />
       ) : (
         <>
           {defect.description && (

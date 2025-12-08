@@ -9,8 +9,10 @@ import {
 } from '@/elements/dialog';
 import { Button } from '@/elements/button';
 import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonSecondary } from '@/elements/button-secondary';
 import { Label } from '@/elements/label';
 import { Textarea } from '@/elements/textarea';
+import { Input } from '@/elements/input';
 import {
   Select,
   SelectContent,
@@ -19,7 +21,7 @@ import {
   SelectValue,
 } from '@/elements/select';
 import { Checkbox } from '@/elements/checkbox';
-import { CheckCircle, XCircle, AlertCircle, Circle, Plus, Bug } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Circle, Plus, Bug, Search } from 'lucide-react';
 import { ResultFormData } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
 
@@ -41,6 +43,7 @@ interface RecordResultDialogProps {
   onOpenChange: (open: boolean) => void;
   onFormChange: (data: Partial<ResultFormData>) => void;
   onSubmit: () => void;
+  refreshTrigger?: number; // Trigger to refresh defects after creation
 }
 
 export function RecordResultDialog({
@@ -53,12 +56,15 @@ export function RecordResultDialog({
   onOpenChange,
   onFormChange,
   onSubmit,
+  refreshTrigger,
 }: RecordResultDialogProps) {
   const [existingDefects, setExistingDefects] = useState<Defect[]>([]);
   const [otherDefects, setOtherDefects] = useState<Defect[]>([]);
   const [selectedDefectIds, setSelectedDefectIds] = useState<string[]>([]);
   const [createDefectDialogOpen, setCreateDefectDialogOpen] = useState(false);
   const [loadingDefects, setLoadingDefects] = useState(false);
+  const [defectFilter, setDefectFilter] = useState<'all' | 'existing' | 'other'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (open && formData.status === 'FAILED') {
@@ -67,7 +73,7 @@ export function RecordResultDialog({
       // Reset defect selections when dialog closes or status changes
       setSelectedDefectIds([]);
     }
-  }, [open, formData.status, testCaseId]);
+  }, [open, formData.status, testCaseId, refreshTrigger]);
 
   const fetchDefects = async () => {
     try {
@@ -141,6 +147,25 @@ export function RecordResultDialog({
       default:
         return 'text-gray-400';
     }
+  };
+
+  const getFilteredDefects = () => {
+    let defects: Defect[] = [];
+    
+    if (defectFilter === 'existing') {
+      defects = existingDefects;
+    } else if (defectFilter === 'other') {
+      defects = otherDefects;
+    } else {
+      defects = [...existingDefects, ...otherDefects];
+    }
+    
+    // Filter by search query
+    return defects.filter(
+      (defect) =>
+        defect.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        defect.defectId.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   return (
@@ -218,49 +243,67 @@ export function RecordResultDialog({
               {loadingDefects ? (
                 <p className="text-sm text-white/50">Loading defects...</p>
               ) : (
-                <div className="space-y-4 max-h-64 overflow-y-auto">
-                  {/* Existing Defects for this test case */}
-                  {existingDefects.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">
-                        Existing Defects for this Test Case
-                      </p>
-                      {existingDefects.map((defect) => (
-                        <div
-                          key={defect.id}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20"
-                        >
-                          <Checkbox
-                            checked={selectedDefectIds.includes(defect.id)}
-                            onCheckedChange={() => handleDefectToggle(defect.id)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Bug className="w-4 h-4 text-blue-400" />
-                              <span className="font-mono text-sm text-blue-400">
-                                {defect.defectId}
-                              </span>
-                              <span className={`text-xs ${getSeverityColor(defect.severity)}`}>
-                                {defect.severity}
-                              </span>
-                            </div>
-                            <p className="text-sm text-white/90 truncate">{defect.title}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="space-y-4">
+                  {/* Filter Buttons */}
+                  <div className="flex gap-2 flex-wrap">
+                    <ButtonSecondary
+                      size="sm"
+                      onClick={() => {
+                        setDefectFilter('all');
+                        setSearchQuery('');
+                      }}
+                      className={defectFilter === 'all' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
+                    >
+                      All Defects
+                    </ButtonSecondary>
+                    {existingDefects.length > 0 && (
+                      <ButtonSecondary
+                        size="sm"
+                        onClick={() => {
+                          setDefectFilter('existing');
+                          setSearchQuery('');
+                        }}
+                        className={defectFilter === 'existing' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
+                      >
+                        Existing Defects ({existingDefects.length})
+                      </ButtonSecondary>
+                    )}
+                    {otherDefects.length > 0 && (
+                      <ButtonSecondary
+                        size="sm"
+                        onClick={() => {
+                          setDefectFilter('other');
+                          setSearchQuery('');
+                        }}
+                        className={defectFilter === 'other' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
+                      >
+                        Other Defects ({otherDefects.length})
+                      </ButtonSecondary>
+                    )}
+                  </div>
 
-                  {/* Other Defects in the project */}
-                  {otherDefects.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">
-                        Other Defects in Project
-                      </p>
-                      {otherDefects.map((defect) => (
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 w-4 h-4 text-white/40" />
+                    <Input
+                      placeholder="Search defects by title or ID..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Defects List */}
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {getFilteredDefects().length > 0 ? (
+                      getFilteredDefects().map((defect) => (
                         <div
                           key={defect.id}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                            existingDefects.find((d) => d.id === defect.id)
+                              ? 'bg-blue-500/10 border-blue-500/20'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          }`}
                         >
                           <Checkbox
                             checked={selectedDefectIds.includes(defect.id)}
@@ -268,6 +311,7 @@ export function RecordResultDialog({
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
+                              <Bug className="w-4 h-4 flex-shrink-0" />
                               <span className="font-mono text-sm text-white/70">
                                 {defect.defectId}
                               </span>
@@ -278,15 +322,13 @@ export function RecordResultDialog({
                             <p className="text-sm text-white/90 truncate">{defect.title}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {existingDefects.length === 0 && otherDefects.length === 0 && (
-                    <p className="text-sm text-white/50 text-center py-4">
-                      No defects available. Create a new defect to link to this test case.
-                    </p>
-                  )}
+                      ))
+                    ) : (
+                      <p className="text-sm text-white/50 text-center py-4">
+                        {searchQuery ? 'No defects match your search' : 'No defects available'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -3,7 +3,7 @@
 import { DetailCard } from '@/components/design/DetailCard';
 import { Clock } from 'lucide-react';
 import { TestCase, TestCaseFormData, Module } from '../../types';
-import { TestCaseFormBuilder } from '../../subcomponents/TestCaseFormBuilder';
+import { FormBuilder } from '@/frontend/components/form';
 import { getEditTestCaseFormFields } from '../../constants/testCaseFormConfig';
 
 interface TestCaseDetailsCardProps {
@@ -34,7 +34,7 @@ export function TestCaseDetailsCard({
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
       {isEditing ? (
-        <TestCaseFormBuilder
+        <FormBuilder
           fields={fields}
           formData={formData}
           errors={errors}

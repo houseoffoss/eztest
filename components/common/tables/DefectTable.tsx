@@ -49,7 +49,7 @@ export interface Defect {
   updatedAt: string;
 }
 
-export type SortField = 'defectId' | 'title' | 'severity' | 'priority' | 'status' | 'assignedTo' | 'reporter';
+export type SortField = 'defectId' | 'title' | 'severity' | 'priority' | 'status' | 'assignedTo' | 'reporter' | 'createdAt';
 export type SortOrder = 'asc' | 'desc';
 
 interface DefectTableProps {

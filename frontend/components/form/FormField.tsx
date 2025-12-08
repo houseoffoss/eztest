@@ -3,6 +3,7 @@
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { Textarea } from '@/elements/textarea';
+import { SearchableSelect } from '@/elements/searchable-select';
 import {
   Select,
   SelectContent,
@@ -11,11 +12,13 @@ import {
   SelectValue,
 } from '@/elements/select';
 
-export type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'email';
+export type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'searchable-select' | 'email' | 'date';
 
 export interface SelectOption {
   label: string;
   value: string | number;
+  id?: string;
+  subtitle?: string;
 }
 
 export interface FormFieldConfig {
@@ -29,15 +32,18 @@ export interface FormFieldConfig {
   error?: string;
   maxLength?: number;
   cols?: 1 | 2 | 3;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  maxResults?: number;
 }
 
-interface TestCaseFormFieldProps extends FormFieldConfig {
+interface FormFieldProps extends FormFieldConfig {
   value: string | number | null;
   onChange: (value: string | number | null) => void;
   variant?: 'glass' | 'default';
 }
 
-export function TestCaseFormField({
+export function FormField({
   name,
   label,
   type,
@@ -50,10 +56,13 @@ export function TestCaseFormField({
   onChange,
   variant = 'glass',
   maxLength,
-}: TestCaseFormFieldProps) {
+  searchPlaceholder,
+  emptyMessage,
+  maxResults,
+}: FormFieldProps) {
   const baseInputClass = 'w-full';
 
-  if (type === 'text' || type === 'email' || type === 'number') {
+  if (type === 'text' || type === 'email' || type === 'number' || type === 'date') {
     return (
       <div className="space-y-2">
         <Label htmlFor={name}>
@@ -124,6 +133,35 @@ export function TestCaseFormField({
             ))}
           </SelectContent>
         </Select>
+        {error && <p className="text-xs text-red-500">{error}</p>}
+      </div>
+    );
+  }
+
+  if (type === 'searchable-select') {
+    const searchableOptions = options?.map((option) => ({
+      id: option.id || String(option.value),
+      label: option.label,
+      value: String(option.value),
+      subtitle: option.subtitle,
+    })) || [];
+
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={name}>
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        <SearchableSelect
+          options={searchableOptions}
+          value={value ? String(value) : ''}
+          onValueChange={(val) => onChange(val || null)}
+          label=""
+          id={name}
+          searchPlaceholder={searchPlaceholder || `Search ${label}...`}
+          emptyMessage={emptyMessage || `No ${label} found`}
+          maxResults={maxResults || 10}
+        />
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     );

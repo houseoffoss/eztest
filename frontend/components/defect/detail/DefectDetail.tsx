@@ -39,7 +39,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
     description: '',
     severity: 'MEDIUM',
     priority: 'MEDIUM',
-    status: 'OPEN',
+    status: 'NEW',
     assignedToId: null,
     testRunId: null,
     environment: '',
@@ -96,15 +96,54 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
 
   const handleSave = async () => {
     try {
+      console.log('📤 Saving defect with data:', formData);
+      console.log('📋 Original defect:', defect);
+      
+      // Always include title since it's required and shouldn't change, but only send other fields if changed
+      const dataToSend: Record<string, any> = {};
+      
+      // Always send title (needed for API)
+      if (formData.title && formData.title.trim()) {
+        dataToSend.title = formData.title;
+      }
+      
+      // Send other fields that have values
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'title') return; // Already handled
+        
+        // Skip empty/null values except for specific fields that need explicit null
+        if (value !== null && value !== '' && value !== undefined) {
+          // Special handling for dueDate - convert from YYYY-MM-DD to ISO datetime
+          if (key === 'dueDate' && typeof value === 'string') {
+            try {
+              const isoDateTime = new Date(`${value}T00:00:00Z`).toISOString();
+              console.log(`🔄 Converting dueDate: "${value}" -> "${isoDateTime}"`);
+              dataToSend[key] = isoDateTime;
+            } catch (e) {
+              console.error(`❌ Failed to convert dueDate "${value}":`, e);
+            }
+          } else {
+            dataToSend[key] = value;
+          }
+        } else if (key === 'assignedToId' && value === null) {
+          // Explicitly include null for unassigned users
+          dataToSend[key] = null;
+        }
+      });
+      
+      console.log('📤 Filtered data to send:', dataToSend);
+      console.log('🔍 Full payload:', JSON.stringify(dataToSend, null, 2));
+      
       const response = await fetch(`/api/projects/${projectId}/defects/${defectId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       const data = await response.json();
-
-      if (data.data) {
+      console.log('📥 API Response:', data);
+      
+      if (response.ok && data.data && !Array.isArray(data.data)) {
         setIsEditing(false);
         setAlert({
           type: 'success',
@@ -114,10 +153,14 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         setTimeout(() => setAlert(null), 5000);
         fetchDefect();
       } else {
+        console.log('❌ Validation Errors:', data.data);
+        const errorMessage = Array.isArray(data.data) 
+          ? data.data.map((e: any) => `${e.path?.join('.') || 'Field'}: ${e.message}`).join(', ')
+          : data.message || 'Failed to update defect';
         setAlert({
           type: 'error',
           title: 'Failed to Update Defect',
-          message: data.error || 'Failed to update defect',
+          message: errorMessage,
         });
       }
     } catch (error) {

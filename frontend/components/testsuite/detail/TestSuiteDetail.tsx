@@ -457,8 +457,8 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               isEditing={isEditing}
               description={testSuite.description}
               formData={formData}
-              onDescriptionChange={(description) =>
-                setFormData({ ...formData, description })
+              onFormChange={(data) =>
+                setFormData(data)
               }
             />
 

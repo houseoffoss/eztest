@@ -222,8 +222,8 @@ export function CreateDefectDialog({
     onOpenChange: handleDialogOpenChange,
     formPersistenceKey: `create-defect-${projectId}`,
     onSubmit: async (formData) => {
-      // Get test case ID from form data
-      const finalTestCaseId = formData.testCaseId || null;
+      // Get test case ID from prop (passed when creating from test run) or from form data (selected from dropdown)
+      const finalTestCaseId = testCaseId || formData.testCaseId || null;
       
       const payload = {
         title: formData.title,
@@ -237,6 +237,10 @@ export function CreateDefectDialog({
         status: 'NEW', // Always start as NEW as per lifecycle requirements
         testCaseIds: finalTestCaseId ? [finalTestCaseId] : undefined, // Link test case during creation
       };
+
+      console.log('📤 Creating defect with payload:', JSON.stringify(payload, null, 2));
+      console.log('🔗 Test Case ID:', finalTestCaseId);
+      console.log('✅ Test Case IDs array:', payload.testCaseIds);
 
       const response = await fetch(`/api/projects/${projectId}/defects`, {
         method: 'POST',
