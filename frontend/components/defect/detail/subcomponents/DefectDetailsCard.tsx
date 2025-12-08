@@ -150,10 +150,8 @@ export function DefectDetailsCard({
     } else if (field === 'dueDate') {
       // Keep as date string for form display, only convert to ISO datetime on actual save
       const dateStr = typeof value === 'string' ? value : null;
-      console.log(`Field changed: ${String(field)} = ${dateStr} (kept as date string)`);
       onFormChange({ ...formData, [field]: dateStr });
     } else {
-      console.log(`Field changed: ${String(field)} = ${value}`);
       onFormChange({ ...formData, [field]: value });
     }
   };

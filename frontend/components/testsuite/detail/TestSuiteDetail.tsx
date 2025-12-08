@@ -178,7 +178,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       if (data.data) {
         setAvailableModules(data.data);
       } else {
-        console.log('No data.data in response');
         setAvailableModules([]);
       }
     } catch (error) {

@@ -10,7 +10,7 @@ import {
 import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';
-import { Bug, List, TestTube2, PlayCircle } from 'lucide-react';
+import { List, TestTube2, PlayCircle } from 'lucide-react';
 import { Defect, DefectFormData } from './types';
 import {
   DefectHeader,
@@ -71,8 +71,6 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
       const data = await response.json();
 
       if (data.data) {
-        console.log('📋 Defect data received:', data.data);
-        console.log('🔗 Test cases:', data.data.testCases);
         setDefect(data.data);
         setFormData({
           title: data.data.title,
@@ -96,11 +94,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
 
   const handleSave = async () => {
     try {
-      console.log('📤 Saving defect with data:', formData);
-      console.log('📋 Original defect:', defect);
-      
       // Always include title since it's required and shouldn't change, but only send other fields if changed
-      const dataToSend: Record<string, any> = {};
+      const dataToSend: Record<string, unknown> = {};
       
       // Always send title (needed for API)
       if (formData.title && formData.title.trim()) {
@@ -117,10 +112,9 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
           if (key === 'dueDate' && typeof value === 'string') {
             try {
               const isoDateTime = new Date(`${value}T00:00:00Z`).toISOString();
-              console.log(`🔄 Converting dueDate: "${value}" -> "${isoDateTime}"`);
               dataToSend[key] = isoDateTime;
             } catch (e) {
-              console.error(`❌ Failed to convert dueDate "${value}":`, e);
+              console.error(`Failed to convert dueDate "${value}":`, e);
             }
           } else {
             dataToSend[key] = value;
@@ -131,9 +125,6 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         }
       });
       
-      console.log('📤 Filtered data to send:', dataToSend);
-      console.log('🔍 Full payload:', JSON.stringify(dataToSend, null, 2));
-      
       const response = await fetch(`/api/projects/${projectId}/defects/${defectId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -141,7 +132,6 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
       });
 
       const data = await response.json();
-      console.log('📥 API Response:', data);
       
       if (response.ok && data.data && !Array.isArray(data.data)) {
         setIsEditing(false);
@@ -153,9 +143,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         setTimeout(() => setAlert(null), 5000);
         fetchDefect();
       } else {
-        console.log('❌ Validation Errors:', data.data);
         const errorMessage = Array.isArray(data.data) 
-          ? data.data.map((e: any) => `${e.path?.join('.') || 'Field'}: ${e.message}`).join(', ')
+          ? data.data.map((e: { path?: string[]; message: string }) => `${e.path?.join('.') || 'Field'}: ${e.message}`).join(', ')
           : data.message || 'Failed to update defect';
         setAlert({
           type: 'error',

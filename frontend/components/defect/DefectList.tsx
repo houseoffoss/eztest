@@ -76,13 +76,9 @@ export default function DefectList({ projectId }: DefectListProps) {
         setPriorityFilter(typeof filters.priorityFilter === 'string' ? filters.priorityFilter : 'all');
         setStatusFilter(typeof filters.statusFilter === 'string' ? filters.statusFilter : 'all');
         setAssigneeFilter(typeof filters.assigneeFilter === 'string' ? filters.assigneeFilter : 'all');
-        
-        console.log('🔄 Restored filters from sessionStorage');
       } catch (error) {
         console.error('Error restoring filters:', error);
       }
-    } else {
-      console.log('🔄 No sessionStorage found, using defaults');
     }
   }, [projectId]);
 
@@ -141,11 +137,6 @@ export default function DefectList({ projectId }: DefectListProps) {
       const response = await fetch(`/api/projects/${projectId}/defects`);
       const data = await response.json();
       if (data.data) {
-        console.log('📥 Defects fetched from backend:');
-        console.log('  Total count:', data.data.length);
-        data.data.forEach((d: Defect, idx: number) => {
-          console.log(`  [${idx}] ${d.defectId}: createdAt=${d.createdAt}`);
-        });
         setDefects(data.data);
       } else {
         setDefects([]);

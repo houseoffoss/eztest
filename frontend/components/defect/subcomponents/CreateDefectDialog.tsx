@@ -238,10 +238,6 @@ export function CreateDefectDialog({
         testCaseIds: finalTestCaseId ? [finalTestCaseId] : undefined, // Link test case during creation
       };
 
-      console.log('📤 Creating defect with payload:', JSON.stringify(payload, null, 2));
-      console.log('🔗 Test Case ID:', finalTestCaseId);
-      console.log('✅ Test Case IDs array:', payload.testCaseIds);
-
       const response = await fetch(`/api/projects/${projectId}/defects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
