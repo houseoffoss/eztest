@@ -2,6 +2,7 @@ import { testCaseDefectService } from '@/backend/services/defect/testcasedefect/
 import { linkDefectsSchema } from '@/backend/validators/testcase/defects';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
+import { DefectMessages } from '@/backend/constants/static_messages';
 
 export class TestCaseDefectController {
   /**
@@ -45,7 +46,7 @@ export class TestCaseDefectController {
     await testCaseDefectService.unlinkDefectFromTestCase(testCaseId, defectId);
     return {
       data: null,
-      message: 'Defect unlinked successfully',
+      message: DefectMessages.DefectUnlinkedSuccessfully,
     };
   }
 }

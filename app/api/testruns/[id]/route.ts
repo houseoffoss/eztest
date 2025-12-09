@@ -23,7 +23,8 @@ export const GET = hasPermission(
 export const PATCH = hasPermission(
   async (request, context) => {
     const { id } = await context!.params;
-    return testRunController.updateTestRun(request, id, request.userInfo.id);
+    const body = await request.json();
+    return testRunController.updateTestRun(body, id);
   },
   'testruns',
   'update'
@@ -37,7 +38,7 @@ export const PATCH = hasPermission(
 export const DELETE = hasPermission(
   async (request, context) => {
     const { id } = await context!.params;
-    return testRunController.deleteTestRun(id, request.userInfo.id);
+    return testRunController.deleteTestRun(id);
   },
   'testruns',
   'delete'

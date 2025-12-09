@@ -454,6 +454,232 @@ enum TestResultStatus {
 
 ---
 
+### 2.9 Send Test Run Report
+
+**Endpoint:** `POST /api/testruns/[id]/send-report`
+
+**Authentication:** Required
+
+**Authorization:** TESTER+ (requires `testruns:execute` permission)
+
+**Description:** Sends an email report of the test run to all relevant stakeholders:
+1. **System Admins** - All users with ADMIN role (globally, not just project members)
+2. **Project Managers** - Users with PROJECT_MANAGER role who are members of the project
+3. **Defect Assignees** - Users assigned to defects linked to failed/blocked test cases
+
+**Request:** No body required
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "success": true,
+    "message": "Report sent to 3 recipient(s)",
+    "recipientCount": 3,
+    "totalRecipients": 3,
+    "failedRecipients": [],
+    "recipientDetails": [
+      {
+        "email": "admin@example.com",
+        "role": "ADMIN",
+        "status": "sent"
+      },
+      {
+        "email": "pm@example.com",
+        "role": "PROJECT_MANAGER",
+        "status": "sent"
+      },
+      {
+        "email": "dev@example.com",
+        "role": "DEVELOPER",
+        "status": "sent"
+      }
+    ]
+  }
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "error": "No recipients found for this test run report"
+}
+```
+
+**Implementation Details:**
+
+The endpoint follows the project's architecture pattern:
+- **Validator:** `backend/validators/testrun.validator.ts` - Validates testRunId parameter
+- **Controller:** `backend/controllers/testrun/controller.ts` - `sendTestRunReport()` method
+- **Service:** `backend/services/testrun/services.ts` - `getTestRunReportRecipients()` method
+- **Email Service:** `lib/email-service.ts` - `sendEmail()` with detailed logging
+
+**Recipient Collection Logic:**
+
+1. **System Admins** (fetched globally):
+```typescript
+const admins = await prisma.user.findMany({
+  where: {
+    role: { name: "ADMIN" },
+    deletedAt: null
+  },
+  include: { role: true }
+});
+```
+
+2. **Project Managers** (project members only):
+```typescript
+const projectManagers = await prisma.projectMember.findMany({
+  where: {
+    projectId: testRun.projectId,
+    user: {
+      role: { name: "PROJECT_MANAGER" },
+      deletedAt: null
+    }
+  },
+  include: { user: { include: { role: true } } }
+});
+```
+
+3. **Defect Assignees** (from failed/blocked tests):
+```typescript
+const defectAssignees = await prisma.user.findMany({
+  where: {
+    assignedDefects: {
+      some: {
+        testCases: {
+          some: {
+            results: {
+              some: {
+                testRunId,
+                status: { in: ["FAILED", "BLOCKED"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    deletedAt: null
+  }
+});
+```
+
+**Email Validation:**
+- Format validation using regex pattern
+- Restricted domains (.local, .invalid, .test, .example) are blocked
+- Exception: `admin@eztest.local` is allowed by default
+- Only active users (deletedAt is null) receive emails
+
+**Error Handling:**
+- Validates test run existence
+- Checks recipient availability
+- Validates email addresses before sending
+- Handles individual email failures gracefully
+- Returns detailed failure information
+
+**Troubleshooting Email Failures:**
+
+#### Common Issues:
+
+1. **"Invalid or unsupported email address"**
+   - Email has invalid format or uses restricted domain
+   - Verify user email addresses in database
+   - Update emails to use valid domains
+
+2. **"Connection refused (ECONNREFUSED)"**
+   - Cannot connect to SMTP server
+   - Verify SMTP_HOST and SMTP_PORT
+   - Check firewall settings
+
+3. **"Authentication failed (EAUTH)"**
+   - Invalid SMTP credentials
+   - Verify SMTP_USER and SMTP_PASS
+   - Check if App Password required (Gmail)
+
+4. **"Connection timed out (ETIMEDOUT)"**
+   - Network connectivity issues
+   - Check network/firewall settings
+   - Verify DNS resolution
+
+5. **Rate limit errors (e.g., "Too many emails per second")**
+   - SMTP provider has rate limits
+   - System includes 1-second delays between emails
+   - Failed emails retried up to 3 times
+   - Consider upgrading SMTP provider plan
+
+6. **Emails sent but not received**
+   - Check spam/junk folders
+   - Verify recipient addresses in database
+   - Check SMTP server logs
+
+**Checking SMTP Configuration:**
+
+```powershell
+# Verify environment variables
+echo "SMTP_HOST: $env:SMTP_HOST"
+echo "SMTP_PORT: $env:SMTP_PORT"
+echo "SMTP_USER: $env:SMTP_USER"
+echo "SMTP_FROM: $env:SMTP_FROM"
+echo "SMTP_SECURE: $env:SMTP_SECURE"
+```
+
+**Testing Email Functionality:**
+
+1. Check logs in application console when sending reports
+2. Look for detailed `[EMAIL]` prefixed logs
+3. Verify recipients in console output before sending
+4. Check response for `recipientDetails` to see success/failure
+
+**Database Queries for Verification:**
+
+Find all system admins:
+```sql
+SELECT u.id, u.name, u.email, r.name as role
+FROM "User" u
+JOIN "Role" r ON u."roleId" = r.id
+WHERE r.name = 'ADMIN' AND u."deletedAt" IS NULL;
+```
+
+Find project managers for a project:
+```sql
+SELECT u.id, u.name, u.email, r.name as role
+FROM "User" u
+JOIN "Role" r ON u."roleId" = r.id
+JOIN "ProjectMember" pm ON pm."userId" = u.id
+WHERE r.name = 'PROJECT_MANAGER' 
+  AND pm."projectId" = 'your-project-id'
+  AND u."deletedAt" IS NULL;
+```
+
+Find defect assignees for failed/blocked tests:
+```sql
+SELECT DISTINCT u.id, u.name, u.email
+FROM "User" u
+JOIN "Defect" d ON d."assignedToId" = u.id
+JOIN "TestCaseDefect" tcd ON tcd."defectId" = d.id
+JOIN "TestCase" tc ON tc.id = tcd."testCaseId"
+JOIN "TestResult" tr ON tr."testCaseId" = tc.id
+WHERE tr."testRunId" = 'your-test-run-id'
+  AND tr.status IN ('FAILED', 'BLOCKED')
+  AND u."deletedAt" IS NULL;
+```
+
+**Key Features:**
+- ✅ System admins fetched globally, not just from project members
+- ✅ Email validation ensures only valid emails attempted
+- ✅ Detailed logging helps identify why emails fail
+- ✅ Role tracking shows which role each recipient has
+- ✅ Better error messages for common SMTP issues
+- ✅ Recipient breakdown shows success/failure per recipient
+- ✅ Active users only - filters out deleted users
+- ✅ Follows validators→controllers→services architecture pattern
+
+**Related Documentation:**
+- SMTP Configuration: See `SMTP_DOCUMENTATION.md`
+- Email Notifications: See `docs/EMAIL_NOTIFICATIONS.md`
+
+---
+
 ## 3. UI Components
 
 ### 3.1 Test Runs List Page

@@ -8,6 +8,7 @@ import {
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
 import { sendPasswordResetEmail } from '@/lib/email-service';
+import { AuthMessages } from '@/backend/constants/static_messages';
 
 export class AuthController {
   /**
@@ -28,12 +29,12 @@ export class AuthController {
       const user = await authService.registerUser(validatedData);
 
       return {
-        message: 'User created successfully',
+        message: AuthMessages.UserCreatedSuccessfully,
         user,
       };
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
-        throw new ValidationException('User with this email already exists');
+        throw new ValidationException(AuthMessages.UserAlreadyExists);
       }
       throw error;
     }
@@ -61,15 +62,15 @@ export class AuthController {
       });
 
       return {
-        message: 'Password changed successfully',
+        message: AuthMessages.PasswordChangedSuccessfully,
       };
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes('incorrect')) {
-          throw new ValidationException('Current password is incorrect');
+          throw new ValidationException(AuthMessages.CurrentPasswordIncorrect);
         }
         if (error.message.includes('different')) {
-          throw new ValidationException('New password must be different from current password');
+          throw new ValidationException(AuthMessages.NewPasswordMustBeDifferent);
         }
         if (error.message.includes('not found')) {
           throw new ValidationException('User not found');
@@ -115,7 +116,7 @@ export class AuthController {
       }
 
       return {
-        message: 'Password reset instructions have been sent to your email.',
+        message: AuthMessages.PasswordResetInstructionsSent,
       };
     } catch (error) {
       if (error instanceof Error) {
@@ -144,7 +145,7 @@ export class AuthController {
       await authService.resetPassword(validatedData);
 
       return {
-        message: 'Password has been reset successfully. You can now login with your new password.',
+        message: AuthMessages.PasswordResetSuccessfully,
       };
     } catch (error) {
       if (error instanceof Error) {

@@ -19,11 +19,7 @@ export const GET = hasPermission(
       search: searchParams.get('search') || undefined,
     };
 
-    return testRunController.getProjectTestRuns(
-      id,
-      request.userInfo.id,
-      filters as never
-    );
+    return testRunController.getProjectTestRuns(id, filters as never);
   },
   'testruns',
   'read'
@@ -37,7 +33,8 @@ export const GET = hasPermission(
 export const POST = hasPermission(
   async (request, context) => {
     const { id } = await context!.params;
-    return testRunController.createTestRun(request, id, request.userInfo.id);
+    const body = await request.json();
+    return testRunController.createTestRun(body, id, request.userInfo.id);
   },
   'testruns',
   'create'

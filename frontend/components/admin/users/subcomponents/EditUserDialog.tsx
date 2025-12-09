@@ -75,16 +75,31 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   ];
 
   const handleSubmit = async (formData: Record<string, string>) => {
-    const userData: EditUserFormData = {
-      name: formData.name,
-      email: formData.email,
-      roleId: formData.roleId,
-      avatar: formData.avatar || '',
-      bio: formData.bio || '',
-      phone: formData.phone || '',
-      location: formData.location || '',
-    };
-    await onUpdate(userData);
+    if (!user) return;
+
+    // Only include fields that have actually changed
+    const userData: Partial<EditUserFormData> = {};
+    
+    if (formData.name !== user.name) {
+      userData.name = formData.name;
+    }
+    if (formData.email !== user.email) {
+      userData.email = formData.email;
+    }
+    if (formData.roleId !== user.role.id) {
+      userData.roleId = formData.roleId;
+    }
+    if (formData.bio !== (user.bio || '')) {
+      userData.bio = formData.bio || '';
+    }
+    if (formData.phone !== (user.phone || '')) {
+      userData.phone = formData.phone || '';
+    }
+    if (formData.location !== (user.location || '')) {
+      userData.location = formData.location || '';
+    }
+    
+    await onUpdate(userData as EditUserFormData);
   };
 
   return (

@@ -444,6 +444,219 @@ export class TestRunService {
     // Check if user is a member of the project (role-based permissions handled by hasPermission)
     return !!member;
   }
+
+  /**
+   * Get recipients for test run report
+   * Returns system admins, project managers, and defect assignees
+   */
+  async getTestRunReportRecipients(testRunId: string): Promise<{
+    recipientIds: string[];
+    systemAdminCount: number;
+    projectManagerCount: number;
+    defectAssigneeCount: number;
+  }> {
+    // Fetch test run with related data
+    const testRun = await prisma.testRun.findUnique({
+      where: { id: testRunId },
+      include: {
+        project: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  include: {
+                    role: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        results: {
+          include: {
+            testCase: {
+              include: {
+                defects: {
+                  include: {
+                    defect: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!testRun) {
+      throw new Error('Test run not found');
+    }
+
+    const recipientSet = new Set<string>();
+    let systemAdminCount = 0;
+    let projectManagerCount = 0;
+    let defectAssigneeCount = 0;
+
+    // 1. Add all SYSTEM ADMIN users (global, not just project members)
+    const systemAdmins = await prisma.user.findMany({
+      where: {
+        role: {
+          name: 'ADMIN',
+        },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    systemAdmins.forEach((admin) => {
+      recipientSet.add(admin.id);
+      systemAdminCount++;
+    });
+
+    // 2. Add all PROJECT_MANAGER users (from project members)
+    testRun.project?.members?.forEach((member) => {
+      if (member.user.role?.name === 'PROJECT_MANAGER') {
+        if (!recipientSet.has(member.user.id)) {
+          projectManagerCount++;
+        }
+        recipientSet.add(member.user.id);
+      }
+    });
+
+    // 3. Add all defect assignees (from test results with failed/blocked tests)
+    const defectAssignees = new Set<string>();
+    testRun.results?.forEach((result) => {
+      if (result.status === 'FAILED' || result.status === 'BLOCKED') {
+        result.testCase?.defects?.forEach((linkedDefect) => {
+          if (linkedDefect.defect.assignedToId) {
+            defectAssignees.add(linkedDefect.defect.assignedToId);
+          }
+        });
+      }
+    });
+
+    defectAssignees.forEach((assigneeId) => {
+      if (!recipientSet.has(assigneeId)) {
+        defectAssigneeCount++;
+      }
+      recipientSet.add(assigneeId);
+    });
+
+    return {
+      recipientIds: Array.from(recipientSet),
+      systemAdminCount,
+      projectManagerCount,
+      defectAssigneeCount,
+    };
+  }
+
+  /**
+   * Send test run report to all recipients with validation
+   */
+  async sendTestRunReport(
+    testRunId: string,
+    userId: string,
+    appUrl: string
+  ) {
+    const { emailService } = await import('@/backend/services/email/services');
+    
+    // Get all recipients
+    const { recipientIds } = await this.getTestRunReportRecipients(testRunId);
+
+    if (recipientIds.length === 0) {
+      throw new Error('No recipients found for this test run report');
+    }
+
+    // Fetch recipient details with validation
+    const recipients = await prisma.user.findMany({
+      where: {
+        id: {
+          in: recipientIds,
+        },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Validate email addresses
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validRecipients = recipients.filter(r => {
+      if (!r.email) {
+        return false;
+      }
+      if (!emailRegex.test(r.email)) {
+        return false;
+      }
+      return true;
+    });
+
+    if (validRecipients.length === 0) {
+      throw new Error('No valid email addresses found for recipients');
+    }
+
+    // Send email to each recipient
+    let successCount = 0;
+    const failedRecipients: string[] = [];
+    const recipientDetails: { email: string; role: string; status: string }[] = [];
+
+    for (const recipient of validRecipients) {
+      try {
+        const sent = await emailService.sendTestRunReportEmail({
+          testRunId,
+          recipientId: recipient.id,
+          startedByUserId: userId,
+          appUrl,
+        });
+
+        if (sent) {
+          successCount++;
+          recipientDetails.push({
+            email: recipient.email,
+            role: recipient.role?.name || 'UNKNOWN',
+            status: 'sent',
+          });
+        } else {
+          failedRecipients.push(recipient.email);
+          recipientDetails.push({
+            email: recipient.email,
+            role: recipient.role?.name || 'UNKNOWN',
+            status: 'failed',
+          });
+        }
+      } catch (error) {
+        failedRecipients.push(recipient.email);
+        recipientDetails.push({
+          email: recipient.email,
+          role: recipient.role?.name || 'UNKNOWN',
+          status: 'error',
+        });
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      message: `Report sent to ${successCount} recipient(s)${
+        failedRecipients.length > 0
+          ? `. Failed to send to: ${failedRecipients.join(', ')}`
+          : ''
+      }`,
+      recipientCount: successCount,
+      totalRecipients: validRecipients.length,
+      failedRecipients,
+      recipientDetails,
+    };
+  }
 }
 
 export const testRunService = new TestRunService();

@@ -145,7 +145,7 @@ export function TestCasesListCard({
     },
   ];
 
-  const tableData: ResultRow[] = results.map((result) => ({
+  const tableData: ResultRow[] = (results || []).map((result) => ({
     id: result.testCase.id,
     testCase: result.testCase,
     status: result.status,

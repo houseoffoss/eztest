@@ -84,11 +84,42 @@ export class AuthMessages {
   static PasswordChangedSuccessfully = 'Password changed successfully.';
   static ResetPasswordFailed = 'Reset password failed.';
   static ResetPasswordCodeSentFailed = 'Reset password code sent failed.';
+  static UserCreatedSuccessfully = 'User created successfully.';
+  static PasswordResetInstructionsSent = 'Password reset instructions have been sent to your email.';
+  static PasswordResetSuccessfully = 'Password has been reset successfully. You can now login with your new password.';
+  static UserAlreadyExists = 'User with this email already exists.';
+  static CurrentPasswordIncorrect = 'Current password is incorrect.';
+  static NewPasswordMustBeDifferent = 'New password must be different from current password.';
+}
+
+export class EmailMessages {
+  static EmailServiceConfigured = 'Email service is configured and ready.';
+  static EmailServiceNotConfigured = 'Email service is not configured. Please set SMTP environment variables.';
+  static EmailSentSuccessfully = 'Email sent successfully.';
+  static EmailSendFailed = 'Failed to send email.';
+}
+
+export class DefectMessages {
+  static DefectCreatedSuccessfully = 'Defect created successfully.';
+  static DefectsFetchedSuccessfully = 'Defects fetched successfully.';
+  static DefectFetchedSuccessfully = 'Defect fetched successfully.';
+  static DefectUpdatedSuccessfully = 'Defect updated successfully.';
+  static DefectDeletedSuccessfully = 'Defect deleted successfully.';
+  static DefectLinkedSuccessfully = 'Defect linked successfully.';
+  static DefectUnlinkedSuccessfully = 'Defect unlinked successfully.';
+  static DefectNotFound = 'Defect not found.';
+  static DefectAssignmentEmailSent = 'Defect assignment email sent successfully.';
+  static FailedToCreateDefect = 'Failed to create defect.';
+  static FailedToUpdateDefect = 'Failed to update defect.';
+  static FailedToDeleteDefect = 'Failed to delete defect.';
+  static FailedToLinkDefect = 'Failed to link defect.';
+  static FailedToUnlinkDefect = 'Failed to unlink defect.';
 }
 
 export class UserMessages {
   static UserFetchedSuccessfully = 'User fetched successfully.';
   static UserUpdatedSuccessfully = 'User updated successfully.';
+  static UserDeletedSuccessfully = 'User deleted successfully.';
   static UserNotFound = 'User not found.';
   static FetchUserDetailsFailed = 'Unable to fetch the user details.';
   static UpdateUserFailed = 'Unable to update the user.';
@@ -162,16 +193,20 @@ export class TestRunMessages {
   static TestRunDeletedSuccessfully = 'Test run deleted successfully.';
   static TestRunStartedSuccessfully = 'Test run started successfully.';
   static TestRunCompletedSuccessfully = 'Test run completed successfully.';
+  static TestRunReportSentSuccessfully = 'Test run report sent successfully.';
   static TestRunNotFound = 'Test run not found.';
   static TestRunNameRequired = 'Test run name is required.';
   static TestRunNameCannotBeEmpty = 'Test run name cannot be empty.';
   static InvalidTestRunStatus = 'Invalid test run status.';
   static NoTestCases = 'No test cases provided.';
+  static NoRecipientsFound = 'No recipients found to send report to.';
+  static NoValidEmailAddresses = 'No recipients with valid email addresses found.';
   static FailedToFetchTestRun = 'Failed to fetch test run.';
   static FailedToCreateTestRun = 'Failed to create test run.';
   static FailedToUpdateTestRun = 'Failed to update test run.';
   static FailedToDeleteTestRun = 'Failed to delete test run.';
   static FailedToStartTestRun = 'Failed to start test run.';
   static FailedToCompleteTestRun = 'Failed to complete test run.';
+  static FailedToSendTestRunReport = 'Failed to send test run report.';
   static AccessDeniedTestRun = 'Access denied. Only project owners/admins can manage test runs.';
 }

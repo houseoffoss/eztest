@@ -409,9 +409,15 @@ export class ProjectService {
       }
     }
 
-    return await prisma.projectMember.delete({
+    // Store userId before deletion for email notification
+    const removedUserId = member.userId;
+
+    await prisma.projectMember.delete({
       where: { id: memberId },
     });
+
+    // Return the removed user's ID for email notification
+    return { removedUserId };
   }
 
   /**

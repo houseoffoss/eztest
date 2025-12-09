@@ -8,6 +8,7 @@ import { ButtonSecondary } from '@/elements/button-secondary';
 import { Navbar } from '@/components/design/Navbar';
 import { RegisterForm } from './subcomponents/RegisterForm';
 import { RegisterLeftPanel } from './subcomponents/RegisterLeftPanel';
+import { OtpVerification } from '@/components/common/OtpVerification';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
@@ -26,6 +27,7 @@ interface FieldErrors {
 export default function RegisterPageComponent() {
   const router = useRouter();
   const [stars, setStars] = useState<number | null>(null);
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [formData, setFormData, clearFormData] = useFormPersistence('register-form', {
     name: '',
     email: '',
@@ -211,6 +213,53 @@ export default function RegisterPageComponent() {
     setIsLoading(true);
 
     try {
+      // First, send OTP to email
+      const otpResponse = await fetch('/api/auth/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          type: 'register',
+        }),
+      });
+
+      const otpData = await otpResponse.json();
+
+      if (!otpData.success) {
+        setError(otpData.message || 'Failed to send OTP');
+        setAlert({
+          type: 'error',
+          title: 'Error',
+          message: otpData.message || 'Failed to send OTP',
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Show OTP verification screen
+      setAlert({
+        type: 'success',
+        title: 'OTP Sent',
+        message: 'Please check your email for the verification code',
+      });
+      setIsLoading(false);
+      setShowOtpVerification(true);
+    } catch {
+      const errorMsg = 'An unexpected error occurred';
+      setError(errorMsg);
+      setAlert({
+        type: 'error',
+        title: 'Error',
+        message: errorMsg,
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpVerified = async () => {
+    setIsLoading(true);
+
+    try {
       // Register user
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -234,6 +283,7 @@ export default function RegisterPageComponent() {
           title: 'Registration Failed',
           message: errorMsg,
         });
+        setShowOtpVerification(false);
         setIsLoading(false);
         return;
       }
@@ -274,9 +324,30 @@ export default function RegisterPageComponent() {
         title: 'Error',
         message: errorMsg,
       });
+      setShowOtpVerification(false);
       setIsLoading(false);
     }
   };
+
+  const handleOtpCancel = () => {
+    setShowOtpVerification(false);
+    setIsLoading(false);
+  };
+
+  // Show OTP verification screen if needed
+  if (showOtpVerification) {
+    return (
+      <>
+        <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+        <OtpVerification
+          email={formData.email}
+          type="register"
+          onVerified={handleOtpVerified}
+          onCancel={handleOtpCancel}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a1628] flex flex-col">

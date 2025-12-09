@@ -2,6 +2,7 @@ import { userService } from '@/backend/services/user/services';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { NotFoundException, ValidationException } from '@/backend/utils/exceptions';
 import { z } from 'zod';
+import { UserMessages, AuthMessages } from '@/backend/constants/static_messages';
 
 // Validation schemas
 const updateProfileSchema = z.object({
@@ -27,7 +28,7 @@ export class UserController {
     const user = await userService.getUserProfile(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(UserMessages.UserNotFound);
     }
 
     return { data: user };
@@ -74,7 +75,7 @@ export class UserController {
 
     try {
       await userService.changePassword(userId, validationResult.data);
-      return { message: 'Password changed successfully' };
+      return { message: AuthMessages.PasswordChangedSuccessfully };
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'User not found') {

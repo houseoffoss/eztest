@@ -402,6 +402,44 @@ export class DefectService {
   }
 
   /**
+   * Assign defect to a user and send notification email
+   * This is used when assigning via UI to automatically send email
+   */
+  async assignDefectWithEmail(
+    defectId: string,
+    assigneeId: string | null,
+    assignedByUserId: string,
+    appUrl: string = 'http://localhost:3000'
+  ) {
+    // Update the defect assignment
+    const defect = await this.updateDefect(defectId, { assignedToId: assigneeId });
+
+    // Send email if assignee is provided
+    if (assigneeId) {
+      try {
+        // Dynamically import emailService to avoid circular dependency
+        const { emailService } = await import('@/backend/services/email/services');
+        
+        // Send email asynchronously (don't wait for it)
+        emailService.sendDefectAssignmentEmail({
+          defectId,
+          assigneeId,
+          assignedByUserId,
+          appUrl,
+        }).catch(error => {
+          console.error('Failed to send defect assignment email:', error);
+          // Don't throw - assignment succeeded even if email failed
+        });
+      } catch (error) {
+        console.error('Error in assignDefectWithEmail:', error);
+        // Don't throw - assignment succeeded even if email service unavailable
+      }
+    }
+
+    return defect;
+  }
+
+  /**
    * Get defect statistics for a project
    */
   async getDefectStatistics(projectId: string) {
@@ -475,6 +513,35 @@ export class DefectService {
         },
       },
     });
+
+    return comment;
+  }
+
+  /**
+   * Add a comment to a defect and send notification emails to other involved users
+   * This is used when adding comments via UI to automatically send emails
+   */
+  async addDefectCommentWithEmail(
+    defectId: string,
+    userId: string,
+    content: string,
+    appUrl: string = 'http://localhost:3000'
+  ) {
+    // First add the comment
+    const comment = await this.addDefectComment(defectId, userId, content);
+
+    // Then send notification emails asynchronously (don't block the comment creation)
+    const { emailService } = await import('@/backend/services/email/services');
+    emailService
+      .sendDefectCommentEmail({
+        defectId,
+        commentContent: content,
+        commentAuthorId: userId,
+        appUrl,
+      })
+      .catch((error) => {
+        console.error('Failed to send defect comment notification emails:', error);
+      });
 
     return comment;
   }
