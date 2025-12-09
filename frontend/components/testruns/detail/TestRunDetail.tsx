@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
+import { FloatingAlert, FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
 import { TestCasesListCard } from './subcomponents/TestCasesListCard';
@@ -8,6 +9,7 @@ import { RecordResultDialog } from './subcomponents/RecordResultDialog';
 import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { AddTestSuitesDialog } from './subcomponents/AddTestSuitesDialog';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
+import { SendTestRunReportDialog } from './subcomponents/SendTestRunReportDialog';
 import {
   CheckCircle,
   XCircle,
@@ -42,6 +44,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [availableTestSuites, setAvailableTestSuites] = useState<TestSuite[]>([]);
   const [selectedSuiteIds, setSelectedSuiteIds] = useState<string[]>([]);
   const [defectRefreshTrigger, setDefectRefreshTrigger] = useState(0);
+  const [sendReportDialogOpen, setSendReportDialogOpen] = useState(false);
+  const [floatingAlert, setFloatingAlert] = useState<FloatingAlertMessage | null>(null);
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -108,14 +112,20 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleCompleteTestRun = async () => {
     try {
       setActionLoading(true);
+      console.log('Starting complete test run...');
       const response = await fetch(`/api/testruns/${testRunId}/complete`, {
         method: 'POST',
       });
 
       const data = await response.json();
+      console.log('Complete test run response:', data);
 
       if (data.data) {
-        fetchTestRun();
+        console.log('Test run completed, updating test run state...');
+        setTestRun(data.data);
+        
+        // Show dialog to ask if user wants to send report
+        setSendReportDialogOpen(true);
       } else {
         alert(data.error || 'Failed to complete test run');
       }
@@ -124,7 +134,35 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       alert('Failed to complete test run');
     } finally {
       setActionLoading(false);
+      console.log('Complete test run finished');
     }
+  };
+
+  const handleSendReportYes = async () => {
+    console.log('Calling send-report API...');
+    const response = await fetch(`/api/testruns/${testRunId}/send-report`, {
+      method: 'POST',
+    });
+
+    const data = await response.json();
+    console.log('Send report response:', data);
+
+    if (!data.data?.success) {
+      throw new Error(data.data?.message || data.error || 'Failed to send report');
+    }
+
+    console.log('Report sent successfully, showing message and refreshing...');
+    
+    // Check if message contains "Failed to send to:" to determine if there were partial failures
+    const hasFailures = data.data.message?.includes('Failed to send to:');
+    
+    setFloatingAlert({
+      type: hasFailures ? 'error' : 'success',
+      title: hasFailures ? 'Report Sent with Errors' : 'Report Sent Successfully',
+      message: data.data.message,
+    });
+    // Refresh test run data
+    await fetchTestRun();
   };
 
   const handleOpenResultDialog = (testCase: TestCase) => {
@@ -179,7 +217,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   };
 
   const fetchAvailableTestCases = async () => {
-    if (!testRun) return;
+    if (!testRun || !testRun.project?.id) return;
 
     try {
       const response = await fetch(
@@ -206,30 +244,52 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
 
     try {
-      const promises = selectedCaseIds.map((testCaseId) =>
-        fetch(`/api/testruns/${testRunId}/results`, {
+      console.log('Adding test cases:', selectedCaseIds);
+      const promises = selectedCaseIds.map(async (testCaseId) => {
+        const payload = {
+          testCaseId,
+          status: 'SKIPPED',
+        };
+        console.log('Sending payload:', payload);
+        
+        const response = await fetch(`/api/testruns/${testRunId}/results`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            testCaseId,
-            status: 'SKIPPED',
-          }),
-        })
-      );
+          body: JSON.stringify(payload),
+        });
 
-      await Promise.all(promises);
+        if (!response.ok) {
+          let errorMessage = `Failed to add test case (Status: ${response.status})`;
+          try {
+            const data = await response.json();
+            console.error('API error response:', data);
+            errorMessage = data.message || data.error || errorMessage;
+          } catch (parseError) {
+            console.error('Failed to parse error response:', parseError);
+            const text = await response.text();
+            console.error('Response text:', text);
+            if (text) errorMessage = text;
+          }
+          throw new Error(errorMessage);
+        }
+
+        return response.json();
+      });
+
+      const results = await Promise.all(promises);
+      console.log('Test cases added successfully:', results);
 
       setAddCasesDialogOpen(false);
       setSelectedCaseIds([]);
-      fetchTestRun();
+      await fetchTestRun();
     } catch (error) {
       console.error('Error adding test cases:', error);
-      alert('Failed to add test cases');
+      alert(`Failed to add test cases: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
   const fetchAvailableTestSuites = async () => {
-    if (!testRun) return;
+    if (!testRun || !testRun.project?.id) return;
 
     try {
       const response = await fetch(
@@ -294,25 +354,40 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       }
 
       // Add all test cases from selected suites
-      const promises = testCaseIds.map((testCaseId) =>
-        fetch(`/api/testruns/${testRunId}/results`, {
+      const promises = testCaseIds.map(async (testCaseId) => {
+        const response = await fetch(`/api/testruns/${testRunId}/results`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             testCaseId,
             status: 'SKIPPED',
           }),
-        })
-      );
+        });
 
-      await Promise.all(promises);
+        if (!response.ok) {
+          let errorMessage = `Failed to add test case (Status: ${response.status})`;
+          try {
+            const data = await response.json();
+            errorMessage = data.message || data.error || errorMessage;
+          } catch (parseError) {
+            const text = await response.text();
+            if (text) errorMessage = text;
+          }
+          throw new Error(errorMessage);
+        }
+
+        return response.json();
+      });
+
+      const results = await Promise.all(promises);
+      console.log('Test cases from suites added successfully:', results);
 
       setAddSuitesDialogOpen(false);
       setSelectedSuiteIds([]);
-      fetchTestRun();
+      await fetchTestRun();
     } catch (error) {
       console.error('Error adding test cases from suites:', error);
-      alert('Failed to add test cases from suites');
+      alert(`Failed to add test cases from suites: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -360,22 +435,25 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       total: testRun.results?.length || 0,
     };
 
-    testRun.results.forEach((result) => {
-      switch (result.status) {
-        case 'PASSED':
-          stats.passed++;
-          break;
-        case 'FAILED':
-          stats.failed++;
-          break;
-        case 'BLOCKED':
-          stats.blocked++;
-          break;
-        case 'SKIPPED':
-          stats.skipped++;
-          break;
-      }
-    });
+    // Check if results exist before iterating
+    if (testRun.results && Array.isArray(testRun.results)) {
+      testRun.results.forEach((result) => {
+        switch (result.status) {
+          case 'PASSED':
+            stats.passed++;
+            break;
+          case 'FAILED':
+            stats.failed++;
+            break;
+          case 'BLOCKED':
+            stats.blocked++;
+            break;
+          case 'SKIPPED':
+            stats.skipped++;
+            break;
+        }
+      });
+    }
 
     // Pending = tests that haven't been executed (skipped tests count as not executed)
     stats.pending = stats.skipped;
@@ -415,12 +493,12 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         breadcrumbs={[
           { label: 'Projects', href: '/projects' },
           {
-            label: testRun.project.name,
-            href: `/projects/${testRun.project.id}`,
+            label: testRun.project?.name || 'Project',
+            href: `/projects/${testRun.project?.id}`,
           },
           {
             label: 'Test Runs',
-            href: `/projects/${testRun.project.id}/testruns`,
+            href: `/projects/${testRun.project?.id}/testruns`,
           },
           { label: testRun.name },
         ]}
@@ -464,7 +542,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           open={resultDialogOpen}
           testCaseName={selectedTestCase?.testCaseName || ''}
           testCaseId={selectedTestCase?.testCaseId || ''}
-          projectId={testRun.project.id}
+          projectId={testRun.project?.id || ''}
           testRunEnvironment={testRun.environment}
           formData={resultForm}
           onOpenChange={setResultDialogOpen}
@@ -523,7 +601,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           }}
         />
 
-        {selectedTestCaseForDefect && (
+        {selectedTestCaseForDefect && testRun.project?.id && (
           <CreateDefectDialog
             projectId={testRun.project.id}
             triggerOpen={createDefectDialogOpen}
@@ -533,7 +611,19 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             testRunEnvironment={testRun.environment}
           />
         )}
+
+        <SendTestRunReportDialog
+          open={sendReportDialogOpen}
+          onOpenChange={setSendReportDialogOpen}
+          onConfirm={handleSendReportYes}
+        />
       </div>
+
+      <FloatingAlert
+        alert={floatingAlert}
+        onClose={() => setFloatingAlert(null)}
+      />
     </div>
   );
 }
+

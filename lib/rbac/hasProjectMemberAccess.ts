@@ -65,8 +65,9 @@ export function hasProjectMemberAccess(
       );
     }
 
-    // Get project ID from route params
-    const { id: projectId } = context.params;
+    // Get project ID from route params (await for Next.js 15)
+    const params = await context.params;
+    const { id: projectId } = params;
 
     // For ADMIN, allow access to any project
     if (user.role.name === 'ADMIN') {

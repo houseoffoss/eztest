@@ -12,7 +12,64 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ====================================
+// Enums
+// ====================================
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TestStatus {
+  ACTIVE
+  DEPRECATED
+  DRAFT
+}
+
+enum TestRunStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TestResultStatus {
+  PASSED
+  FAILED
+  BLOCKED
+  SKIPPED
+  RETEST
+}
+
+enum RequirementStatus {
+  DRAFT
+  APPROVED
+  IMPLEMENTED
+  VERIFIED
+  DEPRECATED
+}
+
+enum DefectSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum DefectStatus {
+  NEW
+  IN_PROGRESS
+  FIXED
+  TESTED
+  CLOSED
+}
+
+// ====================================
 // User Management
+// ====================================
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -58,6 +115,21 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([token])
+  @@index([expiresAt])
+}
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String   // Email to verify
+  otp       String   // 6-digit OTP code
+  type      String   // 'login' or 'register'
+  expiresAt DateTime // OTP expiration time (10 minutes)
+  verified  Boolean  @default(false) // Whether OTP has been verified
+  attempts  Int      @default(0) // Number of verification attempts
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([otp])
   @@index([expiresAt])
 }
 
@@ -325,43 +397,6 @@ model Attachment {
   @@index([testResultId])
 }
 
-// Enums
-enum Priority {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum TestStatus {
-  ACTIVE
-  DEPRECATED
-  DRAFT
-}
-
-enum TestRunStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum TestResultStatus {
-  PASSED
-  FAILED
-  BLOCKED
-  SKIPPED
-  RETEST
-}
-
-enum RequirementStatus {
-  DRAFT
-  APPROVED
-  IMPLEMENTED
-  VERIFIED
-  DEPRECATED
-}
-
 // ====================================
 // RBAC (Role-Based Access Control)
 // ====================================
@@ -488,19 +523,4 @@ model TestCaseDefect {
   @@unique([testCaseId, defectId])
   @@index([testCaseId])
   @@index([defectId])
-}
-
-enum DefectSeverity {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum DefectStatus {
-  NEW
-  IN_PROGRESS
-  FIXED
-  TESTED
-  CLOSED
 }

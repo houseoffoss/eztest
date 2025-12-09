@@ -1,4 +1,5 @@
 import { defectService } from '@/backend/services/defect/services';
+import { EmailService } from '@/backend/services/email/services';
 import { 
   createDefectSchema, 
   updateDefectSchema, 
@@ -10,6 +11,9 @@ import {
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
 import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
+import { DefectMessages } from '@/backend/constants/static_messages';
+
+const emailService = new EmailService();
 
 export class DefectController {
   /**
@@ -75,12 +79,27 @@ export class DefectController {
     }
 
     const validatedData = validationResult.data;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
     const defect = await defectService.createDefect({
       ...validatedData,
       projectId,
       createdById: req.userInfo.id,
     });
+
+    // If defect is assigned to someone, send notification email
+    if (validatedData.assignedToId) {
+      emailService
+        .sendDefectAssignmentEmail({
+          defectId: defect.id,
+          assigneeId: validatedData.assignedToId,
+          assignedByUserId: req.userInfo.id,
+          appUrl,
+        })
+        .catch((error) => {
+          console.error('Failed to send defect assignment email:', error);
+        });
+    }
 
     return {
       data: defect,
@@ -112,8 +131,62 @@ export class DefectController {
     }
 
     const validatedData = validationResult.data;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
+    // Get the current defect to compare changes
+    const currentDefect = await defectService.getDefectById(defectId);
+    if (!currentDefect) {
+      throw new ValidationException('Defect not found');
+    }
+
+    // Track changes for email notification
+    const changes: Array<{ field: 'status' | 'priority'; oldValue: string; newValue: string }> = [];
+
+    if (validatedData.status && validatedData.status !== currentDefect.status) {
+      changes.push({
+        field: 'status',
+        oldValue: currentDefect.status,
+        newValue: validatedData.status,
+      });
+    }
+
+    if (validatedData.priority && validatedData.priority !== currentDefect.priority) {
+      changes.push({
+        field: 'priority',
+        oldValue: currentDefect.priority,
+        newValue: validatedData.priority,
+      });
+    }
+
+    // Update the defect with all provided fields
     const defect = await defectService.updateDefect(defectId, validatedData);
+
+    // If assignedToId is being changed, send assignment notification email
+    if (validatedData.assignedToId !== undefined && validatedData.assignedToId !== currentDefect.assignedToId) {
+      const assigneeId = validatedData.assignedToId;
+      if (assigneeId) {
+        emailService.sendDefectAssignmentEmail({
+          defectId,
+          assigneeId,
+          assignedByUserId: req.userInfo.id,
+          appUrl,
+        }).catch(error => {
+          console.error('Failed to send defect assignment email:', error);
+        });
+      }
+    }
+
+    // Send email notification if status or priority changed
+    if (changes.length > 0) {
+      emailService.sendDefectUpdateEmail({
+        defectId,
+        updatedByUserId: req.userInfo.id,
+        changes,
+        appUrl,
+      }).catch(error => {
+        console.error('Failed to send defect update email:', error);
+      });
+    }
 
     return {
       data: defect,
@@ -127,7 +200,7 @@ export class DefectController {
     await defectService.deleteDefect(defectId);
 
     return {
-      data: { message: 'Defect deleted successfully' },
+      data: { message: DefectMessages.DefectDeletedSuccessfully },
     };
   }
 
@@ -178,12 +251,39 @@ export class DefectController {
     }
 
     const validatedData = validationResult.data;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
     
+    // Get all defects to check their current status
+    const defects = await Promise.all(
+      validatedData.defectIds.map(id => 
+        defectService.getDefectById(id)
+      )
+    );
+
+    // Update all defects
     await Promise.all(
       validatedData.defectIds.map(id => 
         defectService.updateDefect(id, { status: validatedData.status })
       )
     );
+
+    // Send email notifications for status changes
+    defects.forEach(defect => {
+      if (defect && defect.status !== validatedData.status) {
+        emailService.sendDefectUpdateEmail({
+          defectId: defect.id,
+          updatedByUserId: req.userInfo.id,
+          changes: [{
+            field: 'status',
+            oldValue: defect.status,
+            newValue: validatedData.status,
+          }],
+          appUrl,
+        }).catch(error => {
+          console.error(`Failed to send defect update email for ${defect.id}:`, error);
+        });
+      }
+    });
 
     return {
       data: { message: `${validatedData.defectIds.length} defect(s) updated successfully` },
@@ -203,10 +303,14 @@ export class DefectController {
     }
 
     const validatedData = validationResult.data;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
     
+    // Assign all defects and send emails if assignee is provided
     await Promise.all(
       validatedData.defectIds.map(id => 
-        defectService.updateDefect(id, { assignedToId: validatedData.assignedToId })
+        validatedData.assignedToId
+          ? defectService.assignDefectWithEmail(id, validatedData.assignedToId, req.userInfo.id, appUrl)
+          : defectService.updateDefect(id, { assignedToId: null })
       )
     );
 
@@ -254,10 +358,14 @@ export class DefectController {
       throw new ValidationException('User not authenticated');
     }
 
-    const comment = await defectService.addDefectComment(
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+
+    // Add comment and send notification emails
+    const comment = await defectService.addDefectCommentWithEmail(
       defectId,
       userId,
-      content.trim()
+      content.trim(),
+      appUrl
     );
 
     return { data: comment };

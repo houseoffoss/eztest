@@ -1,6 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { testRunService } from '@/backend/services/testrun/services';
-import { TestRunStatus, TestResultStatus } from '@prisma/client';
+import { emailService } from '@/backend/services/email/services';
+import { 
+  createTestRunSchema, 
+  updateTestRunSchema, 
+  addTestResultSchema 
+} from '@/backend/validators/testrun.validator';
+import { CustomRequest } from '@/backend/utils/interceptor';
+import { ValidationException } from '@/backend/utils/exceptions';
+import { TestRunStatus } from '@prisma/client';
 import { TestRunMessages } from '@/backend/constants/static_messages';
 
 export class TestRunController {
@@ -9,7 +16,6 @@ export class TestRunController {
    */
   async getProjectTestRuns(
     projectId: string,
-    userId: string,
     filters?: {
       status?: TestRunStatus;
       assignedToId?: string;
@@ -17,20 +23,12 @@ export class TestRunController {
       search?: string;
     }
   ) {
-    try {
-      const testRuns = await testRunService.getProjectTestRuns(
-        projectId,
-        filters
-      );
+    const testRuns = await testRunService.getProjectTestRuns(
+      projectId,
+      filters
+    );
 
-      return NextResponse.json({ data: testRuns }, { status: 200 });
-    } catch (error) {
-      console.error('Get test runs error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToFetchTestRun },
-        { status: 500 }
-      );
-    }
+    return { data: testRuns };
   }
 
   /**
@@ -40,333 +38,174 @@ export class TestRunController {
     testRunId: string,
     userId: string
   ) {
-    try {
-      // Check access
-      const hasAccess = await testRunService.hasAccessToTestRun(
-        testRunId,
-        userId
-      );
+    const testRun = await testRunService.getTestRunById(testRunId);
 
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      const testRun = await testRunService.getTestRunById(testRunId);
-
-      if (!testRun) {
-        return NextResponse.json(
-          { error: TestRunMessages.TestRunNotFound },
-          { status: 404 }
-        );
-      }
-
-      // Get statistics
-      const stats = await testRunService.getTestRunStats(testRunId);
-
-      return NextResponse.json(
-        {
-          data: {
-            ...testRun,
-            stats,
-          },
-        },
-        { status: 200 }
-      );
-    } catch (error) {
-      console.error('Get test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToFetchTestRun },
-        { status: 500 }
-      );
+    if (!testRun) {
+      throw new ValidationException(TestRunMessages.TestRunNotFound);
     }
+
+    // Get statistics
+    const stats = await testRunService.getTestRunStats(testRunId);
+
+    return {
+      data: {
+        ...testRun,
+        stats,
+      },
+    };
   }
 
   /**
    * Create a new test run
    */
   async createTestRun(
-    request: NextRequest,
+    body: unknown,
     projectId: string,
     userId: string
   ) {
-    try {
-      const body = await request.json();
-      const { name, description, environment, testCaseIds } = body;
-      let { assignedToId } = body;
-
-      // Validation
-      if (!name) {
-        return NextResponse.json(
-          { error: TestRunMessages.TestRunNameRequired },
-          { status: 400 }
-        );
-      }
-
-      // Sanitize assignedToId - convert empty string or 'none' to undefined
-      if (!assignedToId || assignedToId === 'none' || assignedToId === '') {
-        assignedToId = undefined;
-      }
-
-      const testRun = await testRunService.createTestRun({
-        projectId,
-        name,
-        description,
-        assignedToId,
-        environment,
-        testCaseIds,
-        createdById: userId,
-      });
-
-      return NextResponse.json({ data: testRun }, { status: 201 });
-    } catch (error) {
-      console.error('Create test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToCreateTestRun },
-        { status: 500 }
+    const validationResult = createTestRunSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
       );
     }
+
+    const validatedData = validationResult.data;
+
+    // Sanitize assignedToId - convert empty string or 'none' to undefined
+    let assignedToId = validatedData.assignedToId;
+    if (!assignedToId || assignedToId === 'none' || assignedToId === '') {
+      assignedToId = undefined;
+    }
+
+    const testRun = await testRunService.createTestRun({
+      projectId,
+      name: validatedData.name,
+      description: validatedData.description,
+      assignedToId,
+      environment: validatedData.environment,
+      testCaseIds: validatedData.testCaseIds,
+      createdById: userId,
+    });
+
+    return { data: testRun, statusCode: 201 };
   }
 
   /**
    * Update a test run
    */
   async updateTestRun(
-    request: NextRequest,
-    testRunId: string,
-    userId: string
+    body: unknown,
+    testRunId: string
   ) {
-    try {
-      // Check permission
-      const canManage = await testRunService.canManageTestRun(
-        testRunId,
-        userId
-      );
-
-      if (!canManage) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      const body = await request.json();
-      const { name, description, status, assignedToId, environment } = body;
-
-      // Validate status if provided
-      if (status) {
-        const validStatuses: TestRunStatus[] = [
-          'PLANNED',
-          'IN_PROGRESS',
-          'COMPLETED',
-          'CANCELLED',
-        ];
-        if (!validStatuses.includes(status)) {
-          return NextResponse.json(
-            { error: TestRunMessages.InvalidTestRunStatus },
-            { status: 400 }
-          );
-        }
-      }
-
-      const testRun = await testRunService.updateTestRun(testRunId, {
-        name,
-        description,
-        status,
-        assignedToId,
-        environment,
-      });
-
-      return NextResponse.json({ data: testRun }, { status: 200 });
-    } catch (error) {
-      console.error('Update test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToUpdateTestRun },
-        { status: 500 }
+    const validationResult = updateTestRunSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
       );
     }
+
+    const validatedData = validationResult.data;
+
+    const testRun = await testRunService.updateTestRun(testRunId, validatedData);
+
+    return { data: testRun };
   }
 
   /**
    * Delete a test run
    */
-  async deleteTestRun(
-    testRunId: string,
-    userId: string
-  ) {
-    try {
-      // Check permission
-      const canManage = await testRunService.canManageTestRun(
-        testRunId,
-        userId
-      );
+  async deleteTestRun(testRunId: string) {
+    await testRunService.deleteTestRun(testRunId);
 
-      if (!canManage) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      await testRunService.deleteTestRun(testRunId);
-
-      return NextResponse.json(
-        { message: TestRunMessages.TestRunDeletedSuccessfully },
-        { status: 200 }
-      );
-    } catch (error) {
-      console.error('Delete test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToDeleteTestRun },
-        { status: 500 }
-      );
-    }
+    return { message: TestRunMessages.TestRunDeletedSuccessfully };
   }
 
   /**
    * Start a test run
    */
-  async startTestRun(
-    testRunId: string,
-    userId: string
-  ) {
-    try {
-      // Check access
-      const hasAccess = await testRunService.hasAccessToTestRun(
-        testRunId,
-        userId
-      );
+  async startTestRun(testRunId: string) {
+    const testRun = await testRunService.startTestRun(testRunId);
 
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      const testRun = await testRunService.startTestRun(testRunId);
-
-      return NextResponse.json({ data: testRun }, { status: 200 });
-    } catch (error) {
-      console.error('Start test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToStartTestRun },
-        { status: 500 }
-      );
-    }
+    return { data: testRun };
   }
 
   /**
    * Complete a test run
    */
-  async completeTestRun(
-    testRunId: string,
-    userId: string
-  ) {
-    try {
-      // Check access
-      const hasAccess = await testRunService.hasAccessToTestRun(
-        testRunId,
-        userId
-      );
+  async completeTestRun(testRunId: string) {
+    const testRun = await testRunService.completeTestRun(testRunId);
+    
+    // Check if email service is available for report sending
+    const emailAvailable = await emailService.isEmailServiceAvailable();
 
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      const testRun = await testRunService.completeTestRun(testRunId);
-
-      return NextResponse.json({ data: testRun }, { status: 200 });
-    } catch (error) {
-      console.error('Complete test run error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToCompleteTestRun },
-        { status: 500 }
-      );
-    }
+    return {
+      data: {
+        ...testRun,
+        emailAvailable,
+        emailStatusMessage: emailAvailable
+          ? 'Email service is available. You can send report to recipients.'
+          : 'Email service is not configured. Report cannot be sent.',
+      },
+    };
   }
 
   /**
    * Add test result to test run
    */
   async addTestResult(
-    request: NextRequest,
+    body: unknown,
     testRunId: string,
     userId: string
   ) {
-    try {
-      // Check access
-      const hasAccess = await testRunService.hasAccessToTestRun(
-        testRunId,
-        userId
-      );
-
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: TestRunMessages.AccessDeniedTestRun },
-          { status: 403 }
-        );
-      }
-
-      const body = await request.json();
-      const {
-        testCaseId,
-        status,
-        duration,
-        comment,
-        errorMessage,
-        stackTrace,
-      } = body;
-
-      // Validation
-      if (!testCaseId || !status) {
-        return NextResponse.json(
-          { error: TestRunMessages.InvalidTestRunStatus },
-          { status: 400 }
-        );
-      }
-
-      // Validate status
-      const validStatuses: TestResultStatus[] = [
-        'PASSED',
-        'FAILED',
-        'BLOCKED',
-        'SKIPPED',
-        'RETEST',
-      ];
-      if (!validStatuses.includes(status)) {
-        return NextResponse.json(
-          { error: TestRunMessages.InvalidTestRunStatus },
-          { status: 400 }
-        );
-      }
-
-      const result = await testRunService.addTestResult(
-        testRunId,
-        testCaseId,
-        {
-          status,
-          executedById: userId,
-          duration,
-          comment,
-          errorMessage,
-          stackTrace,
-        }
-      );
-
-      return NextResponse.json({ data: result }, { status: 201 });
-    } catch (error) {
-      console.error('Add test result error:', error);
-      return NextResponse.json(
-        { error: TestRunMessages.FailedToCompleteTestRun },
-        { status: 500 }
+    const validationResult = addTestResultSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
       );
     }
+
+    const validatedData = validationResult.data;
+
+    const result = await testRunService.addTestResult(
+      testRunId,
+      validatedData.testCaseId,
+      {
+        status: validatedData.status,
+        executedById: userId,
+        duration: validatedData.duration,
+        comment: validatedData.comment,
+        errorMessage: validatedData.errorMessage,
+        stackTrace: validatedData.stackTrace,
+      }
+    );
+
+    return { data: result, statusCode: 201 };
+  }
+
+  /**
+   * Send test run report via email
+   */
+  async sendTestRunReport(testRunId: string, userId: string) {
+    // Check if test run exists
+    const testRun = await testRunService.getTestRunById(testRunId);
+    if (!testRun) {
+      throw new ValidationException(TestRunMessages.TestRunNotFound);
+    }
+
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+
+    // Delegate to service to get validated recipients and send emails
+    const result = await testRunService.sendTestRunReport(
+      testRunId,
+      userId,
+      appUrl
+    );
+
+    return { data: result };
   }
 }
 

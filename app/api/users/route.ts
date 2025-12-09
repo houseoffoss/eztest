@@ -1,6 +1,7 @@
 import { hasPermission, checkPermission } from '@/lib/rbac/hasPermission';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
 import { prisma } from '@/lib/prisma';
+import { emailService } from '@/backend/services/email/services';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
@@ -105,6 +106,7 @@ export const POST = hasPermission(
     try {
       const body = await request.json();
       const { name, email, password, roleId } = body;
+      const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
       // Validation
       if (!name || !email || !password || !roleId) {
@@ -152,6 +154,21 @@ export const POST = hasPermission(
           },
         },
       });
+
+      // Send invitation email to newly created user (non-blocking, async)
+      const sessionUser = await getSessionUser();
+      if (sessionUser?.id) {
+        emailService
+          .sendUserInvitationEmail({
+            userId: user.id,
+            tempPassword: password,
+            invitedByUserId: sessionUser.id,
+            appUrl,
+          })
+          .catch((error) => {
+            console.error('Failed to send user invitation email:', error);
+          });
+      }
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;

@@ -34,9 +34,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a1628] min-h-screen text-white relative`}
+        suppressHydrationWarning
       >
         {/* Global solid background color */}
         <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-[#0a1628]" />

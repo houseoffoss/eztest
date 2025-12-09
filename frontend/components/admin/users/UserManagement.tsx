@@ -107,11 +107,13 @@ export default function UserManagement() {
       throw new Error(data.error);
     }
 
+    const userName = data.data?.name || selectedUser.name || 'User';
+    
     fetchUsers();
     setAlert({
       type: 'success',
       title: 'User Updated',
-      message: `User "${data.data.name}" has been updated successfully.`,
+      message: `User "${userName}" has been updated successfully.`,
     });
   };
 

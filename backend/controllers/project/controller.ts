@@ -1,4 +1,5 @@
 import { projectService } from '@/backend/services/project/services';
+import { emailService } from '@/backend/services/email/services';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { BadRequestException, ConflictException, NotFoundException, InternalServerException, ValidationException } from '@/backend/utils/exceptions';
 import { ProjectMessages, ProjectMemberMessages } from '@/backend/constants/static_messages';
@@ -151,12 +152,25 @@ export class ProjectController {
     }
 
     const { userId: newUserId, email } = validationResult.data;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
     try {
       const member = await projectService.addProjectMember(projectId, {
         userId: newUserId,
         email,
       });
+
+      // Send notification email to the newly added member (non-blocking, async)
+      emailService
+        .sendProjectMemberEmail({
+          projectId,
+          newMemberId: member.userId,
+          addedByUserId: request.userInfo.id,
+          appUrl,
+        })
+        .catch((error) => {
+          console.error('Failed to send project member email:', error);
+        });
 
       return { data: member, statusCode: 201 };
     } catch (error) {
@@ -181,8 +195,23 @@ export class ProjectController {
    * Permission already checked by route wrapper
    */
   async removeProjectMember(request: CustomRequest, projectId: string, memberId: string) {
+    const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+
     try {
-      await projectService.removeProjectMember(projectId, memberId);
+      const { removedUserId } = await projectService.removeProjectMember(projectId, memberId);
+
+      // Send notification email to the removed member (non-blocking, async)
+      emailService
+        .sendRemoveProjectMemberEmail({
+          projectId,
+          memberId: removedUserId,
+          removedByUserId: request.userInfo.id,
+          appUrl,
+        })
+        .catch((error) => {
+          console.error('Failed to send member removal email:', error);
+        });
+
       return { message: ProjectMemberMessages.MemberRemovedSuccessfully };
     } catch (error) {
       if (error instanceof Error && error.message === 'Member not found in this project') {
