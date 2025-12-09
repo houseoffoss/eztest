@@ -259,9 +259,18 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         });
 
         if (!response.ok) {
-          const data = await response.json();
-          console.error('API error response:', data);
-          throw new Error(data.error || 'Failed to add test case');
+          let errorMessage = `Failed to add test case (Status: ${response.status})`;
+          try {
+            const data = await response.json();
+            console.error('API error response:', data);
+            errorMessage = data.message || data.error || errorMessage;
+          } catch (parseError) {
+            console.error('Failed to parse error response:', parseError);
+            const text = await response.text();
+            console.error('Response text:', text);
+            if (text) errorMessage = text;
+          }
+          throw new Error(errorMessage);
         }
 
         return response.json();
@@ -356,8 +365,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         });
 
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to add test case');
+          let errorMessage = `Failed to add test case (Status: ${response.status})`;
+          try {
+            const data = await response.json();
+            errorMessage = data.message || data.error || errorMessage;
+          } catch (parseError) {
+            const text = await response.text();
+            if (text) errorMessage = text;
+          }
+          throw new Error(errorMessage);
         }
 
         return response.json();
