@@ -77,17 +77,24 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   const handleSubmit = async (formData: Record<string, string>) => {
     if (!user) return;
 
+    console.log('EditUserDialog - Form data received:', formData);
+    console.log('EditUserDialog - Current user role:', user.role.id, user.role.name);
+
     // Only include fields that have actually changed
     const userData: Partial<EditUserFormData> = {};
     
-    if (formData.name !== user.name) {
+    if (formData.name && formData.name !== user.name) {
       userData.name = formData.name;
     }
-    if (formData.email !== user.email) {
+    if (formData.email && formData.email !== user.email) {
       userData.email = formData.email;
     }
-    if (formData.roleId !== user.role.id) {
+    // For roleId, ensure we have a value and it's different from current role
+    if (formData.roleId && formData.roleId !== user.role.id) {
+      console.log('EditUserDialog - Role change detected:', formData.roleId, '!=', user.role.id);
       userData.roleId = formData.roleId;
+    } else {
+      console.log('EditUserDialog - No role change:', formData.roleId, '==', user.role.id);
     }
     if (formData.bio !== (user.bio || '')) {
       userData.bio = formData.bio || '';
@@ -99,6 +106,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
       userData.location = formData.location || '';
     }
     
+    console.log('EditUserDialog - Sending update with data:', userData);
     await onUpdate(userData as EditUserFormData);
   };
 

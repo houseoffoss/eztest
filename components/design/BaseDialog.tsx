@@ -85,12 +85,15 @@ export const BaseDialog = <T = unknown,>({
     }
 
     // Required validation
-    if (field.required && !value.trim()) {
+    // For select fields, don't trim the value as it's a pre-defined option
+    const isEmpty = field.type === 'select' ? !value : !value.trim();
+    if (field.required && isEmpty) {
       return `${field.label} is required`;
     }
 
     // Skip other validations if field is empty and not required
-    if (!value.trim() && !field.required) {
+    const shouldSkipValidation = field.type === 'select' ? !value : !value.trim();
+    if (shouldSkipValidation && !field.required) {
       return undefined;
     }
 
@@ -327,15 +330,18 @@ export const BaseDialog = <T = unknown,>({
       const selectValue = formData[field.name] || undefined;
       return (
         <Select key={field.name} value={selectValue} onValueChange={(value) => {
-          const syntheticEvent = {
-            target: {
-              name: field.name,
-              value: value,
-            },
-          } as unknown as React.ChangeEvent<HTMLInputElement>;
-          handleInputChange(syntheticEvent);
-          // Validate on change for select
-          setTimeout(() => handleFieldBlur(field), 0);
+          // Update form data
+          setFormData((prev) => ({
+            ...prev,
+            [field.name]: value,
+          }));
+          
+          // Clear error immediately when a value is selected
+          setFieldErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[field.name];
+            return newErrors;
+          });
         }}>
           <SelectTrigger className={`bg-[#0f172a] border-[#334155] ${errorBorderClass}`}>
             <SelectValue placeholder={field.placeholder} />
