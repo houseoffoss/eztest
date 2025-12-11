@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Priority, TestStatus } from '@prisma/client';
+import { CustomRequest } from '@/backend/utils/interceptor';
 
 interface CreateTestCaseInput {
   projectId: string;
@@ -898,6 +899,127 @@ export class TestCaseService {
       message: 'Defects linked successfully',
       count: links.count,
     };
+  }
+
+  /**
+   * Associate S3 attachments with a test case
+   */
+  async associateAttachments(testCaseId: string, req: CustomRequest) {
+    // Verify test case exists
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    const body = await req.json();
+    const { attachments } = body as {
+      attachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>;
+    };
+
+    if (!attachments || !Array.isArray(attachments)) {
+      throw new Error('attachments array is required');
+    }
+
+    // Link existing attachments or create new ones
+    const linkedAttachments = await Promise.all(
+      attachments.map(async (att) => {
+        // If attachment ID is provided, update the existing record
+        if (att.id) {
+          return prisma.attachment.update({
+            where: { id: att.id },
+            data: {
+              testCaseId: testCaseId,
+              fieldName: att.fieldName || 'attachment',
+            },
+          });
+        }
+        
+        // Otherwise, create a new attachment record (legacy/fallback)
+        return prisma.attachment.create({
+          data: {
+            filename: att.s3Key.split('/').pop() || att.fileName,
+            originalName: att.fileName,
+            mimeType: att.mimeType,
+            size: 0,
+            path: att.s3Key,
+            fieldName: att.fieldName || 'attachment',
+            testCaseId: testCaseId,
+          },
+        });
+      })
+    );
+
+    return linkedAttachments;
+  }
+
+  /**
+   * Get all attachments for a test case
+   */
+  async getTestCaseAttachments(testCaseId: string) {
+    // Verify test case exists
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    const attachments = await prisma.attachment.findMany({
+      where: { testCaseId },
+      orderBy: { uploadedAt: 'desc' },
+    });
+
+    return attachments;
+  }
+
+  /**
+   * Delete an attachment from a test case
+   */
+  async deleteAttachment(testCaseId: string, attachmentId: string) {
+    // Verify test case exists
+    const testCase = await prisma.testCase.findUnique({
+      where: { id: testCaseId },
+    });
+
+    if (!testCase) {
+      throw new Error('Test case not found');
+    }
+
+    // Verify attachment exists and belongs to this test case
+    const attachment = await prisma.attachment.findUnique({
+      where: { id: attachmentId },
+    });
+
+    if (!attachment || attachment.testCaseId !== testCaseId) {
+      throw new Error('Attachment not found');
+    }
+
+    // Delete attachment record from database
+    const deleted = await prisma.attachment.delete({
+      where: { id: attachmentId },
+    });
+
+    // Delete file from S3 (fire and forget to avoid blocking)
+    if (attachment.path) {
+      import('@/lib/s3-client').then(({ s3Client, S3_BUCKET }) => {
+        const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+        s3Client.send(
+          new DeleteObjectCommand({
+            Bucket: S3_BUCKET,
+            Key: attachment.path,
+          })
+        ).catch((error: Error) => {
+          console.error(`Failed to delete S3 file ${attachment.path}:`, error);
+          // Don't throw - file is already deleted from DB
+        });
+      });
+    }
+
+    return deleted;
   }
 }
 

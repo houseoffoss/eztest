@@ -35,7 +35,7 @@ function Textarea({
       <textarea
         data-slot="textarea"
         className={cn(
-          "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex field-sizing-content min-h-24 w-full rounded-[10px] border px-4 py-3 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl",
+          "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
           variant === "glass"
             ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
             : "border-border/40 bg-input",

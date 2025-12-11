@@ -406,7 +406,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         {/* Create Test Case Dialog */}
         <CreateTestCaseDialog
           projectId={projectId}
-          triggerOpen={createDialogOpen}
+          open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
           onTestCaseCreated={handleTestCaseCreated}
         />

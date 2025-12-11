@@ -7,9 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Note: Using url in schema for Prisma v5 compatibility
-  // This syntax is supported in Prisma v5.x and required for database migrations
-  url      = env("DATABASE_URL")
 }
 
 // ====================================
@@ -230,8 +227,8 @@ model TestCase {
   updatedAt     DateTime @updatedAt
 
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  module        Module?  @relation(fields: [moduleId, projectId], references: [id, projectId], onDelete: SetNull)
-  suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: SetNull) // Legacy
+  module        Module?  @relation(fields: [moduleId, projectId], references: [id, projectId], onDelete: Cascade)
+  suite         TestSuite? @relation(fields: [suiteId], references: [id], onDelete: Cascade) // Legacy
   createdBy     User     @relation(fields: [createdById], references: [id])
   testCaseSuites TestCaseSuite[] // New many-to-many relation
   steps         TestStep[]
@@ -274,6 +271,7 @@ model TestStep {
   updatedAt   DateTime @updatedAt
 
   testCase    TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
 
   @@unique([testCaseId, stepNumber])
   @@index([testCaseId])
@@ -386,14 +384,18 @@ model Attachment {
   mimeType      String
   size          Int
   path          String
+  fieldName     String?  // description, expectedResult, preconditions, postconditions, action
   testCaseId    String?
+  testStepId    String?
   testResultId  String?
   uploadedAt    DateTime @default(now())
 
   testCase      TestCase?   @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  testStep      TestStep?   @relation(fields: [testStepId], references: [id], onDelete: Cascade)
   testResult    TestResult? @relation(fields: [testResultId], references: [id], onDelete: Cascade)
 
   @@index([testCaseId])
+  @@index([testStepId])
   @@index([testResultId])
 }
 

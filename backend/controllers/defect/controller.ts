@@ -370,6 +370,73 @@ export class DefectController {
 
     return { data: comment };
   }
+
+  /**
+   * Associate S3 attachments with a defect
+   * Permission already checked by route wrapper
+   */
+  async associateAttachments(
+    req: CustomRequest,
+    defectId: string
+  ) {
+    try {
+      const result = await defectService.associateAttachments(defectId, req);
+      return {
+        data: result,
+        statusCode: 201,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Defect not found') {
+        throw new ValidationException('Defect not found');
+      }
+      throw new ValidationException('Failed to associate attachments with defect');
+    }
+  }
+
+  /**
+   * Get all attachments for a defect
+   * Permission already checked by route wrapper
+   */
+  async getDefectAttachments(
+    req: CustomRequest,
+    defectId: string
+  ) {
+    try {
+      const attachments = await defectService.getDefectAttachments(defectId);
+      return { data: attachments };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Defect not found') {
+        throw new ValidationException('Defect not found');
+      }
+      throw new ValidationException('Failed to fetch attachments');
+    }
+  }
+
+  /**
+   * Delete an attachment from a defect
+   * Permission already checked by route wrapper
+   */
+  async deleteAttachment(
+    req: CustomRequest,
+    defectId: string,
+    attachmentId: string | null
+  ) {
+    try {
+      if (!attachmentId) {
+        throw new ValidationException('Attachment ID is required');
+      }
+      const result = await defectService.deleteAttachment(defectId, attachmentId);
+      return { data: result };
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error;
+      }
+      if (error instanceof Error && error.message === 'Attachment not found') {
+        throw new ValidationException('Attachment not found');
+      }
+      throw new ValidationException('Failed to delete attachment');
+    }
+  }
 }
 
 export const defectController = new DefectController();

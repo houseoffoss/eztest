@@ -2,12 +2,12 @@ import { defectController } from '@/backend/controllers/defect/controller';
 import { hasPermission } from '@/lib/rbac/hasPermission';
 
 /**
- * GET /api/defects/[defectId]
+ * GET /api/defects/[id]
  * Fetch a single defect by ID
  */
 export const GET = hasPermission(
   async (request, context) => {
-    const { defectId } = await context.params;
+    const { id: defectId } = await context.params;
     return defectController.getDefectById(request, defectId);
   },
   'defects',
@@ -15,12 +15,12 @@ export const GET = hasPermission(
 );
 
 /**
- * PUT /api/defects/[defectId]
+ * PUT /api/defects/[id]
  * Update a defect
  */
 export const PUT = hasPermission(
   async (request, context) => {
-    const { defectId } = await context.params;
+    const { id: defectId } = await context.params;
     const body = await request.json();
     return defectController.updateDefect(request, defectId, body);
   },
@@ -29,12 +29,12 @@ export const PUT = hasPermission(
 );
 
 /**
- * DELETE /api/defects/[defectId]
+ * DELETE /api/defects/[id]
  * Delete a defect (soft delete)
  */
 export const DELETE = hasPermission(
   async (request, context) => {
-    const { defectId } = await context.params;
+    const { id: defectId } = await context.params;
     return defectController.deleteDefect(request, defectId);
   },
   'defects',

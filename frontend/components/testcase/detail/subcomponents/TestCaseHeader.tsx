@@ -19,6 +19,7 @@ interface TestCaseHeaderProps {
   onFormChange: (data: TestCaseFormData) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
+  saving?: boolean;
 }
 
 export function TestCaseHeader({
@@ -32,6 +33,7 @@ export function TestCaseHeader({
   onFormChange,
   canUpdate = true,
   canDelete = true,
+  saving = false,
 }: TestCaseHeaderProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -97,13 +99,22 @@ export function TestCaseHeader({
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button variant="glass" onClick={onCancel} className="cursor-pointer">
+              <Button variant="glass" onClick={onCancel} className="cursor-pointer" disabled={saving}>
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <ButtonPrimary onClick={onSave} className="cursor-pointer">
-                <Save className="w-4 h-4 mr-2" />
-                Save
+              <ButtonPrimary onClick={onSave} className="cursor-pointer" disabled={saving}>
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                  </>
+                )}
               </ButtonPrimary>
             </>
           ) : (

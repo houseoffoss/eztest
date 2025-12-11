@@ -5,8 +5,10 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
+import { GripVertical, Plus, Trash2, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
 import { TestStep } from '../types';
+import { type Attachment, downloadFile, getFileIconType } from '@/lib/s3';
 
 interface TestStepsCardProps {
   steps: TestStep[];
@@ -18,6 +20,15 @@ interface TestStepsCardProps {
   onNewStepChange: (step: { action: string; expectedResult: string }) => void;
   onAddStep: () => void;
   onRemoveStep: (stepNumber: number) => void;
+  // Attachment props
+  stepAttachments?: Record<string, Record<string, Attachment[]>>;
+  onStepAttachmentsChange?: (stepId: string, field: string, attachments: Attachment[]) => void;
+  testCaseId?: string;
+  // New step attachment props
+  newStepActionAttachments?: Attachment[];
+  newStepExpectedResultAttachments?: Attachment[];
+  onNewStepActionAttachmentsChange?: (attachments: Attachment[]) => void;
+  onNewStepExpectedResultAttachmentsChange?: (attachments: Attachment[]) => void;
 }
 
 export function TestStepsCard({
@@ -30,6 +41,13 @@ export function TestStepsCard({
   onNewStepChange,
   onAddStep,
   onRemoveStep,
+  stepAttachments = {},
+  onStepAttachmentsChange,
+  testCaseId,
+  newStepActionAttachments = [],
+  newStepExpectedResultAttachments = [],
+  onNewStepActionAttachmentsChange,
+  onNewStepExpectedResultAttachmentsChange,
 }: TestStepsCardProps) {
   return (
     <DetailCard
@@ -76,20 +94,42 @@ export function TestStepsCard({
                         Action
                       </h5>
                       {isEditing ? (
-                        <Input
+                        <TextareaWithAttachments
+                          variant="glass"
                           value={step.action}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                          onChange={(e) => {
                             const updated = steps.map((s) =>
                               s.stepNumber === step.stepNumber
-                                ? { ...s, action: e.target.value }
+                                ? { ...s, action: e }
                                 : s
                             );
                             onStepsChange(updated);
                           }}
                           placeholder="Enter action"
+                          fieldName="action"
+                          attachments={stepAttachments[step.id]?.action || []}
+                          onAttachmentsChange={(attachments) => {
+                            if (onStepAttachmentsChange) {
+                              onStepAttachmentsChange(step.id, 'action', attachments);
+                            }
+                          }}
+                          entityId={step.id}
+                          entityType="testresult"
+                          showAttachments={true}
                         />
                       ) : (
-                        <p className="text-white/90 break-words">{step.action}</p>
+                        <div className="space-y-2">
+                          <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
+                            {step.action}
+                          </div>
+                          {stepAttachments[step.id]?.action && stepAttachments[step.id].action.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {stepAttachments[step.id].action.map((att) => (
+                                <AttachmentBadge key={att.id} attachment={att} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                     <div>
@@ -97,22 +137,44 @@ export function TestStepsCard({
                         Expected Result
                       </h5>
                       {isEditing ? (
-                        <Input
+                        <TextareaWithAttachments
+                          variant="glass"
                           value={step.expectedResult}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                              const updated = steps.map((s) =>
-                                s.stepNumber === step.stepNumber
-                                  ? { ...s, expectedResult: e.target.value }
-                                  : s
-                              );
-                              onStepsChange(updated);
-                            }}
-                            placeholder="Enter expected result"
-                          />
-                        ) : (
-                          <p className="text-white/90 break-words">{step.expectedResult}</p>
-                        )}
-                      </div>
+                          onChange={(e) => {
+                            const updated = steps.map((s) =>
+                              s.stepNumber === step.stepNumber
+                                ? { ...s, expectedResult: e }
+                                : s
+                            );
+                            onStepsChange(updated);
+                          }}
+                          placeholder="Enter expected result"
+                          fieldName="expectedResult"
+                          attachments={stepAttachments[step.id]?.expectedResult || []}
+                          onAttachmentsChange={(attachments) => {
+                            if (onStepAttachmentsChange) {
+                              onStepAttachmentsChange(step.id, 'expectedResult', attachments);
+                            }
+                          }}
+                          entityId={step.id}
+                          entityType="testresult"
+                          showAttachments={true}
+                        />
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
+                            {step.expectedResult}
+                          </div>
+                          {stepAttachments[step.id]?.expectedResult && stepAttachments[step.id].expectedResult.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {stepAttachments[step.id].expectedResult.map((att) => (
+                                <AttachmentBadge key={att.id} attachment={att} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     </div>
                   </div>
                   {isEditing && (
@@ -131,30 +193,41 @@ export function TestStepsCard({
           )}
 
           {addingStep && (
-            <div className="border border-blue-500/50 rounded-lg p-4 space-y-3">
+            <div className="border border-blue-500/50 rounded-lg p-4 space-y-3 bg-blue-500/5">
               <div className="space-y-2">
                 <Label>Action</Label>
-                <Input
+                <TextareaWithAttachments
                   variant="glass"
                   value={newStep.action}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                    onNewStepChange({ ...newStep, action: e.target.value })
+                  onChange={(value) =>
+                    onNewStepChange({ ...newStep, action: value })
                   }
                   placeholder="Enter action"
+                  fieldName="action"
+                  attachments={newStepActionAttachments}
+                  onAttachmentsChange={onNewStepActionAttachmentsChange || (() => {})}
+                  entityType="testresult"
+                  showAttachments={true}
+                  maxLength={1000}
+                  showCharCount={false}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Expected Result</Label>
-                <Input
+                <TextareaWithAttachments
                   variant="glass"
                   value={newStep.expectedResult}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                    onNewStepChange({
-                      ...newStep,
-                      expectedResult: e.target.value,
-                    })
+                  onChange={(value) =>
+                    onNewStepChange({ ...newStep, expectedResult: value })
                   }
                   placeholder="Enter expected result"
+                  fieldName="expectedResult"
+                  attachments={newStepExpectedResultAttachments}
+                  onAttachmentsChange={onNewStepExpectedResultAttachmentsChange || (() => {})}
+                  entityType="testresult"
+                  showAttachments={true}
+                  maxLength={1000}
+                  showCharCount={false}
                 />
               </div>
               <div className="flex gap-2">
@@ -167,6 +240,12 @@ export function TestStepsCard({
                   onClick={() => {
                     onAddingStepChange(false);
                     onNewStepChange({ action: '', expectedResult: '' });
+                    if (onNewStepActionAttachmentsChange) {
+                      onNewStepActionAttachmentsChange([]);
+                    }
+                    if (onNewStepExpectedResultAttachmentsChange) {
+                      onNewStepExpectedResultAttachmentsChange([]);
+                    }
                   }}
                 >
                   Cancel
@@ -176,5 +255,40 @@ export function TestStepsCard({
           )}
         </div>
     </DetailCard>
+  );
+}
+
+// Attachment Badge Component
+function AttachmentBadge({ attachment }: { attachment: Attachment }) {
+  const handleDownload = async () => {
+    console.log('[TestStepsCard] Download clicked for:', attachment);
+    try {
+      await downloadFile(attachment.id, attachment.filename);
+    } catch (error) {
+      console.error('[TestStepsCard] Download error:', error);
+    }
+  };
+
+  const getIcon = () => {
+    const type = getFileIconType(attachment.filename);
+    switch (type) {
+      case 'image':
+        return <ImageIcon className="w-3 h-3" />;
+      case 'pdf':
+        return <FileText className="w-3 h-3" />;
+      default:
+        return <FileIcon className="w-3 h-3" />;
+    }
+  };
+
+  return (
+    <div
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs cursor-pointer hover:bg-blue-500/20 transition-colors"
+      onClick={handleDownload}
+    >
+      {getIcon()}
+      <span className="max-w-[150px] truncate">{attachment.filename}</span>
+      <Download className="w-3 h-3" />
+    </div>
   );
 }

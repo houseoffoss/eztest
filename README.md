@@ -24,12 +24,26 @@ EzTest is a lightweight, open-source test management platform built with Next.js
 | **Test Cases** | ✅ Complete | Full CRUD, steps, priorities, statuses |
 | **Test Runs** | ✅ Complete | Execution tracking, results, progress monitoring |
 | **Test Results** | ✅ Complete | Multiple statuses, comments, duration tracking |
+| **File Attachments** | ✅ Complete | Direct S3 upload, up to 500MB, presigned URLs |
 | **Dashboard & Analytics** | 🚧 In Progress | Basic metrics available |
 | **Requirements Traceability** | 📋 Planned | Link tests to requirements |
 | **Comments & Collaboration** | 📋 Planned | Discussions on tests |
-| **File Attachments** | 📋 Planned | Screenshots, logs, documents |
 | **API Integrations** | 📋 Planned | Jira, GitHub, Azure DevOps |
 | **Automation Integration** | 📋 Planned | CI/CD, test frameworks |
+
+---
+
+## ⚠️ Security Notice for Open Source Project
+
+**IMPORTANT:** This project requires AWS S3 credentials for file attachments. 
+
+🔒 **Never commit real AWS credentials to the repository!**
+
+- ✅ `.env.local` is in `.gitignore` and won't be committed
+- ✅ Use `.env.example` as a template (contains placeholders only)
+- ✅ For deployment, use environment variables or AWS IAM roles
+- ✅ Create a dedicated IAM user with S3-only permissions (see `docs/S3_CORS_SETUP.md`)
+- ✅ Rotate credentials immediately if accidentally exposed
 
 ---
 

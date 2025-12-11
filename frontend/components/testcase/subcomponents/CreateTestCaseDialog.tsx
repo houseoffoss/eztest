@@ -4,6 +4,8 @@ import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/desi
 import { TestCase, Module } from '../types';
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../constants/testCaseFormConfig';
 import { useEffect, useState } from 'react';
+import { attachmentStorage } from '@/lib/attachment-storage';
+import type { Attachment } from '@/lib/s3';
 
 interface CreateTestCaseDialogProps {
   projectId: string;
@@ -23,6 +25,10 @@ export function CreateTestCaseDialog({
   onTestCaseCreated,
 }: CreateTestCaseDialogProps) {
   const [modules, setModules] = useState<Module[]>([]);
+  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
+  const [expectedResultAttachments, setExpectedResultAttachments] = useState<Attachment[]>([]);
+  const [preconditionsAttachments, setPreconditionsAttachments] = useState<Attachment[]>([]);
+  const [postconditionsAttachments, setPostconditionsAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -36,10 +42,26 @@ export function CreateTestCaseDialog({
         console.error('Error fetching modules:', error);
       }
     };
+    
     fetchModules();
-  }, [projectId]);
+    
+    // Set attachment context when dialog opens
+    if (open !== false) {
+      attachmentStorage.setContext({
+        entityType: 'testcase',
+        projectId,
+      });
+    }
+    
+    return () => {
+      // Clear context when dialog closes
+      if (open === false) {
+        attachmentStorage.clearContext();
+      }
+    };
+  }, [projectId, open]);
 
-  const moduleOptions = modules.map((module) => ({
+  const moduleOptions = modules.map(module => ({
     value: module.id,
     label: module.name,
   }));
@@ -93,42 +115,103 @@ export function CreateTestCaseDialog({
     {
       name: 'description',
       label: 'Description',
-      type: 'textarea',
+      type: 'textarea-with-attachments',
       placeholder: 'Enter test case description',
       rows: 3,
       cols: 1,
-      maxLength: 250,
+      attachments: descriptionAttachments,
+      onAttachmentsChange: setDescriptionAttachments,
     },
     {
       name: 'expectedResult',
       label: 'Expected Result',
-      type: 'textarea',
+      type: 'textarea-with-attachments',
       placeholder: 'Enter the expected result or outcome',
       rows: 3,
       cols: 1,
-      maxLength: 250,
+      attachments: expectedResultAttachments,
+      onAttachmentsChange: setExpectedResultAttachments,
     },
     {
       name: 'preconditions',
       label: 'Preconditions',
-      type: 'textarea',
+      type: 'textarea-with-attachments',
       placeholder: 'Enter preconditions',
       rows: 3,
       cols: 1,
-      maxLength: 250,
+      attachments: preconditionsAttachments,
+      onAttachmentsChange: setPreconditionsAttachments,
     },
     {
       name: 'postconditions',
       label: 'Postconditions',
-      type: 'textarea',
+      type: 'textarea-with-attachments',
       placeholder: 'Enter postconditions',
       rows: 3,
       cols: 1,
-      maxLength: 250,
+      attachments: postconditionsAttachments,
+      onAttachmentsChange: setPostconditionsAttachments,
     },
   ];
 
+  const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
+    const allAttachments = [
+      ...descriptionAttachments,
+      ...expectedResultAttachments,
+      ...preconditionsAttachments,
+      ...postconditionsAttachments,
+    ];
+
+    const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+    
+    if (pendingAttachments.length === 0) {
+      return []; // No pending attachments
+    }
+
+    const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
+
+    // Upload all pending files
+    for (const attachment of pendingAttachments) {
+      // @ts-ignore - Access the pending file object
+      const file = attachment._pendingFile;
+      if (!file) continue;
+
+      try {
+        const { uploadFileToS3 } = await import('@/lib/s3');
+        const result = await uploadFileToS3({
+          file,
+          fieldName: attachment.fieldName || 'attachment',
+          entityType: 'testcase',
+          onProgress: () => {}, // Silent upload
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        // Store the uploaded attachment info for linking
+        if (result.attachment) {
+          uploadedAttachments.push({
+            id: result.attachment.id, // Use the database ID
+            s3Key: result.attachment.filename,
+            fileName: file.name,
+            mimeType: file.type,
+            fieldName: attachment.fieldName,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to upload attachment:', error);
+        throw error; // Throw error to stop test case creation
+      }
+    }
+
+    return uploadedAttachments;
+  };
+
   const handleSubmit = async (formData: Record<string, string>) => {
+    // Upload all pending attachments first
+    const uploadedAttachments = await uploadPendingAttachments();
+
     const estimatedTime = formData.estimatedTime ? parseInt(formData.estimatedTime) : undefined;
 
     const response = await fetch(`/api/projects/${projectId}/testcases`, {
@@ -155,7 +238,33 @@ export function CreateTestCaseDialog({
       throw new Error(data.message || data.error || 'Failed to create test case');
     }
 
-    return data.data;
+    const createdTestCase = data.data;
+
+    // Associate uploaded attachments with the test case
+    if (uploadedAttachments.length > 0) {
+      try {
+        console.log('Linking attachments:', uploadedAttachments);
+        const attachmentResponse = await fetch(`/api/testcases/${createdTestCase.id}/attachments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ attachments: uploadedAttachments }),
+        });
+        
+        if (!attachmentResponse.ok) {
+          const errorData = await attachmentResponse.json();
+          console.error('Failed to associate attachments:', errorData);
+          throw new Error('Failed to link attachments to test case');
+        }
+        
+        const attachmentResult = await attachmentResponse.json();
+        console.log('Attachments linked successfully:', attachmentResult);
+      } catch (error) {
+        console.error('Error associating attachments:', error);
+        throw new Error('Failed to link attachments. Test case was created but attachments were not saved.');
+      }
+    }
+
+    return createdTestCase;
   };
 
   const config: BaseDialogConfig<TestCase> = {
@@ -170,6 +279,9 @@ export function CreateTestCaseDialog({
     onSuccess: (testCase) => {
       if (testCase) {
         onTestCaseCreated(testCase);
+        // Clear attachments after successful creation
+        attachmentStorage.clearAllAttachments();
+        attachmentStorage.clearContext();
       }
     },
   };

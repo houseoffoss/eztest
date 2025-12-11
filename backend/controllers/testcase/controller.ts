@@ -208,7 +208,8 @@ export class TestCaseController {
         request.scopeInfo.scope_name,
         steps as unknown as Array<{ id?: string; stepNumber: number; action: string; expectedResult: string }>
       );
-      return { data: testCase };
+      // Return just the steps array as the frontend expects
+      return { data: testCase.steps || [] };
     } catch (error) {
       if (error instanceof Error && error.message === 'Test case not found') {
         throw new NotFoundException(TestCaseMessages.TestCaseNotFound);
@@ -348,6 +349,73 @@ export class TestCaseController {
         throw new NotFoundException('Test case not found');
       }
       throw new InternalServerException('Failed to link defects to test case');
+    }
+  }
+
+  /**
+   * Associate S3 attachments with a test case
+   * Permission already checked by route wrapper
+   */
+  async associateAttachments(
+    req: CustomRequest,
+    testCaseId: string
+  ) {
+    try {
+      const result = await testCaseService.associateAttachments(testCaseId, req);
+      return {
+        data: result,
+        statusCode: 201,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
+      }
+      throw new InternalServerException('Failed to associate attachments with test case');
+    }
+  }
+
+  /**
+   * Get all attachments for a test case
+   * Permission already checked by route wrapper
+   */
+  async getTestCaseAttachments(
+    req: CustomRequest,
+    testCaseId: string
+  ) {
+    try {
+      const attachments = await testCaseService.getTestCaseAttachments(testCaseId);
+      return { data: attachments };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Test case not found') {
+        throw new NotFoundException('Test case not found');
+      }
+      throw new InternalServerException('Failed to fetch attachments');
+    }
+  }
+
+  /**
+   * Delete an attachment from a test case
+   * Permission already checked by route wrapper
+   */
+  async deleteAttachment(
+    req: CustomRequest,
+    testCaseId: string,
+    attachmentId: string | null
+  ) {
+    try {
+      if (!attachmentId) {
+        throw new ValidationException('Attachment ID is required', []);
+      }
+      const result = await testCaseService.deleteAttachment(testCaseId, attachmentId);
+      return { data: result };
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error;
+      }
+      if (error instanceof Error && error.message === 'Attachment not found') {
+        throw new NotFoundException('Attachment not found');
+      }
+      throw new InternalServerException('Failed to delete attachment');
     }
   }
 }

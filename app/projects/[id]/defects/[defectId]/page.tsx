@@ -3,14 +3,14 @@ import DefectDetail from '@/frontend/components/defect/detail/DefectDetail';
 interface DefectDetailPageProps {
   params: Promise<{
     id: string;
-    defectId: string;
+    defectid: string;
   }>;
 }
 
 export default async function DefectDetailPage({
   params,
 }: DefectDetailPageProps) {
-  const { id, defectId } = await params;
+  const { id, defectid } = await params;
 
-  return <DefectDetail projectId={id} defectId={defectId} />;
+  return <DefectDetail projectId={id} defectId={defectid} />;
 }

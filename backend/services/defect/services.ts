@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
+import { CustomRequest } from '@/backend/utils/interceptor';
 
 interface CreateDefectInput {
   projectId: string;
@@ -544,6 +545,98 @@ export class DefectService {
       });
 
     return comment;
+  }
+
+  /**
+   * Associate S3 attachments with a defect
+   */
+  async associateAttachments(defectId: string, req: CustomRequest) {
+    // Verify defect exists
+    const defect = await prisma.defect.findUnique({
+      where: { id: defectId },
+    });
+
+    if (!defect) {
+      throw new Error('Defect not found');
+    }
+
+    const body = await req.json();
+    const { attachments } = body as {
+      attachments: Array<{ s3Key: string; fileName: string; mimeType: string }>;
+    };
+
+    if (!attachments || !Array.isArray(attachments)) {
+      throw new Error('attachments array is required');
+    }
+
+    // Create attachment records
+    const createdAttachments = await Promise.all(
+      attachments.map((att) =>
+        prisma.defectAttachment.create({
+          data: {
+            filename: att.s3Key.split('/').pop() || att.fileName,
+            originalName: att.fileName,
+            mimeType: att.mimeType,
+            size: 0,
+            path: att.s3Key,
+            defectId: defectId,
+          },
+        })
+      )
+    );
+
+    return createdAttachments;
+  }
+
+  /**
+   * Get all attachments for a defect
+   */
+  async getDefectAttachments(defectId: string) {
+    // Verify defect exists
+    const defect = await prisma.defect.findUnique({
+      where: { id: defectId },
+    });
+
+    if (!defect) {
+      throw new Error('Defect not found');
+    }
+
+    const attachments = await prisma.defectAttachment.findMany({
+      where: { defectId },
+      orderBy: { uploadedAt: 'desc' },
+    });
+
+    return attachments;
+  }
+
+  /**
+   * Delete an attachment from a defect
+   */
+  async deleteAttachment(defectId: string, attachmentId: string) {
+    // Verify defect exists
+    const defect = await prisma.defect.findUnique({
+      where: { id: defectId },
+    });
+
+    if (!defect) {
+      throw new Error('Defect not found');
+    }
+
+    // Verify attachment exists and belongs to this defect
+    const attachment = await prisma.defectAttachment.findUnique({
+      where: { id: attachmentId },
+    });
+
+    if (!attachment || attachment.defectId !== defectId) {
+      throw new Error('Attachment not found');
+    }
+
+    // Delete attachment
+    const deleted = await prisma.defectAttachment.delete({
+      where: { id: attachmentId },
+    });
+
+    return deleted;
   }
 }
 
