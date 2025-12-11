@@ -158,6 +158,13 @@ export default function LoginPageComponent() {
         return;
       }
 
+      // If SMTP is disabled, proceed directly to login without OTP
+      if (otpData.smtpDisabled) {
+        console.log('[LOGIN] SMTP disabled - proceeding with direct login');
+        await handleOtpVerified();
+        return;
+      }
+
       // Show OTP verification screen
       setAlert({
         type: 'success',

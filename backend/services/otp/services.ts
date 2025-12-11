@@ -26,15 +26,19 @@ export class OtpService {
    * Send OTP to email
    * Creates a new OTP record and sends email
    */
-  async sendOtp(input: SendOtpInput): Promise<{ success: boolean; message: string }> {
+  async sendOtp(input: SendOtpInput): Promise<{ success: boolean; message: string; smtpDisabled?: boolean }> {
     const { email, type, appUrl } = input;
 
     // Check if email service is available
     const isAvailable = await isEmailServiceAvailable();
     if (!isAvailable) {
+      // When SMTP is disabled, silently skip OTP and return success
+      // This allows authentication to proceed without email verification
+      console.log('[OTP] SMTP disabled - skipping OTP verification');
       return {
-        success: false,
-        message: 'Email service is not configured. Please contact administrator.',
+        success: true,
+        message: 'Authentication will proceed without email verification.',
+        smtpDisabled: true,
       };
     }
 
@@ -110,6 +114,16 @@ export class OtpService {
   async verifyOtp(input: VerifyOtpInput): Promise<{ success: boolean; message: string }> {
     const { email, otp, type } = input;
 
+    // When SMTP is disabled, auto-verify to allow authentication
+    const isAvailable = await isEmailServiceAvailable();
+    if (!isAvailable) {
+      console.log('[OTP] SMTP disabled - auto-verifying OTP');
+      return {
+        success: true,
+        message: 'Verification successful',
+      };
+    }
+
     try {
       // Find the most recent unverified OTP for this email
       const otpRecord = await prisma.otpVerification.findFirst({
@@ -182,6 +196,13 @@ export class OtpService {
    * Check if email has been verified with OTP
    */
   async isEmailVerified(email: string, type: 'login' | 'register'): Promise<boolean> {
+    // When SMTP is disabled, consider all emails as verified
+    const isAvailable = await isEmailServiceAvailable();
+    if (!isAvailable) {
+      console.log('[OTP] SMTP disabled - auto-verifying email');
+      return true;
+    }
+
     try {
       const verifiedOtp = await prisma.otpVerification.findFirst({
         where: {

@@ -20,6 +20,16 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
   const handleSignOut = async () => {
     // Clear all persisted form data before signing out
     clearAllPersistedForms();
+    // Clear project context from session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      // Clear any other project-related session data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
     await signOut({ callbackUrl: '/auth/login', redirect: true });
   };
 

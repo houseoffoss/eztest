@@ -119,13 +119,21 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
       const data = await response.json();
       console.log('Complete test run response:', data);
+      console.log('Email available status:', data.data?.emailAvailable);
 
       if (data.data) {
         console.log('Test run completed, updating test run state...');
         setTestRun(data.data);
         
-        // Show dialog to ask if user wants to send report
-        setSendReportDialogOpen(true);
+        // Only show send report dialog if email is available
+        if (data.data.emailAvailable === true) {
+          console.log('[TEST RUN] Email available - showing send report dialog');
+          setSendReportDialogOpen(true);
+        } else {
+          console.log('[TEST RUN] Email not available (value:', data.data.emailAvailable, ') - skipping send report dialog');
+          // Ensure dialog is closed
+          setSendReportDialogOpen(false);
+        }
       } else {
         alert(data.error || 'Failed to complete test run');
       }
@@ -152,6 +160,14 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
 
     console.log('Report sent successfully, showing message and refreshing...');
+    
+    // If SMTP is disabled, don't show any notification
+    if (data.data.smtpDisabled) {
+      console.log('[TEST RUN] SMTP disabled - no email notification shown');
+      // Refresh test run data silently
+      await fetchTestRun();
+      return;
+    }
     
     // Check if message contains "Failed to send to:" to determine if there were partial failures
     const hasFailures = data.data.message?.includes('Failed to send to:');
@@ -292,16 +308,23 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     if (!testRun || !testRun.project?.id) return;
 
     try {
-      const response = await fetch(
+      // Fetch test suites
+      const suitesResponse = await fetch(
         `/api/projects/${testRun.project.id}/testsuites`
       );
-      const data = await response.json();
+      const suitesData = await suitesResponse.json();
 
-      if (data.data) {
+      // Fetch all test cases to get ungrouped ones
+      const testCasesResponse = await fetch(
+        `/api/projects/${testRun.project.id}/testcases`
+      );
+      const testCasesData = await testCasesResponse.json();
+
+      if (suitesData.data) {
         const existingTestCaseIds = new Set(testRun.results.map((r) => r.testCaseId));
         
         // Process each suite to include test case details and count new test cases
-        const availableSuites = data.data
+        const availableSuites = suitesData.data
           .map((suite: TestSuite) => {
             // Filter test cases that are not already in the test run
             const newTestCases = (suite.testCases || []).filter(
@@ -315,9 +338,27 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
                 testCases: newTestCases.length,
               },
             };
-          })
-          // Only include suites that have new test cases
-          .filter((suite: TestSuite) => suite.testCases.length > 0);
+          });
+
+        // Find ungrouped test cases (test cases without a suite)
+        if (testCasesData.data) {
+          const ungroupedTestCases = testCasesData.data
+            .filter((tc: TestCase) => !tc.suiteId && !existingTestCaseIds.has(tc.id));
+
+          // Add ungrouped test cases as a special "suite"
+          if (ungroupedTestCases.length > 0) {
+            availableSuites.push({
+              id: 'ungrouped',
+              name: 'Ungrouped Test Cases',
+              description: 'Test cases not assigned to any test suite',
+              projectId: testRun.project.id,
+              testCases: ungroupedTestCases,
+              _count: {
+                testCases: ungroupedTestCases.length,
+              },
+            });
+          }
+        }
 
         setAvailableTestSuites(availableSuites);
       }

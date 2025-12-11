@@ -123,6 +123,7 @@ interface SMTPConfig {
  */
 function getTransporter(): nodemailer.Transporter | null {
   const {
+    ENABLE_SMTP,
     SMTP_HOST,
     SMTP_PORT,
     SMTP_USER,
@@ -130,6 +131,12 @@ function getTransporter(): nodemailer.Transporter | null {
     SMTP_FROM,
     SMTP_SECURE,
   } = process.env;
+
+  // Check if SMTP is enabled
+  if (ENABLE_SMTP !== 'true') {
+    console.log('[EMAIL] SMTP is disabled via ENABLE_SMTP environment variable');
+    return null;
+  }
 
   // Check if SMTP is configured
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
@@ -356,6 +363,12 @@ export async function verifyEmailConnection(): Promise<boolean> {
  * Check if email service is available
  */
 export async function isEmailServiceAvailable(): Promise<boolean> {
+  // Check if SMTP is enabled first
+  if (process.env.ENABLE_SMTP !== 'true') {
+    console.log('[EMAIL] Email service is disabled (ENABLE_SMTP is not set to true)');
+    return false;
+  }
+
   const transporter = getTransporter();
   if (!transporter) {
     return false;
