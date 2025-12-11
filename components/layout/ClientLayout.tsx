@@ -28,6 +28,31 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   });
   const { isCollapsed } = useSidebarCollapsed();
 
+  // Clear session storage when user changes (different user logs in)
+  useEffect(() => {
+    if (session?.user?.email && typeof window !== 'undefined') {
+      const storedUserId = sessionStorage.getItem('currentUserId');
+      const currentUserId = session.user.email; // Using email as unique identifier
+      
+      if (storedUserId && storedUserId !== currentUserId) {
+        // Different user logged in - clear all project context
+        sessionStorage.removeItem('lastProjectId');
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith('defects-filters-')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+        setLastProjectId(null);
+      }
+      
+      // Store current user identifier
+      sessionStorage.setItem('currentUserId', currentUserId);
+    } else if (!session && typeof window !== 'undefined') {
+      // User logged out - clear all session storage
+      sessionStorage.clear();
+    }
+  }, [session?.user?.email]);
+
   // Pages that shouldn't have sidebar
   const isAuthPage = pathname?.startsWith('/auth');
   const isHomePage = pathname === '/';

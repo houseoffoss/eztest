@@ -39,6 +39,10 @@ Add to your `.env` file:
 
 ```env
 # Email Service (SMTP)
+# Enable email functionality (set to true to send emails)
+ENABLE_SMTP=true
+
+# SMTP Configuration
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
@@ -47,10 +51,13 @@ SMTP_FROM="EzTest <noreply@eztest.com>"
 SMTP_SECURE=false
 ```
 
+**Important:** Set `ENABLE_SMTP=true` to enable email sending. If set to `false`, no emails will be sent regardless of other SMTP settings.
+
 ### 2. SMTP Provider Examples
 
 #### Gmail
 ```env
+ENABLE_SMTP=true
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
@@ -66,6 +73,7 @@ SMTP_SECURE=false
 
 #### Outlook/Office 365
 ```env
+ENABLE_SMTP=true
 SMTP_HOST="smtp.office365.com"
 SMTP_PORT=587
 SMTP_USER="your-email@outlook.com"
@@ -76,6 +84,7 @@ SMTP_SECURE=false
 
 #### SendGrid
 ```env
+ENABLE_SMTP=true
 SMTP_HOST="smtp.sendgrid.net"
 SMTP_PORT=587
 SMTP_USER="apikey"
@@ -86,6 +95,7 @@ SMTP_SECURE=false
 
 #### AWS SES
 ```env
+ENABLE_SMTP=true
 SMTP_HOST="email-smtp.us-east-1.amazonaws.com"
 SMTP_PORT=587
 SMTP_USER="your-smtp-username"

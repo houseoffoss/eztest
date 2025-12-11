@@ -8,6 +8,16 @@ export function SessionManagement() {
   const handleSignOutAll = () => {
     // Clear all persisted form data before signing out
     clearAllPersistedForms();
+    // Clear project context from session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      // Clear any other project-related session data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
     // Additional logic for signing out all sessions would go here
   };
 

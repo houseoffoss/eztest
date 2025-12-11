@@ -15,7 +15,8 @@ EzTest uses environment variables for configuration across development, testing,
    - Set a secure `NEXTAUTH_SECRET`
    - Configure `DATABASE_URL` for your PostgreSQL instance
    - Update `NEXTAUTH_URL` to match your domain
-   - Configure SMTP settings if using email features
+   - Set `ENABLE_SMTP=true` if using email features
+   - Configure SMTP settings if email is enabled
 
 3. **Generate secure secrets:**
    ```bash
@@ -351,6 +352,38 @@ UPLOAD_DIR="/var/www/eztest/uploads"
 ### 📧 Email / SMTP Configuration
 
 Required for password reset emails and notifications.
+
+#### `ENABLE_SMTP`
+Enable or disable email functionality globally.
+
+```bash
+ENABLE_SMTP=true   # Enable email sending (OTP, notifications, password reset)
+ENABLE_SMTP=false  # Disable all email operations
+```
+
+**Required:** Yes
+
+**Default:** `false`
+
+**When to set to `true`:**
+- Production environments with configured SMTP server
+- Environments that require user authentication via OTP
+- When email notifications are needed (defects, test runs, user management)
+
+**When to set to `false`:**
+- Development/testing without email capability
+- When SMTP server is not available
+- Environments where email functionality is not required
+
+**Note:** When `ENABLE_SMTP=false`, all email-related functions will return early without attempting to send emails. This includes:
+- OTP verification emails (login/register)
+- Password reset emails
+- Defect assignment notifications
+- Test run report emails
+- User management notifications (invite, update, delete)
+- Project membership notifications
+
+---
 
 #### `SMTP_HOST`
 SMTP server hostname.
