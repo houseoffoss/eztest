@@ -101,7 +101,7 @@ export function TestStepsCard({
                           onChange={(e) => {
                             const updated = steps.map((s) =>
                               s.stepNumber === step.stepNumber
-                                ? { ...s, action: e }
+                                ? { ...s, id: s.id, action: e }
                                 : s
                             );
                             onStepsChange(updated);
@@ -141,7 +141,7 @@ export function TestStepsCard({
                           onChange={(e) => {
                             const updated = steps.map((s) =>
                               s.stepNumber === step.stepNumber
-                                ? { ...s, expectedResult: e }
+                                ? { ...s, id: s.id, expectedResult: e }
                                 : s
                             );
                             onStepsChange(updated);

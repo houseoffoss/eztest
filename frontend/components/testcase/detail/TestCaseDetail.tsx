@@ -300,9 +300,14 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           const expectedResultAttachments = updatedStepAttachmentsMap[stepId]?.expectedResult || [];
           const allStepAttachments = [...actionAttachments, ...expectedResultAttachments];
           
+          console.log(`[handleSave] Step ${stepId} has ${allStepAttachments.length} total attachments in state`);
+          
           if (allStepAttachments.length > 0) {
-            // Check if attachments are pending (need to be uploaded)
+            // Separate pending attachments (need upload) from existing attachments (already in DB)
             const pendingAttachments = allStepAttachments.filter(att => att.id.startsWith('pending-'));
+            const existingAttachments = allStepAttachments.filter(att => !att.id.startsWith('pending-'));
+            
+            console.log(`[handleSave] Step ${stepId}: ${pendingAttachments.length} pending, ${existingAttachments.length} existing`);
             
             if (pendingAttachments.length > 0) {
               console.log(`Uploading ${pendingAttachments.length} pending attachments for step ${stepId}`);
@@ -342,6 +347,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               
               if (validUploadedAttachments.length > 0) {
                 try {
+                  console.log(`[handleSave] Linking ${validUploadedAttachments.length} new attachments to step ${stepId}`);
                   await fetch(`/api/teststeps/${stepId}/attachments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -353,15 +359,16 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               }
             }
             
-            // Skip existing attachments - they're already linked to the step
-            // Only newly uploaded attachments (from pending state) need to be associated
-            console.log(`Step ${stepId}: Skipping ${allStepAttachments.length - pendingAttachments.length} existing attachments (already linked)`);
+            // Existing attachments are already linked to the step in the database
+            // They will be reloaded when fetchTestCase() is called
+            console.log(`Step ${stepId}: ${existingAttachments.length} existing attachments preserved in database`);
           }
         }
         
         setIsEditing(false);
         
-        // Clear attachment states after successful save
+        // Clear only test case level attachment states after successful save
+        // DON'T clear stepAttachments - they are preserved in updatedStepAttachmentsMap
         setDescriptionAttachments([]);
         setExpectedResultAttachments([]);
         setPreconditionAttachments([]);
@@ -375,6 +382,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           message: 'Test case updated successfully',
         });
         setTimeout(() => setAlert(null), 5000);
+        
+        // Reload from database to get fresh data including any backend changes
         fetchTestCase();
       } else {
         setAlert({
@@ -398,40 +407,56 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   const updateSteps = async () => {
     try {
+      console.log('[updateSteps] RAW steps state:', JSON.stringify(steps, null, 2));
+      
+      // Clean steps data - only send necessary fields to prevent backend issues
+      const cleanedSteps = steps.map(step => {
+        console.log('[updateSteps] Processing step:', { 
+          hasId: !!step.id, 
+          id: step.id, 
+          stepNumber: step.stepNumber,
+          allKeys: Object.keys(step)
+        });
+        return {
+          id: step.id,
+          stepNumber: step.stepNumber,
+          action: step.action,
+          expectedResult: step.expectedResult,
+        };
+      });
+      
       console.log('[updateSteps] Steps state before sending:', steps);
-      console.log('[updateSteps] Steps with IDs:', steps.map(s => ({ id: s.id, stepNumber: s.stepNumber, hasId: !!s.id })));
+      console.log('[updateSteps] Cleaned steps:', cleanedSteps);
+      console.log('[updateSteps] Current stepAttachments:', stepAttachments);
+      
       const response = await fetch(`/api/testcases/${testCaseId}/steps`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ steps }),
+        body: JSON.stringify({ steps: cleanedSteps }),
       });
 
       const data = await response.json();
       console.log('[updateSteps] Response from backend:', data.data);
       if (data.data && Array.isArray(data.data)) {
-        // Map temp step IDs to real step IDs returned from backend
-        const updatedStepAttachments: Record<string, Record<string, Attachment[]>> = {};
-        
-        // Build a map of valid step IDs from the response
-        const validStepIds = new Set(data.data.map((s: TestStep) => s.id));
+        // Preserve all existing attachments and map temp IDs to real IDs
+        const updatedStepAttachments: Record<string, Record<string, Attachment[]>> = { ...stepAttachments };
         
         steps.forEach((step, index) => {
           const realStep = data.data[index];
-          if (realStep && realStep.id) {
-            if (step.id && step.id.startsWith('temp-')) {
+          if (realStep && realStep.id && step.id) {
+            if (step.id.startsWith('temp-')) {
               // New step - map temp ID to real ID
               if (stepAttachments[step.id]) {
                 updatedStepAttachments[realStep.id] = stepAttachments[step.id];
-              }
-            } else if (step.id && validStepIds.has(step.id)) {
-              // Existing step - keep attachments if step still exists
-              if (stepAttachments[step.id]) {
-                updatedStepAttachments[step.id] = stepAttachments[step.id];
+                // Remove the temp ID entry
+                delete updatedStepAttachments[step.id];
               }
             }
+            // Existing steps keep their attachments automatically since we spread stepAttachments above
           }
         });
         
+        console.log('[updateSteps] Updated stepAttachments:', updatedStepAttachments);
         setStepAttachments(updatedStepAttachments);
         // Update steps with real IDs
         setSteps(data.data);

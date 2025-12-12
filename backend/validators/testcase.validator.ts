@@ -5,6 +5,7 @@ import { Priority, TestStatus } from '@prisma/client';
  * Test Step Schema
  */
 export const testStepSchema = z.object({
+  id: z.string().optional(), // Allow ID for updates
   stepNumber: z
     .number()
     .int('Step number must be an integer')

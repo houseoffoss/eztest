@@ -593,24 +593,44 @@ export class TestCaseService {
       // Step 2: Update existing steps and create new steps
       for (const step of steps) {
         if (step.id && !step.id.startsWith('temp-')) {
-          // Existing step - use upsert to handle both update and potential recreation
-          await prisma.testStep.upsert({
-            where: { id: step.id },
-            update: {
-              stepNumber: step.stepNumber,
-              action: step.action,
-              expectedResult: step.expectedResult,
-            },
-            create: {
-              id: step.id,
-              testCaseId,
-              stepNumber: step.stepNumber,
-              action: step.action,
-              expectedResult: step.expectedResult,
-            },
-          });
+          // Existing step - update it
+          console.log(`[updateTestSteps] Updating existing step ${step.id} with stepNumber ${step.stepNumber}`);
+          try {
+            const existingStep = await prisma.testStep.findUnique({
+              where: { id: step.id },
+            });
+            
+            if (existingStep) {
+              // Step exists, update it
+              await prisma.testStep.update({
+                where: { id: step.id },
+                data: {
+                  stepNumber: step.stepNumber,
+                  action: step.action,
+                  expectedResult: step.expectedResult,
+                },
+              });
+              console.log(`[updateTestSteps] Updated step ${step.id}`);
+            } else {
+              // Step doesn't exist, create it with the specified ID
+              console.log(`[updateTestSteps] Step ${step.id} not found, creating new step with this ID`);
+              await prisma.testStep.create({
+                data: {
+                  id: step.id,
+                  testCaseId,
+                  stepNumber: step.stepNumber,
+                  action: step.action,
+                  expectedResult: step.expectedResult,
+                },
+              });
+            }
+          } catch (error) {
+            console.error(`[updateTestSteps] Error processing step ${step.id}:`, error);
+            throw error;
+          }
         } else {
           // New step (no ID or temp ID) - create it
+          console.log(`[updateTestSteps] Creating new step with stepNumber ${step.stepNumber}`);
           await prisma.testStep.create({
             data: {
               testCaseId,
