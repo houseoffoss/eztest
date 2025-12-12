@@ -42,7 +42,8 @@ openssl rand -base64 24
 - [ ] Update `APP_URL` (your domain)
 - [ ] Set `ADMIN_EMAIL`
 - [ ] Set `ADMIN_PASSWORD` (strong password)
-- [ ] Configure SMTP settings (if using email)
+- [ ] Set `ENABLE_SMTP=true` (if using email features)
+- [ ] Configure SMTP settings (if email is enabled)
 
 ### ✅ File Preparation
 

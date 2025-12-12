@@ -261,6 +261,52 @@ export class TestRunService {
         status: 'COMPLETED',
         completedAt: new Date(),
       },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+          },
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        results: {
+          include: {
+            testCase: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                priority: true,
+                status: true,
+              },
+            },
+            executedBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+          orderBy: {
+            executedAt: 'desc',
+          },
+        },
+        _count: {
+          select: {
+            results: true,
+          },
+        },
+      },
     });
   }
 
@@ -561,6 +607,22 @@ export class TestRunService {
     appUrl: string
   ) {
     const { emailService } = await import('@/backend/services/email/services');
+    const { isEmailServiceAvailable } = await import('@/lib/email-service');
+    
+    // Check if SMTP is enabled
+    const smtpEnabled = await isEmailServiceAvailable();
+    if (!smtpEnabled) {
+      console.log('[TEST RUN] SMTP disabled - skipping report email');
+      return {
+        success: true,
+        message: 'Email service is not configured. Report not sent.',
+        recipientCount: 0,
+        totalRecipients: 0,
+        failedRecipients: [],
+        recipientDetails: [],
+        smtpDisabled: true,
+      };
+    }
     
     // Get all recipients
     const { recipientIds } = await this.getTestRunReportRecipients(testRunId);

@@ -236,6 +236,13 @@ export default function RegisterPageComponent() {
         return;
       }
 
+      // If SMTP is disabled, proceed directly to registration without OTP
+      if (otpData.smtpDisabled) {
+        console.log('[REGISTER] SMTP disabled - proceeding with direct registration');
+        await handleOtpVerified();
+        return;
+      }
+
       // Show OTP verification screen
       setAlert({
         type: 'success',

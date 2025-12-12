@@ -20,6 +20,7 @@ export interface TestCase {
   description?: string;
   priority: Priority | string;
   status: string;
+  suiteId?: string | null;
 }
 
 export interface TestRun {
@@ -57,6 +58,7 @@ export interface TestSuite {
   id: string;
   name: string;
   description?: string;
+  projectId?: string;
   testCases: TestCase[];
   _count?: {
     testCases: number;
