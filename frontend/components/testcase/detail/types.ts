@@ -39,7 +39,7 @@ export interface TestCase {
   steps: TestStep[];
   defects: {
     id: string;
-    defect: {
+    Defect: {
       id: string;
       defectId: string;
       title: string;

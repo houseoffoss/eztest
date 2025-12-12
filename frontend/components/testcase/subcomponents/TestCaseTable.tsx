@@ -59,7 +59,7 @@ export function TestCaseTable({ testCases, groupedByTestSuite = false, groupedBy
         // First, create groups from test cases
         const groups = testCases.reduce((acc, testCase) => {
           const groupId = testCase.moduleId || 'no-module';
-          const groupName = testCase.module?.name || 'Ungrouped';
+          const groupName = testCase.Module?.name || 'Ungrouped';
           
           if (!acc[groupId]) {
             acc[groupId] = {

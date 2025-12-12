@@ -386,8 +386,12 @@ export class DefectController {
         statusCode: 201,
       };
     } catch (error) {
+      console.error('Error associating attachments:', error);
       if (error instanceof Error && error.message === 'Defect not found') {
         throw new ValidationException('Defect not found');
+      }
+      if (error instanceof Error) {
+        throw new ValidationException(`Failed to associate attachments: ${error.message}`);
       }
       throw new ValidationException('Failed to associate attachments with defect');
     }
@@ -433,6 +437,38 @@ export class DefectController {
       }
       if (error instanceof Error && error.message === 'Attachment not found') {
         throw new ValidationException('Attachment not found');
+      }
+      throw new ValidationException('Failed to delete attachment');
+    }
+  }
+
+  /**
+   * Get defect attachment download URL
+   * No permission check - presigned URLs are self-secured
+   */
+  async getDefectAttachmentDownloadUrl(req: CustomRequest, attachmentId: string) {
+    try {
+      const result = await defectService.getDefectAttachmentDownloadUrl(attachmentId);
+      return { data: result };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Defect attachment not found') {
+        throw new ValidationException('Defect attachment not found');
+      }
+      throw new ValidationException('Failed to generate download URL');
+    }
+  }
+
+  /**
+   * Delete defect attachment
+   * No permission check - handled by two-step process
+   */
+  async deleteDefectAttachment(req: CustomRequest, attachmentId: string, step: string | null) {
+    try {
+      const result = await defectService.deleteDefectAttachment(attachmentId, step);
+      return result;
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Defect attachment not found') {
+        throw new ValidationException('Defect attachment not found');
       }
       throw new ValidationException('Failed to delete attachment');
     }

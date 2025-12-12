@@ -18,6 +18,7 @@ interface DefectHeaderProps {
   onDelete: () => void;
   onReopen: () => void;
   onFormChange: (data: DefectFormData) => void;
+  saving?: boolean;
   canUpdate?: boolean;
   canDelete?: boolean;
 }
@@ -32,6 +33,7 @@ export function DefectHeader({
   onDelete,
   onReopen,
   onFormChange,
+  saving = false,
   canUpdate = true,
   canDelete = true,
 }: DefectHeaderProps) {
@@ -128,9 +130,9 @@ export function DefectHeader({
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <ButtonPrimary onClick={onSave} className="cursor-pointer">
+              <ButtonPrimary onClick={onSave} disabled={saving} className="cursor-pointer">
                 <Save className="w-4 h-4 mr-2" />
-                Save
+                {saving ? 'Saving...' : 'Save'}
               </ButtonPrimary>
             </>
           ) : (

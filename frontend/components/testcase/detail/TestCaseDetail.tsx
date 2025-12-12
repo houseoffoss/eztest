@@ -67,10 +67,10 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   useEffect(() => {
     if (testCase) {
       document.title = `${testCase.title} | EZTest`;
-      // Set attachment context when viewing test case
+      // Set attachment context when viewing/editing test case
+      // Don't set entityId - files stay in browser storage until save
       attachmentStorage.setContext({
         entityType: 'testcase',
-        entityId: testCaseId,
         projectId: testCase.project.id,
       });
     }
@@ -143,11 +143,12 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
                         if (stepAttachmentsResponse.ok) {
                           const stepAttachmentsData = await stepAttachmentsResponse.json();
                           const stepAttachmentsList = stepAttachmentsData.data || [];
-                          console.log('[TestCaseDetail] Step attachments from API:', stepAttachmentsList);
+                          console.log(`[TestCaseDetail] Step ${step.id} attachments from API:`, stepAttachmentsList.length, 'attachments');
                           
                           // Group by fieldName
                           const actionAtts = stepAttachmentsList.filter((att: Attachment) => att.fieldName === 'action');
                           const expectedResultAtts = stepAttachmentsList.filter((att: Attachment) => att.fieldName === 'expectedResult');
+                          console.log(`[TestCaseDetail] Step ${step.id} - action: ${actionAtts.length}, expectedResult: ${expectedResultAtts.length}`);
                           
                           stepAtts[step.id] = {
                             action: actionAtts,
@@ -199,9 +200,66 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     }
   };
 
+  const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
+    const allAttachments = [
+      ...descriptionAttachments,
+      ...expectedResultAttachments,
+      ...preconditionAttachments,
+      ...postconditionAttachments,
+    ];
+
+    const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+    
+    if (pendingAttachments.length === 0) {
+      return []; // No pending attachments
+    }
+
+    const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
+
+    // Upload all pending files
+    for (const attachment of pendingAttachments) {
+      // @ts-ignore - Access the pending file object
+      const file = attachment._pendingFile;
+      if (!file) continue;
+
+      try {
+        const { uploadFileToS3 } = await import('@/lib/s3');
+        const result = await uploadFileToS3({
+          file,
+          fieldName: attachment.fieldName || 'attachment',
+          entityType: 'testcase',
+          onProgress: () => {}, // Silent upload
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        // Store the uploaded attachment info for linking
+        if (result.attachment) {
+          uploadedAttachments.push({
+            id: result.attachment.id, // Use the database ID
+            s3Key: result.attachment.filename,
+            fileName: file.name,
+            mimeType: file.type,
+            fieldName: attachment.fieldName,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to upload attachment:', error);
+        throw error; // Throw error to stop save
+      }
+    }
+
+    return uploadedAttachments;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Upload all pending attachments first
+      const uploadedAttachments = await uploadPendingAttachments();
+
       const estimatedTime = formData.estimatedTime
         ? parseInt(formData.estimatedTime)
         : undefined;
@@ -218,23 +276,23 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       const data = await response.json();
 
       if (data.data) {
-        // Update steps and get the mapping of temp IDs to real IDs
-        const updatedStepAttachmentsMap = await updateSteps();
-        
-        // Associate any completed attachments with the test case
-        const completedAttachments = attachmentStorage.getCompletedAttachmentKeys();
-        if (completedAttachments.length > 0) {
+        // Associate uploaded attachments with the test case
+        if (uploadedAttachments.length > 0) {
           try {
+            console.log('Linking attachments:', uploadedAttachments);
             await fetch(`/api/testcases/${testCaseId}/attachments`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ attachments: completedAttachments }),
+              body: JSON.stringify({ attachments: uploadedAttachments }),
             });
           } catch (error) {
-            console.error('Error associating attachments:', error);
+            console.error('Error linking attachments:', error);
             // Don't fail the save if attachment linking fails
           }
         }
+
+        // Update steps and get the mapping of temp IDs to real IDs
+        const updatedStepAttachmentsMap = await updateSteps();
         
         // Associate step attachments using the updated mapping
         for (const stepId in updatedStepAttachmentsMap) {
@@ -249,22 +307,25 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
             if (pendingAttachments.length > 0) {
               console.log(`Uploading ${pendingAttachments.length} pending attachments for step ${stepId}`);
               // Upload pending attachments first
-              const { uploadFileToS3 } = await import('@/lib/s3/upload-utils');
+              const { uploadFileToS3 } = await import('@/lib/s3');
               const uploadedAttachments = await Promise.all(
                 pendingAttachments.map(async (att) => {
                   try {
                     // @ts-ignore - Access the File object
-                    const file = att._pendingFile as File;
+                    const file = att._pendingFile;
                     if (file) {
                       const result = await uploadFileToS3({
                         file,
                         fieldName: att.fieldName || 'action',
-                        entityId: stepId,
-                        entityType: 'teststep'
+                        entityType: 'teststep',
+                        onProgress: () => {}, // Silent upload
                       });
                       if (result.success && result.attachment) {
                         return {
                           id: result.attachment.id,
+                          s3Key: result.attachment.filename,
+                          fileName: file.name,
+                          mimeType: file.type,
                           fieldName: att.fieldName || 'action'
                         };
                       }
@@ -299,6 +360,15 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         }
         
         setIsEditing(false);
+        
+        // Clear attachment states after successful save
+        setDescriptionAttachments([]);
+        setExpectedResultAttachments([]);
+        setPreconditionAttachments([]);
+        setPostconditionAttachments([]);
+        setNewStepActionAttachments([]);
+        setNewStepExpectedResultAttachments([]);
+        
         setAlert({
           type: 'success',
           title: 'Success',
@@ -328,6 +398,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   const updateSteps = async () => {
     try {
+      console.log('[updateSteps] Steps state before sending:', steps);
+      console.log('[updateSteps] Steps with IDs:', steps.map(s => ({ id: s.id, stepNumber: s.stepNumber, hasId: !!s.id })));
       const response = await fetch(`/api/testcases/${testCaseId}/steps`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -335,18 +407,26 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       });
 
       const data = await response.json();
+      console.log('[updateSteps] Response from backend:', data.data);
       if (data.data && Array.isArray(data.data)) {
         // Map temp step IDs to real step IDs returned from backend
-        const updatedStepAttachments = { ...stepAttachments };
+        const updatedStepAttachments: Record<string, Record<string, Attachment[]>> = {};
+        
+        // Build a map of valid step IDs from the response
+        const validStepIds = new Set(data.data.map((s: TestStep) => s.id));
         
         steps.forEach((step, index) => {
-          if (step.id && step.id.startsWith('temp-')) {
-            const realStep = data.data[index];
-            if (realStep && realStep.id) {
-              // Move attachments from temp ID to real ID
-              if (updatedStepAttachments[step.id]) {
-                updatedStepAttachments[realStep.id] = updatedStepAttachments[step.id];
-                delete updatedStepAttachments[step.id];
+          const realStep = data.data[index];
+          if (realStep && realStep.id) {
+            if (step.id && step.id.startsWith('temp-')) {
+              // New step - map temp ID to real ID
+              if (stepAttachments[step.id]) {
+                updatedStepAttachments[realStep.id] = stepAttachments[step.id];
+              }
+            } else if (step.id && validStepIds.has(step.id)) {
+              // Existing step - keep attachments if step still exists
+              if (stepAttachments[step.id]) {
+                updatedStepAttachments[step.id] = stepAttachments[step.id];
               }
             }
           }
@@ -481,7 +561,18 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           isEditing={isEditing}
           formData={formData}
           onEdit={() => setIsEditing(true)}
-          onCancel={() => setIsEditing(false)}
+          onCancel={() => {
+            setIsEditing(false);
+            // Clear any pending attachments when cancelling
+            setDescriptionAttachments([]);
+            setExpectedResultAttachments([]);
+            setPreconditionAttachments([]);
+            setPostconditionAttachments([]);
+            setNewStepActionAttachments([]);
+            setNewStepExpectedResultAttachments([]);
+            // Refetch to restore original data
+            fetchTestCase();
+          }}
           onSave={handleSave}
           onDelete={() => setDeleteDialogOpen(true)}
           saving={saving}
@@ -544,13 +635,18 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               onRemoveStep={handleRemoveStep}
               stepAttachments={stepAttachments}
               onStepAttachmentsChange={(stepId, field, attachments) => {
-                setStepAttachments(prev => ({
-                  ...prev,
-                  [stepId]: {
-                    ...prev[stepId],
-                    [field]: attachments
-                  }
-                }));
+                console.log('[TestCaseDetail] Step attachment change:', { stepId, field, attachmentCount: attachments.length });
+                setStepAttachments(prev => {
+                  const updated = {
+                    ...prev,
+                    [stepId]: {
+                      ...prev[stepId],
+                      [field]: attachments
+                    }
+                  };
+                  console.log('[TestCaseDetail] Updated stepAttachments:', updated);
+                  return updated;
+                });
               }}
               testCaseId={testCaseId}
               newStepActionAttachments={newStepActionAttachments}

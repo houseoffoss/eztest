@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/elements/select';
-import { type Attachment, downloadFile, getFileIconType } from '@/lib/s3';
+import { type Attachment } from '@/lib/s3';
+import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../../constants/testCaseFormConfig';
 
 interface TestCaseDetailsCardProps {
@@ -56,39 +57,11 @@ export function TestCaseDetailsCard({
     onFormChange({ ...formData, [field]: value });
   });
 
-  const handleDownloadAttachment = async (attachmentId: string) => {
-    try {
-      console.log('Downloading attachment:', attachmentId);
-      await downloadFile(attachmentId);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      alert(`Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
-  const getIcon = (mimeType: string) => {
-    const iconType = getFileIconType(mimeType);
-    switch (iconType) {
-      case 'image':
-        return <ImageIcon className="w-3 h-3" />;
-      case 'pdf':
-        return <FileText className="w-3 h-3" />;
-      default:
-        return <FileIcon className="w-3 h-3" />;
-    }
-  };
-
-  const AttachmentBadge = ({ attachment }: { attachment: Attachment }) => (
-    <button
-      onClick={() => handleDownloadAttachment(attachment.id)}
-      className="group px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-md text-xs text-white/80 hover:text-white flex items-center gap-2 transition-all duration-200"
-      title={`Click to download ${attachment.originalName}`}
-    >
-      {getIcon(attachment.mimeType)}
-      <span className="max-w-[150px] truncate">{attachment.originalName}</span>
-      <Download className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-    </button>
-  );
+  // Create safe attachment handlers with default no-op functions
+  const handleDescriptionAttachmentsChange = onDescriptionAttachmentsChange || (() => {});
+  const handleExpectedResultAttachmentsChange = onExpectedResultAttachmentsChange || (() => {});
+  const handlePreconditionAttachmentsChange = onPreconditionAttachmentsChange || (() => {});
+  const handlePostconditionAttachmentsChange = onPostconditionAttachmentsChange || (() => {});
 
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
@@ -182,6 +155,7 @@ export function TestCaseDetailsCard({
               value={formData.estimatedTime}
               onChange={(e) => handleFieldChange('estimatedTime', e.target.value)}
               placeholder="Enter estimated time"
+              className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
             />
           </div>
 
@@ -198,8 +172,7 @@ export function TestCaseDetailsCard({
               maxLength={250}
               showCharCount={true}
               attachments={descriptionAttachments}
-              onAttachmentsChange={onDescriptionAttachmentsChange}
-              entityId={testCase.id}
+              onAttachmentsChange={handleDescriptionAttachmentsChange}
               entityType="testcase"
               showAttachments={true}
             />
@@ -219,8 +192,7 @@ export function TestCaseDetailsCard({
               maxLength={250}
               showCharCount={true}
               attachments={expectedResultAttachments}
-              onAttachmentsChange={onExpectedResultAttachmentsChange}
-              entityId={testCase.id}
+              onAttachmentsChange={handleExpectedResultAttachmentsChange}
               entityType="testcase"
               showAttachments={true}
             />
@@ -240,8 +212,7 @@ export function TestCaseDetailsCard({
               maxLength={250}
               showCharCount={true}
               attachments={preconditionAttachments}
-              onAttachmentsChange={onPreconditionAttachmentsChange}
-              entityId={testCase.id}
+              onAttachmentsChange={handlePreconditionAttachmentsChange}
               entityType="testcase"
               showAttachments={true}
             />
@@ -260,8 +231,7 @@ export function TestCaseDetailsCard({
               maxLength={250}
               showCharCount={true}
               attachments={postconditionAttachments}
-              onAttachmentsChange={onPostconditionAttachmentsChange}
-              entityId={testCase.id}
+              onAttachmentsChange={handlePostconditionAttachmentsChange}
               entityType="testcase"
               showAttachments={true}
             />
@@ -287,11 +257,7 @@ export function TestCaseDetailsCard({
               {descriptionAttachments.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({descriptionAttachments.length})</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {descriptionAttachments.map((attachment) => (
-                      <AttachmentBadge key={attachment.id} attachment={attachment} />
-                    ))}
-                  </div>
+                  <AttachmentDisplay attachments={descriptionAttachments} />
                 </div>
               )}
             </div>
@@ -308,11 +274,7 @@ export function TestCaseDetailsCard({
               {expectedResultAttachments.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({expectedResultAttachments.length})</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {expectedResultAttachments.map((attachment) => (
-                      <AttachmentBadge key={attachment.id} attachment={attachment} />
-                    ))}
-                  </div>
+                  <AttachmentDisplay attachments={expectedResultAttachments} />
                 </div>
               )}
             </div>
@@ -341,11 +303,7 @@ export function TestCaseDetailsCard({
               {preconditionAttachments.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({preconditionAttachments.length})</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {preconditionAttachments.map((attachment) => (
-                      <AttachmentBadge key={attachment.id} attachment={attachment} />
-                    ))}
-                  </div>
+                  <AttachmentDisplay attachments={preconditionAttachments} />
                 </div>
               )}
             </div>
@@ -362,11 +320,7 @@ export function TestCaseDetailsCard({
               {postconditionAttachments.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({postconditionAttachments.length})</h5>
-                  <div className="flex flex-wrap gap-2">
-                    {postconditionAttachments.map((attachment) => (
-                      <AttachmentBadge key={attachment.id} attachment={attachment} />
-                    ))}
-                  </div>
+                  <AttachmentDisplay attachments={postconditionAttachments} />
                 </div>
               )}
             </div>

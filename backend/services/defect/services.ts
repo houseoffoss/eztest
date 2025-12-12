@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 import { CustomRequest } from '@/backend/utils/interceptor';
+import { s3Client, S3_BUCKET } from '@/lib/s3-client';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 interface CreateDefectInput {
   projectId: string;
@@ -288,7 +290,17 @@ export class DefectService {
             key: true,
           },
         },
-        attachments: true,
+        attachments: {
+          include: {
+            uploadedBy: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
         comments: {
           include: {
             user: {
@@ -311,12 +323,13 @@ export class DefectService {
       return null;
     }
 
-    console.log('🔍 Backend - Raw testCases from DB:', defect.testCases);
-    console.log('🔍 Backend - testCases count:', defect.testCases.length);
+    // console.log('🔍 Backend - Raw testCases from DB:', defect.testCases);
+    // console.log('🔍 Backend - testCases count:', defect.testCases.length);
 
     // Get failure count for each linked test case
     const testCasesWithFailureCount = await Promise.all(
-      defect.testCases.map(async (tc) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      defect.testCases.map(async (tc: any) => {
         const failureCount = await prisma.testResult.count({
           where: {
             testCaseId: tc.testCase.id,
@@ -486,6 +499,17 @@ export class DefectService {
             avatar: true,
           },
         },
+        attachments: {
+          include: {
+            uploadedBy: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -551,6 +575,16 @@ export class DefectService {
    * Associate S3 attachments with a defect
    */
   async associateAttachments(defectId: string, req: CustomRequest) {
+    // Get user from session
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth');
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+    const userId = session.user.id;
+
     // Verify defect exists
     const defect = await prisma.defect.findUnique({
       where: { id: defectId },
@@ -561,30 +595,49 @@ export class DefectService {
     }
 
     const body = await req.json();
+    console.log('Received body:', JSON.stringify(body, null, 2));
+    
     const { attachments } = body as {
-      attachments: Array<{ s3Key: string; fileName: string; mimeType: string }>;
+      attachments: Array<{ 
+        id?: string;
+        s3Key: string; 
+        fileName: string; 
+        mimeType: string;
+        fieldName?: string;
+      }>;
     };
 
     if (!attachments || !Array.isArray(attachments)) {
       throw new Error('attachments array is required');
     }
 
+    console.log('Creating attachments for defect:', defectId);
+    
     // Create attachment records
     const createdAttachments = await Promise.all(
-      attachments.map((att) =>
-        prisma.defectAttachment.create({
-          data: {
-            filename: att.s3Key.split('/').pop() || att.fileName,
-            originalName: att.fileName,
-            mimeType: att.mimeType,
-            size: 0,
-            path: att.s3Key,
-            defectId: defectId,
-          },
-        })
-      )
+      attachments.map(async (att) => {
+        console.log('Creating attachment:', att);
+        try {
+          return await prisma.defectAttachment.create({
+            data: {
+              filename: att.s3Key.split('/').pop() || att.fileName,
+              originalName: att.fileName,
+              mimeType: att.mimeType,
+              size: 0,
+              path: att.s3Key,
+              fieldName: att.fieldName || 'description',
+              defectId: defectId,
+              uploadedById: userId,
+            },
+          });
+        } catch (err) {
+          console.error('Failed to create attachment:', err);
+          throw err;
+        }
+      })
     );
 
+    console.log('Successfully created attachments:', createdAttachments.length);
     return createdAttachments;
   }
 
@@ -637,6 +690,90 @@ export class DefectService {
     });
 
     return deleted;
+  }
+
+  async getDefectAttachmentDownloadUrl(attachmentId: string) {
+    // Fetch defect attachment from database
+    const attachment = await prisma.defectAttachment.findUnique({
+      where: { id: attachmentId },
+      include: {
+        defect: {
+          select: {
+            projectId: true,
+          },
+        },
+      },
+    });
+
+    if (!attachment) {
+      throw new Error('Defect attachment not found');
+    }
+
+    console.log('[DefectAttachment] Generating URL for:', {
+      id: attachment.id,
+      path: attachment.path,
+      bucket: S3_BUCKET,
+      mimeType: attachment.mimeType,
+    });
+
+    // Determine if file should be previewed or downloaded
+    const isPreviewable =
+      attachment.mimeType.startsWith('image/') ||
+      attachment.mimeType === 'application/pdf';
+
+    // Generate presigned URL for secure access (valid for 1 hour)
+    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const command = new GetObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: attachment.path,
+      ResponseContentDisposition: isPreviewable
+        ? 'inline'
+        : `attachment; filename="${encodeURIComponent(attachment.originalName)}"`,
+      ResponseContentType: attachment.mimeType,
+    });
+
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    return {
+      url: signedUrl,
+      filename: attachment.filename,
+      originalName: attachment.originalName,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+    };
+  }
+
+  async deleteDefectAttachment(attachmentId: string, step: string | null) {
+    // Fetch attachment from database
+    const attachment = await prisma.defectAttachment.findUnique({
+      where: { id: attachmentId },
+    });
+
+    if (!attachment) {
+      throw new Error('Defect attachment not found');
+    }
+
+    if (step === 'prepare') {
+      // Step 1: Generate presigned DELETE URL for S3
+      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+      const command = new DeleteObjectCommand({
+        Bucket: S3_BUCKET,
+        Key: attachment.path,
+      });
+
+      const deleteUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+      return { deleteUrl };
+    } else if (step === 'confirm') {
+      // Step 2: Remove from database after S3 deletion
+      await prisma.defectAttachment.delete({
+        where: { id: attachmentId },
+      });
+
+      return { success: true };
+    } else {
+      throw new Error('Invalid step parameter. Use step=prepare or step=confirm');
+    }
   }
 }
 

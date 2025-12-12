@@ -26,7 +26,7 @@ type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'valu
   attachments?: Attachment[];
   onAttachmentsChange?: (attachments: Attachment[]) => void;
   entityId?: string;
-  entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'unassigned';
+  entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'teststep' | 'unassigned';
   showAttachments?: boolean;
 }
 
@@ -93,17 +93,29 @@ function TextareaWithAttachments({
           } else {
             // For uploaded attachments, fetch from server
             try {
-              const response = await fetch(`/api/attachments/${attachment.id}`);
+              console.log(`[TextareaWithAttachments] Fetching URL for attachment ${attachment.id}`);
+              // Use different endpoint based on entity type
+              const endpoint = attachment.entityType === 'defect' 
+                ? `/api/defect-attachments/${attachment.id}`
+                : `/api/attachments/${attachment.id}`;
+              console.log(`[TextareaWithAttachments] Using endpoint:`, endpoint);
+              
+              const response = await fetch(endpoint);
               if (response.ok) {
-                const data = await response.json();
-                if (data.url) {
-                  urls[attachment.id] = data.url;
+                const result = await response.json();
+                console.log(`[TextareaWithAttachments] Response for ${attachment.id}:`, result);
+                // API returns { data: { url, ... } }
+                if (result.data?.url) {
+                  urls[attachment.id] = result.data.url;
+                  console.log(`[TextareaWithAttachments] Set image URL for ${attachment.id}:`, result.data.url);
+                } else {
+                  console.warn(`[TextareaWithAttachments] No URL in response for ${attachment.id}`, result);
                 }
               } else {
-                console.warn(`Failed to fetch image URL for ${attachment.id}:`, response.status);
+                console.warn(`[TextareaWithAttachments] Failed to fetch image URL for ${attachment.id}:`, response.status);
               }
             } catch (error) {
-              console.error('Error fetching image URL:', error);
+              console.error('[TextareaWithAttachments] Error fetching image URL:', error);
             }
           }
         }
@@ -238,9 +250,9 @@ function TextareaWithAttachments({
     }
   };
 
-  const handleDownload = async (attachmentId: string) => {
+  const handleDownload = async (attachment: Attachment) => {
     try {
-      await downloadFile(attachmentId);
+      await downloadFile(attachment.id, attachment.entityType);
     } catch (error) {
       console.error('File access error:', error);
       setFileError('Failed to access file');
@@ -256,12 +268,23 @@ function TextareaWithAttachments({
     if (!attachmentToDelete) return;
 
     try {
-      await deleteFile(attachmentToDelete);
+      const isPending = attachmentToDelete.startsWith('pending-');
+      
+      if (!isPending) {
+        // Only delete from S3 if it's an uploaded attachment
+        // Find the attachment to get its entityType
+        const attachment = attachments.find(a => a.id === attachmentToDelete);
+        await deleteFile(attachmentToDelete, attachment?.entityType);
+      }
+      
+      // Remove from local state
       onAttachmentsChange?.(attachments.filter((a) => a.id !== attachmentToDelete));
       setAttachmentToDelete(null);
+      setDeleteConfirmOpen(false);
     } catch (error) {
       console.error('Delete error:', error);
       setFileError('Failed to delete attachment');
+      setDeleteConfirmOpen(false);
     }
   };
 
@@ -315,7 +338,7 @@ function TextareaWithAttachments({
                     onClick={async () => {
                       if (isPending) return; // Can't download pending files
                       try {
-                        await downloadFile(attachment.id);
+                        await handleDownload(attachment);
                       } catch (error) {
                         console.error('Failed to download file:', error);
                         setFileError('Failed to download file');
@@ -327,7 +350,7 @@ function TextareaWithAttachments({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        downloadFile(attachment.id).catch((error) => {
+                        handleDownload(attachment).catch((error) => {
                           console.error('Failed to download file:', error);
                           setFileError('Failed to download file');
                         });
@@ -554,7 +577,7 @@ function TextareaWithAttachments({
                       size="sm"
                       variant="glass"
                       className="flex-1"
-                      onClick={() => handleDownload(attachment.id)}
+                      onClick={() => handleDownload(attachment)}
                       disabled={isPending}
                       title={isPending ? "Will be available after saving" : "Download file"}
                     >

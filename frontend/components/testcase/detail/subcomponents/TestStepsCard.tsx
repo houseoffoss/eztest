@@ -8,7 +8,8 @@ import { Label } from '@/elements/label';
 import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
 import { GripVertical, Plus, Trash2, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
 import { TestStep } from '../types';
-import { type Attachment, downloadFile, getFileIconType } from '@/lib/s3';
+import { type Attachment } from '@/lib/s3';
+import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
 
 interface TestStepsCardProps {
   steps: TestStep[];
@@ -113,8 +114,7 @@ export function TestStepsCard({
                               onStepAttachmentsChange(step.id, 'action', attachments);
                             }
                           }}
-                          entityId={step.id}
-                          entityType="testresult"
+                          entityType="teststep"
                           showAttachments={true}
                         />
                       ) : (
@@ -123,10 +123,8 @@ export function TestStepsCard({
                             {step.action}
                           </div>
                           {stepAttachments[step.id]?.action && stepAttachments[step.id].action.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {stepAttachments[step.id].action.map((att) => (
-                                <AttachmentBadge key={att.id} attachment={att} />
-                              ))}
+                            <div className="mt-2">
+                              <AttachmentDisplay attachments={stepAttachments[step.id].action} />
                             </div>
                           )}
                         </div>
@@ -156,8 +154,7 @@ export function TestStepsCard({
                               onStepAttachmentsChange(step.id, 'expectedResult', attachments);
                             }
                           }}
-                          entityId={step.id}
-                          entityType="testresult"
+                          entityType="teststep"
                           showAttachments={true}
                         />
                       ) : (
@@ -166,10 +163,8 @@ export function TestStepsCard({
                             {step.expectedResult}
                           </div>
                           {stepAttachments[step.id]?.expectedResult && stepAttachments[step.id].expectedResult.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {stepAttachments[step.id].expectedResult.map((att) => (
-                                <AttachmentBadge key={att.id} attachment={att} />
-                              ))}
+                            <div className="mt-2">
+                              <AttachmentDisplay attachments={stepAttachments[step.id].expectedResult} />
                             </div>
                           )}
                         </div>
@@ -206,7 +201,7 @@ export function TestStepsCard({
                   fieldName="action"
                   attachments={newStepActionAttachments}
                   onAttachmentsChange={onNewStepActionAttachmentsChange || (() => {})}
-                  entityType="testresult"
+                  entityType="teststep"
                   showAttachments={true}
                   maxLength={1000}
                   showCharCount={false}
@@ -224,7 +219,7 @@ export function TestStepsCard({
                   fieldName="expectedResult"
                   attachments={newStepExpectedResultAttachments}
                   onAttachmentsChange={onNewStepExpectedResultAttachmentsChange || (() => {})}
-                  entityType="testresult"
+                  entityType="teststep"
                   showAttachments={true}
                   maxLength={1000}
                   showCharCount={false}
@@ -255,40 +250,5 @@ export function TestStepsCard({
           )}
         </div>
     </DetailCard>
-  );
-}
-
-// Attachment Badge Component
-function AttachmentBadge({ attachment }: { attachment: Attachment }) {
-  const handleDownload = async () => {
-    console.log('[TestStepsCard] Download clicked for:', attachment);
-    try {
-      await downloadFile(attachment.id, attachment.filename);
-    } catch (error) {
-      console.error('[TestStepsCard] Download error:', error);
-    }
-  };
-
-  const getIcon = () => {
-    const type = getFileIconType(attachment.filename);
-    switch (type) {
-      case 'image':
-        return <ImageIcon className="w-3 h-3" />;
-      case 'pdf':
-        return <FileText className="w-3 h-3" />;
-      default:
-        return <FileIcon className="w-3 h-3" />;
-    }
-  };
-
-  return (
-    <div
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs cursor-pointer hover:bg-blue-500/20 transition-colors"
-      onClick={handleDownload}
-    >
-      {getIcon()}
-      <span className="max-w-[150px] truncate">{attachment.filename}</span>
-      <Download className="w-3 h-3" />
-    </div>
   );
 }

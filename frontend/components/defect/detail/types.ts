@@ -57,6 +57,7 @@ export interface DefectAttachment {
   fileUrl: string;
   fileSize: number;
   mimeType: string;
+  fieldName?: string;
   uploadedById: string;
   uploadedBy: {
     id: string;
@@ -76,6 +77,17 @@ export interface DefectComment {
     email: string;
     avatar: string | null;
   };
+  attachments?: {
+    id: string;
+    filename: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    path: string;
+    fieldName: string | null;
+    uploadedById: string;
+    uploadedAt: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }

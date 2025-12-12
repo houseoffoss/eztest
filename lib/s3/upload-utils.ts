@@ -16,6 +16,7 @@ export interface Attachment {
   mimeType: string;
   uploadedAt: string;
   fieldName?: string; // description, expectedResult, preconditions, postconditions
+  entityType?: 'testcase' | 'teststep' | 'defect' | 'comment' | 'testresult' | 'unassigned';
 }
 
 export interface UploadOptions {
@@ -244,9 +245,17 @@ export async function abortUpload(uploadId: string, s3Key: string): Promise<void
 /**
  * Gets a presigned URL for downloading/previewing a file
  */
-export async function getFileUrl(attachmentId: string): Promise<{ url: string; isPreviewable?: boolean }> {
-  console.log('Fetching file URL for attachment:', attachmentId);
-  const response = await fetch(`/api/attachments/${attachmentId}`);
+export async function getFileUrl(attachmentId: string, entityType?: string): Promise<{ url: string; isPreviewable?: boolean }> {
+  console.log('Fetching file URL for attachment:', attachmentId, 'entityType:', entityType);
+  let endpoint: string;
+  if (entityType === 'defect') {
+    endpoint = `/api/defect-attachments/${attachmentId}`;
+  } else if (entityType === 'comment') {
+    endpoint = `/api/comment-attachments/${attachmentId}`;
+  } else {
+    endpoint = `/api/attachments/${attachmentId}`;
+  }
+  const response = await fetch(endpoint);
   
   if (!response.ok) {
     const errorText = await response.text();
@@ -265,10 +274,10 @@ export async function getFileUrl(attachmentId: string): Promise<{ url: string; i
 /**
  * Downloads or previews a file in a new tab
  */
-export async function downloadFile(attachmentId: string): Promise<void> {
+export async function downloadFile(attachmentId: string, entityType?: string): Promise<void> {
   try {
     console.log('Downloading file:', attachmentId);
-    const { url } = await getFileUrl(attachmentId);
+    const { url } = await getFileUrl(attachmentId, entityType);
     console.log('Opening URL in new tab:', url);
     window.open(url, '_blank');
   } catch (error) {
@@ -280,10 +289,20 @@ export async function downloadFile(attachmentId: string): Promise<void> {
 /**
  * Deletes a file from S3 and database using presigned URLs
  */
-export async function deleteFile(attachmentId: string): Promise<void> {
+export async function deleteFile(attachmentId: string, entityType?: string): Promise<void> {
   try {
+    // Use different endpoint based on entity type
+    let baseEndpoint: string;
+    if (entityType === 'defect') {
+      baseEndpoint = `/api/defect-attachments/${attachmentId}`;
+    } else if (entityType === 'comment') {
+      baseEndpoint = `/api/comment-attachments/${attachmentId}`;
+    } else {
+      baseEndpoint = `/api/attachments/${attachmentId}`;
+    }
+    
     // Step 1: Get presigned DELETE URL from backend
-    const prepareResponse = await fetch(`/api/attachments/${attachmentId}?step=prepare`, {
+    const prepareResponse = await fetch(`${baseEndpoint}?step=prepare`, {
       method: 'DELETE',
     });
 
@@ -303,7 +322,7 @@ export async function deleteFile(attachmentId: string): Promise<void> {
     }
 
     // Step 3: Confirm deletion in database
-    const confirmResponse = await fetch(`/api/attachments/${attachmentId}?step=confirm`, {
+    const confirmResponse = await fetch(`${baseEndpoint}?step=confirm`, {
       method: 'DELETE',
     });
 

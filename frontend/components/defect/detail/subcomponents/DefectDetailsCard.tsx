@@ -4,6 +4,18 @@ import { DetailCard } from '@/components/design/DetailCard';
 import { Defect, DefectFormData } from '../types';
 import { FormBuilder, FormFieldConfig, SelectOption } from '@/frontend/components/form';
 import { useEffect, useState } from 'react';
+import { Label } from '@/elements/label';
+import { Input } from '@/elements/input';
+import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
+import { type Attachment } from '@/lib/s3';
+import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/elements/select';
 
 interface DefectDetailsCardProps {
   defect: Defect;
@@ -11,6 +23,10 @@ interface DefectDetailsCardProps {
   formData: DefectFormData;
   errors?: Record<string, string>;
   onFormChange: (data: DefectFormData) => void;
+  onFieldChange?: (field: keyof DefectFormData, value: string | number | null) => void;
+  // Attachments
+  descriptionAttachments?: Attachment[];
+  onDescriptionAttachmentsChange?: (attachments: Attachment[]) => void;
 }
 
 interface User {
@@ -25,8 +41,18 @@ export function DefectDetailsCard({
   formData,
   errors = {},
   onFormChange,
+  onFieldChange,
+  descriptionAttachments = [],
+  onDescriptionAttachmentsChange,
 }: DefectDetailsCardProps) {
   const [users, setUsers] = useState<User[]>([]);
+
+  const handleFieldChange = onFieldChange || ((field, value) => {
+    onFormChange({ ...formData, [field]: value });
+  });
+
+  // Create safe attachment handlers with default no-op functions
+  const handleDescriptionAttachmentsChange = onDescriptionAttachmentsChange || (() => {});
 
   useEffect(() => {
     if (isEditing) {
@@ -76,70 +102,7 @@ export function DefectDetailsCard({
     })),
   ];
 
-  const fields: FormFieldConfig[] = [
-    {
-      name: 'severity',
-      label: 'Severity',
-      type: 'select',
-      options: SEVERITY_OPTIONS,
-      required: true,
-      cols: 1,
-    },
-    {
-      name: 'priority',
-      label: 'Priority',
-      type: 'select',
-      options: PRIORITY_OPTIONS,
-      required: true,
-      cols: 1,
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: STATUS_OPTIONS,
-      required: true,
-      cols: 1,
-    },
-    {
-      name: 'assignedToId',
-      label: 'Assigned To',
-      type: 'select',
-      options: assignedToOptions,
-      cols: 1,
-    },
-    {
-      name: 'environment',
-      label: 'Environment',
-      type: 'textarea',
-      placeholder: 'e.g., Production, Staging, Development',
-      rows: 2,
-      cols: 1,
-    },
-    {
-      name: 'dueDate',
-      label: 'Due Date',
-      type: 'date',
-      cols: 1,
-    },
-    {
-      name: 'progressPercentage',
-      label: 'Progress (%)',
-      type: 'number',
-      placeholder: '0-100',
-      cols: 1,
-    },
-    {
-      name: 'description',
-      label: 'Description',
-      type: 'textarea',
-      placeholder: 'Detailed description of the defect',
-      rows: 4,
-      cols: 1,
-    },
-  ];
-
-  const handleFieldChange = (field: keyof DefectFormData, value: string | number | null) => {
+  const handleSelectChange = (field: keyof DefectFormData, value: string | number | null) => {
     if (field === 'assignedToId' && value === 'unassigned') {
       onFormChange({ ...formData, assignedToId: null });
     } else if (field === 'progressPercentage') {
@@ -159,13 +122,154 @@ export function DefectDetailsCard({
   return (
     <DetailCard title="Details" contentClassName="space-y-6">
       {isEditing ? (
-        <FormBuilder
-          fields={fields}
-          formData={formData}
-          errors={errors}
-          onFieldChange={handleFieldChange}
-          variant="glass"
-        />
+        <div className="space-y-4">
+          {/* Severity and Priority */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="severity">
+                Severity <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.severity}
+                onValueChange={(value) => handleSelectChange('severity', value)}
+              >
+                <SelectTrigger variant="glass" id="severity">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent variant="glass">
+                  {SEVERITY_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="priority">
+                Priority <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value) => handleSelectChange('priority', value)}
+              >
+                <SelectTrigger variant="glass" id="priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent variant="glass">
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Status and Assigned To */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="status">
+                Status <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleSelectChange('status', value)}
+              >
+                <SelectTrigger variant="glass" id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent variant="glass">
+                  {STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="assignedToId">Assigned To</Label>
+              <Select
+                value={formData.assignedToId || 'unassigned'}
+                onValueChange={(value) => handleSelectChange('assignedToId', value)}
+              >
+                <SelectTrigger variant="glass" id="assignedToId">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent variant="glass">
+                  {assignedToOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Due Date and Progress */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Due Date</Label>
+              <Input
+                id="dueDate"
+                variant="glass"
+                type="date"
+                value={formData.dueDate || ''}
+                onChange={(e) => handleSelectChange('dueDate', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="progressPercentage">Progress (%)</Label>
+              <Input
+                id="progressPercentage"
+                variant="glass"
+                type="number"
+                placeholder="0-100"
+                value={formData.progressPercentage ?? ''}
+                onChange={(e) => handleSelectChange('progressPercentage', e.target.value)}
+                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+              />
+            </div>
+          </div>
+
+          {/* Description with Attachments */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <TextareaWithAttachments
+              fieldName="description"
+              variant="glass"
+              value={formData.description || ''}
+              onChange={(value) => handleFieldChange('description', value)}
+              placeholder="Detailed description of the defect"
+              rows={4}
+              maxLength={2000}
+              showCharCount={true}
+              attachments={descriptionAttachments}
+              onAttachmentsChange={handleDescriptionAttachmentsChange}
+              entityType="defect"
+              showAttachments={true}
+            />
+            {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
+          </div>
+
+          {/* Environment */}
+          <div className="space-y-2">
+            <Label htmlFor="environment">Environment</Label>
+            <Input
+              id="environment"
+              variant="glass"
+              value={formData.environment || ''}
+              onChange={(e) => handleFieldChange('environment', e.target.value)}
+              placeholder="e.g., Production, Staging, Development"
+            />
+          </div>
+        </div>
       ) : (
         <>
           {defect.description && (
@@ -176,6 +280,12 @@ export function DefectDetailsCard({
               <p className="text-white/90 break-words whitespace-pre-wrap">
                 {defect.description}
               </p>
+              {descriptionAttachments.length > 0 && (
+                <div className="mt-3">
+                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({descriptionAttachments.length})</h5>
+                  <AttachmentDisplay attachments={descriptionAttachments} />
+                </div>
+              )}
             </div>
           )}
 

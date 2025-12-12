@@ -229,7 +229,6 @@ export class TestCaseService {
         },
         _count: {
           select: {
-            results: true,
             comments: true,
             attachments: true,
           },
@@ -558,20 +557,74 @@ export class TestCaseService {
       throw new Error('Test case not found or access denied');
     }
 
-    // Delete existing steps
-    await prisma.testStep.deleteMany({
+    // Get existing steps
+    const existingSteps = await prisma.testStep.findMany({
       where: { testCaseId },
     });
 
-    // Create new steps
+    // Update or create steps while preserving IDs for existing steps
     if (steps.length > 0) {
-      await prisma.testStep.createMany({
-        data: steps.map((step) => ({
-          testCaseId,
-          stepNumber: step.stepNumber,
-          action: step.action,
-          expectedResult: step.expectedResult,
-        })),
+      // Step 1: Delete steps that are no longer in the list FIRST to avoid unique constraint conflicts
+      const stepIdsToKeep = steps
+        .filter(s => s.id && !s.id.startsWith('temp-'))
+        .map(s => s.id as string);
+      
+      console.log('[updateTestSteps] Existing steps:', existingSteps.map(s => s.id));
+      console.log('[updateTestSteps] Steps to keep:', stepIdsToKeep);
+      console.log('[updateTestSteps] Incoming steps:', steps.map(s => ({ id: s.id, stepNumber: s.stepNumber })));
+      
+      if (stepIdsToKeep.length > 0) {
+        await prisma.testStep.deleteMany({
+          where: {
+            testCaseId,
+            id: {
+              notIn: stepIdsToKeep,
+            },
+          },
+        });
+      } else {
+        // No existing steps to keep, delete all
+        console.log('[updateTestSteps] No existing steps to keep, deleting all');
+        await prisma.testStep.deleteMany({
+          where: { testCaseId },
+        });
+      }
+
+      // Step 2: Update existing steps and create new steps
+      for (const step of steps) {
+        if (step.id && !step.id.startsWith('temp-')) {
+          // Existing step - use upsert to handle both update and potential recreation
+          await prisma.testStep.upsert({
+            where: { id: step.id },
+            update: {
+              stepNumber: step.stepNumber,
+              action: step.action,
+              expectedResult: step.expectedResult,
+            },
+            create: {
+              id: step.id,
+              testCaseId,
+              stepNumber: step.stepNumber,
+              action: step.action,
+              expectedResult: step.expectedResult,
+            },
+          });
+        } else {
+          // New step (no ID or temp ID) - create it
+          await prisma.testStep.create({
+            data: {
+              testCaseId,
+              stepNumber: step.stepNumber,
+              action: step.action,
+              expectedResult: step.expectedResult,
+            },
+          });
+        }
+      }
+    } else {
+      // No steps provided - delete all
+      await prisma.testStep.deleteMany({
+        where: { testCaseId },
       });
     }
 
@@ -887,17 +940,26 @@ export class TestCaseService {
     }
 
     // Create TestCaseDefect links
-    const links = await prisma.testCaseDefect.createMany({
-      data: defectIds.map((defectId: string) => ({
-        defectId,
-        testCaseId,
-      })),
-      skipDuplicates: true, // Skip if already linked
-    });
+    const results = await Promise.allSettled(
+      defectIds.map((defectId: string) =>
+        (prisma.testCaseDefect.create as unknown as (args: unknown) => Promise<unknown>)({
+          data: {
+            testCaseId,
+            defectId,
+          },
+        }).catch((error: { code: string }) => {
+          // Ignore if link already exists (unique constraint)
+          if (error.code === 'P2002') return null;
+          throw error;
+        })
+      )
+    );
+
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
 
     return {
       message: 'Defects linked successfully',
-      count: links.count,
+      count: successCount,
     };
   }
 
@@ -938,14 +1000,14 @@ export class TestCaseService {
         }
         
         // Otherwise, create a new attachment record (legacy/fallback)
-        return prisma.attachment.create({
+        return (prisma.attachment.create as unknown as (args: unknown) => Promise<unknown>)({
           data: {
             filename: att.s3Key.split('/').pop() || att.fileName,
             originalName: att.fileName,
             mimeType: att.mimeType,
             size: 0,
             path: att.s3Key,
-            fieldName: att.fieldName || 'attachment',
+            ...(att.fieldName && { fieldName: att.fieldName }),
             testCaseId: testCaseId,
           },
         });
@@ -1005,8 +1067,10 @@ export class TestCaseService {
 
     // Delete file from S3 (fire and forget to avoid blocking)
     if (attachment.path) {
-      import('@/lib/s3-client').then(({ s3Client, S3_BUCKET }) => {
-        const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+      Promise.all([
+        import('@/lib/s3-client'),
+        import('@aws-sdk/client-s3')
+      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
         s3Client.send(
           new DeleteObjectCommand({
             Bucket: S3_BUCKET,

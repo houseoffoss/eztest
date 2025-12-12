@@ -152,7 +152,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         title: 'Success',
         message: 'Test suite deleted successfully',
       });
-      setTimeout(() => router.push(`/projects/${testSuite?.project.id}/testsuites`), 1000);
+      setTimeout(() => router.push(`/projects/${testSuite?.Project.id}/testsuites`), 1000);
     } else {
       const data = await response.json();
       throw new Error(data.error || 'Failed to delete test suite');
@@ -396,12 +396,12 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         breadcrumbs={[
           { label: 'Projects', href: '/projects' },
           {
-            label: testSuite.project.name,
-            href: `/projects/${testSuite.project.id}`,
+            label: testSuite.Project.name,
+            href: `/projects/${testSuite.Project.id}`,
           },
           {
             label: 'Test Suites',
-            href: `/projects/${testSuite.project.id}/testsuites`,
+            href: `/projects/${testSuite.Project.id}/testsuites`,
           },
           { label: testSuite.name },
         ]}
@@ -437,13 +437,13 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
             </>
           )}
           <ButtonSecondary
-            onClick={() => router.push(`/projects/${testSuite.project.id}/testcases`)}
+            onClick={() => router.push(`/projects/${testSuite.Project.id}/testcases`)}
           >
             <TestTube2 className="w-4 h-4 mr-2" />
             View All Test Cases
           </ButtonSecondary>
           <ButtonSecondary
-            onClick={() => router.push(`/projects/${testSuite.project.id}/testsuites`)}
+            onClick={() => router.push(`/projects/${testSuite.Project.id}/testsuites`)}
           >
             <Folder className="w-4 h-4 mr-2" />
             View All Test Suites
@@ -468,13 +468,13 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
                 // Extract unique modules from test cases with their counts
                 const moduleMap = new Map<string, Module>();
                 testSuite.testCases.forEach(tc => {
-                  if (tc.module && tc.moduleId) {
+                  if (tc.Module && tc.moduleId) {
                     if (!moduleMap.has(tc.moduleId)) {
                       const count = testSuite.testCases.filter(t => t.moduleId === tc.moduleId).length;
                       moduleMap.set(tc.moduleId, {
-                        id: tc.module.id,
-                        name: tc.module.name,
-                        description: tc.module.description,
+                        id: tc.Module.id,
+                        name: tc.Module.name,
+                        description: tc.Module.description,
                         projectId: testSuite.projectId,
                         _count: { testCases: count }
                       });
@@ -489,7 +489,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               }}
               onTestCaseClick={(testCaseId) =>
                 router.push(
-                  `/projects/${testSuite.project.id}/testcases/${testCaseId}`
+                  `/projects/${testSuite.Project.id}/testcases/${testCaseId}`
                 )
               }
               onRemoveTestCase={handleRemoveTestCase}
@@ -502,7 +502,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               childrenCount={testSuite._count.children}
               onChildSuiteClick={(childId) =>
                 router.push(
-                  `/projects/${testSuite.project.id}/testsuites/${childId}`
+                  `/projects/${testSuite.Project.id}/testsuites/${childId}`
                 )
               }
             />
@@ -517,7 +517,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               updatedAt={testSuite.updatedAt}
               onParentClick={(parentId) =>
                 router.push(
-                  `/projects/${testSuite.project.id}/testsuites/${parentId}`
+                  `/projects/${testSuite.Project.id}/testsuites/${parentId}`
                 )
               }
             />

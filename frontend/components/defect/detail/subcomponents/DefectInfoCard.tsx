@@ -65,12 +65,12 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
         </div>
       )}
 
-      {defect.testRun && (
+      {defect.TestRun && (
         <div>
           <h4 className="text-sm font-medium text-white/60 mb-1">
             Test Run
           </h4>
-          <Badge variant="outline">{defect.testRun.name}</Badge>
+          <Badge variant="outline">{defect.TestRun.name}</Badge>
         </div>
       )}
 

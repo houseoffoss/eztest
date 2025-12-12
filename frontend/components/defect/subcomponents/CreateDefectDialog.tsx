@@ -4,7 +4,7 @@ import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/desi
 import { useEffect, useState } from 'react';
 import { SearchableSelect } from '@/elements/searchable-select';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
-import React from 'react';
+import { type Attachment } from '@/lib/s3';
 
 interface Defect {
   id: string;
@@ -48,6 +48,7 @@ export function CreateDefectDialog({
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [assignees, setAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [testCases, setTestCases] = useState<Array<{ id: string; testCaseId: string; title: string }>>([]);
+  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -198,11 +199,13 @@ export function CreateDefectDialog({
     {
       name: 'description',
       label: 'Description',
-      type: 'textarea',
+      type: 'textarea-with-attachments',
       placeholder: 'Describe the defect...',
       rows: 3,
       cols: 2,
       maxLength: 2000,
+      attachments: descriptionAttachments,
+      onAttachmentsChange: setDescriptionAttachments,
     },
   ];
 
@@ -210,6 +213,51 @@ export function CreateDefectDialog({
     if (onOpenChange) {
       onOpenChange(open);
     }
+  };
+
+  const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
+    const pendingAttachments = descriptionAttachments.filter((att) => att.id.startsWith('pending-'));
+    
+    if (pendingAttachments.length === 0) {
+      return [];
+    }
+
+    const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
+
+    for (const attachment of pendingAttachments) {
+      // @ts-ignore - Access the pending file object
+      const file = attachment._pendingFile;
+      if (!file) continue;
+
+      try {
+        const { uploadFileToS3 } = await import('@/lib/s3');
+        const result = await uploadFileToS3({
+          file,
+          fieldName: attachment.fieldName || 'attachment',
+          entityType: 'defect',
+          onProgress: () => {},
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        if (result.attachment) {
+          uploadedAttachments.push({
+            id: result.attachment.id,
+            s3Key: result.attachment.filename,
+            fileName: file.name,
+            mimeType: file.type,
+            fieldName: attachment.fieldName,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to upload attachment:', error);
+        throw error;
+      }
+    }
+
+    return uploadedAttachments;
   };
 
   const config: BaseDialogConfig = {
@@ -222,6 +270,9 @@ export function CreateDefectDialog({
     onOpenChange: handleDialogOpenChange,
     formPersistenceKey: `create-defect-${projectId}`,
     onSubmit: async (formData) => {
+      // Upload pending attachments first
+      const uploadedAttachments = await uploadPendingAttachments();
+
       // Get test case ID from prop (passed when creating from test run) or from form data (selected from dropdown)
       const finalTestCaseId = testCaseId || formData.testCaseId || null;
       
@@ -250,7 +301,22 @@ export function CreateDefectDialog({
         throw new Error(data.error || 'Failed to create defect');
       }
 
-      return data.data;
+      const createdDefect = data.data;
+
+      // Link uploaded attachments to the defect
+      if (uploadedAttachments.length > 0) {
+        try {
+          await fetch(`/api/defects/${createdDefect.id}/attachments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attachments: uploadedAttachments }),
+          });
+        } catch (error) {
+          console.error('Failed to link attachments:', error);
+        }
+      }
+
+      return createdDefect;
     },
     onSuccess: (result) => {
       if (result) {
@@ -260,6 +326,8 @@ export function CreateDefectDialog({
           title: 'Defect Created',
           message: `Defect ${defect.defectId} has been created successfully`,
         });
+        // Reset attachments state
+        setDescriptionAttachments([]);
         onDefectCreated(defect);
       }
     },

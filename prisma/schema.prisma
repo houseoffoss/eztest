@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ====================================
@@ -93,6 +94,8 @@ model User {
   assignedDefects Defect[] @relation("DefectAssignedTo")
   createdDefects  Defect[] @relation("DefectCreatedBy")
   defectComments  DefectComment[]
+  defectAttachments DefectAttachment[]
+  commentAttachments CommentAttachment[]
 
   @@index([email])
   @@index([roleId])
@@ -490,11 +493,15 @@ model DefectAttachment {
   mimeType      String
   size          Int
   path          String
+  fieldName     String?  // description, environment, etc.
+  uploadedById  String
   uploadedAt    DateTime @default(now())
 
-  defect        Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  defect        Defect     @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  uploadedBy    User       @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@index([defectId])
+  @@index([uploadedById])
 }
 
 model DefectComment {
@@ -507,9 +514,29 @@ model DefectComment {
 
   defect        Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments   CommentAttachment[]
 
   @@index([defectId])
   @@index([userId])
+}
+
+model CommentAttachment {
+  id             String         @id @default(cuid())
+  commentId      String
+  filename       String
+  originalName   String
+  mimeType       String
+  size           Int
+  path           String
+  fieldName      String?
+  uploadedById   String
+  uploadedAt     DateTime       @default(now())
+
+  comment        DefectComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  uploadedBy     User           @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([commentId])
+  @@index([uploadedById])
 }
 
 // Join table for many-to-many relationship between TestCase and Defect

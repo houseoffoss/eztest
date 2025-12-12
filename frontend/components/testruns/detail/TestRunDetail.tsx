@@ -233,11 +233,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   };
 
   const fetchAvailableTestCases = async () => {
-    if (!testRun || !testRun.project?.id) return;
+    if (!testRun || !testRun.Project?.id) return;
 
     try {
       const response = await fetch(
-        `/api/projects/${testRun.project.id}/testcases`
+        `/api/projects/${testRun.Project.id}/testcases`
       );
       const data = await response.json();
 
@@ -310,13 +310,13 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     try {
       // Fetch test suites
       const suitesResponse = await fetch(
-        `/api/projects/${testRun.project.id}/testsuites`
+        `/api/projects/${testRun.Project.id}/testsuites`
       );
       const suitesData = await suitesResponse.json();
 
       // Fetch all test cases to get ungrouped ones
       const testCasesResponse = await fetch(
-        `/api/projects/${testRun.project.id}/testcases`
+        `/api/projects/${testRun.Project.id}/testcases`
       );
       const testCasesData = await testCasesResponse.json();
 
@@ -351,7 +351,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
               id: 'ungrouped',
               name: 'Ungrouped Test Cases',
               description: 'Test cases not assigned to any test suite',
-              projectId: testRun.project.id,
+              projectId: testRun.Project.id,
               testCases: ungroupedTestCases,
               _count: {
                 testCases: ungroupedTestCases.length,
@@ -642,9 +642,9 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           }}
         />
 
-        {selectedTestCaseForDefect && testRun.project?.id && (
+        {selectedTestCaseForDefect && testRun.Project?.id && (
           <CreateDefectDialog
-            projectId={testRun.project.id}
+            projectId={testRun.Project.id}
             triggerOpen={createDefectDialogOpen}
             onOpenChange={setCreateDefectDialogOpen}
             onDefectCreated={handleDefectCreated}

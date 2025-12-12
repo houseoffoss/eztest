@@ -64,7 +64,7 @@ export function TestSuiteHeader({
             </h1>
           )}
           <p className="text-white/60">
-            {testSuite.project.name} ({testSuite.project.key})
+            {testSuite.Project.name} ({testSuite.Project.key})
           </p>
         </div>
 

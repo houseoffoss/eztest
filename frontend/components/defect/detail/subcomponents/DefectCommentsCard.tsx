@@ -5,8 +5,62 @@ import { useSession } from 'next-auth/react';
 import { Send } from 'lucide-react';
 import { DetailCard } from '@/components/design/DetailCard';
 import { Avatar, AvatarImage, AvatarFallback } from '@/elements/avatar';
-import { Input } from '@/elements/input';
-import { Button } from '@/elements/button';
+import { TextareaWithAttachments, Attachment } from '@/elements/textarea-with-attachments';
+
+// Extended type for pending attachments with file object
+interface PendingAttachment extends Attachment {
+  _pendingFile?: File;
+}
+
+// Separate component for comment attachments to avoid hook ordering issues
+function CommentAttachmentItem({ attachment }: { attachment: { id: string; filename: string; originalName: string; size: number; mimeType: string; uploadedAt: Date } }) {
+  const isImage = attachment.mimeType.startsWith('image/');
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (isImage) {
+      fetch(`/api/comment-attachments/${attachment.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.data?.url) {
+            setImageUrl(data.data.url);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [attachment.id, isImage]);
+
+  if (isImage && imageUrl) {
+    return (
+      <div className="rounded-lg overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={attachment.originalName}
+          className="max-w-full h-auto max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => window.open(imageUrl, '_blank')}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <AttachmentDisplay
+      attachments={[{
+        id: attachment.id,
+        filename: attachment.filename,
+        originalName: attachment.originalName,
+        size: attachment.size,
+        mimeType: attachment.mimeType,
+        uploadedAt: attachment.uploadedAt.toString(),
+        entityType: 'comment',
+      }]}
+      showPreview={true}
+    />
+  );
+}
+import { ButtonPrimary } from '@/elements/button-primary';
+import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
 
 import { DefectComment } from '../types';
 
@@ -22,6 +76,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
   const { data: session } = useSession();
   const [comments, setComments] = useState<DefectComment[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [commentAttachments, setCommentAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const commentsEndRef = useRef<HTMLDivElement>(null);
@@ -46,6 +101,39 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
 
     setSubmitting(true);
     try {
+      // First upload any pending attachments
+      const uploadedAttachments = [];
+      for (const attachment of commentAttachments) {
+        if (attachment.id.startsWith('pending-')) {
+          // This is a pending attachment, need to upload it first
+          const pendingAttachment = attachment as PendingAttachment;
+          const file = pendingAttachment._pendingFile;
+          if (!file) {
+            console.error('Pending attachment missing file:', attachment.id);
+            continue;
+          }
+
+          // Upload the file
+          const { uploadFileToS3 } = await import('@/lib/s3');
+          const uploadResult = await uploadFileToS3({
+            file,
+            fieldName: 'comment',
+            entityType: 'comment',
+            onProgress: (progress) => console.log(`Uploading ${file.name}: ${progress}%`),
+          });
+
+          if (uploadResult.success && uploadResult.attachment) {
+            uploadedAttachments.push(uploadResult.attachment);
+          } else {
+            console.error('Failed to upload attachment:', uploadResult.error);
+          }
+        } else {
+          // Already uploaded
+          uploadedAttachments.push(attachment);
+        }
+      }
+
+      // Create the comment
       const response = await fetch(`/api/projects/${projectId}/defects/${defectId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,8 +143,45 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
       if (!response.ok) throw new Error('Failed to add comment');
       
       const data = await response.json();
-      setComments([...comments, data.data]);
+      const newCommentData = data.data;
+
+      // Then link attachments to the comment
+      if (uploadedAttachments.length > 0) {
+        for (const attachment of uploadedAttachments) {
+          console.log('Linking attachment to comment:', {
+            attachmentId: attachment.id,
+            filename: attachment.filename,
+            originalName: attachment.originalName,
+          });
+
+          // The attachment.filename from upload IS the S3 path
+          // No need to fetch it again
+          const linkResponse = await fetch(`/api/comments/${newCommentData.id}/attachments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: attachment.filename, // This is the S3 key from upload
+              originalName: attachment.originalName,
+              mimeType: attachment.mimeType,
+              size: attachment.size,
+              path: attachment.filename, // Use the S3 key as path
+              fieldName: 'comment',
+            }),
+          });
+
+          if (!linkResponse.ok) {
+            const errorText = await linkResponse.text();
+            console.error('Failed to link attachment:', errorText);
+          } else {
+            console.log('Successfully linked attachment to comment');
+          }
+        }
+      }
+
+      // Refetch comments to get the comment with attachments
+      await fetchComments();
       setNewComment('');
+      setCommentAttachments([]);
       
       // Scroll to bottom after adding comment
       setTimeout(() => {
@@ -109,8 +234,10 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             </div>
           ) : comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <p className="text-sm">No comments yet</p>
-              <p className="text-xs mt-1">Be the first to comment</p>
+              <div className="bg-gray-800/50 rounded-xl p-8 text-center">
+                <p className="text-base font-medium text-gray-300">No comments yet</p>
+                <p className="text-sm mt-2 text-gray-500">Be the first to share your thoughts</p>
+              </div>
             </div>
           ) : (
             comments.map((comment) => {
@@ -119,33 +246,44 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
               return (
                 <div
                   key={comment.id}
-                  className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
+                  className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} group`}
                 >
-                  <Avatar className="w-8 h-8 flex-shrink-0">
+                  <Avatar className="w-10 h-10 flex-shrink-0 ring-2 ring-white/10">
                     {comment.user.avatar ? (
                       <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
                     ) : null}
-                    <AvatarFallback>{comment.user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="text-sm font-semibold">
+                      {comment.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className={`flex-1 ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col`}>
-                    <div className={`flex items-center gap-2 mb-1 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <span className={`text-sm font-medium ${isCurrentUser ? 'text-blue-400' : 'text-gray-300'}`}>
+                  <div className={`flex-1 ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col max-w-[75%]`}>
+                    <div className={`flex items-center gap-2 mb-1.5 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <span className={`text-sm font-semibold ${
+                        isCurrentUser ? 'text-blue-400' : 'text-gray-200'
+                      }`}>
                         {isCurrentUser ? 'You' : comment.user.name}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 font-medium">
                         {formatTimestamp(comment.createdAt)}
                       </span>
                     </div>
                     <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                      className={`rounded-2xl px-4 py-3 shadow-lg ${
                         isCurrentUser
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-800 text-gray-200'
+                          ? 'bg-gray-800/90 backdrop-blur-sm text-gray-100 border border-blue-500/30'
+                          : 'bg-gray-800/80 backdrop-blur-sm text-gray-100 border border-gray-700/50'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap break-words">
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                         {comment.content}
                       </p>
+                      {comment.attachments && comment.attachments.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                          {comment.attachments.map(att => (
+                            <CommentAttachmentItem key={att.id} attachment={att} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -156,22 +294,31 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
         </div>
 
         {/* Comment input */}
-        <div className="border-t border-gray-800 p-4 bg-gray-900">
-          <form onSubmit={handleSubmitComment} className="flex gap-2">
-            <Input
+        <div className="border-t border-gray-700/50 p-5 bg-gradient-to-b from-gray-900 to-gray-900/95">
+          <form onSubmit={handleSubmitComment} className="space-y-3">
+            <TextareaWithAttachments
+              variant="glass"
+              fieldName="comment"
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
+              onChange={setNewComment}
+              attachments={commentAttachments}
+              onAttachmentsChange={setCommentAttachments}
+              entityType="comment"
               placeholder="Write a comment..."
+              rows={2}
               disabled={submitting}
-              className="flex-1"
             />
-            <Button
-              type="submit"
-              disabled={!newComment.trim() || submitting}
-              className="px-4"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+            <div className="flex justify-end">
+              <ButtonPrimary
+                type="submit"
+                disabled={!newComment.trim() || submitting}
+                size="sm"
+                className="min-w-[120px]"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {submitting ? 'Posting...' : 'Post Comment'}
+              </ButtonPrimary>
+            </div>
           </form>
         </div>
       </div>

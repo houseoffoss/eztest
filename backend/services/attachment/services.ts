@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { s3Client, S3_BUCKET, MAX_FILE_SIZE, CHUNK_SIZE } from '@/lib/s3-client';
 import { CreateMultipartUploadCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -193,15 +192,15 @@ export class AttachmentService {
 
     // Save attachment metadata to database
     // Use s3Key (the actual path in the bucket) instead of Location (full URL)
-    const attachment = await prisma.attachment.create({
+    const attachment = await (prisma.attachment.create as unknown as (args: unknown) => Promise<{id: string, filename: string, originalName: string, size: number, mimeType: string, uploadedAt: Date}>)({
       data: {
         filename: s3Key,
         originalName: fileName,
         mimeType: fileType,
         size: fileSize,
         path: s3Key, // Store the S3 key, not the full URL
-        testCaseId: testCaseId || null,
-        fieldName: fieldName || null,
+        ...(testCaseId && { testCaseId }),
+        ...(fieldName && { fieldName }),
       },
     });
 
@@ -282,6 +281,7 @@ export class AttachmentService {
     return {
       url: signedUrl,
       isPreviewable,
+      path: attachment.path,
       attachment: {
         id: attachment.id,
         originalName: attachment.originalName,
@@ -418,6 +418,23 @@ export class AttachmentService {
             throw new Error(`Attachment ${att.id} not found`);
           }
 
+          // Verify the target entity exists before updating
+          if (entityType === 'teststep') {
+            const stepExists = await prisma.testStep.findUnique({
+              where: { id: entityId }
+            });
+            if (!stepExists) {
+              throw new Error(`Test step ${entityId} not found`);
+            }
+          } else if (entityType === 'testcase') {
+            const testCaseExists = await prisma.testCase.findUnique({
+              where: { id: entityId }
+            });
+            if (!testCaseExists) {
+              throw new Error(`Test case ${entityId} not found`);
+            }
+          }
+
           // Only update if the entity or fieldName needs to change
           if (existing[entityField as keyof typeof existing] !== entityId || existing.fieldName !== att.fieldName) {
             return prisma.attachment.update({
@@ -438,7 +455,7 @@ export class AttachmentService {
           throw new Error('s3Key, fileName, and mimeType are required for new attachments');
         }
 
-        return prisma.attachment.create({
+        return (prisma.attachment.create as unknown as (args: unknown) => Promise<unknown>)({
           data: {
             filename: att.s3Key.split('/').pop() || att.fileName,
             originalName: att.fileName,
@@ -446,7 +463,8 @@ export class AttachmentService {
             size: 0,
             path: att.s3Key,
             fieldName: att.fieldName || 'attachment',
-            [entityField]: entityId,
+            ...(entityField === 'testCaseId' && { testCaseId: entityId }),
+            ...(entityField === 'testStepId' && { testStepId: entityId }),
           },
         });
       })

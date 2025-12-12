@@ -12,6 +12,7 @@ import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';
 import { List, TestTube2, PlayCircle } from 'lucide-react';
 import { Defect, DefectFormData } from './types';
+import type { Attachment } from '@/lib/s3';
 import {
   DefectHeader,
   DefectDetailsCard,
@@ -31,6 +32,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   const { hasPermission: hasPermissionCheck } = usePermissions();
   const [defect, setDefect] = useState<Defect | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -48,6 +50,9 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   });
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+
+  // Attachment states
+  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     fetchDefect();
@@ -84,6 +89,24 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
           dueDate: data.data.dueDate ? new Date(data.data.dueDate).toISOString().split('T')[0] : null,
           progressPercentage: data.data.progressPercentage ?? null,
         });
+
+        // Load existing attachments
+        if (data.data.attachments && Array.isArray(data.data.attachments)) {
+          const descAtts = data.data.attachments
+            .filter((att: any) => !att.fieldName || att.fieldName === 'description')
+            .map((att: any) => ({
+              id: att.id,
+              filename: att.filename,
+              originalName: att.originalName,
+              size: att.size,
+              mimeType: att.mimeType,
+              uploadedAt: att.uploadedAt,
+              fieldName: att.fieldName,
+              entityType: 'defect' as const,
+            }));
+          console.log('Loaded description attachments:', descAtts);
+          setDescriptionAttachments(descAtts);
+        }
       }
     } catch (error) {
       console.error('Error fetching defect:', error);
@@ -93,7 +116,55 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   };
 
   const handleSave = async () => {
+    setSaving(true);
     try {
+      // Upload pending attachments first
+      const allAttachments = [...descriptionAttachments];
+      const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+      const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
+
+      if (pendingAttachments.length > 0) {
+        for (const attachment of pendingAttachments) {
+          // @ts-ignore - Access the pending file object
+          const file = attachment._pendingFile;
+          if (!file) continue;
+
+          try {
+            const { uploadFileToS3 } = await import('@/lib/s3');
+            const result = await uploadFileToS3({
+              file,
+              fieldName: attachment.fieldName || 'attachment',
+              entityType: 'defect',
+              onProgress: () => {}, // Silent upload
+            });
+
+            if (!result.success) {
+              throw new Error(result.error || 'Upload failed');
+            }
+
+            // Store uploaded attachment info
+            if (result.attachment) {
+              uploadedAttachments.push({
+                id: result.attachment.id,
+                s3Key: result.attachment.filename,
+                fileName: file.name,
+                mimeType: file.type,
+                fieldName: attachment.fieldName,
+              });
+            }
+          } catch (error) {
+            console.error('Failed to upload attachment:', error);
+            setSaving(false);
+            setAlert({
+              type: 'error',
+              title: 'Upload Failed',
+              message: error instanceof Error ? error.message : 'Failed to upload attachments',
+            });
+            return;
+          }
+        }
+      }
+
       // Always include title since it's required and shouldn't change, but only send other fields if changed
       const dataToSend: Record<string, unknown> = {};
       
@@ -134,6 +205,19 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
       const data = await response.json();
       
       if (response.ok && data.data && !Array.isArray(data.data)) {
+        // Link uploaded attachments to the defect
+        if (uploadedAttachments.length > 0) {
+          try {
+            await fetch(`/api/defects/${defectId}/attachments`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ attachments: uploadedAttachments }),
+            });
+          } catch (error) {
+            console.error('Failed to link attachments:', error);
+          }
+        }
+
         setIsEditing(false);
         setAlert({
           type: 'success',
@@ -161,6 +245,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         message: errorMessage,
       });
       console.error('Error updating defect:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -283,6 +369,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
           onDelete={() => setDeleteDialogOpen(true)}
           onReopen={handleReopen}
           onFormChange={setFormData}
+          saving={saving}
           canUpdate={canUpdateDefect}
           canDelete={canDeleteDefect}
         />
@@ -322,6 +409,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               isEditing={isEditing}
               formData={formData}
               onFormChange={setFormData}
+              descriptionAttachments={descriptionAttachments}
+              onDescriptionAttachmentsChange={setDescriptionAttachments}
             />
             <LinkedTestCasesCard defect={defect} onRefresh={fetchDefect} />
             <DefectCommentsCard projectId={projectId} defectId={defectId} />
