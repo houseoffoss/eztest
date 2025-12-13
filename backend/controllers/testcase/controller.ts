@@ -2,8 +2,8 @@ import { testCaseService } from '@/backend/services/testcase/services';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { NotFoundException, InternalServerException, ValidationException } from '@/backend/utils/exceptions';
 import { TestCaseMessages } from '@/backend/constants/static_messages';
-import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema } from '@/backend/validators';
-import { z } from 'zod';
+import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema, linkAttachmentsSchema } from '@/backend/validators';
+import { z, ZodError } from 'zod';
 
 export class TestCaseController {
   /**
@@ -361,12 +361,22 @@ export class TestCaseController {
     testCaseId: string
   ) {
     try {
-      const result = await testCaseService.associateAttachments(testCaseId, req);
+      const body = await req.json();
+      
+      // Validate request body
+      const validatedData = linkAttachmentsSchema.parse(body);
+      
+      const result = await testCaseService.associateAttachments(testCaseId, validatedData.attachments);
       return {
         data: result,
         statusCode: 201,
       };
     } catch (error) {
+      if (error instanceof ZodError) {
+        const firstError = error.errors?.[0];
+        const message = firstError?.message || 'Validation failed';
+        throw new ValidationException(message);
+      }
       if (error instanceof Error && error.message === 'Test case not found') {
         throw new NotFoundException('Test case not found');
       }

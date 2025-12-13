@@ -1,5 +1,7 @@
 import { attachmentService } from '@/backend/services/attachment/services';
 import { BadRequestException, NotFoundException, InternalServerException } from '@/backend/utils/exceptions';
+import { initializeUploadSchema, completeUploadSchema, abortUploadSchema } from '@/backend/validators/attachment.validator';
+import { ZodError } from 'zod';
 
 type RequestLike = {
   url: string;
@@ -13,14 +15,17 @@ export class AttachmentController {
   async initializeUpload(req: RequestLike) {
     try {
       const body = await req.json();
-      const { fileName, fileSize, fileType, entityType, entityId } = body as Record<string, unknown>;
+      
+      // Validate request body
+      const validatedData = initializeUploadSchema.parse(body);
 
       const result = await attachmentService.initializeUpload(
-        String(fileName),
-        Number(fileSize),
-        String(fileType),
-        entityType ? String(entityType) : undefined,
-        entityId ? String(entityId) : undefined
+        validatedData.fileName,
+        validatedData.fileSize,
+        validatedData.fileType,
+        validatedData.projectId,
+        validatedData.entityType,
+        validatedData.entityId
       );
 
       return {
@@ -28,6 +33,10 @@ export class AttachmentController {
         statusCode: 200,
       };
     } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        const errorMessages = error.issues?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed';
+        throw new BadRequestException(errorMessages);
+      }
       if (error instanceof Error && error.message.includes('exceeds maximum')) {
         throw new BadRequestException(error.message);
       }
@@ -47,26 +56,19 @@ export class AttachmentController {
   async completeUpload(req: RequestLike) {
     try {
       const body = await req.json();
-      const {
-        uploadId,
-        s3Key,
-        parts,
-        fileName,
-        fileSize,
-        fileType,
-        testCaseId,
-        testStepId,
-      } = body as Record<string, unknown>;
+      
+      // Validate request body
+      const validatedData = completeUploadSchema.parse(body);
 
       const result = await attachmentService.completeUpload(
-        String(uploadId),
-        String(s3Key),
-        parts as { PartNumber: number; ETag: string }[],
-        String(fileName),
-        Number(fileSize),
-        String(fileType),
-        testCaseId ? String(testCaseId) : undefined,
-        testStepId ? String(testStepId) : undefined
+        validatedData.uploadId,
+        validatedData.s3Key,
+        validatedData.parts,
+        validatedData.fileName,
+        validatedData.fileSize,
+        validatedData.fileType,
+        validatedData.testCaseId ?? undefined,
+        validatedData.testStepId ?? undefined
       );
 
       return {
@@ -74,6 +76,10 @@ export class AttachmentController {
         statusCode: 200,
       };
     } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        const errorMessages = error.issues?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed';
+        throw new BadRequestException(errorMessages);
+      }
       if (error instanceof Error && error.message.includes('Invalid upload')) {
         throw new BadRequestException(error.message);
       }
@@ -93,13 +99,21 @@ export class AttachmentController {
       const uploadId = url.searchParams.get('uploadId');
       const fileKey = url.searchParams.get('fileKey');
 
-      const result = await attachmentService.abortUpload(uploadId || '', fileKey || '');
+      // Validate query parameters
+      const validatedData = abortUploadSchema.parse({ uploadId, fileKey });
+
+      const result = await attachmentService.abortUpload(validatedData.uploadId, validatedData.fileKey);
 
       return {
         data: result,
         statusCode: 200,
       };
     } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        const firstError = error.issues?.[0];
+        const message = firstError?.message || 'Validation failed';
+        throw new BadRequestException(message);
+      }
       if (error instanceof Error && error.message.includes('Missing required')) {
         throw new BadRequestException(error.message);
       }

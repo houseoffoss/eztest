@@ -119,6 +119,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             file,
             fieldName: 'comment',
             entityType: 'comment',
+            projectId,
             onProgress: () => {},
           });
 
@@ -219,7 +220,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
     <DetailCard title="Comments" contentClassName="!p-0">
       <div className="flex flex-col h-[500px]">
         {/* Comments list */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
           {loading ? (
             <div className="flex items-center justify-center h-full text-gray-400">
               Loading comments...

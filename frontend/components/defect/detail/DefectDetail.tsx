@@ -134,6 +134,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               file,
               fieldName: attachment.fieldName || 'attachment',
               entityType: 'defect',
+              projectId,
               onProgress: () => {}, // Silent upload
             });
 
@@ -408,6 +409,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               isEditing={isEditing}
               formData={formData}
               onFormChange={setFormData}
+              projectId={projectId}
               descriptionAttachments={descriptionAttachments}
               onDescriptionAttachmentsChange={setDescriptionAttachments}
             />

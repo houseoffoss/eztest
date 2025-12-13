@@ -8,8 +8,10 @@ import {
   bulkUpdateStatusSchema,
   bulkAssignSchema
 } from '@/backend/validators/defect';
+import { linkAttachmentsSchema } from '@/backend/validators/attachment.validator';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
+import { ZodError } from 'zod';
 import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 import { DefectMessages } from '@/backend/constants/static_messages';
 
@@ -380,13 +382,22 @@ export class DefectController {
     defectId: string
   ) {
     try {
-      const result = await defectService.associateAttachments(defectId, req);
+      const body = await req.json();
+      
+      // Validate request body
+      const validatedData = linkAttachmentsSchema.parse(body);
+      
+      const result = await defectService.associateAttachments(defectId, validatedData.attachments);
       return {
         data: result,
         statusCode: 201,
       };
     } catch (error) {
       console.error('Error associating attachments:', error);
+      if (error instanceof ZodError) {
+        const errorMessages = error.issues?.map(e => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed';
+        throw new ValidationException(errorMessages);
+      }
       if (error instanceof Error && error.message === 'Defect not found') {
         throw new ValidationException('Defect not found');
       }

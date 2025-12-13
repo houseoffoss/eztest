@@ -42,6 +42,7 @@ export class AttachmentService {
     fileName: string,
     fileSize: number,
     fileType: string,
+    projectId?: string,
     entityType?: string,
     entityId?: string
   ) {
@@ -70,13 +71,34 @@ export class AttachmentService {
     const randomHash = crypto.randomBytes(8).toString('hex');
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
 
+    // Convert entity type to plural for folder naming
+    const pluralizeEntityType = (type: string): string => {
+      const plurals: { [key: string]: string } = {
+        'testcase': 'testcases',
+        'teststep': 'teststeps',
+        'defect': 'defects',
+        'comment': 'comments',
+        'testresult': 'testresults',
+        'unassigned': 'unassigned'
+      };
+      return plurals[type] || type + 's';
+    };
+
+    const pluralEntityType = entityType ? pluralizeEntityType(entityType) : null;
+
     let s3Key: string;
-    if (entityType && entityId) {
-      // Entity exists (editing) - store under entity folder
-      s3Key = `attachments/${entityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
-    } else if (entityType) {
-      // Entity doesn't exist yet (creating) - store under entity type
-      s3Key = `attachments/${entityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+    if (projectId && pluralEntityType && entityId) {
+      // Entity exists (editing) - store under attachments/projects/projectId/entityType/entityId
+      s3Key = `attachments/projects/${projectId}/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+    } else if (projectId && pluralEntityType) {
+      // Entity doesn't exist yet (creating) - store under attachments/projects/projectId/entityType
+      s3Key = `attachments/projects/${projectId}/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+    } else if (pluralEntityType && entityId) {
+      // Fallback without project (backward compatibility)
+      s3Key = `attachments/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+    } else if (pluralEntityType) {
+      // Fallback without project (backward compatibility)
+      s3Key = `attachments/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
     } else {
       // No entity info - fallback to unassigned
       s3Key = `attachments/unassigned/${timestamp}-${randomHash}-${sanitizedFileName}`;

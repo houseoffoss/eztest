@@ -616,7 +616,10 @@ export class DefectService {
   /**
    * Associate S3 attachments with a defect
    */
-  async associateAttachments(defectId: string, req: CustomRequest) {
+  async associateAttachments(
+    defectId: string, 
+    attachments: Array<{ id: string; fieldName?: string }>
+  ) {
     // Get user from session
     const { getServerSession } = await import('next-auth');
     const { authOptions } = await import('@/lib/auth');
@@ -636,37 +639,27 @@ export class DefectService {
       throw new Error('Defect not found');
     }
 
-    const body = await req.json();
-    console.log('Received body:', JSON.stringify(body, null, 2));
-    
-    const { attachments } = body as {
-      attachments: Array<{ 
-        id?: string;
-        s3Key: string; 
-        fileName: string; 
-        mimeType: string;
-        fieldName?: string;
-      }>;
-    };
-
-    if (!attachments || !Array.isArray(attachments)) {
-      throw new Error('attachments array is required');
-    }
-
-    console.log('Creating attachments for defect:', defectId);
-    
-    // Create attachment records
-    const createdAttachments = await Promise.all(
+    // Link existing attachments by updating their defectId
+    const linkedAttachments = await Promise.all(
       attachments.map(async (att) => {
-        console.log('Creating attachment:', att);
         try {
+          // First, get the attachment from the Attachment table
+          const attachment = await prisma.attachment.findUnique({
+            where: { id: att.id },
+          });
+          
+          if (!attachment) {
+            throw new Error(`Attachment ${att.id} not found`);
+          }
+          
+          // Create a DefectAttachment record
           return await prisma.defectAttachment.create({
             data: {
-              filename: att.s3Key.split('/').pop() || att.fileName,
-              originalName: att.fileName,
-              mimeType: att.mimeType,
-              size: 0,
-              path: att.s3Key,
+              filename: attachment.filename,
+              originalName: attachment.originalName,
+              mimeType: attachment.mimeType,
+              size: attachment.size,
+              path: attachment.path,
               fieldName: att.fieldName || 'description',
               defectId: defectId,
               uploadedById: userId,
@@ -679,8 +672,7 @@ export class DefectService {
       })
     );
 
-    console.log('Successfully created attachments:', createdAttachments.length);
-    return createdAttachments;
+    return linkedAttachments;
   }
 
   /**

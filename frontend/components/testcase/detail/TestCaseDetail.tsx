@@ -228,6 +228,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           file,
           fieldName: attachment.fieldName || 'attachment',
           entityType: 'testcase',
+          projectId: testCase?.project?.id,
           onProgress: () => {}, // Silent upload
         });
 
@@ -323,6 +324,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
                         file,
                         fieldName: att.fieldName || 'action',
                         entityType: 'teststep',
+                        projectId: testCase?.project?.id,
                         onProgress: () => {}, // Silent upload
                       });
                       if (result.success && result.attachment) {
@@ -622,6 +624,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               formData={formData}
               modules={modules}
               onFormChange={setFormData}
+              projectId={testCase?.project?.id}
               descriptionAttachments={descriptionAttachments}
               expectedResultAttachments={expectedResultAttachments}
               preconditionAttachments={preconditionAttachments}
@@ -642,6 +645,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               onNewStepChange={setNewStep}
               onAddStep={handleAddStep}
               onRemoveStep={handleRemoveStep}
+              projectId={testCase?.project?.id}
               stepAttachments={stepAttachments}
               onStepAttachmentsChange={(stepId, field, attachments) => {
                 console.log('[TestCaseDetail] Step attachment change:', { stepId, field, attachmentCount: attachments.length });

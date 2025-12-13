@@ -17,7 +17,7 @@ export interface BrowserAttachment {
 }
 
 export interface AttachmentContextData {
-  entityType: 'testcase' | 'testresult'; // What entity this attachment will be linked to
+  entityType: 'testcase' | 'testresult' | 'teststep' | 'defect' | 'comment'; // What entity this attachment will be linked to
   entityId?: string; // Only set if linking to existing entity (for editing)
   projectId: string; // Required for folder structure
 }

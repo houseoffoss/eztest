@@ -182,6 +182,7 @@ export function CreateTestCaseDialog({
           file,
           fieldName: attachment.fieldName || 'attachment',
           entityType: 'testcase',
+          projectId,
           onProgress: () => {}, // Silent upload
         });
 
@@ -276,6 +277,7 @@ export function CreateTestCaseDialog({
     triggerOpen: open !== undefined ? open : triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,
+    projectId,
     onSuccess: (testCase) => {
       if (testCase) {
         onTestCaseCreated(testCase);

@@ -54,6 +54,7 @@ export interface BaseDialogConfig<T = unknown> {
   onSubmit: (formData: Record<string, string>) => Promise<T>;
   onSuccess?: (result?: T) => void;
   children?: ReactNode; // For custom content before form
+  projectId?: string; // For attachment uploads
   /** Unique key for form persistence (auto-generated if not provided) */
   formPersistenceKey?: string;
   /** Disable form persistence (default: false) */
@@ -71,6 +72,7 @@ export const BaseDialog = <T = unknown,>({
   onSubmit,
   onSuccess,
   children,
+  projectId,
   formPersistenceKey,
   disablePersistence = false,
 }: BaseDialogConfig<T>) => {
@@ -349,6 +351,8 @@ export const BaseDialog = <T = unknown,>({
           }}
           attachments={field.attachments || []}
           onAttachmentsChange={field.onAttachmentsChange}
+          entityType="testcase"
+          projectId={projectId}
           placeholder={field.placeholder}
           maxLength={field.maxLength}
           rows={field.rows || 3}
@@ -402,7 +406,7 @@ export const BaseDialog = <T = unknown,>({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[520px] flex flex-col p-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
           <div className="pt-6">
             <DialogHeader className="mb-6">
               <DialogTitle>{title}</DialogTitle>

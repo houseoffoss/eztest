@@ -26,6 +26,7 @@ type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'valu
   attachments?: Attachment[];
   onAttachmentsChange?: (attachments: Attachment[]) => void;
   entityId?: string;
+  projectId?: string;
   entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'teststep' | 'unassigned';
   showAttachments?: boolean;
 }
@@ -41,6 +42,7 @@ function TextareaWithAttachments({
   attachments = [],
   onAttachmentsChange,
   entityId,
+  projectId,
   entityType = 'testcase',
   showAttachments = true,
   ...props 
@@ -183,6 +185,7 @@ function TextareaWithAttachments({
       file,
       fieldName,
       entityId,
+      projectId,
       entityType,
       onProgress: (progress) => setUploadProgress(progress),
     });
@@ -299,7 +302,7 @@ function TextareaWithAttachments({
         <textarea
           data-slot="textarea"
           className={cn(
-            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 pr-12 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 pr-12 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
             variant === "glass"
               ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
               : "border-border/40 bg-input",
@@ -411,7 +414,7 @@ function TextareaWithAttachments({
               type="button"
               onClick={() => setShowPopup(!showPopup)}
               disabled={uploading}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="Attach File"
             >
               <Paperclip className="w-4 h-4 text-white/70" />
@@ -427,7 +430,7 @@ function TextareaWithAttachments({
                   type="button"
                   onClick={() => handleAttachmentTypeClick('documents')}
                   disabled={uploading}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <FileIcon className="w-4 h-4 text-blue-400" />
                   <span className="text-sm font-semibold">Documents</span>
@@ -437,7 +440,7 @@ function TextareaWithAttachments({
                   type="button"
                   onClick={() => handleAttachmentTypeClick('images')}
                   disabled={uploading}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Image className="w-4 h-4 text-green-400" aria-hidden="true" />
                   <span className="text-sm font-semibold">Images</span>

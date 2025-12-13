@@ -235,6 +235,7 @@ export function CreateDefectDialog({
           file,
           fieldName: attachment.fieldName || 'attachment',
           entityType: 'defect',
+          projectId,
           onProgress: () => {},
         });
 
@@ -269,6 +270,7 @@ export function CreateDefectDialog({
     triggerOpen,
     onOpenChange: handleDialogOpenChange,
     formPersistenceKey: `create-defect-${projectId}`,
+    projectId,
     onSubmit: async (formData) => {
       // Upload pending attachments first
       const uploadedAttachments = await uploadPendingAttachments();

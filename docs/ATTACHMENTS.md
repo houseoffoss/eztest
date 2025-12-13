@@ -594,7 +594,10 @@ Validates file size and generates presigned URLs for all chunks.
   "filename": "document.pdf",
   "mimeType": "application/pdf",
   "size": 52428800,
-  "fieldName": "preconditions"
+  "fieldName": "preconditions",
+  "projectId": "project-123",
+  "entityType": "testcase",
+  "entityId": "testcase-456"
 }
 ```
 
@@ -602,7 +605,7 @@ Validates file size and generates presigned URLs for all chunks.
 ```json
 {
   "uploadId": "abc123...",
-  "s3Key": "attachments/1733847291234-abc123def456-document.pdf",
+  "s3Key": "projects/project-123/testcase/testcase-456/1733847291234-abc123def456-document.pdf",
   "presignedUrls": [
     { "partNumber": 1, "url": "https://s3.amazonaws.com/..." },
     { "partNumber": 2, "url": "https://s3.amazonaws.com/..." }
@@ -622,7 +625,7 @@ Completes multipart upload and saves metadata to database.
 ```json
 {
   "uploadId": "abc123...",
-  "s3Key": "attachments/...",
+  "s3Key": "projects/project-123/testcase/testcase-456/1733847291234-abc123def456-document.pdf",
   "parts": [
     { "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"", "PartNumber": 1 },
     { "ETag": "\"098f6bcd4621d373cade4e832627b4f6\"", "PartNumber": 2 }
@@ -639,7 +642,7 @@ Completes multipart upload and saves metadata to database.
 {
   "attachment": {
     "id": "clx123...",
-    "filename": "attachments/...",
+    "filename": "projects/project-123/testcase/testcase-456/1733847291234-abc123def456-document.pdf",
     "originalName": "document.pdf",
     "mimeType": "application/pdf",
     "size": 52428800,
@@ -704,7 +707,7 @@ Aborts failed multipart upload.
 ```json
 {
   "uploadId": "abc123...",
-  "s3Key": "attachments/..."
+  "s3Key": "projects/project-123/testcase/testcase-456/1733847291234-abc123def456-document.pdf"
 }
 ```
 
@@ -1183,7 +1186,7 @@ const [attachments, setAttachments] = useState<Attachment[]>([]);
 ```prisma
 model Attachment {
   id           String   @id @default(cuid())
-  filename     String   // S3 key: "attachments/timestamp-hash-name.ext"
+  filename     String   // S3 key: "projects/{projectId}/{entityType}/{entityId}/timestamp-hash-name.ext"
   originalName String   // Original filename from user
   mimeType     String   // MIME type
   size         Int      // Size in bytes

@@ -1013,7 +1013,10 @@ export class TestCaseService {
   /**
    * Associate S3 attachments with a test case
    */
-  async associateAttachments(testCaseId: string, req: CustomRequest) {
+  async associateAttachments(
+    testCaseId: string, 
+    attachments: Array<{ id: string; fieldName?: string }>
+  ) {
     // Verify test case exists
     const testCase = await prisma.testCase.findUnique({
       where: { id: testCaseId },
@@ -1023,39 +1026,14 @@ export class TestCaseService {
       throw new Error('Test case not found');
     }
 
-    const body = await req.json();
-    const { attachments } = body as {
-      attachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>;
-    };
-
-    if (!attachments || !Array.isArray(attachments)) {
-      throw new Error('attachments array is required');
-    }
-
-    // Link existing attachments or create new ones
+    // Link existing attachments by updating their testCaseId
     const linkedAttachments = await Promise.all(
       attachments.map(async (att) => {
-        // If attachment ID is provided, update the existing record
-        if (att.id) {
-          return prisma.attachment.update({
-            where: { id: att.id },
-            data: {
-              testCaseId: testCaseId,
-              fieldName: att.fieldName || 'attachment',
-            },
-          });
-        }
-        
-        // Otherwise, create a new attachment record (legacy/fallback)
-        return (prisma.attachment.create as unknown as (args: unknown) => Promise<unknown>)({
+        return prisma.attachment.update({
+          where: { id: att.id },
           data: {
-            filename: att.s3Key.split('/').pop() || att.fileName,
-            originalName: att.fileName,
-            mimeType: att.mimeType,
-            size: 0,
-            path: att.s3Key,
-            ...(att.fieldName && { fieldName: att.fieldName }),
             testCaseId: testCaseId,
+            fieldName: att.fieldName || 'attachment',
           },
         });
       })

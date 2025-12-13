@@ -25,6 +25,7 @@ interface TestCaseDetailsCardProps {
   modules?: Module[];
   onFormChange: (data: TestCaseFormData) => void;
   onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
+  projectId?: string;
   // Attachments
   descriptionAttachments?: Attachment[];
   expectedResultAttachments?: Attachment[];
@@ -44,6 +45,7 @@ export function TestCaseDetailsCard({
   modules = [],
   onFormChange,
   onFieldChange,
+  projectId,
   descriptionAttachments = [],
   expectedResultAttachments = [],
   preconditionAttachments = [],
@@ -174,6 +176,7 @@ export function TestCaseDetailsCard({
               attachments={descriptionAttachments}
               onAttachmentsChange={handleDescriptionAttachmentsChange}
               entityType="testcase"
+              projectId={projectId}
               showAttachments={true}
             />
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
@@ -194,6 +197,7 @@ export function TestCaseDetailsCard({
               attachments={expectedResultAttachments}
               onAttachmentsChange={handleExpectedResultAttachmentsChange}
               entityType="testcase"
+              projectId={projectId}
               showAttachments={true}
             />
             {errors.expectedResult && <p className="text-xs text-red-400">{errors.expectedResult}</p>}
@@ -214,6 +218,7 @@ export function TestCaseDetailsCard({
               attachments={preconditionAttachments}
               onAttachmentsChange={handlePreconditionAttachmentsChange}
               entityType="testcase"
+              projectId={projectId}
               showAttachments={true}
             />
           </div>
@@ -233,6 +238,7 @@ export function TestCaseDetailsCard({
               attachments={postconditionAttachments}
               onAttachmentsChange={handlePostconditionAttachmentsChange}
               entityType="testcase"
+              projectId={projectId}
               showAttachments={true}
             />
           </div>

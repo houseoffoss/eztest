@@ -21,6 +21,7 @@ interface TestStepsCardProps {
   onNewStepChange: (step: { action: string; expectedResult: string }) => void;
   onAddStep: () => void;
   onRemoveStep: (stepNumber: number) => void;
+  projectId?: string;
   // Attachment props
   stepAttachments?: Record<string, Record<string, Attachment[]>>;
   onStepAttachmentsChange?: (stepId: string, field: string, attachments: Attachment[]) => void;
@@ -42,6 +43,7 @@ export function TestStepsCard({
   onNewStepChange,
   onAddStep,
   onRemoveStep,
+  projectId,
   stepAttachments = {},
   onStepAttachmentsChange,
   testCaseId,
@@ -115,6 +117,7 @@ export function TestStepsCard({
                             }
                           }}
                           entityType="teststep"
+                          projectId={projectId}
                           showAttachments={true}
                         />
                       ) : (
@@ -155,6 +158,7 @@ export function TestStepsCard({
                             }
                           }}
                           entityType="teststep"
+                          projectId={projectId}
                           showAttachments={true}
                         />
                       ) : (
@@ -202,6 +206,7 @@ export function TestStepsCard({
                   attachments={newStepActionAttachments}
                   onAttachmentsChange={onNewStepActionAttachmentsChange || (() => {})}
                   entityType="teststep"
+                  projectId={projectId}
                   showAttachments={true}
                   maxLength={1000}
                   showCharCount={false}
@@ -220,6 +225,7 @@ export function TestStepsCard({
                   attachments={newStepExpectedResultAttachments}
                   onAttachmentsChange={onNewStepExpectedResultAttachmentsChange || (() => {})}
                   entityType="teststep"
+                  projectId={projectId}
                   showAttachments={true}
                   maxLength={1000}
                   showCharCount={false}

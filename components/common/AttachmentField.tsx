@@ -26,6 +26,7 @@ interface AttachmentFieldProps {
   attachments: Attachment[];
   onAttachmentsChange: (attachments: Attachment[]) => void;
   entityId?: string; // testCaseId, defectId, commentId, etc.
+  projectId?: string;
   entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'unassigned';
   maxLength?: number;
   placeholder?: string;
@@ -40,6 +41,7 @@ export function AttachmentField({
   attachments,
   onAttachmentsChange,
   entityId,
+  projectId,
   entityType = 'testcase',
   maxLength = 250,
   placeholder,
@@ -70,6 +72,7 @@ export function AttachmentField({
       file,
       fieldName,
       entityId,
+      projectId,
       entityType,
       onProgress: (progress) => setUploadProgress(progress),
     });

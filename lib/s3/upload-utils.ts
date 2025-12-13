@@ -23,6 +23,7 @@ export interface UploadOptions {
   file: File;
   fieldName: string;
   entityId?: string;
+  projectId?: string;
   entityType?: 'testcase' | 'teststep' | 'defect' | 'comment' | 'testresult' | 'unassigned';
   onProgress?: (progress: number) => void;
 }
@@ -63,6 +64,7 @@ export async function uploadFileToS3({
   file,
   fieldName,
   entityId,
+  projectId,
   entityType = 'testcase',
   onProgress,
 }: UploadOptions): Promise<UploadResult> {
@@ -78,6 +80,7 @@ export async function uploadFileToS3({
         fieldName,
         entityType,
         entityId,
+        projectId,
       }),
     });
 

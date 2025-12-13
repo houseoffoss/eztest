@@ -132,7 +132,7 @@ export function AddModulesAndTestCasesDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
           <div className="pt-6">
             <DialogHeader className="mb-6">
               <DialogTitle>Add Modules & Test Cases to Suite</DialogTitle>
