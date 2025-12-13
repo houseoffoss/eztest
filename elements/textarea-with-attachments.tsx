@@ -2,9 +2,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
-import { Upload, X, File, FileText, Image, Video, Archive, Download, Paperclip, FileIcon } from 'lucide-react';
-import { InlineError } from '@/components/utils/InlineError';
-import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
+import { X, File, FileText, Image, Video, Archive, Download, Paperclip, FileIcon } from 'lucide-react';
+import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';
 import {
   type Attachment,
   validateFile,
@@ -14,6 +13,7 @@ import {
   formatFileSize,
   getFileIconType,
 } from '@/lib/s3';
+import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
 type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'value' | 'onChange'> & {
   variant?: "default" | "glass"
@@ -45,6 +45,10 @@ function TextareaWithAttachments({
   showAttachments = true,
   ...props 
 }: TextareaWithAttachmentsProps) {
+  // Check if attachments feature is enabled
+  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const shouldShowAttachments = showAttachments && attachmentsEnabled;
+  
   const [charCount, setCharCount] = React.useState(0);
   const [isOverLimit, setIsOverLimit] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
@@ -81,7 +85,7 @@ function TextareaWithAttachments({
         if (attachment.mimeType.startsWith('image/')) {
           // For pending attachments, use local object URL
           if (isPending) {
-            // @ts-ignore - Access the File object stored in _pendingFile
+            // @ts-expect-error - Access the File object stored in _pendingFile
             const file = attachment._pendingFile as File;
             if (file) {
               const objectUrl = URL.createObjectURL(file);
@@ -139,6 +143,7 @@ function TextareaWithAttachments({
         }
       });
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attachments]);
 
   // Close popup when clicking outside
@@ -229,7 +234,7 @@ function TextareaWithAttachments({
         mimeType: file.type,
         uploadedAt: new Date().toISOString(),
         fieldName: fieldName, // Track which field this attachment belongs to
-        // @ts-ignore - Add file object for later upload
+        // @ts-expect-error - Add file object for later upload
         _pendingFile: file,
       };
       console.log('Created pending attachment:', pendingAttachment.id, 'File:', file);
@@ -310,7 +315,7 @@ function TextareaWithAttachments({
         />
         
         {/* Attachments Inside Textarea - Bottom */}
-        {showAttachments && attachments.length > 0 && (
+        {shouldShowAttachments && attachments.length > 0 && (
           <div className="absolute bottom-2 left-2 right-14 flex gap-2 overflow-x-auto scrollbar-none z-40" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
 
             <style>{`
@@ -400,7 +405,7 @@ function TextareaWithAttachments({
         )}
         
         {/* Attachment Icon Button */}
-        {showAttachments && (
+        {shouldShowAttachments && (
           <div className="absolute bottom-3 right-3">
             <button
               type="button"
@@ -434,7 +439,7 @@ function TextareaWithAttachments({
                   disabled={uploading}
                   className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Image className="w-4 h-4 text-green-400" />
+                  <Image className="w-4 h-4 text-green-400" aria-hidden="true" />
                   <span className="text-sm font-semibold">Images</span>
                 </button>
               </div>
@@ -493,7 +498,7 @@ function TextareaWithAttachments({
                   </div>
                   {fileError.includes('CORS') && (
                     <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-200">
-                      <strong>Quick Fix:</strong> Add <code className="px-1 py-0.5 bg-black/30 rounded">{window.location.origin}</code> to your S3 bucket's CORS AllowedOrigins
+                      <strong>Quick Fix:</strong> Add <code className="px-1 py-0.5 bg-black/30 rounded">{window.location.origin}</code> to your S3 bucket&apos;s CORS AllowedOrigins
                     </div>
                   )}
                 </div>
@@ -536,7 +541,7 @@ function TextareaWithAttachments({
                         onError={(e) => {
                           console.error('Failed to load image preview:', attachment.originalName);
                           e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.parentElement?.querySelector('[data-fallback]');
+                          const fallback = e.currentTarget.parentElement?.querySelector('[data-fallback]') as HTMLElement;
                           if (fallback) fallback.style.display = 'flex';
                         }}
                       />

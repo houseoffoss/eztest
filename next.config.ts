@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  // Expose feature flags to the client-side
+  env: {
+    ENABLE_ATTACHMENTS: process.env.ENABLE_ATTACHMENTS || 'false',
+  },
 };
 
 export default nextConfig;

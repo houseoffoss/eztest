@@ -5,6 +5,7 @@ import { Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide
 import { type Attachment, downloadFile, getFileIconType, formatFileSize } from '@/lib/s3';
 import { cn } from '@/lib/utils';
 import { Button } from '@/elements/button';
+import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
 interface AttachmentDisplayProps {
   attachments: Attachment[];
@@ -12,6 +13,9 @@ interface AttachmentDisplayProps {
 }
 
 export function AttachmentDisplay({ attachments, showPreview = true }: AttachmentDisplayProps) {
+  // Check if attachments feature is enabled
+  const attachmentsEnabled = isAttachmentsEnabledClient();
+  
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
@@ -97,7 +101,8 @@ export function AttachmentDisplay({ attachments, showPreview = true }: Attachmen
     }
   };
 
-  if (attachments.length === 0) {
+  // Don't show attachments if feature is disabled
+  if (!attachmentsEnabled || attachments.length === 0) {
     return null;
   }
 

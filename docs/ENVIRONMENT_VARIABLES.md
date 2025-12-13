@@ -385,6 +385,52 @@ ENABLE_SMTP=false  # Disable all email operations
 
 ---
 
+### 📎 Attachments Feature
+
+#### `ENABLE_ATTACHMENTS`
+Enable or disable file attachment functionality throughout the application.
+
+```bash
+ENABLE_ATTACHMENTS=true   # Enable attachments (show upload buttons, display files)
+ENABLE_ATTACHMENTS=false  # Disable attachments (hide all attachment UI)
+```
+
+**Required:** No
+
+**Default:** `false`
+
+**When to set to `true`:**
+- Standard deployment with full features
+- When AWS S3 is configured and available
+- When users need to attach files to test cases, defects, and comments
+
+**When to set to `false`:**
+- To reduce AWS S3 storage costs
+- When file uploads are restricted by policy
+- For lite versions of the application
+- During testing without S3 dependencies
+
+**What gets hidden when disabled:**
+- Attachment upload buttons (paperclip icon) in text areas
+- Attachment display thumbnails and previews
+- Attachment field components in forms
+- All attachment-related UI elements
+
+**Components affected:**
+- `TextareaWithAttachments` - Hides attachment button and thumbnails
+- `AttachmentField` - Hides the entire attachment interface
+- `AttachmentDisplay` - Doesn't render attachment previews
+- `AttachmentUpload` - Doesn't render the upload interface
+
+**Important notes:**
+- Disabling this feature only hides UI elements
+- Backend APIs and existing data remain intact
+- Attachments stored in S3 are preserved
+- You can re-enable the feature later without data loss
+- **Requires server restart** after changing the value
+
+---
+
 #### `SMTP_HOST`
 SMTP server hostname.
 

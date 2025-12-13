@@ -16,6 +16,7 @@ import {
   formatFileSize,
   getFileIconType,
 } from '@/lib/s3';
+import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
 interface AttachmentFieldProps {
   label: string;
@@ -132,6 +133,9 @@ export function AttachmentField({
     }
   };
 
+  // Check if attachments feature is enabled
+  const attachmentsEnabled = isAttachmentsEnabledClient();
+
   return (
     <div className="space-y-3">
       <Label htmlFor={fieldName}>{label}</Label>
@@ -150,6 +154,7 @@ export function AttachmentField({
       )}
 
       {/* Upload Button */}
+      {attachmentsEnabled && (
       <div className="flex items-center gap-2">
         <input
           ref={fileInputRef}
@@ -180,9 +185,10 @@ export function AttachmentField({
           </div>
         )}
       </div>
+      )}
 
       {/* Inline Error */}
-      {fileError && (
+      {attachmentsEnabled && fileError && (
         <InlineError 
           message={fileError} 
           onClose={() => setFileError('')} 
@@ -190,7 +196,7 @@ export function AttachmentField({
       )}
 
       {/* Attachments List */}
-      {attachments.length > 0 && (
+      {attachmentsEnabled && attachments.length > 0 && (
         <div className="space-y-2 mt-3">
           <p className="text-sm text-white/60">Attachments ({attachments.length})</p>
           <div className="space-y-2">
@@ -234,9 +240,11 @@ export function AttachmentField({
         </div>
       )}
 
-      <p className="text-xs text-white/40">
-        Maximum file size: 500MB. All file formats supported.
-      </p>
+      {attachmentsEnabled && (
+        <p className="text-xs text-white/40">
+          Maximum file size: 500MB. All file formats supported.
+        </p>
+      )}
     </div>
   );
 }

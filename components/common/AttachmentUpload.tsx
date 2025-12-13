@@ -8,8 +8,8 @@
 import React, { useRef } from 'react';
 import { Upload, X, Check, AlertCircle, Loader } from 'lucide-react';
 import { useAttachments } from '@/hooks/useAttachments';
-import { ButtonSecondary } from '@/elements/button-secondary';
 import { cn } from '@/lib/utils';
+import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
 export interface AttachmentUploadProps {
   className?: string;
@@ -24,6 +24,9 @@ export function AttachmentUpload({
   maxFiles = 10,
   onAttachmentsChange,
 }: AttachmentUploadProps) {
+  // Check if attachments feature is enabled
+  const attachmentsEnabled = isAttachmentsEnabledClient();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     attachments,
@@ -52,6 +55,11 @@ export function AttachmentUpload({
     removeAttachment(attachmentId);
     onAttachmentsChange?.(getCompletedAttachmentKeys());
   };
+
+  // Don't render if attachments feature is disabled
+  if (!attachmentsEnabled) {
+    return null;
+  }
 
   return (
     <div className={cn('space-y-3', className)}>
