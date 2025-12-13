@@ -26,15 +26,20 @@ export function LinkedDefectsCard({ testCase }: LinkedDefectsCardProps) {
   // Ensure defects is an array
   const defects = Array.isArray(testCase.defects) ? testCase.defects : [];
 
-  // Transform the data for the table
-  const tableData: DefectRow[] = defects.map((d) => ({
-    id: d.defect.id,
-    defectId: d.defect.defectId,
-    title: d.defect.title,
-    severity: d.defect.severity,
-    status: d.defect.status,
-    priority: d.defect.priority,
-  }));
+  // Transform the data for the table, filtering out defects without valid data
+  const tableData: DefectRow[] = defects
+    .filter((d: any) => d.Defect || d.defect)
+    .map((d: any) => {
+      const defectData = d.Defect || d.defect;
+      return {
+        id: defectData.id,
+        defectId: defectData.defectId,
+        title: defectData.title,
+        severity: defectData.severity,
+        status: defectData.status,
+        priority: defectData.priority,
+      };
+    });
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

@@ -446,7 +446,7 @@ export class DefectController {
    * Get defect attachment download URL
    * No permission check - presigned URLs are self-secured
    */
-  async getDefectAttachmentDownloadUrl(req: CustomRequest, attachmentId: string) {
+  async getDefectAttachmentDownloadUrl(attachmentId: string) {
     try {
       const result = await defectService.getDefectAttachmentDownloadUrl(attachmentId);
       return { data: result };
@@ -462,7 +462,7 @@ export class DefectController {
    * Delete defect attachment
    * No permission check - handled by two-step process
    */
-  async deleteDefectAttachment(req: CustomRequest, attachmentId: string, step: string | null) {
+  async deleteDefectAttachment(attachmentId: string, step: string | null) {
     try {
       const result = await defectService.deleteDefectAttachment(attachmentId, step);
       return result;

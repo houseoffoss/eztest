@@ -108,9 +108,9 @@ export function TestStepsCard({
                           }}
                           placeholder="Enter action"
                           fieldName="action"
-                          attachments={stepAttachments[step.id]?.action || []}
+                          attachments={step.id && stepAttachments ? stepAttachments[step.id]?.action || [] : []}
                           onAttachmentsChange={(attachments) => {
-                            if (onStepAttachmentsChange) {
+                            if (onStepAttachmentsChange && step.id) {
                               onStepAttachmentsChange(step.id, 'action', attachments);
                             }
                           }}
@@ -122,7 +122,7 @@ export function TestStepsCard({
                           <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
                             {step.action}
                           </div>
-                          {stepAttachments[step.id]?.action && stepAttachments[step.id].action.length > 0 && (
+                          {step.id && stepAttachments?.[step.id]?.action && stepAttachments[step.id].action.length > 0 && (
                             <div className="mt-2">
                               <AttachmentDisplay attachments={stepAttachments[step.id].action} />
                             </div>
@@ -148,9 +148,9 @@ export function TestStepsCard({
                           }}
                           placeholder="Enter expected result"
                           fieldName="expectedResult"
-                          attachments={stepAttachments[step.id]?.expectedResult || []}
+                          attachments={step.id && stepAttachments ? stepAttachments[step.id]?.expectedResult || [] : []}
                           onAttachmentsChange={(attachments) => {
-                            if (onStepAttachmentsChange) {
+                            if (onStepAttachmentsChange && step.id) {
                               onStepAttachmentsChange(step.id, 'expectedResult', attachments);
                             }
                           }}
@@ -162,7 +162,7 @@ export function TestStepsCard({
                           <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
                             {step.expectedResult}
                           </div>
-                          {stepAttachments[step.id]?.expectedResult && stepAttachments[step.id].expectedResult.length > 0 && (
+                          {step.id && stepAttachments?.[step.id]?.expectedResult && stepAttachments[step.id].expectedResult.length > 0 && (
                             <div className="mt-2">
                               <AttachmentDisplay attachments={stepAttachments[step.id].expectedResult} />
                             </div>

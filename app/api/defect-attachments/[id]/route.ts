@@ -13,7 +13,6 @@ export async function GET(
   try {
     const { id: attachmentId } = await params;
     const result = await defectController.getDefectAttachmentDownloadUrl(
-      { url: request.url, json: () => request.json() },
       attachmentId
     );
     return Response.json(result);
@@ -46,7 +45,6 @@ export async function DELETE(
     const step = url.searchParams.get('step');
 
     const result = await defectController.deleteDefectAttachment(
-      { url: request.url, json: () => request.json() },
       attachmentId,
       step
     );

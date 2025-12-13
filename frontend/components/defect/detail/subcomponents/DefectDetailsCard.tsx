@@ -138,7 +138,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {SEVERITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem key={opt.value} value={String(opt.value)}>
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -159,7 +159,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {PRIORITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem key={opt.value} value={String(opt.value)}>
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -183,7 +183,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem key={opt.value} value={String(opt.value)}>
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -202,7 +202,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {assignedToOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem key={opt.value} value={String(opt.value)}>
                       {opt.label}
                     </SelectItem>
                   ))}
