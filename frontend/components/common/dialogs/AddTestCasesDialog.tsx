@@ -30,6 +30,7 @@ interface AddTestCasesDialogProps {
   onSubmit: () => void;
   context?: 'suite' | 'run'; // 'suite' for test suite, 'run' for test run
   showPriority?: boolean; // whether to show priority badge
+  loading?: boolean; // whether submission is in progress
 }
 
 /**
@@ -45,6 +46,7 @@ export function AddTestCasesDialog({
   onSubmit,
   context = 'run',
   showPriority = context === 'run',
+  loading = false,
 }: AddTestCasesDialogProps) {
   const handleToggle = (testCaseId: string) => {
     onSelectionChange(
@@ -114,15 +116,16 @@ export function AddTestCasesDialog({
               onSelectionChange([]);
             }}
             className="cursor-pointer"
+            disabled={loading}
           >
             Cancel
           </Button>
           <ButtonPrimary
             onClick={onSubmit}
-            disabled={selectedIds.length === 0}
+            disabled={selectedIds.length === 0 || loading}
             className="cursor-pointer"
           >
-            Add {selectedIds.length > 0 && `(${selectedIds.length})`}
+            {loading ? 'Adding...' : `Add ${selectedIds.length > 0 ? `(${selectedIds.length})` : ''}`}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>

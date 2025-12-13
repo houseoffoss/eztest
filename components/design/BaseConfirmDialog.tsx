@@ -68,12 +68,12 @@ export const BaseConfirmDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent variant="confirm">
+        <DialogHeader className="mb-5">
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          {description && <DialogDescription className="mt-2">{description}</DialogDescription>}
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-5">
           {content && <div>{content}</div>}
           <InlineError message={error} />
           <div className="flex gap-3 justify-end">

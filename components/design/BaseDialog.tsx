@@ -401,32 +401,32 @@ export const BaseDialog = <T = unknown,>({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[525px] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[520px] flex flex-col p-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-6">
           <div className="pt-6">
-            <DialogHeader>
+            <DialogHeader className="mb-6">
               <DialogTitle>{title}</DialogTitle>
               {description && (
-                <DialogDescription>{description}</DialogDescription>
+                <DialogDescription className="mt-2">{description}</DialogDescription>
               )}
             </DialogHeader>
 
             {children && (
-              <div className="py-4">
+              <div className="mb-4">
                 {children}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4" id="base-dialog-form">
+            <form onSubmit={handleSubmit} className="space-y-5" id="base-dialog-form">
               <div className={hasMultiColumnLayout ? "grid grid-cols-2 gap-4" : "space-y-4"}>
                 {fields.map((field) => (
                   <div
                     key={field.name}
-                    className={`space-y-2 ${
+                    className={`space-y-2.5 ${
                       hasMultiColumnLayout && field.cols === 2 ? 'col-span-2' : ''
                     }`}
                   >
-                    <label htmlFor={field.name} className="flex items-center gap-2 text-sm leading-none font-medium select-none">
+                    <label htmlFor={field.name} className="flex items-center gap-1 text-sm leading-none font-medium select-none">
                       {field.label}
                       {field.required && <span className="text-red-500">*</span>}
                     </label>

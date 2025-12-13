@@ -104,7 +104,6 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               fieldName: att.fieldName,
               entityType: 'defect' as const,
             }));
-          console.log('Loaded description attachments:', descAtts);
           setDescriptionAttachments(descAtts);
         }
       }

@@ -46,6 +46,9 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [defectRefreshTrigger, setDefectRefreshTrigger] = useState(0);
   const [sendReportDialogOpen, setSendReportDialogOpen] = useState(false);
   const [floatingAlert, setFloatingAlert] = useState<FloatingAlertMessage | null>(null);
+  const [addingTestCases, setAddingTestCases] = useState(false);
+  const [addingTestSuites, setAddingTestSuites] = useState(false);
+  const [loadingSuites, setLoadingSuites] = useState(false);
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -233,16 +236,21 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   };
 
   const fetchAvailableTestCases = async () => {
-    if (!testRun || !testRun.Project?.id) return;
+    if (!testRun || !testRun.project?.id) return;
 
     try {
+      // Fetch latest test run data to get current results
+      const testRunResponse = await fetch(`/api/testruns/${testRunId}`);
+      const testRunData = await testRunResponse.json();
+      const currentTestRun = testRunData.data || testRun;
+
       const response = await fetch(
-        `/api/projects/${testRun.Project.id}/testcases`
+        `/api/projects/${testRun.project.id}/testcases`
       );
       const data = await response.json();
 
       if (data.data) {
-        const existingIds = new Set(testRun.results.map((r) => r.testCaseId));
+        const existingIds = new Set(currentTestRun.results.map((r: { testCaseId: string }) => r.testCaseId));
         const available = data.data.filter(
           (tc: TestCase) => !existingIds.has(tc.id)
         );
@@ -259,6 +267,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       return;
     }
 
+    setAddingTestCases(true);
     try {
       console.log('Adding test cases:', selectedCaseIds);
       const promises = selectedCaseIds.map(async (testCaseId) => {
@@ -280,8 +289,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             const data = await response.json();
             console.error('API error response:', data);
             errorMessage = data.message || data.error || errorMessage;
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
+          } catch {
             const text = await response.text();
             console.error('Response text:', text);
             if (text) errorMessage = text;
@@ -298,30 +306,49 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       setAddCasesDialogOpen(false);
       setSelectedCaseIds([]);
       await fetchTestRun();
+      // Refresh both lists to keep data in sync
+      await fetchAvailableTestCases();
+      await fetchAvailableTestSuites();
     } catch (error) {
       console.error('Error adding test cases:', error);
       alert(`Failed to add test cases: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setAddingTestCases(false);
     }
   };
 
   const fetchAvailableTestSuites = async () => {
     if (!testRun || !testRun.project?.id) return;
 
+    setLoadingSuites(true);
     try {
+      // Fetch latest test run data to get current results
+      const testRunResponse = await fetch(`/api/testruns/${testRunId}`);
+      const testRunData = await testRunResponse.json();
+      const currentTestRun = testRunData.data || testRun;
+
       // Fetch test suites
       const suitesResponse = await fetch(
-        `/api/projects/${testRun.Project.id}/testsuites`
+        `/api/projects/${testRun.project.id}/testsuites`
       );
       const suitesData = await suitesResponse.json();
 
       // Fetch all test cases to get ungrouped ones
       const testCasesResponse = await fetch(
-        `/api/projects/${testRun.Project.id}/testcases`
+        `/api/projects/${testRun.project.id}/testcases`
       );
       const testCasesData = await testCasesResponse.json();
 
       if (suitesData.data) {
-        const existingTestCaseIds = new Set(testRun.results.map((r) => r.testCaseId));
+        const existingTestCaseIds = new Set(currentTestRun.results.map((r: { testCaseId: string }) => r.testCaseId));
+        
+        // Collect all test case IDs that belong to any suite
+        const testCaseIdsInSuites = new Set<string>();
+        suitesData.data.forEach((suite: TestSuite) => {
+          (suite.testCases || []).forEach((tc: TestCase) => {
+            testCaseIdsInSuites.add(tc.id);
+          });
+        });
         
         // Process each suite to include test case details and count new test cases
         const availableSuites = suitesData.data
@@ -340,10 +367,10 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             };
           });
 
-        // Find ungrouped test cases (test cases without a suite)
+        // Find ungrouped test cases (test cases not in any suite)
         if (testCasesData.data) {
           const ungroupedTestCases = testCasesData.data
-            .filter((tc: TestCase) => !tc.suiteId && !existingTestCaseIds.has(tc.id));
+            .filter((tc: TestCase) => !testCaseIdsInSuites.has(tc.id) && !existingTestCaseIds.has(tc.id));
 
           // Add ungrouped test cases as a special "suite"
           if (ungroupedTestCases.length > 0) {
@@ -351,7 +378,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
               id: 'ungrouped',
               name: 'Ungrouped Test Cases',
               description: 'Test cases not assigned to any test suite',
-              projectId: testRun.Project.id,
+              projectId: testRun.project.id,
               testCases: ungroupedTestCases,
               _count: {
                 testCases: ungroupedTestCases.length,
@@ -364,6 +391,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       }
     } catch (error) {
       console.error('Error fetching test suites:', error);
+    } finally {
+      setLoadingSuites(false);
     }
   };
 
@@ -373,6 +402,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       return;
     }
 
+    setAddingTestSuites(true);
     try {
       const suiteIds = selectedSuiteIds;
       const testCaseIds: string[] = [];
@@ -426,9 +456,14 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       setAddSuitesDialogOpen(false);
       setSelectedSuiteIds([]);
       await fetchTestRun();
+      // Refresh both lists to keep data in sync
+      await fetchAvailableTestSuites();
+      await fetchAvailableTestCases();
     } catch (error) {
       console.error('Error adding test cases from suites:', error);
       alert(`Failed to add test cases from suites: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setAddingTestSuites(false);
     }
   };
 
@@ -606,6 +641,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           onSubmit={handleAddTestCases}
           context="run"
           showPriority={false}
+          loading={addingTestCases}
         />
 
         <AddTestSuitesDialog
@@ -640,11 +676,13 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             setAddSuitesDialogOpen(false);
             setSelectedSuiteIds([]);
           }}
+          loading={addingTestSuites}
+          fetchingData={loadingSuites}
         />
 
-        {selectedTestCaseForDefect && testRun.Project?.id && (
+        {selectedTestCaseForDefect && testRun.project?.id && (
           <CreateDefectDialog
-            projectId={testRun.Project.id}
+            projectId={testRun.project.id}
             triggerOpen={createDefectDialogOpen}
             onOpenChange={setCreateDefectDialogOpen}
             onDefectCreated={handleDefectCreated}

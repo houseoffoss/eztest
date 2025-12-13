@@ -8,7 +8,7 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Loader } from '@/elements/loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
 import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/elements/select';
@@ -164,8 +164,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                 Add a team member to this project
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddMember} className="space-y-4 mt-4">
-              <div className="space-y-2">
+            <form onSubmit={handleAddMember} className="space-y-5">
+              <div className="space-y-2.5">
                 <Label htmlFor="email">Email Address *</Label>
                 <Input
                   id="email"
@@ -176,36 +176,19 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Project Role</Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value: string) => setFormData({ ...formData, role: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="PROJECT_MANAGER">Project Manager</SelectItem>
-                    <SelectItem value="TESTER">Tester (Default)</SelectItem>
-                    <SelectItem value="VIEWER">Viewer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               {error && (
                 <div className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 p-3 rounded-md">
                   {error}
                 </div>
               )}
-              <div className="flex gap-3 justify-end">
+              <DialogFooter>
                 <Button type="button" variant="glass" onClick={() => setAddDialogOpen(false)}>
                   Cancel
                 </Button>
                 <ButtonPrimary type="submit" disabled={adding}>
                   {adding ? 'Adding...' : 'Add Member'}
                 </ButtonPrimary>
-              </div>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>

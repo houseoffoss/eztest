@@ -510,10 +510,47 @@ export class TestCaseService {
       throw new Error('Test case not found or access denied');
     }
 
-    // Delete test case (steps will cascade)
-    return await prisma.testCase.delete({
+    // Fetch all attachments before deletion to clean up files
+    const attachments = await prisma.attachment.findMany({
+      where: {
+        OR: [
+          { testCaseId: testCaseId },
+          {
+            testStep: {
+              testCaseId: testCaseId,
+            },
+          },
+        ],
+      },
+    });
+
+    // Delete test case (attachments and steps will cascade)
+    const result = await prisma.testCase.delete({
       where: { id: testCaseId },
     });
+
+    // Delete files from S3 (fire and forget)
+    if (attachments.length > 0) {
+      Promise.all([
+        import('@/lib/s3-client'),
+        import('@aws-sdk/client-s3')
+      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+        Promise.all(
+          attachments.map(attachment =>
+            s3Client.send(
+              new DeleteObjectCommand({
+                Bucket: S3_BUCKET,
+                Key: attachment.path,
+              })
+            ).catch((error: Error) => {
+              console.error(`Failed to delete S3 file ${attachment.path}:`, error);
+            })
+          )
+        );
+      });
+    }
+
+    return result;
   }
 
   /**
@@ -569,10 +606,6 @@ export class TestCaseService {
         .filter(s => s.id && !s.id.startsWith('temp-'))
         .map(s => s.id as string);
       
-      console.log('[updateTestSteps] Existing steps:', existingSteps.map(s => s.id));
-      console.log('[updateTestSteps] Steps to keep:', stepIdsToKeep);
-      console.log('[updateTestSteps] Incoming steps:', steps.map(s => ({ id: s.id, stepNumber: s.stepNumber })));
-      
       if (stepIdsToKeep.length > 0) {
         await prisma.testStep.deleteMany({
           where: {
@@ -584,7 +617,6 @@ export class TestCaseService {
         });
       } else {
         // No existing steps to keep, delete all
-        console.log('[updateTestSteps] No existing steps to keep, deleting all');
         await prisma.testStep.deleteMany({
           where: { testCaseId },
         });
@@ -594,7 +626,6 @@ export class TestCaseService {
       for (const step of steps) {
         if (step.id && !step.id.startsWith('temp-')) {
           // Existing step - update it
-          console.log(`[updateTestSteps] Updating existing step ${step.id} with stepNumber ${step.stepNumber}`);
           try {
             const existingStep = await prisma.testStep.findUnique({
               where: { id: step.id },
@@ -610,10 +641,8 @@ export class TestCaseService {
                   expectedResult: step.expectedResult,
                 },
               });
-              console.log(`[updateTestSteps] Updated step ${step.id}`);
             } else {
               // Step doesn't exist, create it with the specified ID
-              console.log(`[updateTestSteps] Step ${step.id} not found, creating new step with this ID`);
               await prisma.testStep.create({
                 data: {
                   id: step.id,
@@ -625,12 +654,10 @@ export class TestCaseService {
               });
             }
           } catch (error) {
-            console.error(`[updateTestSteps] Error processing step ${step.id}:`, error);
             throw error;
           }
         } else {
           // New step (no ID or temp ID) - create it
-          console.log(`[updateTestSteps] Creating new step with stepNumber ${step.stepNumber}`);
           await prisma.testStep.create({
             data: {
               testCaseId,

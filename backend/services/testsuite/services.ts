@@ -20,20 +20,24 @@ export class TestSuiteService {
             },
           },
         },
-        testCases: {
-          select: {
-            id: true,
-            tcId: true,
-            title: true,
-            description: true,
-            priority: true,
-            status: true,
-            moduleId: true,
-            module: {
+        testCaseSuites: {
+          include: {
+            testCase: {
               select: {
                 id: true,
-                name: true,
+                tcId: true,
+                title: true,
                 description: true,
+                priority: true,
+                status: true,
+                moduleId: true,
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
               },
             },
           },
@@ -51,6 +55,7 @@ export class TestSuiteService {
     // Transform the data to maintain backward compatibility
     const transformedSuites = suites.map(suite => ({
       ...suite,
+      testCases: suite.testCaseSuites.map(tcs => tcs.testCase),
       _count: {
         ...suite._count,
         testCases: suite._count.testCaseSuites,
@@ -90,7 +95,7 @@ export class TestSuiteService {
         children: {
           include: {
             _count: {
-              select: { testCases: true },
+              select: { testCaseSuites: true },
             },
           },
           orderBy: [
@@ -175,7 +180,7 @@ export class TestSuiteService {
       include: {
         parent: true,
         _count: {
-          select: { testCases: true },
+          select: { testCaseSuites: true },
         },
       },
     });
@@ -206,7 +211,7 @@ export class TestSuiteService {
       include: {
         parent: true,
         _count: {
-          select: { testCases: true },
+          select: { testCaseSuites: true },
         },
       },
     });
@@ -225,7 +230,7 @@ export class TestSuiteService {
         _count: {
           select: {
             children: true,
-            testCases: true,
+            testCaseSuites: true,
           },
         },
       },
@@ -523,13 +528,17 @@ export class TestSuiteService {
     const updatedSuite = await prisma.testSuite.findUnique({
       where: { id: suiteId },
       include: {
-        testCases: {
+        testCaseSuites: {
           include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
+            testCase: {
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
               },
             },
           },
@@ -537,7 +546,13 @@ export class TestSuiteService {
       },
     });
 
-    return updatedSuite;
+    // Transform to maintain backward compatibility
+    const transformed = {
+      ...updatedSuite,
+      testCases: updatedSuite?.testCaseSuites.map(tcs => tcs.testCase) || [],
+    };
+
+    return transformed;
   }
 
   /**
@@ -577,13 +592,17 @@ export class TestSuiteService {
     const updatedSuite = await prisma.testSuite.findUnique({
       where: { id: suiteId },
       include: {
-        testCases: {
+        testCaseSuites: {
           include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
+            testCase: {
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
               },
             },
           },
@@ -591,7 +610,13 @@ export class TestSuiteService {
       },
     });
 
-    return updatedSuite;
+    // Transform to maintain backward compatibility
+    const transformed = {
+      ...updatedSuite,
+      testCases: updatedSuite?.testCaseSuites.map(tcs => tcs.testCase) || [],
+    };
+
+    return transformed;
   }
 
   /**
@@ -631,13 +656,17 @@ export class TestSuiteService {
     const updatedSuite = await prisma.testSuite.findUnique({
       where: { id: suiteId },
       include: {
-        testCases: {
+        testCaseSuites: {
           include: {
-            module: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
+            testCase: {
+              include: {
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                  },
+                },
               },
             },
           },
@@ -645,7 +674,13 @@ export class TestSuiteService {
       },
     });
 
-    return updatedSuite;
+    // Transform to maintain backward compatibility
+    const transformed = {
+      ...updatedSuite,
+      testCases: updatedSuite?.testCaseSuites.map(tcs => tcs.testCase) || [],
+    };
+
+    return transformed;
   }
 }
 

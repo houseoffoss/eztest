@@ -218,7 +218,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
     // Upload all pending files
     for (const attachment of pendingAttachments) {
-      // @ts-ignore - Access the pending file object
+      // @ts-expect-error - Access the pending file object
       const file = attachment._pendingFile;
       if (!file) continue;
 
@@ -316,7 +316,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               const uploadedAttachments = await Promise.all(
                 pendingAttachments.map(async (att) => {
                   try {
-                    // @ts-ignore - Access the File object
+                    // @ts-expect-error - Access the File object
                     const file = att._pendingFile;
                     if (file) {
                       const result = await uploadFileToS3({
@@ -407,27 +407,13 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   const updateSteps = async () => {
     try {
-      console.log('[updateSteps] RAW steps state:', JSON.stringify(steps, null, 2));
-      
       // Clean steps data - only send necessary fields to prevent backend issues
-      const cleanedSteps = steps.map(step => {
-        console.log('[updateSteps] Processing step:', { 
-          hasId: !!step.id, 
-          id: step.id, 
-          stepNumber: step.stepNumber,
-          allKeys: Object.keys(step)
-        });
-        return {
-          id: step.id,
-          stepNumber: step.stepNumber,
-          action: step.action,
-          expectedResult: step.expectedResult,
-        };
-      });
-      
-      console.log('[updateSteps] Steps state before sending:', steps);
-      console.log('[updateSteps] Cleaned steps:', cleanedSteps);
-      console.log('[updateSteps] Current stepAttachments:', stepAttachments);
+      const cleanedSteps = steps.map(step => ({
+        id: step.id,
+        stepNumber: step.stepNumber,
+        action: step.action,
+        expectedResult: step.expectedResult,
+      }));
       
       const response = await fetch(`/api/testcases/${testCaseId}/steps`, {
         method: 'PUT',
@@ -436,7 +422,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       });
 
       const data = await response.json();
-      console.log('[updateSteps] Response from backend:', data.data);
       if (data.data && Array.isArray(data.data)) {
         // Preserve all existing attachments and map temp IDs to real IDs
         const updatedStepAttachments: Record<string, Record<string, Attachment[]>> = { ...stepAttachments };
@@ -456,7 +441,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           }
         });
         
-        console.log('[updateSteps] Updated stepAttachments:', updatedStepAttachments);
         setStepAttachments(updatedStepAttachments);
         // Update steps with real IDs
         setSteps(data.data);

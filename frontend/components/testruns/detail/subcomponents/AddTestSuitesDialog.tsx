@@ -41,6 +41,8 @@ interface AddTestSuitesDialogProps {
   onToggleTestSuite: (suiteId: string, checked: boolean) => void;
   onAdd: () => void;
   onCancel: () => void;
+  loading?: boolean; // whether submission is in progress
+  fetchingData?: boolean; // whether data is being fetched
 }
 
 /**
@@ -55,6 +57,8 @@ export function AddTestSuitesDialog({
   onToggleTestSuite,
   onAdd,
   onCancel,
+  loading = false,
+  fetchingData = false,
 }: AddTestSuitesDialogProps) {
   const [expandedSuites, setExpandedSuites] = useState<Set<string>>(
     new Set(availableTestSuites.map((s) => s.id))
@@ -75,15 +79,20 @@ export function AddTestSuitesDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <DialogTitle>Add Test Suites</DialogTitle>
           <DialogDescription>
             Select test suites to add their test cases to this test run
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[500px] overflow-y-auto space-y-3">
-          {availableTestSuites.length === 0 ? (
+        <div className="max-h-[500px] overflow-y-auto space-y-3 mb-4">
+          {fetchingData ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-3">
+              <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="text-white/60 text-sm">Loading test suites...</p>
+            </div>
+          ) : availableTestSuites.length === 0 ? (
             <p className="text-white/60 text-center py-8">
               No available test suites to add
             </p>
@@ -185,15 +194,15 @@ export function AddTestSuitesDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="glass" onClick={onCancel} className="cursor-pointer">
+          <Button variant="glass" onClick={onCancel} className="cursor-pointer" disabled={loading}>
             Cancel
           </Button>
           <ButtonPrimary
             onClick={onAdd}
-            disabled={selectedSuiteIds.length === 0}
+            disabled={selectedSuiteIds.length === 0 || loading}
             className="cursor-pointer"
           >
-            Add {selectedSuiteIds.length > 0 && `(${selectedSuiteIds.length})`}
+            {loading ? 'Adding...' : `Add ${selectedSuiteIds.length > 0 ? `(${selectedSuiteIds.length})` : ''}`}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>

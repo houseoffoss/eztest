@@ -131,21 +131,21 @@ export function AddModulesAndTestCasesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Add Modules & Test Cases to Suite</DialogTitle>
-          <DialogDescription>
-            Select entire modules or individual test cases to add to this test suite
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto pr-2">
-          {modules.length === 0 ? (
-            <p className="text-white/60 text-center py-8">
-              No modules or test cases available to add
-            </p>
-          ) : (
-            <div className="space-y-2">
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-6">
+          <div className="pt-6">
+            <DialogHeader className="mb-6">
+              <DialogTitle>Add Modules & Test Cases to Suite</DialogTitle>
+              <DialogDescription className="mt-2">
+                Select entire modules or individual test cases to add to this test suite
+              </DialogDescription>
+            </DialogHeader>
+            {modules.length === 0 ? (
+              <p className="text-white/60 text-center py-8">
+                No modules or test cases available to add
+              </p>
+            ) : (
+              <div className="space-y-2">
               {modules.map((moduleItem) => {
                 const isExpanded = expandedModules.has(moduleItem.id);
                 const isFullySelected = isModuleFullySelected(moduleItem);
@@ -265,11 +265,12 @@ export function AddModulesAndTestCasesDialog({
                   </div>
                 );
               })}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
-        <DialogFooter className="border-t border-white/10 pt-4 mt-4">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <p className="text-sm text-white/60">
               {totalSelectedCount > 0 ? (
@@ -280,7 +281,7 @@ export function AddModulesAndTestCasesDialog({
                 'No items selected'
               )}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="glass"
                 onClick={() => onOpenChange(false)}
@@ -291,12 +292,13 @@ export function AddModulesAndTestCasesDialog({
               <ButtonPrimary
                 onClick={onSubmit}
                 disabled={totalSelectedCount === 0}
+                className="cursor-pointer"
               >
                 Add Selected
               </ButtonPrimary>
             </div>
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

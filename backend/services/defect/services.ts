@@ -410,9 +410,51 @@ export class DefectService {
    * Delete defect
    */
   async deleteDefect(defectId: string) {
+    // Fetch all attachments before deletion to clean up files
+    const [defectAttachments, commentAttachments] = await Promise.all([
+      prisma.defectAttachment.findMany({
+        where: { defectId: defectId },
+      }),
+      prisma.commentAttachment.findMany({
+        where: {
+          comment: {
+            defectId: defectId,
+          },
+        },
+      }),
+    ]);
+
+    // Delete defect (comments, attachments, and comment attachments will cascade)
     await prisma.defect.delete({
       where: { id: defectId },
     });
+
+    // Combine all attachments for cleanup
+    const allAttachments = [
+      ...defectAttachments.map(a => a.path),
+      ...commentAttachments.map(a => a.path),
+    ];
+
+    // Delete files from S3 (fire and forget)
+    if (allAttachments.length > 0) {
+      Promise.all([
+        import('@/lib/s3-client'),
+        import('@aws-sdk/client-s3')
+      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+        Promise.all(
+          allAttachments.map(path =>
+            s3Client.send(
+              new DeleteObjectCommand({
+                Bucket: S3_BUCKET,
+                Key: path,
+              })
+            ).catch((error: Error) => {
+              console.error(`Failed to delete S3 file ${path}:`, error);
+            })
+          )
+        );
+      });
+    }
   }
 
   /**
@@ -684,10 +726,27 @@ export class DefectService {
       throw new Error('Attachment not found');
     }
 
-    // Delete attachment
+    // Delete attachment from database
     const deleted = await prisma.defectAttachment.delete({
       where: { id: attachmentId },
     });
+
+    // Delete file from S3 (fire and forget to avoid blocking)
+    if (attachment.path) {
+      Promise.all([
+        import('@/lib/s3-client'),
+        import('@aws-sdk/client-s3')
+      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+        s3Client.send(
+          new DeleteObjectCommand({
+            Bucket: S3_BUCKET,
+            Key: attachment.path,
+          })
+        ).catch((error: Error) => {
+          console.error(`Failed to delete S3 file ${attachment.path}:`, error);
+        });
+      });
+    }
 
     return deleted;
   }

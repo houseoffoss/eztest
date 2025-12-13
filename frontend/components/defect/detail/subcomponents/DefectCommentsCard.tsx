@@ -119,7 +119,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             file,
             fieldName: 'comment',
             entityType: 'comment',
-            onProgress: (progress) => console.log(`Uploading ${file.name}: ${progress}%`),
+            onProgress: () => {},
           });
 
           if (uploadResult.success && uploadResult.attachment) {
@@ -148,12 +148,6 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
       // Then link attachments to the comment
       if (uploadedAttachments.length > 0) {
         for (const attachment of uploadedAttachments) {
-          console.log('Linking attachment to comment:', {
-            attachmentId: attachment.id,
-            filename: attachment.filename,
-            originalName: attachment.originalName,
-          });
-
           // The attachment.filename from upload IS the S3 path
           // No need to fetch it again
           const linkResponse = await fetch(`/api/comments/${newCommentData.id}/attachments`, {
@@ -172,8 +166,6 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
           if (!linkResponse.ok) {
             const errorText = await linkResponse.text();
             console.error('Failed to link attachment:', errorText);
-          } else {
-            console.log('Successfully linked attachment to comment');
           }
         }
       }

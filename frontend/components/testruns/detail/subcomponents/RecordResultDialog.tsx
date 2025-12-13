@@ -171,12 +171,12 @@ export function RecordResultDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <DialogTitle>Record Test Result</DialogTitle>
           <DialogDescription>{testCaseName}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-4">
           <div className="space-y-2">
             <Label htmlFor="status">Result Status *</Label>
             <Select

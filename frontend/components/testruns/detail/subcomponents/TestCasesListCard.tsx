@@ -145,14 +145,16 @@ export function TestCasesListCard({
     },
   ];
 
-  const tableData: ResultRow[] = (results || []).map((result) => ({
-    id: result.TestCase.id,
-    testCase: result.TestCase,
-    status: result.status,
-    comment: result.comment,
-    executedBy: result.executedBy,
-    executedAt: result.executedAt,
-  }));
+  const tableData: ResultRow[] = (results || [])
+    .filter((result) => result.testCase)
+    .map((result) => ({
+      id: result.testCase.id,
+      testCase: result.testCase,
+      status: result.status,
+      comment: result.comment,
+      executedBy: result.executedBy,
+      executedAt: result.executedAt,
+    }));
 
   return (
     <DetailCard

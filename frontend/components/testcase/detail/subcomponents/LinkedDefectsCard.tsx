@@ -28,12 +28,12 @@ export function LinkedDefectsCard({ testCase }: LinkedDefectsCardProps) {
 
   // Transform the data for the table
   const tableData: DefectRow[] = defects.map((d) => ({
-    id: d.Defect.id,
-    defectId: d.Defect.defectId,
-    title: d.Defect.title,
-    severity: d.Defect.severity,
-    status: d.Defect.status,
-    priority: d.Defect.priority,
+    id: d.defect.id,
+    defectId: d.defect.defectId,
+    title: d.defect.title,
+    severity: d.defect.severity,
+    status: d.defect.status,
+    priority: d.defect.priority,
   }));
 
   const getSeverityColor = (severity: string) => {
