@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
-import { X, File, FileText, Image, Video, Archive, Download, Paperclip, FileIcon } from 'lucide-react';
+import { X, File, FileText, Image, Video, Archive, Download, Paperclip, FileIcon, FolderOpen } from 'lucide-react';
 import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';
 import {
   type Attachment,
@@ -14,6 +14,7 @@ import {
   getFileIconType,
 } from '@/lib/s3';
 import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
+import { FileUploadModal } from '@/components/common/FileUploadModal';
 
 type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'value' | 'onChange'> & {
   variant?: "default" | "glass"
@@ -61,6 +62,7 @@ function TextareaWithAttachments({
   const [imageUrls, setImageUrls] = React.useState<Record<string, string>>({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = React.useState<string | null>(null);
+  const [fileModalOpen, setFileModalOpen] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const popupRef = React.useRef<HTMLDivElement>(null);
 
@@ -317,105 +319,27 @@ function TextareaWithAttachments({
           {...props}
         />
         
-        {/* Attachments Inside Textarea - Bottom */}
-        {shouldShowAttachments && attachments.length > 0 && (
-          <div className="absolute bottom-2 left-2 right-14 flex gap-2 overflow-x-auto scrollbar-none z-40" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-
-            <style>{`
-              .scrollbar-none::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-            {attachments.map((attachment) => {
-              const isImage = attachment.mimeType.startsWith('image/');
-              const isPending = attachment.id.startsWith('pending-');
-              
-              return (
-                <div
-                  key={attachment.id}
-                  className="relative flex-shrink-0 group"
-                  onMouseEnter={() => setHoveredId(attachment.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  {/* Small Thumbnail */}
-                  <div 
-                    className={cn(
-                      "relative w-10 h-10 rounded-md overflow-hidden border bg-white/5 hover:border-primary/50 transition-all cursor-pointer shadow-sm",
-                      isPending ? "border-yellow-500/50 bg-yellow-500/10" : "border-white/15"
-                    )}
-                    onClick={async () => {
-                      if (isPending) return; // Can't download pending files
-                      try {
-                        await handleDownload(attachment);
-                      } catch (error) {
-                        console.error('Failed to download file:', error);
-                        setFileError('Failed to download file');
-                      }
-                    }}
-                    title={isPending ? `⏳ Ready to upload: ${attachment.originalName}` : `Click to open ${attachment.originalName}`}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleDownload(attachment).catch((error) => {
-                          console.error('Failed to download file:', error);
-                          setFileError('Failed to download file');
-                        });
-                      }
-                    }}
-                  >
-                    {isImage && imageUrls[attachment.id] ? (
-                      <img
-                        src={imageUrls[attachment.id]}
-                        alt={attachment.originalName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={cn(
-                      "absolute inset-0 flex items-center justify-center text-white/60",
-                      isImage && imageUrls[attachment.id] && "hidden"
-                    )}>
-                      {getFileIcon(attachment.mimeType, "w-5 h-5")}
-                    </div>
-                    
-                    {/* Pending Badge */}
-                    {isPending && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white/30 animate-pulse" title="Will upload on save" />
-                    )}
-                    
-                    {/* Delete Icon - Shows on hover */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(attachment.id);
-                      }}
-                      className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/60 rounded-md transition-all"
-                      title="Delete attachment"
-                    >
-                      <X className="w-5 h-5 text-red-400 hover:text-red-300" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {/* Attachment Icon Button */}
+        {/* Attachment Icon Buttons */}
         {shouldShowAttachments && (
-          <div className="absolute bottom-3 right-3">
+          <div className="absolute bottom-3 right-3 flex items-center gap-2">
+            {/* Manage Files Button - Opens Modal */}
+            <button
+              type="button"
+              onClick={() => setFileModalOpen(true)}
+              disabled={uploading}
+              className="p-1.5 rounded-lg bg-primary/20 hover:bg-primary/30 border border-primary/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Add Files'}
+            >
+              <FolderOpen className="w-4 h-4 text-primary" />
+            </button>
+
+            {/* Quick Add Button with Popup */}
             <button
               type="button"
               onClick={() => setShowPopup(!showPopup)}
               disabled={uploading}
               className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              title="Attach File"
+              title="Quick Add File"
             >
               <Paperclip className="w-4 h-4 text-white/70" />
             </button>
@@ -619,6 +543,21 @@ function TextareaWithAttachments({
         onSubmit={handleDeleteConfirm}
         destructive={true}
       />
+
+      {/* File Upload Modal */}
+      {shouldShowAttachments && (
+        <FileUploadModal
+          isOpen={fileModalOpen}
+          onClose={() => setFileModalOpen(false)}
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange || (() => {})}
+          fieldName={fieldName}
+          entityId={entityId}
+          projectId={projectId}
+          entityType={entityType}
+          title={`Manage Files - ${fieldName}`}
+        />
+      )}
     </div>
   )
 }
