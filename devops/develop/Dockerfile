@@ -29,7 +29,7 @@ RUN npm ci && \
     npm cache clean --force
 
 # Copy docker-entrypoint.sh first (to ensure it's included)
-COPY docker-entrypoint.sh ./
+COPY devops/develop/docker-entrypoint.sh ./
 
 # Copy source code
 COPY . .
@@ -39,8 +39,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Set dummy env vars for build (will be overridden at runtime)
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
-ENV NEXTAUTH_SECRET="dummy-build-secret-replace-at-runtime"
+ENV DATABASE_URL="postgresql://eztest:eztest_password@postgres:5432/eztest?schema=public"
+ENV NEXTAUTH_SECRET="build-secret-replace-at-runtime"
 ENV NEXTAUTH_URL="http://localhost:3000"
 
 # Build Next.js application

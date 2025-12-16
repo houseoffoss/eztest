@@ -1,0 +1,88 @@
+name: Deploy to DEV environment
+run-name: ${{ github.actor }}'s changes are being deployed in DEV environment 🚀
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+env:
+  DEV_BRANCH: develop
+  REGISTRY: ghcr.io
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == true }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f devops/develop/Dockerfile \
+            -t ghcr.io/${{ github.repository }}/develop:latest \
+            . --no-cache
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/develop:latest
+
+  pull-deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    environment: dev
+    if: ${{ github.event.pull_request.merged == true }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Ensure latest DEV branch
+        run: |
+          git fetch origin ${{ env.DEV_BRANCH }}
+          git checkout ${{ env.DEV_BRANCH }}
+          git pull origin ${{ env.DEV_BRANCH }}
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_KEY }}
+
+      - name: Install rsync
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
+
+      - name: Copy docker-compose to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }} "mkdir -p /tmp/ci-cd-deploy"
+
+          scp -o StrictHostKeyChecking=no \
+            ./devops/develop/docker-compose.yml \
+            ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }}:/tmp/ci-cd-deploy/docker-compose.yml
+
+      - name: Deploy on DEV server
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }} << 'EOF'
+              set -e
+              sudo mv /tmp/ci-cd-deploy/docker-compose.yml ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml
+              docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+              docker pull ghcr.io/${{ github.repository }}/develop:latest
+              docker compose -f ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml \
+                up -d --build --force-recreate
+          EOF
