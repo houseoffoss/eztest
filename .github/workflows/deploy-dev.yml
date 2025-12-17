@@ -84,8 +84,8 @@ jobs:
             ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }} << 'EOF'
               set -e
               sudo mv /tmp/ci-cd-deploy/docker-compose.yml ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml
-              docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-              docker pull ghcr.io/${{ github.repository }}/develop:latest
-              docker compose -f ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml \
+              sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+              sudo docker pull ghcr.io/${{ github.repository }}/develop:latest
+              sudo docker compose -f ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml \
                 up -d --build --force-recreate
           EOF
