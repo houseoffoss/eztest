@@ -12,6 +12,7 @@ import { Pagination } from '@/elements/pagination';
 import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DefectTable, type Defect, type SortField, type SortOrder } from '@/components/common/tables/DefectTable';
+import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';
 import { DefectFilters } from './subcomponents/DefectFilters';
 import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';
@@ -39,6 +40,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [mounted, setMounted] = useState(false);
   const [availableAssignees, setAvailableAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   
   // Selection state
   const [selectedDefects, setSelectedDefects] = useState<Set<string>>(new Set());
@@ -316,13 +318,12 @@ export default function DefectList({ projectId }: DefectListProps) {
     router.push(`/projects/${projectId}/defects/${defectId}`);
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedDefects.size === 0) return;
-    
-    if (!confirm(`Are you sure you want to delete ${selectedDefects.size} defect(s)?`)) {
-      return;
-    }
+    setDeleteConfirmOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
     try {
       const deletePromises = Array.from(selectedDefects).map((id) =>
         fetch(`/api/defects/${id}`, { method: 'DELETE' })
@@ -423,27 +424,14 @@ export default function DefectList({ projectId }: DefectListProps) {
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                   {selectedDefects.size} selected
                 </Badge>
-                <div className="flex gap-2">
-                  <ButtonSecondary onClick={handleBulkStatusChange} className="cursor-pointer">
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Change Status
+                {canDeleteDefect && (
+                  <ButtonSecondary 
+                    onClick={handleBulkDelete}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
                   </ButtonSecondary>
-                  {canAssignDefect && (
-                    <ButtonSecondary onClick={handleBulkAssign} className="cursor-pointer">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Assign
-                    </ButtonSecondary>
-                  )}
-                  {canDeleteDefect && (
-                    <ButtonSecondary 
-                      onClick={handleBulkDelete}
-                      className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </ButtonSecondary>
-                  )}
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -557,6 +545,18 @@ export default function DefectList({ projectId }: DefectListProps) {
       </div>
 
       {/* Create Defect Dialog */}
+      {/* Delete Confirmation Dialog */}
+      <BaseConfirmDialog
+        title="Delete Defects"
+        description={`Are you sure you want to delete ${selectedDefects.size} defect(s)? This action cannot be undone.`}
+        submitLabel="Delete"
+        cancelLabel="Cancel"
+        triggerOpen={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onSubmit={handleConfirmDelete}
+        destructive={true}
+      />
+
       <CreateDefectDialog
         projectId={projectId}
         triggerOpen={createDialogOpen}

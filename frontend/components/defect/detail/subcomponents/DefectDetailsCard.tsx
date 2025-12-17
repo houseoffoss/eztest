@@ -275,25 +275,41 @@ export function DefectDetailsCard({
         </div>
       ) : (
         <>
-          {defect.description && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Description
-              </h4>
-              <p className="text-white/90 break-words whitespace-pre-wrap">
-                {defect.description}
-              </p>
-              {descriptionAttachments.length > 0 && (
-                <div className="mt-3">
-                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({descriptionAttachments.length})</h5>
+          {(defect.description || descriptionAttachments.length > 0) && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white/60">
+                  Description
+                </h4>
+                {descriptionAttachments.length > 0 ? (
+                  <span className="text-xs text-white/50">{descriptionAttachments.length} Attachments</span>
+                ) : (
+                  <span className="text-xs text-white/40">No Attachments</span>
+                )}
+              </div>
+              {defect.description && descriptionAttachments.length > 0 ? (
+                <div className="flex gap-4 items-start">
+                  <p className="text-white/90 break-words whitespace-pre-wrap flex-1">
+                    {defect.description}
+                  </p>
+                  <div className="flex-shrink-0">
+                    <AttachmentDisplay attachments={descriptionAttachments} />
+                  </div>
+                </div>
+              ) : defect.description ? (
+                <p className="text-white/90 break-words whitespace-pre-wrap">
+                  {defect.description}
+                </p>
+              ) : descriptionAttachments.length > 0 ? (
+                <div className="flex justify-end">
                   <AttachmentDisplay attachments={descriptionAttachments} />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 
           {defect.environment && (
-            <div>
+            <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Environment
               </h4>
@@ -304,7 +320,7 @@ export function DefectDetailsCard({
           )}
 
           {defect.dueDate && (
-            <div>
+            <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Due Date
               </h4>
@@ -315,7 +331,7 @@ export function DefectDetailsCard({
           )}
 
           {defect.progressPercentage !== null && (
-            <div>
+            <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Progress
               </h4>

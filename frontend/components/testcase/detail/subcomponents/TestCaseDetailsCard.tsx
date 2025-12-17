@@ -148,7 +148,7 @@ export function TestCaseDetailsCard({
           </div>
 
           {/* Estimated Time */}
-          <div className="space-y-2">
+          <div className="space-y-2 pt-6 mt-6 border-t border-white/10">
             <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
             <Input
               id="estimatedTime"
@@ -254,40 +254,70 @@ export function TestCaseDetailsCard({
             </div>
           )}
 
-          {testCase.description && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Description
-              </h4>
-              <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
-              {descriptionAttachments.length > 0 && (
-                <div className="mt-3">
-                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({descriptionAttachments.length})</h5>
+          {(testCase.description || descriptionAttachments.length > 0) && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white/60">
+                  Description
+                </h4>
+                {descriptionAttachments.length > 0 ? (
+                  <span className="text-xs text-white/50">{descriptionAttachments.length} Attachments</span>
+                ) : (
+                  <span className="text-xs text-white/40">No Attachments</span>
+                )}
+              </div>
+              {testCase.description && descriptionAttachments.length > 0 ? (
+                <div className="flex gap-4 items-start">
+                  <p className="text-white/90 break-words whitespace-pre-wrap flex-1">{testCase.description}</p>
+                  <div className="flex-shrink-0">
+                    <AttachmentDisplay attachments={descriptionAttachments} />
+                  </div>
+                </div>
+              ) : testCase.description ? (
+                <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
+              ) : descriptionAttachments.length > 0 ? (
+                <div className="flex justify-end">
                   <AttachmentDisplay attachments={descriptionAttachments} />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 
-          {testCase.expectedResult && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Expected Result
-              </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {testCase.expectedResult}
-              </p>
-              {expectedResultAttachments.length > 0 && (
-                <div className="mt-3">
-                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({expectedResultAttachments.length})</h5>
+          {(testCase.expectedResult || expectedResultAttachments.length > 0) && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white/60">
+                  Expected Result
+                </h4>
+                {expectedResultAttachments.length > 0 ? (
+                  <span className="text-xs text-white/50">{expectedResultAttachments.length} Attachments</span>
+                ) : (
+                  <span className="text-xs text-white/40">No Attachments</span>
+                )}
+              </div>
+              {testCase.expectedResult && expectedResultAttachments.length > 0 ? (
+                <div className="flex gap-4 items-start">
+                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
+                    {testCase.expectedResult}
+                  </p>
+                  <div className="flex-shrink-0">
+                    <AttachmentDisplay attachments={expectedResultAttachments} />
+                  </div>
+                </div>
+              ) : testCase.expectedResult ? (
+                <p className="text-white/90 whitespace-pre-wrap break-words">
+                  {testCase.expectedResult}
+                </p>
+              ) : expectedResultAttachments.length > 0 ? (
+                <div className="flex justify-end">
                   <AttachmentDisplay attachments={expectedResultAttachments} />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 
           {testCase.estimatedTime && (
-            <div>
+            <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Estimated Time
               </h4>
@@ -298,37 +328,69 @@ export function TestCaseDetailsCard({
             </div>
           )}
 
-          {testCase.preconditions && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Preconditions
-              </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {testCase.preconditions}
-              </p>
-              {preconditionAttachments.length > 0 && (
-                <div className="mt-3">
-                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({preconditionAttachments.length})</h5>
+          {(testCase.preconditions || preconditionAttachments.length > 0) && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white/60">
+                  Preconditions
+                </h4>
+                {preconditionAttachments.length > 0 ? (
+                  <span className="text-xs text-white/50">{preconditionAttachments.length} Attachments</span>
+                ) : (
+                  <span className="text-xs text-white/40">No Attachments</span>
+                )}
+              </div>
+              {testCase.preconditions && preconditionAttachments.length > 0 ? (
+                <div className="flex gap-4 items-start">
+                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
+                    {testCase.preconditions}
+                  </p>
+                  <div className="flex-shrink-0">
+                    <AttachmentDisplay attachments={preconditionAttachments} />
+                  </div>
+                </div>
+              ) : testCase.preconditions ? (
+                <p className="text-white/90 whitespace-pre-wrap break-words">
+                  {testCase.preconditions}
+                </p>
+              ) : preconditionAttachments.length > 0 ? (
+                <div className="flex justify-end">
                   <AttachmentDisplay attachments={preconditionAttachments} />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 
-          {testCase.postconditions && (
-            <div>
-              <h4 className="text-sm font-medium text-white/60 mb-1">
-                Postconditions
-              </h4>
-              <p className="text-white/90 whitespace-pre-wrap break-words">
-                {testCase.postconditions}
-              </p>
-              {postconditionAttachments.length > 0 && (
-                <div className="mt-3">
-                  <h5 className="text-xs font-medium text-white/50 mb-2">Attachments ({postconditionAttachments.length})</h5>
+          {(testCase.postconditions || postconditionAttachments.length > 0) && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white/60">
+                  Postconditions
+                </h4>
+                {postconditionAttachments.length > 0 ? (
+                  <span className="text-xs text-white/50">{postconditionAttachments.length} Attachments</span>
+                ) : (
+                  <span className="text-xs text-white/40">No Attachments</span>
+                )}
+              </div>
+              {testCase.postconditions && postconditionAttachments.length > 0 ? (
+                <div className="flex gap-4 items-start">
+                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
+                    {testCase.postconditions}
+                  </p>
+                  <div className="flex-shrink-0">
+                    <AttachmentDisplay attachments={postconditionAttachments} />
+                  </div>
+                </div>
+              ) : testCase.postconditions ? (
+                <p className="text-white/90 whitespace-pre-wrap break-words">
+                  {testCase.postconditions}
+                </p>
+              ) : postconditionAttachments.length > 0 ? (
+                <div className="flex justify-end">
                   <AttachmentDisplay attachments={postconditionAttachments} />
                 </div>
-              )}
+              ) : null}
             </div>
           )}
         </>

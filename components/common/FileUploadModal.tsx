@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FileIcon, Image as ImageIcon, File, FileText, Video, Archive, Download, Check, Loader } from 'lucide-react';
 import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
@@ -32,6 +33,7 @@ interface FileUploadModalProps {
   entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'teststep' | 'unassigned';
   title?: string;
   maxFiles?: number;
+  onDeleteMarked?: (deletedIds: string[]) => void;
 }
 
 export function FileUploadModal({
@@ -45,12 +47,22 @@ export function FileUploadModal({
   entityType = 'testcase',
   title = 'Manage Files',
   maxFiles = 20,
+  onDeleteMarked,
 }: FileUploadModalProps) {
   const attachmentsEnabled = isAttachmentsEnabledClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string>('');
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [markedForDeletion, setMarkedForDeletion] = useState<Set<string>>(new Set());
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Mount portal on client side only
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch image URLs for preview
   React.useEffect(() => {
@@ -104,8 +116,6 @@ export function FileUploadModal({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attachments]);
-
-  if (!attachmentsEnabled || !isOpen) return null;
 
   const getFileIcon = (mimeType: string, className = "w-6 h-6") => {
     const iconType = getFileIconType(mimeType);
@@ -167,8 +177,34 @@ export function FileUploadModal({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleDelete = (attachmentId: string) => {
-    onAttachmentsChange(attachments.filter((a) => a.id !== attachmentId));
+  const handleDeleteClick = (attachmentId: string) => {
+    const isPending = attachmentId.startsWith('pending-');
+    
+    if (isPending) {
+      // For pending attachments, remove immediately without confirmation
+      onAttachmentsChange(attachments.filter((a) => a.id !== attachmentId));
+    } else {
+      // For uploaded attachments, show confirmation dialog
+      setDeleteConfirmId(attachmentId);
+      setDeleteConfirmOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return;
+
+    // For uploaded attachments, mark for deletion (will delete on save)
+    const newMarked = new Set(markedForDeletion);
+    newMarked.add(deleteConfirmId);
+    setMarkedForDeletion(newMarked);
+    
+    // Notify parent of marked deletions
+    if (onDeleteMarked) {
+      onDeleteMarked(Array.from(newMarked));
+    }
+    
+    setDeleteConfirmId(null);
+    setDeleteConfirmOpen(false);
   };
 
   const handleDownload = async (attachment: Attachment) => {
@@ -186,27 +222,54 @@ export function FileUploadModal({
     }
   };
 
-  const hasFiles = attachments.length > 0;
-  const canAddMore = attachments.length < maxFiles;
-  const pendingCount = attachments.filter(a => a.id.startsWith('pending-')).length;
+  // Filter out attachments marked for deletion
+  const visibleAttachments = attachments.filter(a => !markedForDeletion.has(a.id));
+  const hasFiles = visibleAttachments.length > 0;
+  const canAddMore = visibleAttachments.length < maxFiles;
+  const pendingCount = visibleAttachments.filter(a => a.id.startsWith('pending-')).length;
+  const markedCount = markedForDeletion.size;
 
   // Format the title to be more readable
   const formattedTitle = title.includes(fieldName) 
     ? title.replace(fieldName, formatFieldName(fieldName))
     : title;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0d1229]/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl flex flex-col">
+  if (!attachmentsEnabled || !isOpen) return null;
+
+  // Don't render on server side
+  if (!mounted) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const modalContent = (
+    <div 
+      className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      style={{ zIndex: 9999, pointerEvents: 'auto' }}
+      onClick={handleBackdropClick}
+    >
+      <div 
+        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0d1229]/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl flex flex-col"
+        style={{ pointerEvents: 'auto' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div>
             <h2 className="text-xl font-semibold text-white/90">{formattedTitle}</h2>
             <p className="text-sm text-white/50 mt-1">
-              {hasFiles ? `${attachments.length} file${attachments.length !== 1 ? 's' : ''} attached` : 'No files attached yet'}
+              {hasFiles ? `${visibleAttachments.length} file${visibleAttachments.length !== 1 ? 's' : ''} attached` : 'No files attached yet'}
               {pendingCount > 0 && (
                 <span className="ml-2 text-yellow-400">
                   • {pendingCount} pending upload
+                </span>
+              )}
+              {markedCount > 0 && (
+                <span className="ml-2 text-red-400">
+                  • {markedCount} marked for deletion
                 </span>
               )}
             </p>
@@ -231,68 +294,54 @@ export function FileUploadModal({
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar,.png,.jpg,.jpeg"
               />
               
-              {/* Upload Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (fileInputRef.current) {
-                      fileInputRef.current.accept = '.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar';
-                      fileInputRef.current.click();
+              {/* Single Drag & Drop Area */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.add('border-blue-500/50', 'bg-blue-500/5');
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('border-blue-500/50', 'bg-blue-500/5');
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('border-blue-500/50', 'bg-blue-500/5');
+                  const files = e.dataTransfer.files;
+                  if (files.length > 0 && fileInputRef.current) {
+                    // Create a new FileList-like object
+                    const dataTransfer = new DataTransfer();
+                    for (let i = 0; i < files.length; i++) {
+                      dataTransfer.items.add(files[i]);
                     }
-                  }}
-                  disabled={!canAddMore}
-                  className={cn(
-                    "p-6 rounded-xl border-2 border-dashed transition-all",
-                    "bg-white/5 hover:bg-white/10 border-white/20 hover:border-blue-500/50",
-                    "disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer",
-                    "flex flex-col items-center justify-center gap-3"
-                  )}
-                >
-                  <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center">
-                    <FileIcon className="w-7 h-7 text-blue-400" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-white/90 font-semibold">Documents</p>
-                    <p className="text-white/50 text-xs mt-1">
-                      PDF, Word, Excel, Text
-                    </p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (fileInputRef.current) {
-                      fileInputRef.current.accept = 'image/*';
-                      fileInputRef.current.click();
-                    }
-                  }}
-                  disabled={!canAddMore}
-                  className={cn(
-                    "p-6 rounded-xl border-2 border-dashed transition-all",
-                    "bg-white/5 hover:bg-white/10 border-white/20 hover:border-green-500/50",
-                    "disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer",
-                    "flex flex-col items-center justify-center gap-3"
-                  )}
-                >
-                  <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <ImageIcon className="w-7 h-7 text-green-400" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-white/90 font-semibold">Images</p>
-                    <p className="text-white/50 text-xs mt-1">
-                      JPG, PNG, GIF, WebP
-                    </p>
-                  </div>
-                </button>
+                    fileInputRef.current.files = dataTransfer.files;
+                    handleFileSelect({ target: { files: dataTransfer.files } } as React.ChangeEvent<HTMLInputElement>);
+                  }
+                }}
+                className={cn(
+                  "relative p-6 rounded-xl border-2 border-dashed transition-all cursor-pointer",
+                  "bg-white/5 hover:bg-white/10 border-white/20 hover:border-blue-500/50",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "flex flex-col items-center justify-center gap-2"
+                )}
+              >
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-1">
+                  <FileIcon className="w-6 h-6 text-white/60" />
+                </div>
+                <p className="text-white/90 text-base">
+                  Drag & Drop or <span className="text-blue-400 font-semibold cursor-pointer hover:text-blue-300">Choose File</span> to upload
+                </p>
+                <p className="text-white/50 text-sm">
+                  Doc, pdf, png, jpeg
+                </p>
               </div>
 
               <p className="text-xs text-white/40 text-center">
-                {attachments.length}/{maxFiles} files • Max 500MB per file
+                {visibleAttachments.length}/{maxFiles} files - Max 100MB per file
               </p>
 
               {fileError && (
@@ -303,10 +352,20 @@ export function FileUploadModal({
             </div>
           )}
 
+          {/* Uploaded Files Section */}
+          {hasFiles && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <h3 className="text-base font-semibold text-white/90">Uploaded Files</h3>
+                <span className="text-sm text-white/50">{visibleAttachments.length} file{visibleAttachments.length !== 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          )}
+
           {/* Files Grid */}
           {hasFiles ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {attachments.map((attachment) => {
+              {visibleAttachments.map((attachment) => {
                 const isImage = attachment.mimeType.startsWith('image/');
                 const isPending = attachment.id.startsWith('pending-');
                 
@@ -318,11 +377,11 @@ export function FileUploadModal({
                     onMouseLeave={() => setHoveredId(null)}
                   >
                     <div className={cn(
-                      "relative h-48 rounded-lg overflow-hidden border transition-all",
+                      "relative h-48 rounded-xl overflow-hidden border-2 transition-all",
                       "bg-white/5 backdrop-blur-sm",
                       isPending 
                         ? "border-yellow-500/40 bg-yellow-500/5" 
-                        : "border-white/15 hover:border-primary/50"
+                        : "border-white/15 hover:border-blue-500/50"
                     )}>
                       {/* Preview */}
                       <div className="absolute inset-0">
@@ -366,7 +425,7 @@ export function FileUploadModal({
                         )}
                         <ButtonDestructive
                           size="sm"
-                          onClick={() => handleDelete(attachment.id)}
+                          onClick={() => handleDeleteClick(attachment.id)}
                           title="Delete"
                         >
                           <X className="w-4 h-4" />
@@ -394,13 +453,13 @@ export function FileUploadModal({
                 );
               })}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
+          ) : !canAddMore ? null : (
+            <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-white/10 rounded-xl">
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
                 <FileIcon className="w-10 h-10 text-white/30" />
               </div>
               <p className="text-white/60 text-lg font-medium">No files uploaded yet</p>
-              <p className="text-white/40 text-sm mt-1">Click the upload button above to add files</p>
+              <p className="text-white/40 text-sm mt-2">Drag files here or click the area above to start uploading</p>
             </div>
           )}
         </div>
@@ -419,7 +478,57 @@ export function FileUploadModal({
             Done
           </Button>
         </div>
+
+        {/* Delete Confirmation Dialog - Rendered in separate portal for proper z-index */}
+        {deleteConfirmOpen && mounted && createPortal(
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            style={{ zIndex: 10000 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setDeleteConfirmOpen(false);
+              }
+            }}
+          >
+            <div className="backdrop-blur-md rounded-xl border p-6 w-full max-w-[520px] bg-background/80 text-foreground shadow-2xl">
+              {/* Header */}
+              <div className="flex flex-col gap-2 text-center sm:text-left mb-5">
+                <h2 className="text-lg leading-none font-semibold text-primary">Delete Attachment</h2>
+                <p className="text-muted-foreground text-sm mt-2">
+                  This attachment will be deleted when you save the form. This action cannot be undone.
+                </p>
+              </div>
+              
+              {/* Actions */}
+              <div className="space-y-5">
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    type="button"
+                    variant="glass"
+                    onClick={() => setDeleteConfirmOpen(false)}
+                    className="cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
+                  <ButtonDestructive
+                    type="button"
+                    onClick={async () => {
+                      await handleDeleteConfirm();
+                    }}
+                    className="cursor-pointer"
+                  >
+                    Mark for Deletion
+                  </ButtonDestructive>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   );
+
+  // Render modal in a portal at document root level
+  return createPortal(modalContent, document.body);
 }

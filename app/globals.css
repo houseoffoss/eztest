@@ -246,3 +246,18 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus {
   outline: none;
 }
 
+/* Apply cursor pointer to all interactive elements */
+button,
+a,
+[role="button"],
+[role="link"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+label[for],
+select,
+[onclick],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
