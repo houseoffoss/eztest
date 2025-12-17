@@ -1,14 +1,14 @@
-name: Deploy to DEV environment
-run-name: ${{ github.actor }}'s changes are being deployed in DEV environment 🚀
+name: Deploy to Production environment
+run-name: ${{ github.actor }}'s changes are being deployed in Production environment 🚀
 
 on:
   pull_request:
     types: [closed]
     branches:
-      - develop
+      - main
 
 env:
-  DEV_BRANCH: develop
+  MAIN_BRANCH: main
   REGISTRY: ghcr.io
 
 jobs:
@@ -36,34 +36,34 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -f devops/develop/Dockerfile \
-            -t ghcr.io/${{ github.repository }}/develop:latest \
+            -f devops/production/Dockerfile \
+            -t ghcr.io/${{ github.repository }}/main:latest \
             . --no-cache
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/develop:latest
+          docker push ghcr.io/${{ github.repository }}/main:latest
 
   pull-deploy:
     needs: build-push
     runs-on: ubuntu-latest
-    environment: dev
+    environment: production
     if: ${{ github.event.pull_request.merged == true }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Ensure latest DEV branch
+      - name: Ensure latest Production branch
         run: |
-          git fetch origin ${{ env.DEV_BRANCH }}
-          git checkout ${{ env.DEV_BRANCH }}
-          git pull origin ${{ env.DEV_BRANCH }}
+          git fetch origin ${{ env.MAIN_BRANCH }}
+          git checkout ${{ env.MAIN_BRANCH }}
+          git pull origin ${{ env.MAIN_BRANCH }}
 
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.2
         with:
-          ssh-private-key: ${{ secrets.DEV_SSH_KEY }}
+          ssh-private-key: ${{ secrets.PROD_SSH_KEY }}
 
       - name: Install rsync
         run: |
@@ -72,20 +72,20 @@ jobs:
 
       - name: Copy docker-compose to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }} "mkdir -p /tmp/ci-cd-deploy"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_IP }} "mkdir -p /tmp/ci-cd-deploy"
 
           scp -o StrictHostKeyChecking=no \
-            ./devops/develop/docker-compose.yml \
-            ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }}:/tmp/ci-cd-deploy/docker-compose.yml
+            ./devops/production/docker-compose.yml \
+            ${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_IP }}:/tmp/ci-cd-deploy/docker-compose.yml
 
-      - name: Deploy on DEV server
+      - name: Deploy on Production server
         run: |
           ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_IP }} << 'EOF'
+            ${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_IP }} << 'EOF'
               set -e
-              sudo mv /tmp/ci-cd-deploy/docker-compose.yml ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml
+              sudo mv /tmp/ci-cd-deploy/docker-compose.yml ${{ secrets.PROD_PRJ_PATH }}/docker-compose.yml
               sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-              sudo docker pull ghcr.io/${{ github.repository }}/develop:latest
-              sudo docker compose -f ${{ secrets.DEV_PRJ_PATH }}/docker-compose.yml \
+              sudo docker pull ghcr.io/${{ github.repository }}/main:latest
+              sudo docker compose -f ${{ secrets.PROD_PRJ_PATH }}/docker-compose.yml \
                 up -d --build --force-recreate
           EOF
