@@ -1,70 +1,44 @@
-# EZTest Technical Documentation
+# EZTest Documentation Index
 
-Welcome to the EZTest technical documentation. This directory contains comprehensive guides for understanding the codebase, architecture, and workflows.
+> **📢 New Documentation Structure Available!**
+> 
+> This documentation has been reorganized into a professional, well-structured format.
+> Please visit **[README.md](./README.md)** for the new documentation home.
 
-## Documentation Index
+---
 
-### Getting Started
-- **[Architecture Overview](./ARCHITECTURE.md)** - High-level system design and component structure
-- **[Project Structure](./PROJECT_STRUCTURE.md)** - Directory layout and file organization
-- **[Project Features](./PROJECT_FEATURES.md)** - Comprehensive guide to all project management features
+## New Documentation Structure
 
-### Core Systems
-- **[Database Schema](./DATABASE.md)** - Data models, relationships, and design patterns
-- **[Authentication & Authorization](./AUTHENTICATION.md)** - User management, roles, permissions, and security
-- **[API Documentation](./API.md)** - REST API endpoints and request/response examples
+The documentation is now organized into the following sections:
 
-### Development
-- **[Development Workflows](./DEVELOPMENT.md)** - Local setup, running tests, building, debugging
-- **[Code Patterns](./CODE_PATTERNS.md)** - Common patterns, conventions, and best practices
-- **[Environment Configuration](./ENVIRONMENT.md)** - Environment variables and configuration management
-
-### Operations
-- **[Deployment & Configuration](./DEPLOYMENT.md)** - Docker setup, production configuration, monitoring
-- **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
+| Section | Description | Link |
+|---------|-------------|------|
+| **Getting Started** | Installation, quickstart, configuration | [View →](./getting-started/README.md) |
+| **Features** | Feature guides and tutorials | [View →](./features/README.md) |
+| **API Reference** | Complete REST API documentation | [View →](./api/README.md) |
+| **UI Components** | Component library and design system | [View →](./ui/README.md) |
+| **Architecture** | Technical architecture and patterns | [View →](./architecture/README.md) |
+| **Contributing** | Development setup and guidelines | [View →](./contributing/README.md) |
+| **Operations** | Deployment and troubleshooting | [View →](./operations/README.md) |
 
 ---
 
 ## Quick Links
 
-- **Main Repository**: See README.md in project root
-- **Docker Guide**: See DOCKER.md in project root
-- **Environment Setup**: See `.env.example` in project root
+- **[Quick Start Guide](./getting-started/quickstart.md)** - Get running in 5 minutes
+- **[Installation Guide](./getting-started/installation.md)** - Full installation instructions
+- **[API Overview](./api/README.md)** - REST API documentation
+- **[Troubleshooting](./operations/troubleshooting.md)** - Common issues and solutions
 
 ---
 
-## Technology Stack
+## Legacy Documentation
 
-- **Framework**: Next.js 15 with App Router
-- **Runtime**: Node.js 18+
-- **Database**: PostgreSQL 16
-- **ORM**: Prisma
-- **Authentication**: NextAuth.js with JWT sessions
-- **UI Components**: Shadcn UI + Radix UI
-- **Styling**: Tailwind CSS v4
-- **Containerization**: Docker & Docker Compose
+The previous flat documentation files are preserved in the [archive](./archive/) folder for reference.
 
 ---
 
-## Key Features
+## Start Here
 
-- **Multi-project Test Management** - Organize tests across multiple projects
-- **Hierarchical Test Organization** - Nested test suites and comprehensive test cases
-- **Role-Based Access Control** - Project-level roles with fine-grained permissions
-- **Test Execution Tracking** - Real-time test run management and result logging
-- **Requirements Traceability** - Link test cases to requirements
-- **Collaboration** - Comments, attachments, and team coordination
-- **Self-Hosting** - Complete Docker-based deployment with minimal resources
-
----
-
-## Document Maintenance
-
-All documentation should be kept up-to-date with code changes. When modifying core functionality:
-
-1. Update relevant documentation sections
-2. Add examples if new patterns are introduced
-3. Update API documentation for endpoint changes
-4. Update database documentation if schema changes
-5. Add troubleshooting entries for known issues
+👉 **[Go to Main Documentation →](./README.md)**
 
