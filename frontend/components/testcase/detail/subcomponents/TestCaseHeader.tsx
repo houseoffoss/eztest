@@ -66,18 +66,7 @@ export function TestCaseHeader({
   return (
     <div className="mb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="outline"
-              className={getPriorityColor(testCase.priority)}
-            >
-              {testCase.priority}
-            </Badge>
-            <Badge variant="outline" className={getStatusColor(testCase.status)}>
-              {testCase.status}
-            </Badge>
-          </div>
+        <div className="w-full">
           <h1 className="text-3xl font-bold text-white mb-1">
             {isEditing ? (
               <Input
@@ -91,9 +80,26 @@ export function TestCaseHeader({
               testCase.title
             )}
           </h1>
-          <p className="text-white/60">
+          <p className="text-white/60 mb-3">
             {testCase.project.name} ({testCase.project.key})
           </p>
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Priority:</span>
+              <Badge
+                variant="outline"
+                className={getPriorityColor(testCase.priority)}
+              >
+                {testCase.priority}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Status:</span>
+              <Badge variant="outline" className={getStatusColor(testCase.status)}>
+                {testCase.status}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-2">
