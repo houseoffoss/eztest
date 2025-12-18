@@ -593,7 +593,7 @@ curl http://localhost:3000/api/email/status
 
 ## Related Documentation
 
-- [Configuration Guide](../getting-started/configuration.md#email-configuration) - Environment variables
+- [Configuration Guide](../../getting-started/configuration.md#email-configuration) - Environment variables
 - [Authentication](../authentication/README.md) - Password reset and OTP
 - [Defects](../defects/README.md) - Defect assignment and updates
 - [Test Runs](../test-runs/README.md) - Test run reports

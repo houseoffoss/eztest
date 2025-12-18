@@ -333,4 +333,4 @@ See [Troubleshooting Guide](../troubleshooting.md)
 
 - [Configuration](../../getting-started/configuration.md)
 - [Troubleshooting](../troubleshooting.md)
-- [Docker Documentation](../../../DOCKER.md)
+- [Docker Documentation](../../DOCKER.md)

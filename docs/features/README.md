@@ -33,9 +33,7 @@ Secure user authentication and role-based access control.
 - 4 system roles with 27 granular permissions
 
 **Quick Links:**
-- [User Authentication](./authentication/user-auth.md)
-- [Role-Based Access Control](./authentication/rbac.md)
-- [Permissions Matrix](./authentication/permissions.md)
+- See [Authentication Documentation](./authentication/README.md) for complete details
 
 ---
 
@@ -50,9 +48,7 @@ Organize testing efforts with multi-project support.
 - Project statistics and dashboards
 
 **Quick Links:**
-- [Creating Projects](./projects/creating-projects.md)
-- [Team Management](./projects/team-management.md)
-- [Project Settings](./projects/settings.md)
+- See [Projects Documentation](./projects/README.md) for complete details
 
 ---
 
@@ -69,9 +65,7 @@ Create and manage comprehensive test cases.
 - File attachments support
 
 **Quick Links:**
-- [Creating Test Cases](./test-cases/creating-test-cases.md)
-- [Test Steps](./test-cases/test-steps.md)
-- [Best Practices](./test-cases/best-practices.md)
+- See [Test Cases Documentation](./test-cases/README.md) for complete details
 
 ---
 
@@ -87,9 +81,7 @@ Organize test cases with hierarchical test suites.
 - Suite statistics
 
 **Quick Links:**
-- [Creating Suites](./test-suites/creating-suites.md)
-- [Organizing Tests](./test-suites/organizing-tests.md)
-- [Suite Hierarchy](./test-suites/hierarchy.md)
+- See [Test Suites Documentation](./test-suites/README.md) for complete details
 
 ---
 
@@ -106,9 +98,7 @@ Execute tests and track results.
 - Email reports
 
 **Quick Links:**
-- [Creating Test Runs](./test-runs/creating-test-runs.md)
-- [Executing Tests](./test-runs/executing-tests.md)
-- [Recording Results](./test-runs/recording-results.md)
+- See [Test Runs Documentation](./test-runs/README.md) for complete details
 
 ---
 
@@ -124,9 +114,7 @@ Track and manage bugs found during testing.
 - File attachments and comments
 
 **Quick Links:**
-- [Creating Defects](./defects/creating-defects.md)
-- [Defect Workflow](./defects/workflow.md)
-- [Linking Test Cases](./defects/linking-test-cases.md)
+- See [Defects Documentation](./defects/README.md) for complete details
 
 ---
 
@@ -142,9 +130,7 @@ Attach files to test cases, defects, and comments.
 - Download with original filenames
 
 **Quick Links:**
-- [Uploading Files](./attachments/uploading-files.md)
-- [S3 Configuration](./attachments/s3-configuration.md)
-- [Supported Formats](./attachments/supported-formats.md)
+- See [Attachments Documentation](./attachments/README.md) for complete details
 
 ---
 

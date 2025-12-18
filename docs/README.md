@@ -84,7 +84,6 @@ docs/
 │
 ├── architecture/               # Technical architecture
 │   ├── README.md               # Architecture overview
-│   ├── system-design.md        # System design
 │   ├── database.md             # Database schema
 │   ├── security.md             # Security architecture
 │   └── patterns.md             # Code patterns
@@ -182,7 +181,6 @@ Technical documentation for developers:
 | Document | Description |
 |----------|-------------|
 | [**Architecture Overview**](./architecture/README.md) | System architecture and design decisions |
-| [**System Design**](./architecture/system-design.md) | High-level system design |
 | [**Database Schema**](./architecture/database.md) | Data models and relationships |
 | [**Security**](./architecture/security.md) | Security implementation |
 | [**Code Patterns**](./architecture/patterns.md) | Coding patterns and conventions |

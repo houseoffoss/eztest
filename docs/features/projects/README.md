@@ -264,5 +264,5 @@ See [Projects API Documentation](../../api/projects.md) for complete reference.
 ## Related Documentation
 
 - [Creating Your First Project](../../getting-started/first-project.md)
-- [Team Management Guide](./team-management.md)
+- See this documentation for team management details
 - [Projects API](../../api/projects.md)

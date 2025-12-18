@@ -316,7 +316,7 @@ Congratulations! You've learned how to:
 
 ## Next Steps
 
-- **[Test Case Best Practices](../features/test-cases/best-practices.md)** - Write better test cases
+- **[Test Case Management](../features/test-cases/README.md)** - Complete test case guide
 - **[Test Run Management](../features/test-runs/README.md)** - Advanced execution features
-- **[Defect Workflow](../features/defects/workflow.md)** - Defect lifecycle management
+- **[Defect Management](../features/defects/README.md)** - Defect lifecycle management
 - **[API Integration](../api/README.md)** - Automate with the API

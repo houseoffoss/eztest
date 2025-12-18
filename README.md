@@ -14,7 +14,7 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 **Current Status:** Active Development (v0.1.0)  
 **Repository:** [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)  
 **License:** MIT  
-**Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin
+**Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin (kavin.p@belsterns.com)
 
 ### 🎯 Core Features Status
 
@@ -424,6 +424,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
   - Email: philip.moses@belsterns.com
   - Organization: House of FOSS
 - **Kavin**
+  - Email: kavin.p@belsterns.com
   - Organization: House of FOSS
 
 ### Links

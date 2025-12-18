@@ -190,7 +190,9 @@ docker-compose exec app npx prisma migrate deploy
 
 - **Documentation:** This folder
 - **GitHub Issues:** Report bugs
-- **Maintainer:** philip.moses@belsterns.com
+- **Maintainers:** 
+  - Philip Moses (philip.moses@belsterns.com)
+  - Kavin (kavin.p@belsterns.com)
 
 ---
 

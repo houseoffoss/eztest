@@ -299,6 +299,7 @@ When contributing documentation:
 ### Maintainers
 
 - **Philip Moses** - philip.moses@belsterns.com
+- **Kavin** - kavin.p@belsterns.com
 
 ### Recognition
 
