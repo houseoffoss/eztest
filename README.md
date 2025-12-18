@@ -1,4 +1,4 @@
-# EzTest - Self-Hostable Test Management Platform
+# EZTest - Self-Hostable Test Management Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
@@ -7,12 +7,14 @@
 
 ## Overview
 
-EzTest is a lightweight, open-source test management platform built with Next.js and designed for self-hosting. It provides an efficient alternative to commercial tools like Testiny and TestRail, optimized to run on minimal hardware (1 CPU core, 2GB RAM). EzTest combines a modern UI with powerful test management capabilities, featuring project management, test organization, execution tracking, and team collaboration—all deployable with Docker.
+EZTest is a lightweight, open-source test management platform built with Next.js and designed for self-hosting. It provides an efficient alternative to commercial tools like Testiny and TestRail, optimized to run on minimal hardware (1 CPU core, 2GB RAM). EZTest combines a modern UI with powerful test management capabilities, featuring project management, test organization, execution tracking, and team collaboration—all deployable with Docker.
+
+> 👥 **New User?** Check out the [**User Guide**](docs/USER_GUIDE.md) - a simple, non-technical guide explaining what EZTest is and how to use it.
 
 **Current Status:** Active Development (v0.1.0)  
 **Repository:** [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)  
 **License:** MIT  
-**Maintainer:** Philip Moses (philip.moses@belsterns.com)
+**Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin
 
 ### 🎯 Core Features Status
 
@@ -417,10 +419,12 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 - **Documentation**: See `/docs` directory
 - **Troubleshooting**: See [TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)
 
-### Maintainer
-- **Name**: Philip Moses
-- **Email**: philip.moses@belsterns.com
-- **Organization**: House of FOSS
+### Maintainers
+- **Philip Moses**
+  - Email: philip.moses@belsterns.com
+  - Organization: House of FOSS
+- **Kavin**
+  - Organization: House of FOSS
 
 ### Links
 - **Repository**: [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)
@@ -441,4 +445,4 @@ Built with modern, open-source technologies:
 
 ---
 
-**EzTest** - Making test management accessible for everyone 🚀
+**EZTest** - Making test management accessible for everyone 🚀
