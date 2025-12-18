@@ -402,7 +402,7 @@ export function TestCaseTable({
                         e.stopPropagation();
                         onDelete(testCase);
                       }}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
+                      className="text-red-400 hover:bg-red-400/10"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete

@@ -157,14 +157,14 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
   };
 
   return (
-    <div className="relative flex flex-wrap gap-2">
+    <div className="relative grid grid-cols-3 gap-2">
       {attachments.map((attachment) => {
         const isImage = attachment.mimeType.startsWith('image/');
         
         return (
           <div
             key={attachment.id}
-            className="relative flex-shrink-0"
+            className="relative"
             onMouseEnter={() => handleMouseEnter(attachment.id)}
             onMouseLeave={handleMouseLeave}
           >

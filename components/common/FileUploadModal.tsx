@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileIcon, Image as ImageIcon, File, FileText, Video, Archive, Download, Check, Loader } from 'lucide-react';
 import { Button } from '@/elements/button';
+import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { type Attachment, validateFile, downloadFile, formatFileSize, getFileIconType } from '@/lib/s3';
 import { cn } from '@/lib/utils';
@@ -274,13 +275,16 @@ export function FileUploadModal({
               )}
             </p>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="rounded-md opacity-70 hover:opacity-100 hover:bg-accent/50 cursor-pointer"
             title="Close"
           >
-            <X className="w-5 h-5 text-white/70" />
-          </button>
+            <X className="w-5 h-5" />
+            <span className="sr-only">Close</span>
+          </Button>
         </div>
 
         {/* Content */}
@@ -469,14 +473,13 @@ export function FileUploadModal({
           <p className="text-xs text-white/50">
             Maximum file size: 500MB • All formats supported
           </p>
-          <Button
-            variant="glass"
+          <ButtonPrimary
             onClick={onClose}
             className="cursor-pointer"
           >
             <Check className="w-4 h-4 mr-2" />
             Done
-          </Button>
+          </ButtonPrimary>
         </div>
 
         {/* Delete Confirmation Dialog - Rendered in separate portal for proper z-index */}

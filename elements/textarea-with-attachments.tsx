@@ -309,7 +309,7 @@ function TextareaWithAttachments({
         <textarea
           data-slot="textarea"
           className={cn(
-            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 pr-12 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
+            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
             variant === "glass"
               ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
               : "border-border/40 bg-input",
@@ -323,23 +323,26 @@ function TextareaWithAttachments({
           maxLength={maxLength}
           {...props}
         />
-        
-        {/* Attachment Icon Button */}
-        {shouldShowAttachments && (
-          <div className="absolute bottom-3 right-3">
-            {/* Attach Files Button - Opens Modal */}
-            <button
-              type="button"
-              onClick={() => setFileModalOpen(true)}
-              disabled={uploading}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Attach Files'}
-            >
-              <Paperclip className="w-4 h-4 text-white/70" />
-            </button>
-          </div>
-        )}
       </div>
+      
+      {/* Attachment Display and Button - Below textarea */}
+      {shouldShowAttachments && (
+        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+          {/* Left side - Attachment count display (non-clickable) */}
+          <span className="text-white/60">{attachments.length} Attachment{attachments.length !== 1 ? 's' : ''}</span>
+          
+          {/* Right side - Clickable button with paperclip icon */}
+          <button
+            type="button"
+            onClick={() => setFileModalOpen(true)}
+            disabled={uploading}
+            className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white/60 hover:text-white/80"
+            title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Attach Files'}
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       
       {showCharCount && maxLength && (
         <div className={cn(

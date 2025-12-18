@@ -487,7 +487,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                           setSelectedTestCase(testCase);
                           setDeleteDialogOpen(true);
                         }}
-                        className="text-red-500"
+                        className="text-red-400 hover:bg-red-400/10"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
