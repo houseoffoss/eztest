@@ -22,14 +22,22 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
   
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const [previewPosition, setPreviewPosition] = useState<{ top: number; left: number } | null>(null);
+  const [previewPosition, setPreviewPosition] = useState<{ top: number; left: number; showAbove?: boolean } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const thumbnailRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mount portal on client side only
   useEffect(() => {
     setMounted(true);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Fetch image URLs for attachments
@@ -137,21 +145,73 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
 
   const handleMouseEnter = (attachmentId: string) => {
     if (!showPreview) return;
+    // Clear any pending close timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
     setHoveredId(attachmentId);
     
     const thumbnail = thumbnailRefs.current[attachmentId];
     if (thumbnail) {
       const rect = thumbnail.getBoundingClientRect();
-      // Position preview above the thumbnail, centered horizontally
+      const previewWidth = 320;
+      const previewHeight = 350; // Approximate height including padding
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const padding = 10;
+      
+      // Calculate horizontal position - center on thumbnail
+      let left = rect.left - (previewWidth / 2) + (rect.width / 2);
+      // Ensure preview doesn't go off-screen horizontally
+      if (left < padding) left = padding;
+      if (left + previewWidth > viewportWidth - padding) left = viewportWidth - previewWidth - padding;
+      
+      // Calculate vertical position - show above if space available, otherwise below
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
+      
+      let top;
+      let shouldShowAbove = false;
+      
+      // Show above if more space above OR if not enough space below
+      if (spaceAbove > spaceBelow || spaceBelow < previewHeight + padding) {
+        shouldShowAbove = true;
+        // Position so the preview appears above the thumbnail
+        top = rect.top - padding;
+      } else {
+        shouldShowAbove = false;
+        // Position so the preview appears below the thumbnail
+        top = rect.bottom + padding;
+      }
+      
       setPreviewPosition({
-        top: rect.top + window.scrollY - 10, // 10px gap above thumbnail
-        left: rect.left + window.scrollX - 140 // Center the 320px preview (160px each side)
+        top,
+        left,
+        showAbove: shouldShowAbove
       });
     }
   };
 
   const handleMouseLeave = () => {
     if (!showPreview) return;
+    // Add a small delay before closing to allow user to move mouse to preview
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoveredId(null);
+      setPreviewPosition(null);
+    }, 150); // 150ms delay
+  };
+
+  const handleMouseEnterPreview = () => {
+    // Clear any pending close timeout when mouse enters preview
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleMouseLeavePreview = () => {
+    // Immediately close when leaving preview
     setHoveredId(null);
     setPreviewPosition(null);
   };
@@ -215,11 +275,12 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
               top: `${previewPosition.top}px`, 
               left: `${previewPosition.left}px`,
               zIndex: 9999,
-              transform: 'translateY(-100%)',
-              pointerEvents: 'auto'
+              transform: previewPosition.showAbove ? 'translateY(-100%)' : 'translateY(0)',
+              pointerEvents: 'auto',
+              maxHeight: 'calc(100vh - 20px)'
             }}
-            onMouseEnter={() => setHoveredId(hoveredId)}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={handleMouseEnterPreview}
+            onMouseLeave={handleMouseLeavePreview}
           >
                 {/* Preview Image/Icon */}
                 <div className="relative h-64 bg-black/20 flex items-center justify-center">

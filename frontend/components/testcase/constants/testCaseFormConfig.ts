@@ -87,7 +87,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       name: 'expectedResult',
       label: 'Expected Result',
       type: 'textarea',
-      placeholder: 'Enter the expected result or outcome',
+      placeholder: 'Enter the expected result',
       rows: 3,
       maxLength: 250,
     },
