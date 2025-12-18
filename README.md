@@ -44,7 +44,7 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 - ✅ `.env.local` is in `.gitignore` and won't be committed
 - ✅ Use `.env.example` as a template (contains placeholders only)
 - ✅ For deployment, use environment variables or AWS IAM roles
-- ✅ Create a dedicated IAM user with S3-only permissions (see `docs/S3_CORS_SETUP.md`)
+- ✅ Create a dedicated IAM user with S3-only permissions (see [Attachments Documentation](./docs/features/attachments/README.md))
 - ✅ Rotate credentials immediately if accidentally exposed
 
 ---
@@ -209,7 +209,7 @@ See [ROADMAP.md](./ROADMAP.md) for the complete feature roadmap.
    ```bash
    cp .env.example .env
    # Edit .env with your configuration (database, NextAuth secret, etc.)
-   # See docs/ENVIRONMENT_VARIABLES.md for detailed variable documentation
+   # See docs/getting-started/configuration.md for detailed variable documentation
    ```
 
 3. **Start the application:**
@@ -242,7 +242,7 @@ For detailed Docker deployment, production setup, and advanced configuration, se
    ```bash
    cp .env.example .env
    # Update DATABASE_URL and other variables in .env
-   # See docs/ENVIRONMENT_VARIABLES.md for complete variable reference
+   # See docs/getting-started/configuration.md for complete variable reference
    ```
 
 3. **Set up database:**
@@ -358,28 +358,33 @@ npx prisma db seed
 ## 📚 Documentation
 
 ### Core Documentation
-- **[Technical Overview](./docs/INDEX.md)** - Complete technical documentation index
-- **[Architecture Guide](./docs/ARCHITECTURE.md)** - System architecture and design patterns
-- **[Database Schema](./docs/DATABASE.md)** - Data models and relationships
-- **[API Documentation](./docs/API.md)** - REST API endpoints and usage
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Setup and workflow guide
-- **[Code Patterns](./docs/CODE_PATTERNS.md)** - Best practices and conventions
+- **[Documentation Home](./docs/README.md)** - Main documentation entry point
+- **[User Guide](./docs/USER_GUIDE.md)** - Simple guide for end users
+- **[Project Explanation](./docs/PROJECT_EXPLANATION.md)** - What EZTest is and how it works
+- **[Architecture Overview](./docs/architecture/README.md)** - System architecture and design patterns
+- **[Database Schema](./docs/architecture/database.md)** - Data models and relationships
+- **[API Documentation](./docs/api/README.md)** - REST API endpoints and usage
+- **[Development Setup](./docs/contributing/development-setup.md)** - Setup and workflow guide
+- **[Code Patterns](./docs/architecture/patterns.md)** - Best practices and conventions
 
 ### Deployment & Operations
 - **[Docker Deployment](./DOCKER.md)** - Production setup with Docker
-- **[Environment Configuration](./docs/ENVIRONMENT.md)** - Environment setup guide
-- **[Environment Variables](./docs/ENVIRONMENT_VARIABLES.md)** - Complete variable reference
-- **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Configuration Guide](./docs/getting-started/configuration.md)** - Environment variables and configuration
+- **[Deployment Guide](./docs/operations/deployment/README.md)** - Production deployment
+- **[Troubleshooting](./docs/operations/troubleshooting.md)** - Common issues and solutions
 
 ### Feature Documentation
-- **[Authorization & Roles](./docs/AUTHORIZATION_AND_ROLES.md)** - RBAC system details
-- **[RBAC Permissions](./docs/RBAC_PERMISSIONS.md)** - Permission matrix
-- **[User Management](./docs/USER_MANAGEMENT.md)** - User operations
-- **[Project Management](./docs/PROJECT_FEATURES.md)** - Project features guide
+- **[Authentication & RBAC](./docs/features/authentication/README.md)** - User authentication, roles, and permissions
+- **[Projects](./docs/features/projects/README.md)** - Project management features
+- **[Test Cases](./docs/features/test-cases/README.md)** - Test case management
+- **[Test Suites](./docs/features/test-suites/README.md)** - Test suite organization
+- **[Test Runs](./docs/features/test-runs/README.md)** - Test execution
+- **[Defects](./docs/features/defects/README.md)** - Defect tracking
+- **[Attachments](./docs/features/attachments/README.md)** - File attachments
+- **[Email Notifications](./docs/features/email/README.md)** - Email notifications
 
 ### Roadmap & Planning
 - **[Development Roadmap](./ROADMAP.md)** - Feature tracking and build sequence
-- **[Implementation Status](./IMPLEMENTATION_COMPLETE.md)** - Recent completions
 
 ---
 
@@ -397,7 +402,7 @@ We welcome contributions! Here's how you can help:
 
 ### Development Guidelines
 - Follow TypeScript best practices
-- Use existing component patterns (see `docs/CODE_PATTERNS.md`)
+- Use existing component patterns (see [Code Patterns](./docs/architecture/patterns.md))
 - Write meaningful commit messages
 - Update documentation for new features
 - Ensure all linting passes before submitting PR
@@ -417,7 +422,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 ### Getting Help
 - **GitHub Issues**: [github.com/houseoffoss/eztest/issues](https://github.com/houseoffoss/eztest/issues)
 - **Documentation**: See `/docs` directory
-- **Troubleshooting**: See [TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)
+- **Troubleshooting**: See [Troubleshooting Guide](./docs/operations/troubleshooting.md)
 
 ### Maintainers
 - **Philip Moses**
