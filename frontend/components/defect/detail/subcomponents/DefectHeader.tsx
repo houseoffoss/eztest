@@ -91,21 +91,7 @@ export function DefectHeader({
   return (
     <div className="mb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <Badge
-              variant="outline"
-              className={getSeverityColor(defect.severity)}
-            >
-              {defect.severity}
-            </Badge>
-            <Badge variant="outline" className={getPriorityColor(defect.priority)}>
-              {defect.priority}
-            </Badge>
-            <Badge variant="outline" className={getStatusColor(defect.status)}>
-              {formatStatus(defect.status)}
-            </Badge>
-          </div>
+        <div className="w-full">
           <h1 className="text-3xl font-bold text-white mb-1">
             {isEditing ? (
               <Input
@@ -120,7 +106,30 @@ export function DefectHeader({
               defect.title
             )}
           </h1>
-          <p className="text-white/60 text-sm">{defect.defectId}</p>
+          <p className="text-white/60 text-sm mb-3">{defect.defectId}</p>
+          <div className="flex items-center gap-6 text-sm flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Severity:</span>
+              <Badge
+                variant="outline"
+                className={getSeverityColor(defect.severity)}
+              >
+                {defect.severity}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Priority:</span>
+              <Badge variant="outline" className={getPriorityColor(defect.priority)}>
+                {defect.priority}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Status:</span>
+              <Badge variant="outline" className={getStatusColor(defect.status)}>
+                {formatStatus(defect.status)}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-2">

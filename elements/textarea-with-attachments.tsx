@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
-import { X, File, FileText, Image, Video, Archive, Download, Paperclip, FileIcon } from 'lucide-react';
+import { X, File, FileText, Image, Video, Archive, Download, Paperclip } from 'lucide-react';
 import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';
 import {
   type Attachment,
@@ -14,6 +14,7 @@ import {
   getFileIconType,
 } from '@/lib/s3';
 import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
+import { FileUploadModal } from '@/components/common/FileUploadModal';
 
 type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'value' | 'onChange'> & {
   variant?: "default" | "glass"
@@ -56,13 +57,13 @@ function TextareaWithAttachments({
   const [uploading, setUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
   const [fileError, setFileError] = React.useState<string>('');
-  const [showPopup, setShowPopup] = React.useState(false);
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
   const [imageUrls, setImageUrls] = React.useState<Record<string, string>>({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = React.useState<string | null>(null);
+  const [fileModalOpen, setFileModalOpen] = React.useState(false);
+  const [markedForDeletion, setMarkedForDeletion] = React.useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const popupRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const text = typeof value === 'string' ? value : '';
@@ -148,20 +149,6 @@ function TextareaWithAttachments({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attachments]);
 
-  // Close popup when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        setShowPopup(false);
-      }
-    };
-
-    if (showPopup) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showPopup]);
-
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange?.(e.target.value);
   };
@@ -214,7 +201,6 @@ function TextareaWithAttachments({
     if (!file) return;
 
     setFileError('');
-    setShowPopup(false);
 
     const validation = validateFile(file);
     if (!validation.valid) {
@@ -245,17 +231,6 @@ function TextareaWithAttachments({
     }
     
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleAttachmentTypeClick = (type: 'documents' | 'images') => {
-    if (fileInputRef.current) {
-      if (type === 'images') {
-        fileInputRef.current.accept = 'image/*';
-      } else {
-        fileInputRef.current.accept = '.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar';
-      }
-      fileInputRef.current.click();
-    }
   };
 
   const handleDownload = async (attachment: Attachment) => {
@@ -296,13 +271,45 @@ function TextareaWithAttachments({
     }
   };
 
+  const handleDeleteMarked = (deletedIds: string[]) => {
+    setMarkedForDeletion(deletedIds);
+  };
+
+  // Process marked deletions when modal closes
+  const handleModalClose = async () => {
+    setFileModalOpen(false);
+    
+    // Remove marked attachments from local state
+    if (markedForDeletion.length > 0) {
+      // Filter out marked attachments
+      const remainingAttachments = attachments.filter((a) => !markedForDeletion.includes(a.id));
+      onAttachmentsChange?.(remainingAttachments);
+      
+      // Delete marked attachments from S3 and database
+      for (const attachmentId of markedForDeletion) {
+        try {
+          const attachment = attachments.find(a => a.id === attachmentId);
+          if (attachment) {
+            await deleteFile(attachmentId, attachment.entityType);
+          }
+        } catch (error) {
+          console.error('Error deleting attachment:', attachmentId, error);
+          setFileError('Failed to delete some attachments');
+        }
+      }
+      
+      // Clear marked deletions
+      setMarkedForDeletion([]);
+    }
+  };
+
   return (
     <div className="w-full space-y-3">
       <div className="relative overflow-visible">
         <textarea
           data-slot="textarea"
           className={cn(
-            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 pr-12 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
+            "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
             variant === "glass"
               ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
               : "border-border/40 bg-input",
@@ -316,140 +323,26 @@ function TextareaWithAttachments({
           maxLength={maxLength}
           {...props}
         />
-        
-        {/* Attachments Inside Textarea - Bottom */}
-        {shouldShowAttachments && attachments.length > 0 && (
-          <div className="absolute bottom-2 left-2 right-14 flex gap-2 overflow-x-auto scrollbar-none z-40" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-
-            <style>{`
-              .scrollbar-none::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-            {attachments.map((attachment) => {
-              const isImage = attachment.mimeType.startsWith('image/');
-              const isPending = attachment.id.startsWith('pending-');
-              
-              return (
-                <div
-                  key={attachment.id}
-                  className="relative flex-shrink-0 group"
-                  onMouseEnter={() => setHoveredId(attachment.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  {/* Small Thumbnail */}
-                  <div 
-                    className={cn(
-                      "relative w-10 h-10 rounded-md overflow-hidden border bg-white/5 hover:border-primary/50 transition-all cursor-pointer shadow-sm",
-                      isPending ? "border-yellow-500/50 bg-yellow-500/10" : "border-white/15"
-                    )}
-                    onClick={async () => {
-                      if (isPending) return; // Can't download pending files
-                      try {
-                        await handleDownload(attachment);
-                      } catch (error) {
-                        console.error('Failed to download file:', error);
-                        setFileError('Failed to download file');
-                      }
-                    }}
-                    title={isPending ? `⏳ Ready to upload: ${attachment.originalName}` : `Click to open ${attachment.originalName}`}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleDownload(attachment).catch((error) => {
-                          console.error('Failed to download file:', error);
-                          setFileError('Failed to download file');
-                        });
-                      }
-                    }}
-                  >
-                    {isImage && imageUrls[attachment.id] ? (
-                      <img
-                        src={imageUrls[attachment.id]}
-                        alt={attachment.originalName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={cn(
-                      "absolute inset-0 flex items-center justify-center text-white/60",
-                      isImage && imageUrls[attachment.id] && "hidden"
-                    )}>
-                      {getFileIcon(attachment.mimeType, "w-5 h-5")}
-                    </div>
-                    
-                    {/* Pending Badge */}
-                    {isPending && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white/30 animate-pulse" title="Will upload on save" />
-                    )}
-                    
-                    {/* Delete Icon - Shows on hover */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(attachment.id);
-                      }}
-                      className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/60 rounded-md transition-all"
-                      title="Delete attachment"
-                    >
-                      <X className="w-5 h-5 text-red-400 hover:text-red-300" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {/* Attachment Icon Button */}
-        {shouldShowAttachments && (
-          <div className="absolute bottom-3 right-3">
-            <button
-              type="button"
-              onClick={() => setShowPopup(!showPopup)}
-              disabled={uploading}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              title="Attach File"
-            >
-              <Paperclip className="w-4 h-4 text-white/70" />
-            </button>
-            
-            {/* Popup Menu */}
-            {showPopup && (
-              <div
-                ref={popupRef}
-                className="absolute bottom-full right-0 mb-2 w-44 bg-[#1a2332] border border-white/15 rounded-lg shadow-xl overflow-hidden z-50"
-              >
-                <button
-                  type="button"
-                  onClick={() => handleAttachmentTypeClick('documents')}
-                  disabled={uploading}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  <FileIcon className="w-4 h-4 text-blue-400" />
-                  <span className="text-sm font-semibold">Documents</span>
-                </button>
-                <div className="h-px bg-white/10" />
-                <button
-                  type="button"
-                  onClick={() => handleAttachmentTypeClick('images')}
-                  disabled={uploading}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-white/90 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  <Image className="w-4 h-4 text-green-400" aria-hidden="true" />
-                  <span className="text-sm font-semibold">Images</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
+      
+      {/* Attachment Display and Button - Below textarea */}
+      {shouldShowAttachments && (
+        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+          {/* Left side - Attachment count display (non-clickable) */}
+          <span className="text-white/60">{attachments.length} Attachment{attachments.length !== 1 ? 's' : ''}</span>
+          
+          {/* Right side - Clickable button with paperclip icon */}
+          <button
+            type="button"
+            onClick={() => setFileModalOpen(true)}
+            disabled={uploading}
+            className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white/60 hover:text-white/80"
+            title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Attach Files'}
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       
       {showCharCount && maxLength && (
         <div className={cn(
@@ -619,6 +512,22 @@ function TextareaWithAttachments({
         onSubmit={handleDeleteConfirm}
         destructive={true}
       />
+
+      {/* File Upload Modal */}
+      {shouldShowAttachments && (
+        <FileUploadModal
+          isOpen={fileModalOpen}
+          onClose={handleModalClose}
+          attachments={attachments}
+          onAttachmentsChange={onAttachmentsChange || (() => {})}
+          onDeleteMarked={handleDeleteMarked}
+          fieldName={fieldName}
+          entityId={entityId}
+          projectId={projectId}
+          entityType={entityType}
+          title={`Manage Files - ${fieldName}`}
+        />
+      )}
     </div>
   )
 }

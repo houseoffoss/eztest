@@ -49,17 +49,23 @@ export function TestRunHeader({
       contentClassName="space-y-4"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className={getStatusColor(testRun.status)}>
-            {testRun.status.replace('_', ' ')}
-          </Badge>
-          {testRun.environment && (
-            <Badge
-              variant="outline"
-              className="bg-purple-500/10 text-purple-500 border-purple-500/20"
-            >
-              {testRun.environment?.toUpperCase()}
+        <div className="flex flex-wrap gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-white/60">Status:</span>
+            <Badge variant="outline" className={getStatusColor(testRun.status)}>
+              {testRun.status.replace('_', ' ')}
             </Badge>
+          </div>
+          {testRun.environment && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Environment:</span>
+              <Badge
+                variant="outline"
+                className="bg-purple-500/10 text-purple-500 border-purple-500/20"
+              >
+                {testRun.environment?.toUpperCase()}
+              </Badge>
+            </div>
           )}
         </div>
 

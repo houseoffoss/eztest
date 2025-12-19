@@ -1,23 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Download, FileText, Image as ImageIcon, File as FileIcon, X } from 'lucide-react';
 import { type Attachment, downloadFile, getFileIconType, formatFileSize } from '@/lib/s3';
 import { cn } from '@/lib/utils';
 import { Button } from '@/elements/button';
+import { ButtonDestructive } from '@/elements/button-destructive';
 import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
 interface AttachmentDisplayProps {
   attachments: Attachment[];
   showPreview?: boolean;
+  onDelete?: (attachmentId: string) => void;
+  showDelete?: boolean;
 }
 
-export function AttachmentDisplay({ attachments, showPreview = true }: AttachmentDisplayProps) {
+export function AttachmentDisplay({ attachments, showPreview = true, onDelete, showDelete = false }: AttachmentDisplayProps) {
   // Check if attachments feature is enabled
   const attachmentsEnabled = isAttachmentsEnabledClient();
   
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [previewPosition, setPreviewPosition] = useState<{ top: number; left: number; showAbove?: boolean } | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const thumbnailRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Mount portal on client side only
+  useEffect(() => {
+    setMounted(true);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fetch image URLs for attachments
   useEffect(() => {
@@ -101,25 +122,115 @@ export function AttachmentDisplay({ attachments, showPreview = true }: Attachmen
     }
   };
 
+  const handleDelete = (attachmentId: string) => {
+    setDeleteConfirmId(attachmentId);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmId && onDelete) {
+      onDelete(deleteConfirmId);
+      setDeleteConfirmId(null);
+      setHoveredId(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmId(null);
+  };
+
   // Don't show attachments if feature is disabled
   if (!attachmentsEnabled || attachments.length === 0) {
     return null;
   }
 
+  const handleMouseEnter = (attachmentId: string) => {
+    if (!showPreview) return;
+    // Clear any pending close timeout
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setHoveredId(attachmentId);
+    
+    const thumbnail = thumbnailRefs.current[attachmentId];
+    if (thumbnail) {
+      const rect = thumbnail.getBoundingClientRect();
+      const previewWidth = 320;
+      const previewHeight = 350; // Approximate height including padding
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const padding = 10;
+      
+      // Calculate horizontal position - center on thumbnail
+      let left = rect.left - (previewWidth / 2) + (rect.width / 2);
+      // Ensure preview doesn't go off-screen horizontally
+      if (left < padding) left = padding;
+      if (left + previewWidth > viewportWidth - padding) left = viewportWidth - previewWidth - padding;
+      
+      // Calculate vertical position - show above if space available, otherwise below
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
+      
+      let top;
+      let shouldShowAbove = false;
+      
+      // Show above if more space above OR if not enough space below
+      if (spaceAbove > spaceBelow || spaceBelow < previewHeight + padding) {
+        shouldShowAbove = true;
+        // Position so the preview appears above the thumbnail
+        top = rect.top - padding;
+      } else {
+        shouldShowAbove = false;
+        // Position so the preview appears below the thumbnail
+        top = rect.bottom + padding;
+      }
+      
+      setPreviewPosition({
+        top,
+        left,
+        showAbove: shouldShowAbove
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!showPreview) return;
+    // Add a small delay before closing to allow user to move mouse to preview
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoveredId(null);
+      setPreviewPosition(null);
+    }, 150); // 150ms delay
+  };
+
+  const handleMouseEnterPreview = () => {
+    // Clear any pending close timeout when mouse enters preview
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleMouseLeavePreview = () => {
+    // Immediately close when leaving preview
+    setHoveredId(null);
+    setPreviewPosition(null);
+  };
+
   return (
-    <div className="relative flex flex-wrap gap-2">
+    <div className="relative grid grid-cols-3 gap-2">
       {attachments.map((attachment) => {
         const isImage = attachment.mimeType.startsWith('image/');
         
         return (
           <div
             key={attachment.id}
-            className="relative flex-shrink-0"
-            onMouseEnter={() => showPreview && setHoveredId(attachment.id)}
-            onMouseLeave={() => showPreview && setHoveredId(null)}
+            className="relative"
+            onMouseEnter={() => handleMouseEnter(attachment.id)}
+            onMouseLeave={handleMouseLeave}
           >
             {/* Thumbnail */}
-            <div 
+            <div
+              ref={(el) => { thumbnailRefs.current[attachment.id] = el; }} 
               className="relative w-10 h-10 rounded-md overflow-hidden border border-white/15 bg-white/5 hover:border-primary/50 transition-all cursor-pointer shadow-sm"
               onClick={() => handleDownload(attachment)}
               title={`Click to download ${attachment.originalName || attachment.filename}`}
@@ -146,14 +257,31 @@ export function AttachmentDisplay({ attachments, showPreview = true }: Attachmen
                 {getFileIcon(attachment.mimeType, "w-5 h-5")}
               </div>
             </div>
-
-            {/* Hover Preview Card */}
-            {showPreview && hoveredId === attachment.id && (
-              <div 
-                className="absolute bottom-full left-0 mb-2 z-50 w-80 bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-                onMouseEnter={() => setHoveredId(attachment.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
+          </div>
+        );
+      })}
+      
+      {/* Render preview as portal */}
+      {mounted && showPreview && hoveredId && previewPosition && (() => {
+        const attachment = attachments.find(a => a.id === hoveredId);
+        if (!attachment) return null;
+        
+        const isImage = attachment.mimeType.startsWith('image/');
+        
+        return createPortal(
+          <div 
+            className="fixed w-80 bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl overflow-hidden"
+            style={{ 
+              top: `${previewPosition.top}px`, 
+              left: `${previewPosition.left}px`,
+              zIndex: 9999,
+              transform: previewPosition.showAbove ? 'translateY(-100%)' : 'translateY(0)',
+              pointerEvents: 'auto',
+              maxHeight: 'calc(100vh - 20px)'
+            }}
+            onMouseEnter={handleMouseEnterPreview}
+            onMouseLeave={handleMouseLeavePreview}
+          >
                 {/* Preview Image/Icon */}
                 <div className="relative h-64 bg-black/20 flex items-center justify-center">
                   {isImage && imageUrls[attachment.id] ? (
@@ -203,25 +331,69 @@ export function AttachmentDisplay({ attachments, showPreview = true }: Attachmen
                   <div className="flex items-center gap-2 pt-2">
                     <Button
                       type="button"
-                      size="sm"
+                      size="icon"
                       variant="glass"
-                      className="flex-1"
+                      className="w-10 h-10 p-0 flex items-center justify-center"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDownload(attachment);
                       }}
                       title="Download file"
                     >
-                      <Download className="w-3 h-3 mr-1.5" />
-                      Download
+                      <Download className="w-4 h-4" />
                     </Button>
+                    {showDelete && onDelete && (
+                      <ButtonDestructive
+                        type="button"
+                        size="icon"
+                        className="w-10 h-10 p-0 flex items-center justify-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(attachment.id);
+                        }}
+                        title="Delete file"
+                      >
+                        <X className="w-4 h-4" />
+                      </ButtonDestructive>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              </div>,
+          document.body
         );
-      })}
+      })()}
+      
+      {/* Delete Confirmation Dialog */}
+      {mounted && deleteConfirmId && (() => {
+        const attachment = attachments.find(a => a.id === deleteConfirmId);
+        if (!attachment) return null;
+        
+        return createPortal(
+          <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" style={{ zIndex: 10000 }}>
+            <div className="bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-white/90 mb-2">Delete Attachment</h3>
+              <p className="text-white/70 mb-4">
+                Are you sure you want to delete <span className="font-medium text-white/90">{attachment.originalName || attachment.filename}</span>?
+              </p>
+              <p className="text-sm text-white/50 mb-6">This action cannot be undone.</p>
+              <div className="flex items-center gap-3 justify-end">
+                <Button
+                  variant="glass"
+                  onClick={cancelDelete}
+                >
+                  Cancel
+                </Button>
+                <ButtonDestructive
+                  onClick={confirmDelete}
+                >
+                  Delete
+                </ButtonDestructive>
+              </div>
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
     </div>
   );
 }

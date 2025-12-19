@@ -126,7 +126,7 @@ export function CreateTestCaseDialog({
       name: 'expectedResult',
       label: 'Expected Result',
       type: 'textarea-with-attachments',
-      placeholder: 'Enter the expected result or outcome',
+      placeholder: 'Enter the expected result',
       rows: 3,
       cols: 1,
       attachments: expectedResultAttachments,
