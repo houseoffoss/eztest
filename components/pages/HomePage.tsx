@@ -77,10 +77,10 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <HeroSection />
-        <div id="features">
+        <div id="features" className="scroll-mt-24">
           <FeaturesGrid />
         </div>
-        <div id="why-choose">
+        <div id="why-choose" className="scroll-mt-24">
           <StatsSection />
         </div>
       </div>
