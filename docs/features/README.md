@@ -46,7 +46,7 @@ Organize testing efforts with multi-project support.
 - Create and manage multiple projects
 - Unique project keys (e.g., ECOM, MAT)
 - Team membership with project-level roles
-- Project statistics and dashboards
+- Project statistics
 
 **Quick Links:**
 - See [Projects Documentation](./projects/README.md) for complete details

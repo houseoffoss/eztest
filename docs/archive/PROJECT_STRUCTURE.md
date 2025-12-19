@@ -46,7 +46,7 @@ eztest.houseoffoss.com/
 │   └── globals.css                # Global styles & theme
 │
 ├── components/                    # Reusable React components
-│   └── (component files)          # Shadcn UI & custom components
+│   └── (component files)          # Radix UI & custom components
 │
 ├── lib/                           # Utility functions & core logic
 │   ├── auth.ts                    # NextAuth configuration
@@ -71,7 +71,7 @@ eztest.houseoffoss.com/
 ├── middleware.ts                  # NextAuth middleware
 ├── next.config.ts                 # Next.js configuration
 ├── tsconfig.json                  # TypeScript configuration
-├── components.json                # Shadcn UI configuration
+├── components.json                # Radix UI configuration
 ├── tailwind.config.ts             # Tailwind CSS configuration
 ├── postcss.config.mjs             # PostCSS configuration
 ├── eslint.config.mjs              # ESLint configuration
@@ -137,12 +137,12 @@ import type { User } from '@/types/user';
 
 ### `components/` - Reusable Components
 
-React components built with Shadcn UI and Radix UI.
+React components built with Radix UI.
 
 **Organization:**
 ```
 components/
-├── ui/                  # Shadcn UI components
+├── ui/                  # Radix UI components
 ├── auth/                # Auth-related components
 ├── dashboard/           # Dashboard components
 └── common/              # Shared components
@@ -264,7 +264,7 @@ DATABASE_URL=postgresql://eztest:eztest@localhost:5432/eztest
 | `next.config.ts` | Next.js settings |
 | `tailwind.config.ts` | Tailwind CSS customization |
 | `postcss.config.mjs` | CSS processing |
-| `components.json` | Shadcn UI configuration |
+| `components.json` | Radix UI configuration |
 | `eslint.config.mjs` | Linting rules |
 | `.dockerignore` | Docker build exclusions |
 | `.gitignore` | Git exclusions |

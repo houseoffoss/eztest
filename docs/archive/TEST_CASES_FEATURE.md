@@ -346,7 +346,7 @@ These features are in the schema but not yet implemented in the UI:
 1. **Service Layer Pattern** - Business logic separated from HTTP handling
 2. **Controller Pattern** - HTTP request/response handling
 3. **Repository Pattern** - Prisma ORM abstracts database operations
-4. **Component Composition** - Reusable UI components from shadcn/ui
+4. **Component Composition** - Reusable UI components from Radix UI
 5. **Optimistic UI Updates** - Immediate feedback before API response
 6. **Error Boundaries** - Graceful error handling with user feedback
 

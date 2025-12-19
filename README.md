@@ -90,7 +90,7 @@ docker-compose exec app npx prisma db seed
 | **UI Library** | React | 19.1.0 |
 | **Language** | TypeScript | 5.x |
 | **Styling** | Tailwind CSS | 4.x |
-| **UI Components** | shadcn/ui | Latest |
+| **UI Components** |  Radix UI | Latest |
 | **Database** | PostgreSQL | 16 |
 | **ORM** | Prisma | 5.22.0 |
 | **Authentication** | NextAuth.js | 4.24.11 |
@@ -240,7 +240,7 @@ Built with modern, open-source technologies:
 - [Next.js](https://nextjs.org/) - React framework
 - [Prisma](https://www.prisma.io/) - Database ORM
 - [NextAuth.js](https://next-auth.js.org/) - Authentication
-- [shadcn/ui](https://ui.shadcn.com/) - UI components (built on Radix UI)
+- [Radix UI](https://www.radix-ui.com/) - Accessible UI components
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
 - [Lucide](https://lucide.dev/) - Icon library
 

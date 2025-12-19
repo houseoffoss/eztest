@@ -394,7 +394,7 @@ curl -X DELETE http://localhost:3000/api/projects/[id]
 
 ## Frontend UI Features
 
-The project includes a complete UI built with React, Next.js, and Shadcn UI components, inspired by the Testiny design system.
+The project includes a complete UI built with React, Next.js, and Radix UI components, inspired by the Testiny design system.
 
 ### 1. Projects Dashboard (`/projects`)
 
@@ -414,7 +414,7 @@ The project includes a complete UI built with React, Next.js, and Shadcn UI comp
 
 **Technology:**
 - React hooks: `useState`, `useEffect`
-- Shadcn components: `Card`, `Button`, `Dialog`, `Input`, `Textarea`, `DropdownMenu`, `Badge`
+- Radix UI components: `Card`, `Button`, `Dialog`, `Input`, `Textarea`, `DropdownMenu`, `Badge`
 - Client-side routing with `useRouter`
 - Optimistic UI updates
 
@@ -646,7 +646,7 @@ Example error response:
 - **Three-Layer**: Routes → Controllers → Services → Prisma ORM
 - **Type Safety**: Full TypeScript with interfaces for all entities
 - **React Pattern**: Client components with hooks for state management
-- **UI Library**: Shadcn UI components with Tailwind CSS styling
+- **UI Library**: Radix UI components with Tailwind CSS styling
 - **Authentication**: NextAuth with session-based auth
 - **Authorization**: Dual-level RBAC (system roles + project roles)
 

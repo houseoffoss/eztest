@@ -103,12 +103,12 @@ A **Defect** (or bug) is an issue found during testing.
 2. Navigate to your EZTest URL (provided by your administrator)
 3. Log in with your email and password
 
-### Step 2: Explore the Dashboard
+### Step 2: View Your Projects
 
-After logging in, you'll see:
-- **Projects** - List of projects you have access to
-- **Recent Activity** - Your recent test runs and updates
-- **Quick Actions** - Common tasks
+After logging in, you'll see the projects page with:
+- **Projects** - List of all projects you have access to
+- **Project Cards** - Each showing project name, key, and statistics
+- **Create Project** - Button to add new projects (if you have permission)
 
 ### Step 3: Select or Create a Project
 

@@ -322,7 +322,7 @@ npm run dev
 
 ---
 
-### ShadCN Components Not Rendering
+### Radix UI Components Not Rendering
 
 **Problem**: Components missing styles or not displaying
 
@@ -332,8 +332,8 @@ npm run dev
 # 1. Verify components installed
 ls elements/
 
-# 2. Reinstall ShadCN
-npx shadcn@latest init
+# 2. Reinstall Radix UI components
+npm install @radix-ui/react-*
 
 # 3. Check component imports
 grep -r "from '@/elements'" app/

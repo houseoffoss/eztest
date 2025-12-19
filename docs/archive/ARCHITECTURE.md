@@ -38,7 +38,7 @@ EZTest follows a modern full-stack JavaScript architecture with clear separation
 
 ### 1. **Client Layer** (Browser)
 - React 19 components with Hooks
-- Shadcn UI components + Radix UI primitives
+- Radix UI components and primitives
 - Tailwind CSS styling
 - Client-side state management (React Context)
 

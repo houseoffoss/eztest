@@ -449,7 +449,7 @@
 - 📋 Requirements page
 - 📋 Team management page
 
-#### 11.3 Components (shadcn/ui)
+#### 11.3 Components (Radix UI)
 - ✅ Buttons (multiple variants including glass)
 - ✅ Forms and Inputs
 - ✅ Tables with pagination
@@ -693,7 +693,7 @@
 
 ### Phase 1: Foundation ✅ COMPLETED
 1. ✅ Authentication & Security (core)
-2. ✅ Basic UI framework (shadcn/ui)
+2. ✅ Basic UI framework (Radix UI)
 3. ✅ Database schema (15 models)
 4. ✅ Technical documentation
 
@@ -783,7 +783,7 @@
 
 #### User Interface
 - Modern glass morphism design
-- shadcn/ui components (built on Radix UI)
+- Radix UI components
 - Tailwind CSS v4
 - Responsive layout
 - 30+ reusable UI components
