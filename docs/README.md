@@ -242,7 +242,7 @@ Join the community and contribute:
 
 - **GitHub Issues**: [github.com/houseoffoss/eztest/issues](https://github.com/houseoffoss/eztest/issues)
 - **Documentation**: You're here! 📚
-- **License**: [MIT License](../LICENSE)
+- **License**: [AGPL-3.0 License](../LICENSE)
 
 ---
 

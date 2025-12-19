@@ -87,7 +87,7 @@ EZTest provides a complete test management solution that addresses all these nee
 | **Customization** | Full source access | Limited |
 | **Resource Usage** | 1 CPU, 2GB RAM | 4+ CPU, 8GB+ RAM |
 | **Deployment** | Docker (5 minutes) | Complex setup |
-| **License** | MIT (open source) | Proprietary |
+| **License** | AGPL-3.0 (open source) | Proprietary |
 
 ---
 

@@ -1,6 +1,6 @@
 # EZTest - Self-Hostable Test Management Platform
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
@@ -13,7 +13,7 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 
 **Current Status:** Active Development (v0.1.0)  
 **Repository:** [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)  
-**License:** MIT  
+**License:** AGPL-3.0  
 **Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin (kavin.p@belsterns.com)
 
 ### 🎯 Core Features Status
@@ -411,9 +411,13 @@ We welcome contributions! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
-**Copyright © 2025 Belsterns*
+**If you modify this software and run it as a network service, you must provide the complete corresponding source code to users of the service, as required by the AGPL.**
+
+See the [LICENSE](./LICENSE) file for full details.
+
+**Copyright © 2025 Belsterns**
 
 ---
 

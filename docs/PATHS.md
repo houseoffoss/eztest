@@ -115,7 +115,7 @@ Complete map of all documentation files and their locations in the EZTest projec
 | **Project README** | [`README.md`](../README.md) | Main project readme |
 | **Docker Guide** | [`DOCKER.md`](../DOCKER.md) | Docker deployment guide |
 | **Roadmap** | [`ROADMAP.md`](../ROADMAP.md) | Feature roadmap |
-| **License** | [`LICENSE`](../LICENSE) | MIT License |
+| **License** | [`LICENSE`](../LICENSE) | AGPL-3.0 License |
 
 ---
 

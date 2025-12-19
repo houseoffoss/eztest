@@ -113,7 +113,7 @@ These files remain in the project root as they are primary documentation:
 | `README.md` | Main project readme |
 | `DOCKER.md` | Docker deployment guide |
 | `ROADMAP.md` | Feature roadmap |
-| `LICENSE` | MIT License |
+| `LICENSE` | AGPL-3.0 License |
 
 ---
 
