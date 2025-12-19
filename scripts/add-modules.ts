@@ -1,3 +1,13 @@
+/**
+ * Add Modules to Existing Test Cases
+ * 
+ * Purpose: Database migration utility to add module associations to existing test cases
+ * Usage: npx tsx scripts/add-modules.ts
+ * 
+ * This script creates modules for the demo project and associates existing test cases
+ * with their appropriate modules based on their test suite.
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

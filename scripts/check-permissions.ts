@@ -1,3 +1,13 @@
+/**
+ * Check Role Permissions
+ * 
+ * Purpose: Utility script to display all role permissions in the database
+ * Usage: npx tsx scripts/check-permissions.ts
+ * 
+ * This script queries the database and displays a summary of permissions
+ * assigned to each role, grouped by category.
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

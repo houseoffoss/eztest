@@ -1,6 +1,13 @@
 #!/bin/bash
 
 # EzTest Docker Pre-Deployment Check Script
+# 
+# Purpose: Pre-deployment validation script for Linux servers
+# Usage: ./check-deployment.sh
+# 
+# This script verifies that all prerequisites are met before deploying
+# EzTest to a Linux server via Docker.
+#
 # Run this script before deploying to Linux server
 
 set -e
