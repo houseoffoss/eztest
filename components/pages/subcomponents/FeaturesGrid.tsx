@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/elements/card';
+import { Card, CardContent } from '@/elements/card';
 
 interface Feature {
   image: string;
@@ -9,32 +9,32 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    image: '/project support.png',
+    image: '/icons/project support.svg',
     title: 'Multi-Project Support',
     description: 'Manage multiple projects with role-based access control. Keep everything organized in one place.',
   },
   {
-    image: '/002-hierarchy.png',
+    image: '/icons/002-hierarchy.svg',
     title: 'Hierarchical Tests',
     description: 'Organize tests in hierarchical suites. Create detailed test cases with steps and expected results.',
   },
   {
-    image: '/Defect.png',
+    image: '/icons/defect.svg',
     title: 'Defect Management',
     description: 'Run tests and track results in real-time. Monitor progress with comprehensive dashboards.',
   },
   {
-    image: '/tracebality.png',
+    image: '/icons/traceability.svg',
     title: 'Traceability',
     description: 'Link test cases to requirements. Ensure complete coverage and maintain audit trails.',
   },
   {
-    image: '/collaboration.png',
+    image: '/icons/collaboration.svg',
     title: 'Collaboration',
     description: 'Add comments, attach files, and collaborate with your team. Everything in context.',
   },
   {
-    image: '/lightweight.png',
+    image: '/icons/lightweight.svg',
     title: 'Lightweight',
     description: 'Runs efficiently on minimal hardware. 1 core, 2GB RAM is all you need to get started.',
   },
@@ -65,6 +65,7 @@ export const FeaturesGrid = () => {
                         width={56}
                         height={56}
                         className="object-contain"
+                        priority
                       />
                     </div>
                     
