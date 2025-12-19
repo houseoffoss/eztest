@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import AdminDashboard from '@/frontend/components/admin/AdminDashboard';
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard | EZTest',
+  title: 'Admin Dashboard',
   description: 'System administration and management',
 };
 

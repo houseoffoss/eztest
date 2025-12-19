@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import UserManagement from '@/frontend/components/admin/users/UserManagement';
 
 export const metadata: Metadata = {
-  title: 'User Management | EZTest',
+  title: 'User Management',
   description: 'Manage application users and roles',
 };
 

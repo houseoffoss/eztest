@@ -52,6 +52,12 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  useEffect(() => {
+    if (project) {
+      document.title = `${project.name} | EZTest`;
+    }
+  }, [project]);
+
   const fetchProject = async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}?stats=true`);
