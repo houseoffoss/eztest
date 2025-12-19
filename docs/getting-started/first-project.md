@@ -319,4 +319,3 @@ Congratulations! You've learned how to:
 - **[Test Case Management](../features/test-cases/README.md)** - Complete test case guide
 - **[Test Run Management](../features/test-runs/README.md)** - Advanced execution features
 - **[Defect Management](../features/defects/README.md)** - Defect lifecycle management
-- **[API Integration](../api/README.md)** - Automate with the API

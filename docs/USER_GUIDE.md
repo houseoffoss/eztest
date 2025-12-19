@@ -234,7 +234,6 @@ When a test fails:
 
 ### Main Menu (Sidebar)
 
-- **Dashboard** - Overview of all projects and activity
 - **Projects** - List of all projects
 - **Test Cases** - All test cases (across projects)
 - **Test Runs** - All test runs

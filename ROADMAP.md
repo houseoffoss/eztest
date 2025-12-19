@@ -1,7 +1,7 @@
 # EZTest Development Roadmap
 
 **Version**: 0.1.0
-**Last Updated**: October 21, 2025
+**Last Updated**: December 19, 2025
 **Purpose**: Feature tracking and development reference for building EZTest
 
 ---
@@ -28,16 +28,19 @@
 - ✅ Password change in account settings
 - ✅ User profile management (name, bio, phone, location)
 - ✅ User account deletion (soft delete with 30-day archive)
-- 📋 Avatar/profile picture upload
+- ✅ Avatar/profile picture support
+- ✅ User list management (admin)
+- ✅ OTP verification system
 
 #### 1.2 Authorization & Roles
 - ✅ System-level roles (ADMIN, PROJECT_MANAGER, TESTER, VIEWER)
 - ✅ Project-level roles (OWNER, ADMIN, TESTER, VIEWER)
 - ✅ Role-based access control (middleware)
 - ✅ Session-based authorization
+- ✅ Resource-based permissions (27 granular permissions across 6 resources)
+- ✅ Permission checking utilities
 - 📋 Custom roles (enterprise feature)
 - 📋 Field-level permissions
-- 📋 Resource-based access control (RBAC)
 - 📋 Permission inheritance
 
 #### 1.3 Authentication Methods
@@ -69,26 +72,31 @@
 ### 2. Project Management
 
 #### 2.1 Projects (Core)
-- 📋 Create project
-- 📋 Read project details
-- 📋 Update project settings
-- 📋 Delete project
-- 📋 Archive project
+- ✅ Create project
+- ✅ Read project details
+- ✅ Update project settings
+- ✅ Delete project (soft delete)
+- ✅ List all projects (with membership filtering)
+- ✅ Project statistics and counts
+- 📋 Archive/restore project
 - 📋 Duplicate project from template
 
 #### 2.2 Project Metadata
-- 📋 Project key (unique identifier)
-- 📋 Project description
+- ✅ Project key (unique identifier like ECOM, MAT)
+- ✅ Project description
+- ✅ Project creator tracking
+- ✅ Created/Updated timestamps
 - 📋 Project visibility (public/private)
 - 📋 Project tags/categories
-- 📋 Project owner assignment
 
 #### 2.3 Team Management
-- 📋 Add team member to project
-- 📋 Remove team member from project
-- 📋 Change member role
-- 📋 View team members
-- 📋 Invite by email
+- ✅ Add team member to project
+- ✅ Remove team member from project
+- ✅ View team members
+- ✅ Project membership validation
+- ✅ Role-based project access
+- ✅ Change member role
+- ✅ Invite by email
 - 📋 Bulk member operations
 
 #### 2.4 Project Templates
@@ -100,35 +108,58 @@
 
 ### 3. Test Organization
 
-#### 3.1 Test Suites (Hierarchical)
-- 📋 Create test suite
-- 📋 Nested test suites (hierarchy)
-- 📋 Update suite details
-- 📋 Delete suite (cascade handling)
-- 📋 Reorder suites
-- 📋 Suite description and metadata
+#### 3.1 Modules
+- ✅ Create module
+- ✅ Read module details
+- ✅ Update module
+- ✅ Delete module
+- ✅ Module name and description
+- ✅ Custom module ordering
+- ✅ List modules per project
+- ✅ Module-specific test case listing
+- ✅ Module reordering
 
-#### 3.2 Test Cases
-- 📋 Create test case
-- 📋 Edit test case
-- 📋 Delete test case
-- 📋 Test case title, description
-- 📋 Test priority (CRITICAL, HIGH, MEDIUM, LOW)
-- 📋 Test status (ACTIVE, DEPRECATED, DRAFT)
-- 📋 Estimated execution time
-- 📋 Preconditions and postconditions
+#### 3.2 Test Suites (Hierarchical)
+- ✅ Create test suite
+- ✅ Nested test suites (unlimited hierarchy)
+- ✅ Update suite details
+- ✅ Delete suite (cascade handling)
+- 📋Reorder suites
+- ✅ Suite description and metadata
+- 📋 Move suites in hierarchy
+- ✅ Many-to-many test case associations
+- ✅ Add/remove test cases from suites
 
-#### 3.3 Test Steps
-- 📋 Add test step
-- 📋 Edit test step
-- 📋 Delete test step
-- 📋 Step number (sequential order)
-- 📋 Action description
-- 📋 Expected result
+#### 3.3 Test Cases
+- ✅ Create test case
+- ✅ Edit test case
+- ✅ Delete test case
+- ✅ Test case title, description
+- ✅ Auto-generated sequential IDs (tc1, tc2, tc3)
+- ✅ Test priority (CRITICAL, HIGH, MEDIUM, LOW)
+- ✅ Test status (ACTIVE, DEPRECATED, DRAFT)
+- ✅ Estimated execution time
+- ✅ Preconditions and postconditions
+- ✅ Expected result
+- ✅ Module assignment
+- ✅ Suite associations (many-to-many)
 
-#### 3.4 Test Case Management
+#### 3.4 Test Steps
+- ✅ Add test step
+- ✅ Edit test step
+- ✅ Delete test step
+- ✅ Step number (sequential order)
+- ✅ Action description
+- ✅ Expected result per step
+- ✅ Attachments on test steps
+
+#### 3.5 Test Case Management
+- ✅ List test cases by project
+- ✅ List test cases by module
+- ✅ List test cases by suite
+- ✅ Filter by status, priority
+- ✅ Available test cases listing
 - 📋 Search test cases
-- 📋 Filter by status, priority, suite
 - 📋 Bulk edit operations
 - 📋 Copy test case
 - 📋 Import test cases (CSV)
@@ -141,35 +172,68 @@
 ### 4. Test Execution & Results
 
 #### 4.1 Test Runs
-- 📋 Create test run
-- 📋 Edit test run details
-- 📋 Delete test run
-- 📋 Run name and description
-- 📋 Run status (PLANNED, IN_PROGRESS, COMPLETED, CANCELLED)
-- 📋 Assign test run to team member
-- 📋 Environment selection (Production, Staging, QA, etc.)
-- 📋 Start/end timestamps
+- ✅ Create test run
+- ✅ Edit test run details
+- ✅ Delete test run
+- ✅ Run name and description
+- ✅ Run status (PLANNED, IN_PROGRESS, COMPLETED, CANCELLED)
+- ✅ Assign test run to team member
+- ✅ Environment selection (Production, Staging, QA, etc.)
+- ✅ Start/end timestamps
+- ✅ Suite-based test run organization
+- ✅ Test run progress tracking
+- ✅ List test runs per project
+- ✅ Start/complete test run workflow
+- ✅ Email reports for test runs
 
 #### 4.2 Test Results
-- 📋 Log test result
-- 📋 Result status (PASSED, FAILED, BLOCKED, SKIPPED, RETEST)
-- 📋 Result comment/notes
-- 📋 Execution duration
-- 📋 Error message and stack trace
-- 📋 Result timestamp
+- ✅ Log test result
+- ✅ Result status (PASSED, FAILED, BLOCKED, SKIPPED, RETEST)
+- ✅ Result comment/notes
+- ✅ Execution duration
+- ✅ Error message tracking
+- ✅ Result timestamp
+- ✅ Result attachments
+- ✅ Link to assigned tester
+- ✅ List results per test run
 
 #### 4.3 Result Management
-- 📋 View result history per test case
+- ✅ View result history per test case
+- ✅ Result filtering by status
+- ✅ Result statistics and counts
+- ✅ Pass/fail rate calculation
 - 📋 Compare results between runs
-- 📋 Result filtering and sorting
 - 📋 Bulk result operations
-- 📋 Result analytics
+- 📋 Result analytics dashboard
 
 ---
 
-### 5. Requirements Traceability
+### 5. Defect Tracking
 
-#### 5.1 Requirements
+#### 5.1 Defects
+- ✅ Create defect
+- ✅ Edit defect details
+- ✅ Delete defect
+- ✅ Defect title and description
+- ✅ Defect severity (CRITICAL, HIGH, MEDIUM, LOW)
+- ✅ Defect status (NEW, IN_PROGRESS, FIXED, TESTED, CLOSED)
+- ✅ Assign defect to team member
+- ✅ Link defects to test cases (many-to-many)
+- ✅ Defect attachments
+- ✅ Defect comments
+- ✅ List defects per project
+- ✅ Filter defects by status/severity
+
+#### 5.2 Defect Collaboration
+- ✅ Add comments to defects
+- ✅ Edit/delete defect comments
+- ✅ Upload attachments to defects
+- ✅ Attach files to defect comments
+- ✅ Track defect history
+
+### 6. Requirements Traceability
+
+#### 6.1 Requirements
 - 📋 Create requirement
 - 📋 Edit requirement
 - 📋 Delete requirement
@@ -178,7 +242,7 @@
 - 📋 Requirement status (DRAFT, APPROVED, IMPLEMENTED, VERIFIED, DEPRECATED)
 - 📋 Requirement priority
 
-#### 5.2 Traceability
+#### 6.2 Traceability
 - 📋 Link test case to requirement
 - 📋 Unlink test case from requirement
 - 📋 View all linked test cases per requirement
@@ -188,36 +252,49 @@
 
 ---
 
-### 6. Collaboration & Communication
+### 7. Collaboration & Communication
 
-#### 6.1 Comments
-- 📋 Add comment to test case
-- 📋 Add comment to test result
-- 📋 Edit comment
-- 📋 Delete comment
+#### 7.1 Comments
+- ✅ Add comment to test case
+- ✅ Add comment to defect
+- ✅ Edit comment
+- ✅ Delete comment
+- ✅ Comment timestamp and author
+- ✅ List comments per defect
+- ✅ Comment attachments
 - 📋 Comment threads/replies
 - 📋 User mentions (@mentions)
-- 📋 Comment timestamp and author
-- 📋 Comment history
 
-#### 6.2 Attachments
-- 📋 Upload file to test case
-- 📋 Upload file to test result
-- 📋 Upload screenshots
-- 📋 Download attachment
-- 📋 Delete attachment
+#### 7.2 Attachments
+- ✅ Upload file to test case
+- ✅ Upload file to test result
+- ✅ Upload file to test step
+- ✅ Upload file to defect
+- ✅ Upload file to comment
+- ✅ Direct S3 upload with presigned URLs
+- ✅ Download attachment via presigned URLs
+- ✅ Delete attachment
+- ✅ File size validation (up to 500MB)
+- ✅ File type validation
+- ✅ Multiple file uploads
+- ✅ Attachment metadata (filename, size, type, uploader)
 - 📋 Attachment versioning
-- 📋 File size validation
-- 📋 Multiple file uploads
+- 📋 Image preview
+- 📋 PDF preview
 
-#### 6.3 Notifications
-- 📋 Email notifications (on comment, result, etc.)
-- 📋 In-app notifications
-- 📋 Slack integration
+#### 7.3 Email Notifications
+- ✅ Email service integration (Nodemailer)
+- ✅ Test run completion emails
+- ✅ Test run report emails
+- ✅ Email configuration (SMTP)
+- ✅ Email template system
+- 📋 Password reset emails
+- 📋 Defect assignment emails
+- 📋 Comment notification emails
 - 📋 Custom alert rules
 - 📋 Notification preferences per user
 
-#### 6.4 Activity Log
+#### 7.4 Activity Log
 - 📋 Track all user actions
 - 📋 Audit log storage
 - 📋 Activity feed per project
@@ -226,31 +303,33 @@
 
 ---
 
-### 7. Dashboard & Reporting
+### 8. Dashboard & Reporting
 
-#### 7.1 Dashboard
-- 🔄 Overview widgets
-  - 📋 Total projects count
-  - 📋 Total test cases
-  - 📋 Recent test runs
-  - 📋 Pass/fail rate
+#### 8.1 Dashboard
+- 🔄 Overview widgets (In Progress)
+  - 🔄 Total projects count
+  - 🔄 Total test cases count
+  - 🔄 Recent test runs list
+  - 🔄 Pass/fail rate metrics
+  - 🔄 Recent activity feed
 - 📋 Project-level dashboard
   - 📋 Test execution progress
   - 📋 Test metrics (passed, failed, blocked)
-  - 📋 Recent activity
+  - 📋 Module statistics
   - 📋 Team statistics
 
-#### 7.2 Reports
+#### 8.2 Reports
+- ✅ Test run email reports
 - 📋 Test execution report
 - 📋 Test case coverage report
-- 📋 Requirement coverage report
+- 📋 Defect report
 - 📋 Team productivity report
 - 📋 Custom report builder
 - 📋 PDF export
 - 📋 Excel export
 - 📋 Scheduled reports
 
-#### 7.3 Analytics
+#### 8.3 Analytics
 - 📋 Pass/fail rate trends
 - 📋 Test execution timeline
 - 📋 Performance metrics
@@ -261,59 +340,76 @@
 
 ---
 
-### 8. File Management
+### 9. File Management
 
-#### 8.1 Upload & Storage
-- 📋 File upload to test case
-- 📋 File upload to test result
-- 📋 Local storage implementation
-- 📋 Cloud storage support (S3, Azure Blob)
-- 📋 File size validation
-- 📋 Allowed file types validation
+#### 9.1 Upload & Storage
+- ✅ File upload to test case
+- ✅ File upload to test result
+- ✅ File upload to test step
+- ✅ File upload to defect
+- ✅ File upload to comment
+- ✅ AWS S3 storage implementation
+- ✅ Direct browser-to-S3 upload
+- ✅ Presigned URL generation
+- ✅ File size validation (up to 500MB)
+- ✅ Allowed file types validation
+- ✅ Attachment metadata tracking
+- 📋 Local storage fallback
+- 📋 Azure Blob storage support
 
-#### 8.2 File Operations
-- 📋 Download file
-- 📋 Delete file
+#### 9.2 File Operations
+- ✅ Download file via presigned URLs
+- ✅ Delete file from S3
+- ✅ Update file metadata
+- ✅ List attachments per entity
 - 📋 File preview (images, PDFs)
 - 📋 File versioning
-- 📋 File encryption
+- 📋 File encryption at rest
 
 ---
 
-### 9. API & Integration
+### 10. API & Integration
 
-#### 9.1 REST API
+#### 10.1 REST API
 - ✅ Health check endpoint
-- ✅ User registration endpoint
+- ✅ User management endpoints (CRUD)
 - ✅ Authentication endpoints (NextAuth)
-- 📋 Projects endpoints (CRUD)
-- 📋 Test suites endpoints (CRUD)
-- 📋 Test cases endpoints (CRUD)
-- 📋 Test runs endpoints (CRUD)
-- 📋 Test results endpoints (CRUD)
+- ✅ Projects endpoints (CRUD)
+- ✅ Modules endpoints (CRUD)
+- ✅ Test suites endpoints (CRUD)
+- ✅ Test cases endpoints (CRUD)
+- ✅ Test steps endpoints (CRUD)
+- ✅ Test runs endpoints (CRUD)
+- ✅ Test results endpoints (CRUD)
+- ✅ Defects endpoints (CRUD)
+- ✅ Comments endpoints (CRUD)
+- ✅ Attachments endpoints (CRUD)
+- ✅ Role and permission endpoints
 - 📋 Requirements endpoints (CRUD)
-- 📋 Comments endpoints (CRUD)
-- 📋 Attachments endpoints (CRUD)
 
-#### 9.2 API Features
+#### 10.2 API Features
+- ✅ Permission-based access control
+- ✅ Project membership validation
+- ✅ Error handling and validation
+- ✅ Zod schema validation
 - 📋 Pagination
 - 📋 Filtering
 - 📋 Sorting
 - 📋 Search
 - 📋 Rate limiting
 - 📋 API versioning
+- 📋 API documentation (OpenAPI/Swagger)
 
-#### 9.3 External Integrations
+#### 10.3 External Integrations
 - 📋 Webhook support
 - 📋 Jira integration
 - 📋 GitHub Issues integration
 - 📋 Azure DevOps integration
 - 📋 Linear integration
-- 📋 Slack integration (for results)
-- 📋 Email service integration
+- 📋 Slack integration
 - 📋 Custom webhook support
 
-#### 9.4 Automation
+#### 10.4 Automation
 - 📋 Selenium integration
 - 📋 Cypress integration
 - 📋 Custom automation framework support
@@ -323,58 +419,73 @@
 
 ---
 
-### 10. User Interface
+### 11. User Interface
 
-#### 10.1 Layout & Navigation
-- 🔄 Root layout (header, sidebar)
-- 🔄 Navigation menu
+#### 11.1 Layout & Navigation
+- ✅ Root layout (header, sidebar)
+- ✅ Navigation menu with icons
+- ✅ User profile menu
+- ✅ Glass morphism design aesthetic
+- ✅ Responsive sidebar
 - 📋 Breadcrumb navigation
-- 📋 Search bar (global)
-- 📋 User profile menu
+- 📋 Global search bar
 
-#### 10.2 Core Pages
-- 🔄 Home page
-- 🔄 Login page
-- 🔄 Registration page
-- 🔄 Dashboard
-- 📋 Projects list page
-- 📋 Project detail page
-- 📋 Test suites page
-- 📋 Test cases page
-- 📋 Test runs page
+#### 11.2 Core Pages
+- ✅ Home/Landing page
+- ✅ Login page
+- ✅ Registration page
+- ✅ Projects page
+- ✅ Project detail page
+- ✅ Modules page
+- ✅ Test suites page (hierarchical view)
+- ✅ Test cases list/detail pages
+- ✅ Test runs list/execution pages
+- ✅ Test results pages
+- ✅ Defects list/detail pages
+- ✅ User profile page
+- ✅ Settings page
+- ✅ Admin pages (users, roles)
+- ✅ Privacy policy page
 - 📋 Requirements page
 - 📋 Team management page
-- 📋 Settings page
 
-#### 10.3 Components
-- 🔄 UI component library (Shadcn UI)
-  - 📋 Buttons
-  - 📋 Forms
-  - 📋 Tables
-  - 📋 Modals
-  - 📋 Cards
-  - 📋 Inputs
-  - 📋 Dropdowns
-  - 📋 Dialogs
-  - 📋 Alerts
-  - 📋 Badges
-  - 📋 Tabs
-  - 📋 Separators
-  - 📋 Avatars
-  - 📋 Checkboxes
-  - 📋 Radio buttons
-  - 📋 Switches
-  - 📋 Tooltips
+#### 11.3 Components (shadcn/ui)
+- ✅ Buttons (multiple variants including glass)
+- ✅ Forms and Inputs
+- ✅ Tables with pagination
+- ✅ Dialogs/Modals
+- ✅ Cards
+- ✅ Dropdowns
+- ✅ Alerts
+- ✅ Badges
+- ✅ Tabs
+- ✅ Separators
+- ✅ Avatars
+- ✅ Checkboxes
+- ✅ Radio buttons
+- ✅ Switches
+- ✅ Tooltips
+- ✅ Hover cards
+- ✅ Select (searchable)
+- ✅ Textarea with attachments
+- ✅ Pagination component
+- ✅ Empty state component
+- ✅ Loader component
 
-#### 10.4 UI/UX Features
+#### 11.4 UI/UX Features
+- ✅ Glass morphism theme
+- ✅ Custom color palette
+- ✅ Tailwind CSS v4
+- ✅ Loading states
+- ✅ Error states
+- ✅ Empty states
+- ✅ Form persistence hooks
+- ✅ Attachment upload UI
+- ✅ Responsive layout (mobile/tablet/desktop)
 - 📋 Dark mode
-- 📋 Custom themes
-- 📋 Mobile responsiveness
-- 📋 Loading states
-- 📋 Error states
-- 📋 Empty states
+- 📋 Custom theme switcher
 - 📋 Keyboard shortcuts
-- 📋 Accessibility (WCAG)
+- 📋 Full WCAG accessibility
 
 ---
 
@@ -492,21 +603,37 @@
 - ✅ Database schema documentation
 - ✅ API documentation
 - ✅ Code patterns guide
+- ✅ Development setup guide
+- ✅ Contributing guidelines
 - 📋 Component storybook
-- 📋 API auto-generation
+- 📋 API auto-generation (OpenAPI)
 
 #### 15.2 User Documentation
-- 📋 User guide
+- ✅ User guide
+- ✅ Project explanation
+- ✅ Getting started guide
 - 📋 Video tutorials
 - 📋 FAQ section
-- 📋 Troubleshooting guide
-- 📋 Getting started guide
+- 📋 Advanced usage guide
 
-#### 15.3 Operations Documentation
-- ✅ Deployment guide
+#### 15.3 Feature Documentation
+- ✅ Authentication & RBAC docs
+- ✅ Projects documentation
+- ✅ Modules documentation
+- ✅ Test Cases documentation
+- ✅ Test Suites documentation
+- ✅ Test Runs documentation
+- ✅ Defects documentation
+- ✅ Attachments documentation
+- ✅ Email notifications docs
+
+#### 15.4 Operations Documentation
+- ✅ Docker deployment guide
 - ✅ Environment configuration
+- ✅ Troubleshooting guide
 - 📋 Maintenance procedures
 - 📋 Monitoring guide
+- 📋 Backup/restore procedures
 - 📋 Upgrade procedures
 
 ---
@@ -564,57 +691,152 @@
 
 ## Build Sequence
 
-### Phase 1: Foundation (Current)
+### Phase 1: Foundation ✅ COMPLETED
 1. ✅ Authentication & Security (core)
-2. ✅ Basic UI framework
-3. ✅ Technical documentation
+2. ✅ Basic UI framework (shadcn/ui)
+3. ✅ Database schema (15 models)
+4. ✅ Technical documentation
 
-### Phase 2: Core Features (Next)
-1. 📋 Project Management module
-2. 📋 Test Organization (suites, cases, steps)
-3. 📋 Test Execution & Results
-4. 📋 Dashboard (basic metrics)
-5. 📋 API endpoints for above
+### Phase 2: Core Features ✅ COMPLETED
+1. ✅ Project Management module
+2. ✅ Test Organization (modules, suites, cases, steps)
+3. ✅ Test Execution & Results
+4. ✅ Defect Tracking
+5. ✅ API endpoints (60+ endpoints)
+6. ✅ Complete UI pages and workflows
 
-### Phase 3: Collaboration
-1. 📋 Comments & Mentions
-2. 📋 Attachments
-3. 📋 Activity Logging
-4. 📋 Notifications
+### Phase 3: Collaboration ✅ COMPLETED
+1. ✅ Comments on test cases and defects
+2. ✅ File Attachments (S3, presigned URLs)
+3. ✅ Email Notifications (SMTP)
+4. 🔄 Dashboard (basic metrics) - IN PROGRESS
+5. 📋 Activity Logging - PLANNED
 
-### Phase 4: Advanced Features
+### Phase 4: Advanced Features 📋 PLANNED
 1. 📋 Requirements & Traceability
-2. 📋 Reports & Analytics
-3. 📋 External Integrations
-4. 📋 Test Automation
+2. 📋 Advanced Reports & Analytics
+3. 📋 External Integrations (Jira, GitHub, Azure DevOps)
+4. 📋 Test Automation Integration
+5. 📋 Bulk Operations
+6. 📋 Data Export/Import
 
-### Phase 5: Enterprise & Operations
-1. 📋 Advanced Auth (MFA, SSO)
+### Phase 5: Enterprise & Operations 📋 PLANNED
+1. 📋 Advanced Auth (MFA, OAuth/SSO)
 2. 📋 Performance Optimization
 3. 📋 Monitoring & Operations
-4. 📋 Data Export/Import
+4. 📋 Multi-tenant support
+5. 📋 Advanced security features
 
 ---
 
 ## Current Implementation Status
 
-### ✅ Completed
+### ✅ Completed (v0.1.0)
+
+#### Authentication & Security
 - User authentication (email/password)
-- Session management (JWT)
-- Role-based access control (2-tier)
+- Session management (JWT via NextAuth.js)
+- Password reset with email tokens
+- OTP verification system
+- Role-based access control (system + project levels)
+- 27 granular permissions across 6 resources
 - Password hashing (bcryptjs)
-- UI framework (Next.js, Tailwind, Shadcn)
-- Database schema (11 models)
-- Middleware authentication
-- Basic dashboard page
+- Soft delete for user accounts
+
+#### Project Management
+- Full CRUD for projects
+- Project keys and metadata
+- Team membership management
+- Project-level permissions
+- Project statistics
+
+#### Test Organization
+- **Modules**: Feature/component-based test case grouping
+- **Test Suites**: Hierarchical organization (unlimited nesting)
+- **Test Cases**: Full CRUD with auto-generated IDs (tc1, tc2...)
+- **Test Steps**: Detailed step-by-step procedures
+- Priority levels (CRITICAL, HIGH, MEDIUM, LOW)
+- Status tracking (ACTIVE, DRAFT, DEPRECATED)
+- Many-to-many test case to suite relationships
+
+#### Test Execution
+- Test runs with status workflow
+- Test results with multiple statuses
+- Environment-specific execution
+- Test run assignment to team members
+- Progress tracking and metrics
+- Email reports for test runs
+
+#### Defect Tracking
+- Full defect management (CRUD)
+- Severity and status tracking
+- Defect assignment
+- Link defects to test cases
+- Defect comments and attachments
+
+#### Collaboration
+- Comments on test cases and defects
+- File attachments (S3 storage, up to 500MB)
+- Presigned URLs for secure upload/download
+- Attachments on test cases, steps, results, defects, and comments
+- Email notifications (SMTP integration)
+
+#### User Interface
+- Modern glass morphism design
+- shadcn/ui components (built on Radix UI)
+- Tailwind CSS v4
+- Responsive layout
+- 30+ reusable UI components
+- Multiple page layouts
+
+#### API & Backend
+- 60+ REST API endpoints
+- Permission-based access control
+- Zod schema validation
+- Prisma ORM with 15+ models
+- Complete backend controllers and services
+
+#### Documentation
+- Comprehensive technical docs
+- Feature-specific documentation
+- API documentation
+- User guides
+- Deployment guides
+- Docker configuration
 
 ### 🔄 In Progress
-- Technical documentation
-- Code patterns guide
-- Development workflows
+- Dashboard with advanced metrics
+- Analytics and reporting
 
-### 📋 To Be Built
-- All modules listed above under TODO and PLANNED
+### 📋 Planned for Future Releases
+
+#### Phase 1: Analytics & Reporting
+- Advanced dashboard widgets
+- Custom report builder
+- Trends and charts
+- Export capabilities (PDF, Excel)
+
+#### Phase 2: Requirements & Traceability
+- Requirements management
+- Traceability matrix
+- Coverage analysis
+
+#### Phase 3: Integrations
+- Jira integration
+- GitHub Issues integration
+- Azure DevOps integration
+- Slack notifications
+- Webhook support
+
+#### Phase 4: Advanced Features
+- Test automation integration
+- CI/CD result import
+- Advanced search and filtering
+- Bulk operations
+- Data import/export
+- Dark mode
+- Multi-factor authentication (MFA)
+- OAuth providers (Google, GitHub)
 
 ---
 
@@ -629,6 +851,6 @@
 
 ---
 
-**Last Updated**: October 21, 2025
-**Maintainer**: EZTest Team
+**Last Updated**: December 19, 2025
+**Maintainers**: Philip Moses (philip.moses@belsterns.com), Kavin (kavin.p@belsterns.com)
 

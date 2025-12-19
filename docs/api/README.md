@@ -1,10 +1,12 @@
 # API Reference
 
-Complete REST API documentation for EZTest.
+Internal API documentation for EZTest developers.
 
 ## Overview
 
-EZTest provides a RESTful API built with Next.js API routes. All endpoints follow REST conventions and return JSON responses.
+EZTest provides internal REST APIs built with Next.js API routes. These APIs are used by the web UI and are not designed for standalone or external use.
+
+> **Note:** These APIs are for internal application use only. Users interact with EZTest through the web interface, not directly via API calls.
 
 ---
 
@@ -19,23 +21,14 @@ Production:  https://your-domain.com/api
 
 ## Authentication
 
-### Session-Based (Default)
+### Session-Based
 
-Most operations use session cookies automatically managed by NextAuth.js.
+All API operations use session cookies automatically managed by NextAuth.js. Authentication is handled through the web UI.
 
 ```bash
 # Session cookie is sent automatically by the browser
 curl http://localhost:3000/api/projects \
   -H "Cookie: next-auth.session-token=..."
-```
-
-### Bearer Token
-
-For external integrations, use JWT bearer tokens:
-
-```bash
-curl http://localhost:3000/api/projects \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
 ```
 
 ### Public Endpoints

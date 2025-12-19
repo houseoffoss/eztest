@@ -143,7 +143,7 @@ Detailed guides for each feature:
 
 ## <a id="api-reference"></a>API Reference
 
-Complete REST API documentation:
+Internal API documentation for developers:
 
 | Resource | Description |
 |----------|-------------|

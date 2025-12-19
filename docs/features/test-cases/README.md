@@ -66,7 +66,6 @@ Test case IDs are automatically generated:
 | **Expected Result** | Overall expected outcome | - |
 | **Priority** | Execution importance | Medium |
 | **Status** | Current state | Active |
-| **Suite** | Parent test suite | - |
 | **Module** | Associated module | - |
 | **Preconditions** | Required setup | - |
 | **Postconditions** | Cleanup/verification | - |

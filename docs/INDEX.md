@@ -15,7 +15,7 @@ The documentation is now organized into the following sections:
 |---------|-------------|------|
 | **Getting Started** | Installation, quickstart, configuration | [View →](./getting-started/README.md) |
 | **Features** | Feature guides and tutorials | [View →](./features/README.md) |
-| **API Reference** | Complete REST API documentation | [View →](./api/README.md) |
+| **API Reference** | Internal API documentation for developers | [View →](./api/README.md) |
 | **UI Components** | Component library and design system | [View →](./ui/README.md) |
 | **Architecture** | Technical architecture and patterns | [View →](./architecture/README.md) |
 | **Contributing** | Development setup and guidelines | [View →](./contributing/README.md) |

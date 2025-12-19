@@ -134,10 +134,6 @@ Click attachment to:
 |----------|------------|
 | **Images** | jpg, jpeg, png, gif, webp, svg |
 | **Documents** | pdf, doc, docx, xls, xlsx, txt |
-| **Archives** | zip, rar, 7z |
-| **Code** | json, xml, csv, log |
-| **Video** | mp4, webm, mov |
-| **Other** | Any file type |
 
 ---
 

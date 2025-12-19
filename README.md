@@ -12,7 +12,8 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 > 👥 **New User?** Check out the [**User Guide**](docs/USER_GUIDE.md) - a simple, non-technical guide explaining what EZTest is and how to use it.
 
 **Current Status:** Active Development (v0.1.0)  
-**Repository:** [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)  
+**Demo Site:** [eztest.houseoffoss.com](https://eztest.houseoffoss.com/)  
+
 **License:** AGPL-3.0  
 **Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin (kavin.p@belsterns.com)
 
@@ -21,15 +22,16 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 | Feature | Status | Details |
 |---------|--------|---------|
 | **Authentication & Authorization** | ✅ Complete | Email/password auth, RBAC, permissions |
-| **Project Management** | ✅ Complete | CRUD, team management, member roles |
-| **Test Suites** | ✅ Complete | Hierarchical organization, unlimited nesting |
+| **User Management** | ✅ Complete | CRUD, team management, member roles |
+| **Modules** | ✅ Complete | Project organization, feature grouping |
+| **Test Suites** | ✅ Complete | Hierarchical organization For Execution |
 | **Test Cases** | ✅ Complete | Full CRUD, steps, priorities, statuses |
 | **Test Runs** | ✅ Complete | Execution tracking, results, progress monitoring |
 | **Test Results** | ✅ Complete | Multiple statuses, comments, duration tracking |
 | **File Attachments** | ✅ Complete | Direct S3 upload, up to 500MB, presigned URLs |
+| **Comments & Collaboration** | ✅ Complete | Discussions on Defect |
 | **Dashboard & Analytics** | 🚧 In Progress | Basic metrics available |
 | **Requirements Traceability** | 📋 Planned | Link tests to requirements |
-| **Comments & Collaboration** | 📋 Planned | Discussions on tests |
 | **API Integrations** | 📋 Planned | Jira, GitHub, Azure DevOps |
 | **Automation Integration** | 📋 Planned | CI/CD, test frameworks |
 
@@ -49,224 +51,34 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 
 ---
 
-## ✨ Features
-
-### ✅ Implemented Features
-
-#### Authentication & Security
-- **User Authentication**
-  - Secure email/password authentication with bcrypt hashing
-  - JWT-based session management via NextAuth.js
-  - Password reset with email token validation
-  - User profile management with soft-delete capabilities
-
-- **Role-Based Access Control (RBAC)**
-  - System roles: ADMIN, PROJECT_MANAGER, TESTER, VIEWER
-  - Project roles: OWNER, ADMIN, TESTER, VIEWER
-  - 27 granular permissions across 6 resources
-  - Admin-only project member management
-  - Project visibility based on membership
-
-#### Project Management
-- **Complete CRUD Operations**
-  - Create, read, update, and delete projects
-  - Unique project keys (e.g., ECOM, MAT)
-  - Project descriptions and metadata
-  - Project statistics and counts
-
-- **Team Management**
-  - Add/remove team members
-  - Assign project-level roles
-  - Member invitation by email
-  - Role-based permissions enforcement
-  - View team member lists with roles
-
-- **Project Organization**
-  - Multi-project workspace support
-  - Project visibility based on membership
-  - Admin can view all projects
-  - Project search and filtering
-
-#### Test Organization
-- **Test Suites (Hierarchical)**
-  - Create nested test suites (unlimited depth)
-  - Parent-child relationships
-  - Move suites within hierarchy
-  - Reorder suites by display order
-  - Organize test cases by suite
-  - View suite statistics (test case counts)
-
-- **Test Cases**
-  - Full CRUD operations for test cases
-  - Auto-generated sequential IDs (tc1, tc2, tc3...)
-  - Priority levels: CRITICAL, HIGH, MEDIUM, LOW
-  - Status tracking: ACTIVE, DRAFT, DEPRECATED
-  - Rich descriptions and expected results
-  - Preconditions and postconditions
-  - Estimated execution time
-
-- **Test Steps**
-  - Detailed step-by-step test procedures
-  - Action and expected result per step
-  - Sequential step numbering
-  - Update and reorder steps
-  - View step execution history
-
-#### Test Execution & Tracking
-- **Test Runs**
-  - Create and manage test runs
-  - Assign runs to team members
-  - Environment-specific execution (Staging, QA, Production)
-  - Run status: PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
-  - Start and complete test runs
-  - Track execution timeline
-
-- **Test Results**
-  - Record test results: PASSED, FAILED, BLOCKED, SKIPPED, RETEST
-  - Add execution comments and notes
-  - Track execution duration per test
-  - Error messages and details
-  - View execution history per test case
-  - Result statistics and pass rates
-
-- **Execution Management**
-  - Bulk test case selection for runs
-  - Individual result recording
-  - Real-time progress tracking
-  - Execution metrics and analytics
-
-#### User Interface
-- **Modern Design**
-  - Clean glass morphism aesthetic
-  - Built with Tailwind CSS v4 and Radix UI
-  - Responsive layout (mobile, tablet, desktop)
-  - Accessibility-focused components
-
-- **Key Pages**
-  - Projects list and detail views
-  - Test suites hierarchy view
-  - Test cases list and detail pages
-  - Test runs execution interface
-  - Team member management pages
-  - User profile and settings
-
-#### Developer Experience
-- **Development Tools**
-  - Comprehensive technical documentation
-  - Docker containerization with Docker Compose
-  - TypeScript for type safety
-  - ESLint configuration
-  - Prisma ORM with migrations
-  - Database seeding with sample data
-
-### 🚧 In Development
-- Dashboard with advanced metrics and charts
-- Requirements traceability matrix
-- Comments and collaboration features
-- File attachments for test cases and results
-
-### 📋 Planned
-- Requirements traceability matrix
-- Comments and collaboration features
-- File attachments
-- API integrations (Jira, GitHub, Azure DevOps)
-- Test automation framework integration
-- Advanced reporting and analytics
-- Multi-factor authentication (MFA)
-- OAuth providers (Google, GitHub)
-
-See [ROADMAP.md](./ROADMAP.md) for the complete feature roadmap.
-
-### 📈 What's Built
-
-- **11 Database Models** - Complete Prisma schema for all features
-- **27 Permissions** - Granular access control across 6 resource types
-- **4 Major Features** - Projects, Test Suites, Test Cases, Test Runs (all complete)
-- **25+ API Endpoints** - RESTful API with full CRUD operations
-- **Multiple UI Pages** - List views, detail pages, execution interfaces
-- **Role-Based Security** - 4 system roles, project-level permissions
-- **Comprehensive Documentation** - 15+ detailed documentation files
-
----
-
 ## 🚀 Quick Start
 
-### Requirements
+**Try EZTest with Docker** - fastest way to get started!
 
-- **Docker & Docker Compose** (recommended for deployment)
-- **Node.js 18+** (for local development)
-- **PostgreSQL 16** (included in Docker setup)
+**Requirements:** Docker & Docker Compose
 
-### Docker Installation (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/houseoffoss/eztest.git
+cd eztest
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/houseoffoss/eztest.git
-   cd eztest
-   ```
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
 
-2. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration (database, NextAuth secret, etc.)
-   # See docs/getting-started/configuration.md for detailed variable documentation
-   ```
+# Start the application
+docker-compose up -d
 
-3. **Start the application:**
-   ```bash
-   docker-compose up -d
-   ```
+# Initialize database
+docker-compose exec app npx prisma db push
+docker-compose exec app npx prisma db seed
 
-4. **Initialize database:**
-   ```bash
-   docker-compose exec app npx prisma db push
-   docker-compose exec app npx prisma db seed
-   ```
+# Open http://localhost:3000
+```
 
-5. **Access the application:**
-   - Open http://localhost:3000 in your browser
-   - Use seeded credentials or register a new account
+✅ Register a new account or use seeded credentials
 
-For detailed Docker deployment, production setup, and advanced configuration, see [DOCKER.md](./DOCKER.md).
-
-### Local Development Installation
-
-1. **Clone and install:**
-   ```bash
-   git clone https://github.com/houseoffoss/eztest.git
-   cd eztest
-   npm install
-   ```
-
-2. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   # Update DATABASE_URL and other variables in .env
-   # See docs/getting-started/configuration.md for complete variable reference
-   ```
-
-3. **Set up database:**
-   ```bash
-   # Start PostgreSQL container (or use your own PostgreSQL server)
-   docker-compose up -d postgres
-
-   # Generate Prisma client
-   npx prisma generate
-
-   # Push database schema
-   npx prisma db push
-
-   # Seed database with roles, permissions, and sample data
-   npx prisma db seed
-   ```
-
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Access the application:**
-   - Open http://localhost:3000
+📖 For production deployment and advanced configuration, see [DOCKER.md](./DOCKER.md)
 
 ---
 
@@ -278,7 +90,7 @@ For detailed Docker deployment, production setup, and advanced configuration, se
 | **UI Library** | React | 19.1.0 |
 | **Language** | TypeScript | 5.x |
 | **Styling** | Tailwind CSS | 4.x |
-| **UI Components** | Radix UI | Latest |
+| **UI Components** | shadcn/ui | Latest |
 | **Database** | PostgreSQL | 16 |
 | **ORM** | Prisma | 5.22.0 |
 | **Authentication** | NextAuth.js | 4.24.11 |
@@ -304,87 +116,72 @@ For detailed Docker deployment, production setup, and advanced configuration, se
 
 ## 🛠️ Development
 
-### Available Scripts
+**Contributing to EZTest?** Set up your local development environment.
+
+**Requirements:** Node.js 18+, PostgreSQL 16
+
+### Setup
 
 ```bash
-# Development server with Turbopack
-npm run dev
+# Clone and install dependencies
+git clone https://github.com/houseoffoss/eztest.git
+cd eztest
+npm install
 
-# Build for production
-npm run build
+# Configure environment
+cp .env.example .env
+# Update DATABASE_URL and other variables
 
-# Start production server
-npm start
+# Start PostgreSQL (or use your own server)
+docker-compose up -d postgres
 
-# Lint code
-npm run lint
-
-# Seed database with sample data
-npm run db:seed
-```
-
-### Database Management
-
-```bash
-# Open Prisma Studio (visual database editor)
-npx prisma studio
-
-# Generate Prisma Client (after schema changes)
+# Set up database
 npx prisma generate
-
-# Push schema changes to database (development)
 npx prisma db push
-
-# Create a new migration (production)
-npx prisma migrate dev --name <migration-name>
-
-# Apply migrations (production)
-npx prisma migrate deploy
-
-# Seed database with roles, permissions, and sample data
 npx prisma db seed
+
+# Start dev server
+npm run dev
+# Open http://localhost:3000
 ```
 
-### Development Workflow
+### Common Commands
 
-1. Make changes to code or database schema
-2. If schema changed: `npx prisma generate` and `npx prisma db push`
-3. Test changes in browser at http://localhost:3000
-4. Run linter: `npm run lint`
+```bash
+npm run dev              # Start dev server with Turbopack
+npm run build            # Build for production
+npm run lint             # Check code quality
+npx prisma studio        # Visual database editor
+npx prisma generate      # Generate Prisma Client
+npx prisma db push       # Update database schema
+npx prisma db seed       # Add sample data
+```
+
+### Workflow
+
+1. Make code/schema changes
+2. If schema changed: `npx prisma generate && npx prisma db push`
+3. Test at http://localhost:3000
+4. Run `npm run lint`
 5. Commit changes
+
+📖 **Full developer guide:** [Development Setup](./docs/contributing/development-setup.md) | [Code Patterns](./docs/architecture/patterns.md)
 
 ---
 
 ## 📚 Documentation
 
-### Core Documentation
-- **[Documentation Home](./docs/README.md)** - Main documentation entry point
-- **[User Guide](./docs/USER_GUIDE.md)** - Simple guide for end users
-- **[Project Explanation](./docs/PROJECT_EXPLANATION.md)** - What EZTest is and how it works
-- **[Architecture Overview](./docs/architecture/README.md)** - System architecture and design patterns
-- **[Database Schema](./docs/architecture/database.md)** - Data models and relationships
-- **[API Documentation](./docs/api/README.md)** - REST API endpoints and usage
-- **[Development Setup](./docs/contributing/development-setup.md)** - Setup and workflow guide
-- **[Code Patterns](./docs/architecture/patterns.md)** - Best practices and conventions
+**For Users:**
+- [User Guide](./docs/USER_GUIDE.md) - Non-technical introduction
+- [Docker Deployment](./DOCKER.md) - Production setup
 
-### Deployment & Operations
-- **[Docker Deployment](./DOCKER.md)** - Production setup with Docker
-- **[Configuration Guide](./docs/getting-started/configuration.md)** - Environment variables and configuration
-- **[Deployment Guide](./docs/operations/deployment/README.md)** - Production deployment
-- **[Troubleshooting](./docs/operations/troubleshooting.md)** - Common issues and solutions
+**For Developers:**
+- [Documentation Home](./docs/README.md) - Complete documentation index
+- [Architecture](./docs/architecture/README.md) - System design and patterns
+- [API Documentation](./docs/api/README.md) - Internal API reference for developers
 
-### Feature Documentation
-- **[Authentication & RBAC](./docs/features/authentication/README.md)** - User authentication, roles, and permissions
-- **[Projects](./docs/features/projects/README.md)** - Project management features
-- **[Test Cases](./docs/features/test-cases/README.md)** - Test case management
-- **[Test Suites](./docs/features/test-suites/README.md)** - Test suite organization
-- **[Test Runs](./docs/features/test-runs/README.md)** - Test execution
-- **[Defects](./docs/features/defects/README.md)** - Defect tracking
-- **[Attachments](./docs/features/attachments/README.md)** - File attachments
-- **[Email Notifications](./docs/features/email/README.md)** - Email notifications
-
-### Roadmap & Planning
-- **[Development Roadmap](./ROADMAP.md)** - Feature tracking and build sequence
+**Planning:**
+- [ROADMAP](./ROADMAP.md) - Feature tracking and future plans
 
 ---
 
@@ -402,7 +199,7 @@ We welcome contributions! Here's how you can help:
 
 ### Development Guidelines
 - Follow TypeScript best practices
-- Use existing component patterns (see [Code Patterns](./docs/architecture/patterns.md))
+- Use existing component patterns
 - Write meaningful commit messages
 - Update documentation for new features
 - Ensure all linting passes before submitting PR
@@ -423,11 +220,11 @@ See the [LICENSE](./LICENSE) file for full details.
 
 ## 📞 Support & Contact
 
-### Getting Help
-- **GitHub Issues**: [github.com/houseoffoss/eztest/issues](https://github.com/houseoffoss/eztest/issues)
-- **Documentation**: See `/docs` directory
-- **Troubleshooting**: See [Troubleshooting Guide](./docs/operations/troubleshooting.md)
+**Demo:** [eztest.houseoffoss.com](https://eztest.houseoffoss.com/)  
+**Documentation:** [/docs](./docs/README.md)  
+**Issues:** Use GitHub Issues tab above
 
+**Maintainers:**  
 ### Maintainers
 - **Philip Moses**
   - Email: philip.moses@belsterns.com
@@ -436,12 +233,6 @@ See the [LICENSE](./LICENSE) file for full details.
   - Email: kavin.p@belsterns.com
   - Organization: House of FOSS
 
-### Links
-- **Repository**: [github.com/houseoffoss/eztest](https://github.com/houseoffoss/eztest)
-- **Issues**: [github.com/houseoffoss/eztest/issues](https://github.com/houseoffoss/eztest/issues)
-- **Releases**: [github.com/houseoffoss/eztest/releases](https://github.com/houseoffoss/eztest/releases)
-
----
 
 ## 🌟 Acknowledgments
 
@@ -449,7 +240,7 @@ Built with modern, open-source technologies:
 - [Next.js](https://nextjs.org/) - React framework
 - [Prisma](https://www.prisma.io/) - Database ORM
 - [NextAuth.js](https://next-auth.js.org/) - Authentication
-- [Radix UI](https://www.radix-ui.com/) - Accessible components
+- [shadcn/ui](https://ui.shadcn.com/) - UI components (built on Radix UI)
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
 - [Lucide](https://lucide.dev/) - Icon library
 

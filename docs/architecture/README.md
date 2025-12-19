@@ -40,7 +40,6 @@ Technical architecture documentation for EzTest.
 
 | Section | Description |
 |---------|-------------|
-| [Architecture Overview](./README.md) | System architecture overview |
 | [Database Schema](./database.md) | Data models and relationships |
 | [Security](./security.md) | Security implementation |
 | [Code Patterns](./patterns.md) | Coding patterns and conventions |
