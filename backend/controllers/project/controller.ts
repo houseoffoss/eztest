@@ -93,7 +93,7 @@ export class ProjectController {
     try {
       const project = await projectService.updateProject(projectId, {
         name,
-        description,
+        description: description ?? undefined,
       });
 
       return { data: project };
