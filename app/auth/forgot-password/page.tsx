@@ -8,7 +8,7 @@ import { Input } from '@/elements/input';
 import { Label } from '@/elements/label';
 import { GlassPanel } from '@/components/design';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 
 export default function ForgotPasswordPage() {
   useEffect(() => {

@@ -28,7 +28,7 @@ export const updateProjectSchema = z.object({
     .max(255, 'Name must not exceed 255 characters')
     .trim()
     .optional(),
-  description: z.string().optional(),
+  description: z.string().nullish(),
 });
 
 /**

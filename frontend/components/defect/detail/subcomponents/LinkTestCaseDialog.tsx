@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 
 interface LinkTestCaseDialogProps {
   projectId: string;

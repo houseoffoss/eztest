@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { TopBar } from '@/components/design';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { Loader } from '@/elements/loader';
 import { ProjectCard } from './subcomponents/ProjectCard';
 import { CreateProjectDialog } from './subcomponents/CreateProjectDialog';

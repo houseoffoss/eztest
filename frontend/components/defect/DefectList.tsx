@@ -9,7 +9,7 @@ import { Plus, Trash2, RefreshCw, UserPlus } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DefectTable, type Defect, type SortField, type SortOrder } from '@/components/common/tables/DefectTable';
 import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';

@@ -2,9 +2,10 @@
 
 interface InlineErrorProps {
   message: string;
+  onClose?: () => void;
 }
 
-export const InlineError = ({ message }: InlineErrorProps) => {
+export const InlineError = ({ message, onClose }: InlineErrorProps) => {
   if (!message) return null;
 
   return (

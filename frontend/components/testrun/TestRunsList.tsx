@@ -6,7 +6,7 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Plus } from 'lucide-react';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { TestRunsFilterCard } from './subcomponents/TestRunsFilterCard';
 import { TestRunCard } from './subcomponents/TestRunCard';
 import { TestRunsEmptyState } from './subcomponents/TestRunsEmptyState';

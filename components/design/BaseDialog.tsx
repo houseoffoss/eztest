@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/elements/select';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
-import { InlineError } from '@/components/utils/InlineError';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { InlineError } from '@/components/design/InlineError';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
 import type { Attachment } from '@/lib/s3';
@@ -407,7 +407,7 @@ export const BaseDialog = <T = unknown,>({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[570px] flex flex-col p-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
-          <div className="pt-6">
+          <div className="pt-6 pb-6">
             <DialogHeader className="mb-6">
               <DialogTitle>{title}</DialogTitle>
               {description && (

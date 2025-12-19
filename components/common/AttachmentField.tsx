@@ -6,7 +6,7 @@ import { ButtonDestructive } from '@/elements/button-destructive';
 import { Upload, X, File, FileText, Image, Video, Archive, Download } from 'lucide-react';
 import { Label } from '@/elements/label';
 import { Textarea } from '@/elements/textarea';
-import { InlineError } from '@/components/utils/InlineError';
+import { InlineError } from '@/components/design/InlineError';
 import {
   type Attachment,
   validateFile,

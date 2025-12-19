@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { TestRunDetail } from '@/frontend/components/testruns';
+import { TestRunDetail } from '@/frontend/components/testrun';
 
 export default function TestRunDetailPage() {
   const params = useParams();

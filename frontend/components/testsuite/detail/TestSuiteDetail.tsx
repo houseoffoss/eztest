@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { TestSuiteHeader } from './subcomponents/TestSuiteHeader';
 import { TestSuiteDetailsCard } from './subcomponents/TestSuiteDetailsCard';
 import { TestCasesCard } from './subcomponents/TestCasesCard';

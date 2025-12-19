@@ -6,7 +6,7 @@ import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';
 import { TestTube2, Folder } from 'lucide-react';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Module, TestCase } from '../types';
 import { CreateTestCaseDialog } from '../subcomponents/CreateTestCaseDialog';

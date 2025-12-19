@@ -29,7 +29,7 @@ RUN npm ci && \
     npm cache clean --force
 
 # Copy docker-entrypoint.sh first (to ensure it's included)
-COPY devops/develop/docker-entrypoint.sh ./
+COPY docker-entrypoint.sh ./
 
 # Copy source code
 COPY . .

@@ -3,7 +3,7 @@
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
 import { useEffect, useState } from 'react';
 import { SearchableSelect } from '@/elements/searchable-select';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { type Attachment } from '@/lib/s3';
 
 interface Defect {

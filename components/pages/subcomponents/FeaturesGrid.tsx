@@ -9,7 +9,7 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    image: '/icons/project support.svg',
+    image: '/icons/project-support.svg',
     title: 'Multi-Project Support',
     description: 'Manage multiple projects with role-based access control. Keep everything organized in one place.',
   },

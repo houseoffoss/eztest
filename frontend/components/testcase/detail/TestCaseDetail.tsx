@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { TopBar } from '@/components/design';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/elements/loader';
 import { ButtonSecondary } from '@/elements/button-secondary';

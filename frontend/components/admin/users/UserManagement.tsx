@@ -7,7 +7,7 @@ import { ButtonPrimary } from '@/elements/button-primary';
 import { Input } from '@/elements/input';
 import { TopBar, UserCard } from '@/components/design';
 import { Loader } from '@/elements/loader';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { 
   Users, 
   UserPlus, 

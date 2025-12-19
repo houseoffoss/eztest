@@ -4,7 +4,7 @@ import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '@/elements/button';
 import { ButtonDestructive } from '@/elements/button-destructive';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
-import { InlineError } from '@/components/utils/InlineError';
+import { InlineError } from '@/components/design/InlineError';
 
 export interface BaseConfirmDialogConfig {
   title: string;

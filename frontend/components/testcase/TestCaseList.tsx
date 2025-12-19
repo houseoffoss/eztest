@@ -9,7 +9,7 @@ import { Plus, FolderPlus } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { TestCase, TestSuite, Project, Module } from './types';
 import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';

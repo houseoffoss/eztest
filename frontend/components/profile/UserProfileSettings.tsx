@@ -8,7 +8,7 @@ import { Label } from '@/elements/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
 import { TopBar } from '@/components/design';
 import { DetailCard } from '@/components/design/DetailCard';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
 import { Loader } from '@/elements/loader';
 

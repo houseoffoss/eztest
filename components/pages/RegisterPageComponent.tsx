@@ -9,7 +9,7 @@ import { Navbar } from '@/components/design/Navbar';
 import { RegisterForm } from './subcomponents/RegisterForm';
 import { RegisterLeftPanel } from './subcomponents/RegisterLeftPanel';
 import { OtpVerification } from '@/components/common/OtpVerification';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/utils/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const navItems = [
