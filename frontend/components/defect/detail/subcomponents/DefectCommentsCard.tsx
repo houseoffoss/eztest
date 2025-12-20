@@ -191,11 +191,6 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
     fetchComments();
   }, [fetchComments]);
 
-  useEffect(() => {
-    // Scroll to bottom when comments load
-    commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [comments]);
-
   const formatTimestamp = (date: Date) => {
     const now = new Date();
     const commentDate = new Date(date);
@@ -220,7 +215,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
     <DetailCard title="Comments" contentClassName="!p-0">
       <div className="flex flex-col h-[500px]">
         {/* Comments list */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+        <div className={`flex-1 p-6 space-y-4 ${comments.length > 0 ? 'overflow-y-auto custom-scrollbar' : 'overflow-y-hidden'}`}>
           {loading ? (
             <div className="flex items-center justify-center h-full text-gray-400">
               Loading comments...
