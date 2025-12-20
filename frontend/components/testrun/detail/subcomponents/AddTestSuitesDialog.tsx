@@ -86,7 +86,7 @@ export function AddTestSuitesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[500px] overflow-y-auto space-y-3 mb-4">
+        <div className="max-h-[500px] overflow-y-auto custom-scrollbar space-y-3 mb-4">
           {fetchingData ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
               <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>

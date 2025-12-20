@@ -241,7 +241,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
               New Test Case
             </ButtonPrimary>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
             <DialogHeader>
               <DialogTitle>Create Test Case</DialogTitle>
               <DialogDescription>

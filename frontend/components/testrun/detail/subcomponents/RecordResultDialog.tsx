@@ -294,7 +294,7 @@ export function RecordResultDialog({
                   </div>
 
                   {/* Defects List */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                  <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
                     {getFilteredDefects().length > 0 ? (
                       getFilteredDefects().map((defect) => (
                         <div

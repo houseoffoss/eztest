@@ -105,7 +105,7 @@ export const SearchableUserSelect = ({
 
         {/* Dropdown */}
         {showDropdown && searchInput.trim() && (
-          <div className="absolute top-full left-0 right-0 bg-[#1a2332] border border-white/10 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 bg-[#1a2332] border border-white/10 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <button
