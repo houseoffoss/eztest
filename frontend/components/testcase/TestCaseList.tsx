@@ -31,9 +31,6 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
-  // Removed unused state variables testPlans and testRuns
-  const [filteredTestCases, setFilteredTestCases] = useState<TestCase[]>([]);
-  const [paginatedTestCases, setPaginatedTestCases] = useState<TestCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -50,6 +47,8 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalPagesCount, setTotalPagesCount] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isPaginationChange, setIsPaginationChange] = useState(false);
 
   // Alert state
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
@@ -60,27 +59,21 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   useEffect(() => {
     fetchProject();
-    fetchTestCases();
     fetchTestSuites();
-    fetchModules();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  // Fetch test cases with backend pagination when filters or page changes
+  useEffect(() => {
+    fetchTestCases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, currentPage, itemsPerPage, searchQuery, priorityFilter, statusFilter]);
 
   useEffect(() => {
     if (project) {
       document.title = `Test Cases - ${project.name} | EZTest`;
     }
   }, [project]);
-
-  useEffect(() => {
-    applyFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testCases, searchQuery, priorityFilter, statusFilter]);
-
-  useEffect(() => {
-    applyPagination();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredTestCases, currentPage, itemsPerPage]);
 
   const fetchProject = async () => {
     try {
@@ -96,16 +89,44 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   const fetchTestCases = async () => {
     try {
-      setLoading(true);
-      const response = await fetch(`/api/projects/${projectId}/testcases`);
+      // Show loader on initial load or pagination changes, but not on search/filter changes
+      if (testCases.length === 0 && modules.length === 0) {
+        setLoading(true);
+      } else if (isPaginationChange) {
+        setLoading(true);
+      }
+      
+      // Build query parameters for pagination and filtering
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+        groupBy: 'module',
+      });
+      
+      if (searchQuery) params.append('search', searchQuery);
+      if (priorityFilter !== 'all') params.append('priority', priorityFilter);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      
+      const response = await fetch(`/api/projects/${projectId}/testcases?${params}`);
       const data = await response.json();
+      
       if (data.data) {
         setTestCases(data.data);
+      }
+      
+      if (data.modules) {
+        setModules(data.modules);
+      }
+      
+      if (data.pagination) {
+        setTotalPagesCount(data.pagination.totalPages);
+        setTotalItems(data.pagination.totalItems);
       }
     } catch (error) {
       console.error('Error fetching test cases:', error);
     } finally {
       setLoading(false);
+      setIsPaginationChange(false);
     }
   };
 
@@ -121,107 +142,30 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     }
   };
 
-  const fetchModules = async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/modules`);
-      const data = await response.json();
-      if (data.data) {
-        setModules(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching modules:', error);
-    }
-  };
-
-  const applyFilters = () => {
-    let filtered = [...testCases];
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (tc) =>
-          tc.title.toLowerCase().includes(query) ||
-          tc.description?.toLowerCase().includes(query)
-      );
-    }
-
-    // Priority filter
-    if (priorityFilter !== 'all') {
-      filtered = filtered.filter((tc) => tc.priority === priorityFilter);
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((tc) => tc.status === statusFilter);
-    }
-
-    setFilteredTestCases(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
-
-  const applyPagination = () => {
-    // Group by module first
-    const grouped = filteredTestCases.reduce((acc, tc) => {
-      const moduleId = tc.moduleId || 'no-module';
-      if (!acc[moduleId]) {
-        acc[moduleId] = [];
-      }
-      acc[moduleId].push(tc);
-      return acc;
-    }, {} as Record<string, TestCase[]>);
-
-    // Convert to array of module groups
-    const moduleGroups = Object.values(grouped);
-    
-    // Build pages by complete module groups
-    const pages: TestCase[][] = [];
-    let currentPageItems: TestCase[] = [];
-    
-    for (const group of moduleGroups) {
-      // If adding this module would exceed page size and we already have items
-      if (currentPageItems.length > 0 && currentPageItems.length + group.length > itemsPerPage) {
-        // Save current page and start a new one
-        pages.push(currentPageItems);
-        currentPageItems = [];
-      }
-      
-      // Add entire module group to current page
-      currentPageItems = currentPageItems.concat(group);
-      
-      // If this single module fills or exceeds the page size, create a page for it
-      if (currentPageItems.length >= itemsPerPage) {
-        pages.push(currentPageItems);
-        currentPageItems = [];
-      }
-    }
-    
-    // Add any remaining test cases as the last page
-    if (currentPageItems.length > 0) {
-      pages.push(currentPageItems);
-    }
-    
-    // Store total pages count
-    setTotalPagesCount(pages.length);
-    
-    // Get the appropriate page (currentPage state is 1-indexed)
-    const pageIndex = currentPage - 1;
-    setPaginatedTestCases(pages[pageIndex] || []);
-  };
-
   const handlePageChange = (page: number) => {
+    setIsPaginationChange(true);
     setCurrentPage(page);
   };
 
   const handleItemsPerPageChange = (items: number) => {
+    setIsPaginationChange(true);
     setItemsPerPage(items);
     setCurrentPage(1); // Reset to first page when items per page changes
   };
 
-  // Get modules that have test cases in the current page
-  const modulesInCurrentPage = modules.filter(module => 
-    paginatedTestCases.some(tc => tc.moduleId === module.id)
-  );
+  // Show modules that have test cases in the current page OR are truly empty (on last page only)
+  const modulesForTable = testCases.length === 0 
+    ? modules 
+    : modules.filter(module => {
+        // Include if module has test cases in current page
+        const hasTestCasesInPage = testCases.some(tc => tc.moduleId === module.id);
+        if (hasTestCasesInPage) return true;
+        
+        // Include if module is truly empty AND we're on the last page
+        const isTrulyEmpty = module._count?.testCases === 0;
+        const isLastPage = currentPage === totalPagesCount;
+        return isTrulyEmpty && isLastPage;
+      });
 
   const handleTestCaseCreated = (newTestCase: TestCase) => {
     setAlert({
@@ -230,6 +174,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       message: `Test case "${newTestCase.title}" created successfully`,
     });
     setTimeout(() => setAlert(null), 5000);
+    setCurrentPage(1); // Navigate to page 1 to see the newly created test case
     fetchTestCases();
   };
 
@@ -241,8 +186,8 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     });
     setTimeout(() => setAlert(null), 5000);
     setCreateModuleDialogOpen(false);
-    fetchModules(); // Refresh modules list
-    fetchTestCases(); // Refresh test cases to show new module grouping
+    setCurrentPage(1); // Navigate to page 1 to see the newly created module
+    fetchTestCases(); // Refresh test cases and modules (modules are now fetched with pagination)
   };
 
   const handleDeleteTestCase = async () => {
@@ -366,18 +311,18 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         {/* Test Cases List */}
         {loading ? (
           <Loader fullScreen={false} text="Loading test cases..." />
-        ) : filteredTestCases.length === 0 ? (
+        ) : testCases.length === 0 && totalItems === 0 ? (
           <EmptyTestCaseState
-            hasFilters={testCases.length > 0}
+            hasFilters={false}
             onCreateClick={() => setCreateDialogOpen(true)}
             canCreate={canCreateTestCase}
           />
         ) : (
           <>
             <TestCaseTable
-              testCases={paginatedTestCases}
+              testCases={testCases}
               groupedByModule={true}
-              modules={modulesInCurrentPage}
+              modules={modulesForTable}
               onDelete={handleDeleteClick}
               onClick={handleCardClick}
               canDelete={canDeleteTestCase}
@@ -386,12 +331,12 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             />
 
             {/* Pagination */}
-            {filteredTestCases.length > 0 && (
+            {totalItems > 0 && (
               <div className="mt-6">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPagesCount}
-                  totalItems={filteredTestCases.length}
+                  totalItems={totalItems}
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}
                   onItemsPerPageChange={handleItemsPerPageChange}

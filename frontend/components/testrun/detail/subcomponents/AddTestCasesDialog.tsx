@@ -45,7 +45,7 @@ export function AddTestCasesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
           {availableTestCases.length === 0 ? (
             <p className="text-white/60 text-center py-8">
               No available test cases to add

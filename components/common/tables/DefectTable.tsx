@@ -8,14 +8,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/elements/dropdown-menu';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/elements/hover-card';
-import { MoreVertical, Trash2, Edit, UserPlus, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { MoreVertical, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface Defect {
   id: string;
@@ -58,13 +57,8 @@ interface DefectTableProps {
   onSelectDefect: (defectId: string) => void;
   onSelectAll: (selected: boolean) => void;
   onClick: (defectId: string) => void;
-  onEdit?: (defect: Defect) => void;
   onDelete?: (defect: Defect) => void;
-  onChangeStatus?: (defect: Defect) => void;
-  onAssign?: (defect: Defect) => void;
-  canEdit?: boolean;
   canDelete?: boolean;
-  canAssign?: boolean;
   sortField?: SortField;
   sortOrder?: SortOrder;
   onSort?: (field: SortField) => void;
@@ -76,13 +70,8 @@ export function DefectTable({
   onSelectDefect,
   onSelectAll,
   onClick,
-  onEdit,
   onDelete,
-  onChangeStatus,
-  onAssign,
-  canEdit = true,
   canDelete = true,
-  canAssign = true,
   sortField,
   sortOrder,
   onSort,
@@ -349,46 +338,18 @@ export function DefectTable({
 
             {/* Actions Column */}
             <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white/70 hover:text-white hover:bg-white/10 h-7 w-7 p-0 cursor-pointer"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent variant="glass" align="end">
-                  {canEdit && onEdit && (
-                    <DropdownMenuItem
-                      onClick={() => onEdit(defect)}
-                      className="cursor-pointer"
+              {canDelete && onDelete && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/70 hover:text-white hover:bg-white/10 h-5 w-5 p-0 cursor-pointer"
                     >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Defect
-                    </DropdownMenuItem>
-                  )}
-                  {onChangeStatus && (
-                    <DropdownMenuItem
-                      onClick={() => onChangeStatus(defect)}
-                      className="cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Change Status
-                    </DropdownMenuItem>
-                  )}
-                  {canAssign && onAssign && (
-                    <DropdownMenuItem
-                      onClick={() => onAssign(defect)}
-                      className="cursor-pointer"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Assign / Reassign
-                    </DropdownMenuItem>
-                  )}
-                  {(canEdit || canAssign || onChangeStatus) && canDelete && <DropdownMenuSeparator />}
-                  {canDelete && onDelete && (
+                      <MoreVertical className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent variant="glass" align="end">
                     <DropdownMenuItem
                       onClick={() => onDelete(defect)}
                       className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
@@ -396,9 +357,9 @@ export function DefectTable({
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         ))

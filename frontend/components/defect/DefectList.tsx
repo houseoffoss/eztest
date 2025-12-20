@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Badge } from '@/elements/badge';
 import { ButtonPrimary } from '@/elements/button-primary';
 import { ButtonSecondary } from '@/elements/button-secondary';
-import { Plus, Trash2, RefreshCw, UserPlus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { TopBar } from '@/components/design';
 import { Loader } from '@/elements/loader';
 import { Pagination } from '@/elements/pagination';
@@ -41,6 +41,8 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [availableAssignees, setAvailableAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [singleDeleteConfirmOpen, setSingleDeleteConfirmOpen] = useState(false);
+  const [defectToDelete, setDefectToDelete] = useState<Defect | null>(null);
   
   // Selection state
   const [selectedDefects, setSelectedDefects] = useState<Set<string>>(new Set());
@@ -323,7 +325,12 @@ export default function DefectList({ projectId }: DefectListProps) {
     setDeleteConfirmOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleSingleDelete = (defect: Defect) => {
+    setDefectToDelete(defect);
+    setSingleDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmBulkDelete = async () => {
     try {
       const deletePromises = Array.from(selectedDefects).map((id) =>
         fetch(`/api/defects/${id}`, { method: 'DELETE' })
@@ -347,6 +354,35 @@ export default function DefectList({ projectId }: DefectListProps) {
         message: 'Failed to delete some defects',
       });
       setTimeout(() => setAlert(null), 5000);
+    }
+  };
+
+  const handleConfirmSingleDelete = async () => {
+    if (!defectToDelete) return;
+
+    try {
+      const response = await fetch(`/api/defects/${defectToDelete.id}`, { method: 'DELETE' });
+      
+      if (response.ok) {
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'Defect deleted successfully',
+        });
+        setTimeout(() => setAlert(null), 5000);
+        fetchDefects();
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch {
+      setAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete defect',
+      });
+      setTimeout(() => setAlert(null), 5000);
+    } finally {
+      setDefectToDelete(null);
     }
   };
 
@@ -375,9 +411,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   }
 
   const canCreateDefect = hasPermissionCheck('defects:create');
-  const canEditDefect = hasPermissionCheck('defects:update');
   const canDeleteDefect = hasPermissionCheck('defects:delete');
-  const canAssignDefect = hasPermissionCheck('defects:assign');
 
   return (
     <>
@@ -478,48 +512,8 @@ export default function DefectList({ projectId }: DefectListProps) {
               onSelectDefect={handleSelectDefect}
               onSelectAll={handleSelectAll}
               onClick={handleDefectClick}
-              onEdit={(defect) => router.push(`/projects/${projectId}/defects/${defect.id}/edit`)}
-              onDelete={(defect) => {
-                if (confirm(`Are you sure you want to delete defect "${defect.title}"?`)) {
-                  fetch(`/api/defects/${defect.id}`, { method: 'DELETE' })
-                    .then(() => {
-                      setAlert({
-                        type: 'success',
-                        title: 'Success',
-                        message: 'Defect deleted successfully',
-                      });
-                      setTimeout(() => setAlert(null), 5000);
-                      fetchDefects();
-                    })
-                    .catch(() => {
-                      setAlert({
-                        type: 'error',
-                        title: 'Error',
-                        message: 'Failed to delete defect',
-                      });
-                      setTimeout(() => setAlert(null), 5000);
-                    });
-                }
-              }}
-              onChangeStatus={() => {
-                setAlert({
-                  type: 'success',
-                  title: 'Coming Soon',
-                  message: 'Status change feature is under development',
-                });
-                setTimeout(() => setAlert(null), 3000);
-              }}
-              onAssign={() => {
-                setAlert({
-                  type: 'success',
-                  title: 'Coming Soon',
-                  message: 'Assign feature is under development',
-                });
-                setTimeout(() => setAlert(null), 3000);
-              }}
-              canEdit={canEditDefect}
+              onDelete={handleSingleDelete}
               canDelete={canDeleteDefect}
-              canAssign={canAssignDefect}
               sortField={sortField}
               sortOrder={sortOrder}
               onSort={handleSort}
@@ -545,7 +539,7 @@ export default function DefectList({ projectId }: DefectListProps) {
       </div>
 
       {/* Create Defect Dialog */}
-      {/* Delete Confirmation Dialog */}
+      {/* Bulk Delete Confirmation Dialog */}
       <BaseConfirmDialog
         title="Delete Defects"
         description={`Are you sure you want to delete ${selectedDefects.size} defect(s)? This action cannot be undone.`}
@@ -553,7 +547,19 @@ export default function DefectList({ projectId }: DefectListProps) {
         cancelLabel="Cancel"
         triggerOpen={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
-        onSubmit={handleConfirmDelete}
+        onSubmit={handleConfirmBulkDelete}
+        destructive={true}
+      />
+
+      {/* Single Delete Confirmation Dialog */}
+      <BaseConfirmDialog
+        title="Delete Defect"
+        description={defectToDelete ? `Are you sure you want to delete defect "${defectToDelete.title}"? This action cannot be undone.` : ''}
+        submitLabel="Delete"
+        cancelLabel="Cancel"
+        triggerOpen={singleDeleteConfirmOpen}
+        onOpenChange={setSingleDeleteConfirmOpen}
+        onSubmit={handleConfirmSingleDelete}
         destructive={true}
       />
 

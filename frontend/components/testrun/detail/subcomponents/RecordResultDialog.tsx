@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/elements/select';
 import { Checkbox } from '@/elements/checkbox';
-import { CheckCircle, XCircle, AlertCircle, Circle, Plus, Bug, Search } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Circle, Bug, Search } from 'lucide-react';
 import { ResultFormData } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
 
@@ -236,8 +236,11 @@ export function RecordResultDialog({
           {/* Show defect options when status is FAILED */}
           {formData.status === 'FAILED' && (
             <div className="space-y-4 border-t border-white/10 pt-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2">
                 <Label>Link to Defects (Optional)</Label>
+                <p className="text-xs text-white/50">
+                  To create a new defect, use the &ldquo;Create Defect&rdquo; button in the table&apos;s Actions column.
+                </p>
               </div>
 
               {loadingDefects ? (
@@ -294,7 +297,7 @@ export function RecordResultDialog({
                   </div>
 
                   {/* Defects List */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                  <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
                     {getFilteredDefects().length > 0 ? (
                       getFilteredDefects().map((defect) => (
                         <div

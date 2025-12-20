@@ -52,7 +52,7 @@ export function SelectTestCasesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto pr-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
           <div className="space-y-3">
             {testCases.length === 0 ? (
               <p className="text-gray-400 text-center py-8">

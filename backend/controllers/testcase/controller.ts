@@ -42,6 +42,61 @@ export class TestCaseController {
   }
 
   /**
+   * Get test cases with pagination and module grouping
+   * Access already checked by route wrapper
+   */
+  async getProjectTestCasesWithPagination(
+    req: CustomRequest,
+    projectId: string
+  ) {
+    const searchParams = req.nextUrl.searchParams;
+    
+    // Pagination parameters
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const groupBy = searchParams.get('groupBy') || 'module';
+    
+    // Filter parameters
+    const queryData = {
+      suiteId: searchParams.get('suiteId') || undefined,
+      priority: searchParams.get('priority') || undefined,
+      status: searchParams.get('status') || undefined,
+      search: searchParams.get('search') || undefined,
+      moduleId: searchParams.get('moduleId') || undefined,
+    };
+
+    // Validation with Zod
+    const validationResult = testCaseQuerySchema.safeParse(queryData);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Invalid query parameters',
+        validationResult.error.issues
+      );
+    }
+
+    const filters = validationResult.data;
+
+    const result = await testCaseService.getProjectTestCasesWithPagination(
+      projectId,
+      filters,
+      { page, limit, groupBy }
+    );
+
+    return {
+      data: result.testCases,
+      modules: result.modules,
+      pagination: {
+        currentPage: result.pagination.currentPage,
+        totalPages: result.pagination.totalPages,
+        totalItems: result.pagination.totalItems,
+        itemsPerPage: result.pagination.itemsPerPage,
+        hasNextPage: result.pagination.hasNextPage,
+        hasPreviousPage: result.pagination.hasPreviousPage,
+      }
+    };
+  }
+
+  /**
    * Create a new test case
    * Permission already checked by route wrapper
    */

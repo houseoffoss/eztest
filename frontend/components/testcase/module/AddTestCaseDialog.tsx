@@ -172,7 +172,7 @@ export function AddTestCaseDialog({
               </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 mb-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 mb-6">
               {testCases.map((testCase) => (
                 <div
                   key={testCase.id}

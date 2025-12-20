@@ -52,6 +52,7 @@ export interface TestCase {
     steps: number;
     results: number;
     requirements: number;
+    defects: number;
     comments?: number;
     attachments?: number;
   };

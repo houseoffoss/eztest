@@ -69,7 +69,7 @@ export function AddTestCasesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className={context === 'run' ? 'max-h-[400px] overflow-y-auto' : 'max-h-[80vh] overflow-y-auto pr-4'}>
+        <div className={context === 'run' ? 'max-h-[400px] overflow-y-auto custom-scrollbar' : 'max-h-[80vh] overflow-y-auto custom-scrollbar pr-4'}>
           {testCases.length === 0 ? (
             <p className={context === 'run' ? 'text-white/60 text-center py-8' : 'text-gray-400 text-center py-8'}>
               No available test cases to add

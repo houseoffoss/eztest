@@ -148,6 +148,248 @@ export class TestCaseService {
   }
 
   /**
+   * Get project test cases with pagination and module grouping
+   */
+  async getProjectTestCasesWithPagination(
+    projectId: string,
+    filters?: TestCaseFilters & { moduleId?: string },
+    paginationOptions: { page: number; limit: number; groupBy: string } = { page: 1, limit: 10, groupBy: 'module' }
+  ) {
+    const { page, limit, groupBy } = paginationOptions;
+    
+    // Build filter conditions
+    const where: Record<string, unknown> = { projectId };
+    
+    if (filters?.suiteId) {
+      where.suiteId = filters.suiteId;
+    }
+    
+    if (filters?.priority) {
+      where.priority = filters.priority;
+    }
+    
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+    
+    if (filters?.moduleId) {
+      where.moduleId = filters.moduleId;
+    }
+    
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Get total count for pagination metadata
+    const totalItems = await prisma.testCase.count({ where });
+
+    // Fetch all modules for the project (needed for empty module display)
+    const modules = await prisma.module.findMany({
+      where: { projectId },
+      include: {
+        _count: {
+          select: { testCases: true }
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    if (groupBy === 'module') {
+      // Module-based pagination with proper handling of large modules
+      // Strategy: Flatten test cases while maintaining module order, then paginate
+      
+      // Get all test cases for grouping, sorted by updatedAt DESC (most recent first)
+      const allTestCases = await prisma.testCase.findMany({
+        where,
+        include: {
+          module: { select: { id: true, name: true, updatedAt: true } },
+          suite: { select: { id: true, name: true } },
+          createdBy: { select: { id: true, name: true, email: true, avatar: true } },
+          _count: { 
+            select: { 
+              steps: true, 
+              results: true, 
+              requirements: true,
+              defects: {
+                where: {
+                  defect: {
+                    status: { not: 'CLOSED' } // Only count open defects
+                  }
+                }
+              }
+            } 
+          }
+        },
+        orderBy: { updatedAt: 'desc' }  // Most recently updated test cases first
+      });
+
+      // Group test cases by module
+      const grouped: Record<string, typeof allTestCases> = {};
+      const moduleLastUpdate: Record<string, Date> = {};
+      
+      allTestCases.forEach(tc => {
+        const moduleId = tc.moduleId || 'no-module';
+        if (!grouped[moduleId]) {
+          grouped[moduleId] = [];
+        }
+        grouped[moduleId].push(tc);
+        
+        // Track the most recent update time for each module
+        const tcUpdateTime = new Date(tc.updatedAt);
+        if (!moduleLastUpdate[moduleId] || tcUpdateTime > moduleLastUpdate[moduleId]) {
+          moduleLastUpdate[moduleId] = tcUpdateTime;
+        }
+      });
+
+      // Create list of all groups (modules + ungrouped) with their sort keys
+      interface GroupInfo {
+        id: string;
+        testCases: typeof allTestCases;
+        mostRecentUpdate: number;
+        isEmpty: boolean;
+      }
+
+      const allGroups: GroupInfo[] = [];
+
+      // Add all module groups (including empty modules)
+      modules.forEach(module => {
+        const hasTestCases = grouped[module.id] && grouped[module.id].length > 0;
+        const moduleUpdatedTime = new Date(module.updatedAt).getTime();
+        const testCaseUpdatedTime = moduleLastUpdate[module.id]?.getTime() || 0;
+        
+        allGroups.push({
+          id: module.id,
+          testCases: hasTestCases ? grouped[module.id] : [],
+          // Use the most recent time between module's own updatedAt and its test cases' updatedAt
+          mostRecentUpdate: Math.max(moduleUpdatedTime, testCaseUpdatedTime),
+          isEmpty: !hasTestCases
+        });
+      });
+
+      // Add ungrouped test cases as a group
+      if (grouped['no-module'] && grouped['no-module'].length > 0) {
+        allGroups.push({
+          id: 'no-module',
+          testCases: grouped['no-module'],
+          mostRecentUpdate: moduleLastUpdate['no-module']?.getTime() || 0,
+          isEmpty: false
+        });
+      }
+
+      // Sort all groups: non-empty modules first (by most recent update), then empty modules last (by most recent update)
+      allGroups.sort((a, b) => {
+        // Empty modules always go last
+        if (a.isEmpty && !b.isEmpty) return 1;
+        if (!a.isEmpty && b.isEmpty) return -1;
+        // Within the same category (both empty or both non-empty), sort by most recent update
+        return b.mostRecentUpdate - a.mostRecentUpdate;
+      });
+
+      // Flatten all test cases in sorted group order
+      const orderedTestCases: typeof allTestCases = [];
+      
+      allGroups.forEach(group => {
+        // Only add test cases from groups that have them (skip empty modules)
+        if (group.testCases.length > 0) {
+          // Sort test cases within each group by updatedAt DESC (most recent first)
+          const sortedTestCases = group.testCases.sort((a, b) => {
+            const timeA = new Date(a.updatedAt).getTime();
+            const timeB = new Date(b.updatedAt).getTime();
+            return timeB - timeA; // Descending order
+          });
+          orderedTestCases.push(...sortedTestCases);
+        }
+      });
+
+      // Get empty modules (sorted by most recent update)
+      const emptyModules = allGroups
+        .filter(g => g.isEmpty)
+        .sort((a, b) => b.mostRecentUpdate - a.mostRecentUpdate);
+
+      // Calculate pagination including empty modules as "phantom items" on the last page
+      const emptyModuleCount = emptyModules.length;
+      const totalItemsWithEmptyModules = totalItems + emptyModuleCount;
+      const totalPages = Math.ceil(totalItemsWithEmptyModules / limit) || 1;
+      
+      // Apply pagination on the ordered list
+      const skip = (page - 1) * limit;
+      let testCases = orderedTestCases.slice(skip, skip + limit);
+      
+      // If this is the last page and we have space, we need to account for empty modules
+      const isLastPage = page === totalPages;
+      if (isLastPage && emptyModuleCount > 0) {
+        // On the last page, ensure we have the correct slice considering empty modules
+        // The empty modules take up "space" at the end of the pagination
+        const remainingTestCases = orderedTestCases.length - skip;
+        if (remainingTestCases < limit) {
+          // We're on the last page with test cases
+          testCases = orderedTestCases.slice(skip);
+        }
+      }
+
+      return {
+        testCases,
+        modules,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems: totalItemsWithEmptyModules, // Include empty modules in total count
+          itemsPerPage: limit,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        }
+      };
+    } else {
+      // Simple pagination (no grouping) - also sorted by updatedAt
+      const skip = (page - 1) * limit;
+      
+      const testCases = await prisma.testCase.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          module: { select: { id: true, name: true } },
+          suite: { select: { id: true, name: true } },
+          createdBy: { select: { id: true, name: true, email: true, avatar: true } },
+          _count: { 
+            select: { 
+              steps: true, 
+              results: true, 
+              requirements: true,
+              defects: {
+                where: {
+                  defect: {
+                    status: { not: 'CLOSED' } // Only count open defects
+                  }
+                }
+              }
+            } 
+          }
+        },
+        orderBy: { updatedAt: 'desc' }  // Most recently updated first
+      });
+
+      const totalPages = Math.ceil(totalItems / limit) || 1;
+
+      return {
+        testCases,
+        modules,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems,
+          itemsPerPage: limit,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        }
+      };
+    }
+  }
+
+  /**
    * Get test case by ID with full details
    * Scope filtering applied via project membership check
    */

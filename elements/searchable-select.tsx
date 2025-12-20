@@ -140,7 +140,7 @@ export function SearchableSelect({
       {isOpen && search && !disabled && (
         <div className="relative">
           {filteredOptions.length > 0 ? (
-            <div className="absolute top-0 left-0 right-0 z-50 bg-[#101a2b]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg max-h-60 overflow-y-auto p-1 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            <div className="absolute top-0 left-0 right-0 z-50 bg-[#101a2b]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg max-h-60 overflow-y-auto custom-scrollbar p-1 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
               {filteredOptions.slice(0, maxResults).map((option) => (
                 <button
                   key={option.id}
