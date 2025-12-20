@@ -486,6 +486,11 @@ export default function DefectList({ projectId }: DefectListProps) {
               availableAssignees={availableAssignees}
             />
           )}
+
+          {/* Total Count */}
+          <div className="text-sm text-white/60">
+            Showing {filteredDefects.length} of {defects.length} defect{defects.length !== 1 ? 's' : ''}
+          </div>
         </div>
       </div>
 

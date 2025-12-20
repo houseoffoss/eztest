@@ -300,7 +300,7 @@ export function TestCaseTable({
                                 <MoreVertical className="w-3 h-3" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent variant="glass" align="end">
+                            <DropdownMenuContent  align="end">
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();

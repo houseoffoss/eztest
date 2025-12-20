@@ -110,24 +110,13 @@ export function TestRunCard({
           <MoreVertical className="w-3.5 h-3.5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent variant="glass" align="end">
-        <DropdownMenuItem
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            onViewDetails();
-          }}
-        >
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); onViewDetails(); }} className="hover:bg-white/10">
           <Play className="w-4 h-4 mr-2" />
           View Details
         </DropdownMenuItem>
         {canDelete && (
-          <DropdownMenuItem
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="text-red-400 hover:bg-red-400/10"
-          >
+          <DropdownMenuItem onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(); }} className="text-red-400 hover:bg-red-400/10">
             <Trash2 className="w-4 h-4 mr-2" />
             Delete
           </DropdownMenuItem>

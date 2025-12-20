@@ -349,11 +349,8 @@ export function DefectTable({
                       <MoreVertical className="w-3 h-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent variant="glass" align="end">
-                    <DropdownMenuItem
-                      onClick={() => onDelete(defect)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
-                    >
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onDelete(defect)} className="text-red-400 hover:bg-red-400/10">
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </DropdownMenuItem>

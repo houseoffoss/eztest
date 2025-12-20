@@ -225,7 +225,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         ) : testSuites.length === 0 ? (
           <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
         ) : (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {rootSuites.map((suite) => (
               <TestSuiteTreeItem
                 key={suite.id}
