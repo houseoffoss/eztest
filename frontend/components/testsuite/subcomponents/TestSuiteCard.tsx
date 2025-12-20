@@ -40,7 +40,7 @@ export function TestSuiteCard({
   // Card design matching the image
   return (
     <div 
-      className="relative bg-gradient-to-b from-white/[0.01] to-white/[0.02] hover:from-white/[0.02] hover:to-white/[0.03] border border-white/10 hover:border-primary/50 rounded-lg p-5 cursor-pointer transition-all group shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-primary/10 backdrop-blur-lg before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))]"
+      className="relative bg-gradient-to-br from-white/[0.05] to-white/[0.08] rounded-2xl p-5 cursor-pointer transition-all group shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-primary/10 backdrop-blur-xl"
       onClick={() => onView(suite.id)}
     >
       {/* Menu Button */}
@@ -91,17 +91,18 @@ export function TestSuiteCard({
         </h3>
 
         {/* Description */}
-        <p className="text-white/60 text-sm mb-6 line-clamp-2 min-h-[40px]">
+        <p className="text-white/50 text-sm mb-6 line-clamp-2">
           {suite.description || 'No description provided'}
         </p>
-
+        {/* Divider */}
+        <div className="w-full h-px bg-white/10 mb-6" />
         {/* Stats */}
-        <div className="flex items-center gap-4 text-white/60 text-sm">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-center gap-4 text-white/60 text-sm">
+          <div className="flex items-center gap-2">
             <Edit className="w-4 h-4" />
             <span>{suite._count.testCases} cases</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Folder className="w-4 h-4" />
             <span>{childrenCount} suites</span>
           </div>
