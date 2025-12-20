@@ -14,7 +14,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/elements/hover-card';
-import { MoreVertical, Trash2, ChevronDown } from 'lucide-react';
+import { MoreVertical, Trash2, ChevronDown, Bug } from 'lucide-react';
 import { PriorityBadge } from '@/components/design/PriorityBadge';
 import { TestCase, Module } from '@/frontend/components/testcase/types';
 import { useRouter } from 'next/navigation';
@@ -210,15 +210,30 @@ export function TestCaseTable({
                       <div className="min-w-0">
                         <HoverCard openDelay={200}>
                           <HoverCardTrigger asChild>
-                            <p className="text-sm font-medium text-white truncate cursor-pointer">
-                              {testCase.title}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-white truncate cursor-pointer">
+                                {testCase.title}
+                              </p>
+                              {testCase._count.defects > 0 && (
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 rounded border border-red-500/30 flex-shrink-0">
+                                  <Bug className="w-3 h-3 text-red-400" />
+                                  <span className="text-xs text-red-400 font-medium">{testCase._count.defects}</span>
+                                </div>
+                              )}
+                            </div>
                           </HoverCardTrigger>
                           {testCase.title && testCase.title.length > 40 && (
                             <HoverCardContent side="top" className="w-80">
                               <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-white">Test Case Title</h4>
                                 <p className="text-sm text-white/80 break-words">{testCase.title}</p>
+                                {testCase._count.defects > 0 && (
+                                  <div className="pt-2 border-t border-white/10">
+                                    <p className="text-xs text-red-400">
+                                      {testCase._count.defects} open defect{testCase._count.defects !== 1 ? 's' : ''}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             </HoverCardContent>
                           )}
@@ -325,15 +340,30 @@ export function TestCaseTable({
             <div className="min-w-0">
               <HoverCard openDelay={200}>
                 <HoverCardTrigger asChild>
-                  <p className="text-sm font-medium text-white truncate cursor-pointer">
-                    {testCase.title}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white truncate cursor-pointer">
+                      {testCase.title}
+                    </p>
+                    {testCase._count.defects > 0 && (
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 rounded border border-red-500/30 flex-shrink-0">
+                        <Bug className="w-3 h-3 text-red-400" />
+                        <span className="text-xs text-red-400 font-medium">{testCase._count.defects}</span>
+                      </div>
+                    )}
+                  </div>
                 </HoverCardTrigger>
                 {testCase.title && testCase.title.length > 40 && (
                   <HoverCardContent side="top" className="w-80">
                     <div className="space-y-2">
                       <h4 className="text-sm font-semibold text-white">Test Case Title</h4>
                       <p className="text-sm text-white/80 break-words">{testCase.title}</p>
+                      {testCase._count.defects > 0 && (
+                        <div className="pt-2 border-t border-white/10">
+                          <p className="text-xs text-red-400">
+                            {testCase._count.defects} open defect{testCase._count.defects !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </HoverCardContent>
                 )}

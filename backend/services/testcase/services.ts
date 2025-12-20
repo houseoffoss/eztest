@@ -208,7 +208,20 @@ export class TestCaseService {
           module: { select: { id: true, name: true, updatedAt: true } },
           suite: { select: { id: true, name: true } },
           createdBy: { select: { id: true, name: true, email: true, avatar: true } },
-          _count: { select: { steps: true, results: true, requirements: true } }
+          _count: { 
+            select: { 
+              steps: true, 
+              results: true, 
+              requirements: true,
+              defects: {
+                where: {
+                  defect: {
+                    status: { not: 'CLOSED' } // Only count open defects
+                  }
+                }
+              }
+            } 
+          }
         },
         orderBy: { updatedAt: 'desc' }  // Most recently updated test cases first
       });
@@ -341,7 +354,20 @@ export class TestCaseService {
           module: { select: { id: true, name: true } },
           suite: { select: { id: true, name: true } },
           createdBy: { select: { id: true, name: true, email: true, avatar: true } },
-          _count: { select: { steps: true, results: true, requirements: true } }
+          _count: { 
+            select: { 
+              steps: true, 
+              results: true, 
+              requirements: true,
+              defects: {
+                where: {
+                  defect: {
+                    status: { not: 'CLOSED' } // Only count open defects
+                  }
+                }
+              }
+            } 
+          }
         },
         orderBy: { updatedAt: 'desc' }  // Most recently updated first
       });
