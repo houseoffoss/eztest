@@ -25,7 +25,13 @@ export function AttachmentUpload({
   onAttachmentsChange,
 }: AttachmentUploadProps) {
   // Check if attachments feature is enabled
-  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const [attachmentsEnabled, setAttachmentsEnabled] = React.useState(false);
+  
+  React.useEffect(() => {
+    isAttachmentsEnabledClient().then(enabled => {
+      setAttachmentsEnabled(enabled);
+    });
+  }, []);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {

@@ -137,7 +137,13 @@ export function AttachmentField({
   };
 
   // Check if attachments feature is enabled
-  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const [attachmentsEnabled, setAttachmentsEnabled] = useState(false);
+  
+  React.useEffect(() => {
+    isAttachmentsEnabledClient().then(enabled => {
+      setAttachmentsEnabled(enabled);
+    });
+  }, []);
 
   return (
     <div className="space-y-3">

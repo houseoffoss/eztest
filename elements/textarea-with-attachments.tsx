@@ -49,7 +49,7 @@ function TextareaWithAttachments({
   ...props 
 }: TextareaWithAttachmentsProps) {
   // Check if attachments feature is enabled
-  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const [attachmentsEnabled, setAttachmentsEnabled] = React.useState(false);
   const shouldShowAttachments = showAttachments && attachmentsEnabled;
   
   const [charCount, setCharCount] = React.useState(0);
@@ -65,6 +65,13 @@ function TextareaWithAttachments({
   const [markedForDeletion, setMarkedForDeletion] = React.useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Fetch attachment feature status from server
+  React.useEffect(() => {
+    isAttachmentsEnabledClient().then(enabled => {
+      setAttachmentsEnabled(enabled);
+    });
+  }, []);
+
   React.useEffect(() => {
     const text = typeof value === 'string' ? value : '';
     setCharCount(text.length);
@@ -77,7 +84,6 @@ function TextareaWithAttachments({
       setFileError('');
     }
   }, [attachments]);
-
   // Fetch image URLs for attachments
   React.useEffect(() => {
     const fetchImageUrls = async () => {

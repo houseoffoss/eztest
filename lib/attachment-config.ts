@@ -19,12 +19,39 @@ export function isAttachmentsEnabled(): boolean {
   }
 }
 
+// Cache the promise and timestamp so we don't refetch too often
+let featureConfigPromise: Promise<boolean> | null = null;
+let featureConfigCacheTime: number = 0;
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Check if attachments feature is enabled from client-side
- * Uses public environment variable that's exposed via next.config.ts
+ * Fetches the setting from the server at runtime
+ * Caches the result for 5 minutes to avoid excessive API calls
  */
-export function isAttachmentsEnabledClient(): boolean {
-  // Check the env variable exposed via next.config.ts
-  // This works both on client and server during SSR
-  return process.env.ENABLE_ATTACHMENTS === 'true';
+export function isAttachmentsEnabledClient(): Promise<boolean> {
+  const now = Date.now();
+  
+  // Return cached promise if still valid (within 5 minutes)
+  if (featureConfigPromise && (now - featureConfigCacheTime) < CACHE_DURATION_MS) {
+    return featureConfigPromise;
+  }
+
+  // Create and cache new fetch promise
+  featureConfigPromise = (async () => {
+    try {
+      const response = await fetch('/api/config/features');
+      if (response.ok) {
+        const data = await response.json();
+        return data.enableAttachments === true;
+      }
+    } catch (error) {
+      console.error('Failed to fetch feature config:', error);
+    }
+    // Fallback to false if fetch fails
+    return false;
+  })();
+
+  featureConfigCacheTime = now;
+  return featureConfigPromise;
 }

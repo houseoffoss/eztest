@@ -18,7 +18,13 @@ interface AttachmentDisplayProps {
 
 export function AttachmentDisplay({ attachments, showPreview = true, onDelete, showDelete = false }: AttachmentDisplayProps) {
   // Check if attachments feature is enabled
-  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const [attachmentsEnabled, setAttachmentsEnabled] = useState(false);
+  
+  useEffect(() => {
+    isAttachmentsEnabledClient().then(enabled => {
+      setAttachmentsEnabled(enabled);
+    });
+  }, []);
   
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});

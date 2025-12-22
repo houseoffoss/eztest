@@ -50,7 +50,7 @@ export function FileUploadModal({
   maxFiles = 20,
   onDeleteMarked,
 }: FileUploadModalProps) {
-  const attachmentsEnabled = isAttachmentsEnabledClient();
+  const [attachmentsEnabled, setAttachmentsEnabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileError, setFileError] = useState<string>('');
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -63,6 +63,13 @@ export function FileUploadModal({
   // Mount portal on client side only
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Fetch attachment feature status from server
+  useEffect(() => {
+    isAttachmentsEnabledClient().then(enabled => {
+      setAttachmentsEnabled(enabled);
+    });
   }, []);
 
   // Fetch image URLs for preview
