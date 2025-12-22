@@ -53,19 +53,18 @@ async function main() {
     console.log('\n⚠️  Please change the default admin password after first login!');
   }
 
-  // Check if demo project exists for admin
-  let demoProject = await prisma.project.findFirst({
+  // Check if any project already exists for admin
+  const existingProject = await prisma.project.findFirst({
     where: {
       createdById: adminUser.id,
-      key: 'DEMO',
     },
   });
 
-  if (demoProject) {
-    console.log('✅ Demo project already exists for admin user');
-  }
-  
-  if (!demoProject) {
+  let demoProject = existingProject;
+
+  if (existingProject) {
+    console.log('✅ Project(s) already exist for admin user - skipping demo project creation');
+  } else {
     // Create demo project for admin user
     demoProject = await prisma.project.create({
       data: {
@@ -363,6 +362,7 @@ async function main() {
     console.log('   ✅ Test Cases: API Testing (3 cases)');
 
     // Add some test cases for security module (not assigned to any suite yet)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const rbacTestCase = await prisma.testCase.create({
       data: {
         tcId: `tc${testCaseCounter++}`,
@@ -380,6 +380,7 @@ async function main() {
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const xssPreventionTestCase = await prisma.testCase.create({
       data: {
         tcId: `tc${testCaseCounter++}`,
@@ -397,6 +398,7 @@ async function main() {
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataEncryptionTestCase = await prisma.testCase.create({
       data: {
         tcId: `tc${testCaseCounter++}`,
