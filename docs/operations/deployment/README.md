@@ -72,6 +72,7 @@ AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
 AWS_REGION=us-east-1
 AWS_S3_BUCKET=eztest-attachments
+AWS_S3_PATH_PREFIX=prod
 ```
 
 ### Step 4: Start Services
@@ -334,3 +335,4 @@ See [Troubleshooting Guide](../troubleshooting.md)
 - [Configuration](../../getting-started/configuration.md)
 - [Troubleshooting](../troubleshooting.md)
 - [Docker Documentation](../../DOCKER.md)
+

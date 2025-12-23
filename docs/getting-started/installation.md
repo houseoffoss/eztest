@@ -214,6 +214,7 @@ AWS_ACCESS_KEY_ID="your-aws-key"
 AWS_SECRET_ACCESS_KEY="your-aws-secret"
 AWS_REGION="us-east-1"
 AWS_S3_BUCKET="your-bucket-name"
+AWS_S3_PATH_PREFIX="prod"
 ```
 
 ### Docker Production Build
@@ -308,3 +309,4 @@ For more help, see [Troubleshooting Guide](../operations/troubleshooting.md).
 - [Quick Start Tutorial](./quickstart.md)
 - [Configuration Reference](./configuration.md)
 - [Create Your First Project](./first-project.md)
+

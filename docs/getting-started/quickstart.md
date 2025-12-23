@@ -126,6 +126,7 @@ AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
 AWS_REGION=us-east-1
 AWS_S3_BUCKET=your-bucket-name
+AWS_S3_PATH_PREFIX=prod
 ```
 
 ---
@@ -210,3 +211,4 @@ docker-compose exec -T postgres psql -U eztest eztest < backup.sql
 - **Documentation**: [Full docs](../README.md)
 - **Troubleshooting**: [Common issues](../operations/troubleshooting.md)
 - **GitHub Issues**: [Report bugs](https://github.com/houseoffoss/eztest/issues)
+

@@ -215,6 +215,10 @@ AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 AWS_REGION="us-east-1"
 AWS_S3_BUCKET="eztest-attachments"
 
+# Optional: Prefix for attachment paths (e.g., prod, staging, client-1)
+# If set, attachments will be stored under: {AWS_S3_PATH_PREFIX}/attachments/...
+AWS_S3_PATH_PREFIX="prod"
+
 # Optional: Custom endpoint (for S3-compatible services)
 AWS_S3_ENDPOINT="https://s3.us-east-1.amazonaws.com"
 

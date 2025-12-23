@@ -41,6 +41,7 @@ services:
       - MAX_FILE_SIZE=10485760
       - UPLOAD_DIR=/app/uploads
       - WATCHPACK_POLLING=true  # Enable polling for better file watching in containers
+      - AWS_S3_PATH_PREFIX=${AWS_S3_PATH_PREFIX:-attachments}
     volumes:
       # Mount source code for hot reloading
       - .:/app

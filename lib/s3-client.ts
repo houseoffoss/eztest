@@ -43,6 +43,28 @@ export function getS3Bucket(): string {
   return process.env.AWS_S3_BUCKET;
 }
 
+export function getS3PathPrefix(): string {
+  // Returns the base path for storing attachments in S3 bucket
+  // 'attachments' is always the default final directory
+  // AWS_S3_PATH_PREFIX adds an optional prefix before it
+  // Examples:
+  //   Default (no env var): 'attachments'
+  //   With prefix: 'prod/attachments'
+  //   With prefix: 'client-1/attachments'
+  //   If user sets 'attachments': 'attachments' (no duplication)
+  const pathPrefix = process.env.AWS_S3_PATH_PREFIX;
+  
+  if (pathPrefix) {
+    // If user provides 'attachments', don't duplicate it
+    if (pathPrefix === 'attachments') {
+      return 'attachments';
+    }
+    return `${pathPrefix}/attachments`;
+  }
+  return 'attachments';
+}
+
 export const S3_BUCKET = process.env.AWS_S3_BUCKET || '';
+export const S3_PATH_PREFIX = getS3PathPrefix();
 export const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 export const CHUNK_SIZE = parseInt(process.env.S3_CHUNK_SIZE || '10485760'); // 10MB chunks (configurable)

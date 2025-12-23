@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { s3Client, getS3Bucket, MAX_FILE_SIZE, CHUNK_SIZE } from '@/lib/s3-client';
+import { s3Client, getS3Bucket, getS3PathPrefix, MAX_FILE_SIZE, CHUNK_SIZE } from '@/lib/s3-client';
 import { CreateMultipartUploadCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
@@ -85,23 +85,24 @@ export class AttachmentService {
     };
 
     const pluralEntityType = entityType ? pluralizeEntityType(entityType) : null;
+    const pathPrefix = getS3PathPrefix();
 
     let s3Key: string;
     if (projectId && pluralEntityType && entityId) {
-      // Entity exists (editing) - store under attachments/projects/projectId/entityType/entityId
-      s3Key = `attachments/projects/${projectId}/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+      // Entity exists (editing) - store under pathPrefix/projects/projectId/entityType/entityId
+      s3Key = `${pathPrefix}/projects/${projectId}/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
     } else if (projectId && pluralEntityType) {
-      // Entity doesn't exist yet (creating) - store under attachments/projects/projectId/entityType
-      s3Key = `attachments/projects/${projectId}/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+      // Entity doesn't exist yet (creating) - store under pathPrefix/projects/projectId/entityType
+      s3Key = `${pathPrefix}/projects/${projectId}/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
     } else if (pluralEntityType && entityId) {
       // Fallback without project (backward compatibility)
-      s3Key = `attachments/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+      s3Key = `${pathPrefix}/${pluralEntityType}/${entityId}/${timestamp}-${randomHash}-${sanitizedFileName}`;
     } else if (pluralEntityType) {
       // Fallback without project (backward compatibility)
-      s3Key = `attachments/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
+      s3Key = `${pathPrefix}/${pluralEntityType}/${timestamp}-${randomHash}-${sanitizedFileName}`;
     } else {
       // No entity info - fallback to unassigned
-      s3Key = `attachments/unassigned/${timestamp}-${randomHash}-${sanitizedFileName}`;
+      s3Key = `${pathPrefix}/unassigned/${timestamp}-${randomHash}-${sanitizedFileName}`;
     }
 
     const bucket = getS3Bucket();

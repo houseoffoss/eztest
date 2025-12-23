@@ -149,6 +149,9 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 # S3 Settings
 AWS_REGION=us-east-1
 AWS_S3_BUCKET=eztest-attachments
+
+# Optional: Prefix for attachment paths (e.g., prod, staging, client-1)
+AWS_S3_PATH_PREFIX=prod
 ```
 
 ### IAM Policy
