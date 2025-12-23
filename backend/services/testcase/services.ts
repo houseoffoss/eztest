@@ -776,12 +776,13 @@ export class TestCaseService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+        const bucket = getS3Bucket();
         Promise.all(
           attachments.map(attachment =>
             s3Client.send(
               new DeleteObjectCommand({
-                Bucket: S3_BUCKET,
+                Bucket: bucket,
                 Key: attachment.path,
               })
             ).catch((error: Error) => {
@@ -1337,10 +1338,11 @@ export class TestCaseService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+        const bucket = getS3Bucket();
         s3Client.send(
           new DeleteObjectCommand({
-            Bucket: S3_BUCKET,
+            Bucket: bucket,
             Key: attachment.path,
           })
         ).catch((error: Error) => {

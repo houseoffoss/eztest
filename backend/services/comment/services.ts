@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { s3Client, S3_BUCKET } from '@/lib/s3-client';
+import { s3Client, getS3Bucket } from '@/lib/s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
@@ -90,7 +90,7 @@ export class CommentService {
 
     // Generate presigned URL for S3
     const command = new GetObjectCommand({
-      Bucket: S3_BUCKET,
+      Bucket: getS3Bucket(),
       Key: attachment.path,
     });
 
@@ -120,7 +120,7 @@ export class CommentService {
     if (step === 'prepare') {
       // Step 1: Generate presigned DELETE URL for S3
       const command = new DeleteObjectCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: attachment.path,
       });
 
