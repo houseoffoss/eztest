@@ -5,24 +5,24 @@ let s3ClientInstance: S3Client | null = null;
 
 export function getS3Client(): S3Client {
   if (!s3ClientInstance) {
-    if (!process.env.AWS_REGION) {
-      throw new Error('AWS_REGION environment variable is not set');
-    }
-    if (!process.env.AWS_ACCESS_KEY_ID) {
-      throw new Error('AWS_ACCESS_KEY_ID environment variable is not set');
-    }
-    if (!process.env.AWS_SECRET_ACCESS_KEY) {
-      throw new Error('AWS_SECRET_ACCESS_KEY environment variable is not set');
-    }
-    if (!process.env.AWS_S3_BUCKET) {
-      throw new Error('AWS_S3_BUCKET environment variable is not set');
+    const missingVars: string[] = [];
+    if (!process.env.AWS_REGION) missingVars.push('AWS_REGION');
+    if (!process.env.AWS_ACCESS_KEY_ID) missingVars.push('AWS_ACCESS_KEY_ID');
+    if (!process.env.AWS_SECRET_ACCESS_KEY) missingVars.push('AWS_SECRET_ACCESS_KEY');
+    if (!process.env.AWS_S3_BUCKET) missingVars.push('AWS_S3_BUCKET');
+
+    if (missingVars.length > 0) {
+      throw new Error(
+        `Missing AWS configuration. Please set the following environment variables: ${missingVars.join(', ')}. ` +
+        `Add them to your .env file in the root directory of the project.`
+      );
     }
 
     s3ClientInstance = new S3Client({
-      region: process.env.AWS_REGION,
+      region: process.env.AWS_REGION!,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
       },
     });
   }

@@ -37,6 +37,9 @@ export class AttachmentController {
         const errorMessages = error.issues?.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation failed';
         throw new BadRequestException(errorMessages);
       }
+      if (error instanceof Error && error.message.includes('Missing AWS configuration')) {
+        throw new InternalServerException(error.message);
+      }
       if (error instanceof Error && error.message.includes('exceeds maximum')) {
         throw new BadRequestException(error.message);
       }
@@ -45,6 +48,9 @@ export class AttachmentController {
       }
       if (error instanceof Error && error.message.includes('not supported')) {
         throw new BadRequestException(error.message);
+      }
+      if (error instanceof Error) {
+        console.error('Upload initialization error:', error.message);
       }
       throw new InternalServerException('Failed to initialize upload');
     }
