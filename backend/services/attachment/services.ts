@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { s3Client, S3_BUCKET, MAX_FILE_SIZE, CHUNK_SIZE } from '@/lib/s3-client';
+import { s3Client, getS3Bucket, MAX_FILE_SIZE, CHUNK_SIZE } from '@/lib/s3-client';
 import { CreateMultipartUploadCommand, CompleteMultipartUploadCommand, AbortMultipartUploadCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
@@ -107,7 +107,7 @@ export class AttachmentService {
     // Initialize multipart upload
     const multipartUpload = await s3Client.send(
       new CreateMultipartUploadCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: s3Key,
         ContentType: fileType,
         ServerSideEncryption: 'AES256',
@@ -131,7 +131,7 @@ export class AttachmentService {
     for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
       const { UploadPartCommand } = await import('@aws-sdk/client-s3');
       const command = new UploadPartCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: s3Key,
         UploadId: multipartUpload.UploadId,
         PartNumber: partNumber,
@@ -195,7 +195,7 @@ export class AttachmentService {
     // Complete the multipart upload on S3
     const completeUploadResponse = await s3Client.send(
       new CompleteMultipartUploadCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: s3Key,
         UploadId: uploadId,
         MultipartUpload: {
@@ -249,7 +249,7 @@ export class AttachmentService {
 
     await s3Client.send(
       new AbortMultipartUploadCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: fileKey,
         UploadId: uploadId,
       })
@@ -288,7 +288,7 @@ export class AttachmentService {
     // Generate presigned URL for secure access (valid for 1 hour)
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
     const command = new GetObjectCommand({
-      Bucket: S3_BUCKET,
+      Bucket: getS3Bucket(),
       Key: attachment.path,
       ResponseContentDisposition: isPreviewable
         ? 'inline'
@@ -357,7 +357,7 @@ export class AttachmentService {
 
     // Generate presigned DELETE URL for browser to delete from S3
     const command = new DeleteObjectCommand({
-      Bucket: S3_BUCKET,
+      Bucket: getS3Bucket(),
       Key: attachment.path,
     });
 
@@ -393,7 +393,7 @@ export class AttachmentService {
     try {
       await s3Client.send(
         new DeleteObjectCommand({
-          Bucket: S3_BUCKET,
+          Bucket: getS3Bucket(),
           Key: attachment.path,
         })
       );

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 import { CustomRequest } from '@/backend/utils/interceptor';
-import { s3Client, S3_BUCKET } from '@/lib/s3-client';
+import { s3Client, getS3Bucket } from '@/lib/s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 interface CreateDefectInput {
@@ -440,12 +440,13 @@ export class DefectService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+        const bucket = getS3Bucket();
         Promise.all(
           allAttachments.map(path =>
             s3Client.send(
               new DeleteObjectCommand({
-                Bucket: S3_BUCKET,
+                Bucket: bucket,
                 Key: path,
               })
             ).catch((error: Error) => {
@@ -728,10 +729,11 @@ export class DefectService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, S3_BUCKET }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+        const bucket = getS3Bucket();
         s3Client.send(
           new DeleteObjectCommand({
-            Bucket: S3_BUCKET,
+            Bucket: bucket,
             Key: attachment.path,
           })
         ).catch((error: Error) => {
@@ -763,7 +765,7 @@ export class DefectService {
     console.log('[DefectAttachment] Generating URL for:', {
       id: attachment.id,
       path: attachment.path,
-      bucket: S3_BUCKET,
+      bucket: getS3Bucket(),
       mimeType: attachment.mimeType,
     });
 
@@ -775,7 +777,7 @@ export class DefectService {
     // Generate presigned URL for secure access (valid for 1 hour)
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
     const command = new GetObjectCommand({
-      Bucket: S3_BUCKET,
+      Bucket: getS3Bucket(),
       Key: attachment.path,
       ResponseContentDisposition: isPreviewable
         ? 'inline'
@@ -808,7 +810,7 @@ export class DefectService {
       // Step 1: Generate presigned DELETE URL for S3
       const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
       const command = new DeleteObjectCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: attachment.path,
       });
 
