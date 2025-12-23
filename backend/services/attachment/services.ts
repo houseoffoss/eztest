@@ -104,10 +104,12 @@ export class AttachmentService {
       s3Key = `attachments/unassigned/${timestamp}-${randomHash}-${sanitizedFileName}`;
     }
 
+    const bucket = getS3Bucket();
+
     // Initialize multipart upload
     const multipartUpload = await s3Client.send(
       new CreateMultipartUploadCommand({
-        Bucket: getS3Bucket(),
+        Bucket: bucket,
         Key: s3Key,
         ContentType: fileType,
         ServerSideEncryption: 'AES256',
@@ -131,7 +133,7 @@ export class AttachmentService {
     for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
       const { UploadPartCommand } = await import('@aws-sdk/client-s3');
       const command = new UploadPartCommand({
-        Bucket: getS3Bucket(),
+        Bucket: bucket,
         Key: s3Key,
         UploadId: multipartUpload.UploadId,
         PartNumber: partNumber,

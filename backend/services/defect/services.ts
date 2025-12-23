@@ -762,10 +762,12 @@ export class DefectService {
       throw new Error('Defect attachment not found');
     }
 
+    const bucket = getS3Bucket();
+
     console.log('[DefectAttachment] Generating URL for:', {
       id: attachment.id,
       path: attachment.path,
-      bucket: getS3Bucket(),
+      bucket: bucket,
       mimeType: attachment.mimeType,
     });
 
@@ -777,7 +779,7 @@ export class DefectService {
     // Generate presigned URL for secure access (valid for 1 hour)
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
     const command = new GetObjectCommand({
-      Bucket: getS3Bucket(),
+      Bucket: bucket,
       Key: attachment.path,
       ResponseContentDisposition: isPreviewable
         ? 'inline'
