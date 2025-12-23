@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { UploadPartCommand } from '@aws-sdk/client-s3';
-import { s3Client, S3_BUCKET } from '@/lib/s3-client';
+import { s3Client, getS3Bucket } from '@/lib/s3-client';
 
 /**
  * PUT /api/attachments/upload/part - Upload a single part via backend
@@ -58,7 +58,7 @@ export async function PUT(request: NextRequest) {
     // Upload the part
     const uploadPartResponse = await s3Client.send(
       new UploadPartCommand({
-        Bucket: S3_BUCKET,
+        Bucket: getS3Bucket(),
         Key: fileKey,
         UploadId: uploadId,
         PartNumber: parseInt(partNumber),
