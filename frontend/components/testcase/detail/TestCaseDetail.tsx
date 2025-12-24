@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { TopBar } from '@/components/design';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Loader } from '@/elements/loader';
-import { ButtonSecondary } from '@/elements/button-secondary';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { TestTube2, Folder } from 'lucide-react';
 import { TestCase, TestCaseFormData, TestStep } from './types';
 import { Module } from '../types';

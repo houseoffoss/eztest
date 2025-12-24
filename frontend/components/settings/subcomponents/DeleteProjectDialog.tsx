@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import { Button } from '@/elements/button';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
 
 interface DeleteProjectDialogProps {
   open: boolean;

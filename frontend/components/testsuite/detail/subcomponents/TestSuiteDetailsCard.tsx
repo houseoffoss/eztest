@@ -1,4 +1,4 @@
-import { DetailCard } from '@/components/design/DetailCard';
+﻿import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { FormBuilder, FormFieldConfig } from '@/frontend/components/form';
 import { TestSuiteFormData } from '../types';
 

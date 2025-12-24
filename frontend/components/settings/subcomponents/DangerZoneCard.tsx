@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { DetailCard } from '@/components/design/DetailCard';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Trash2 } from 'lucide-react';
 import { Project } from '../types';
 

@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { DetailCard } from '@/components/design/DetailCard';
-import { UserCard } from '@/components/design/UserCard';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { UserCard } from '@/frontend/reusable-components/cards/UserCard';
 import { Trash2, Shield, Eye, Users } from 'lucide-react';
 import { ProjectMember } from '../types';
 

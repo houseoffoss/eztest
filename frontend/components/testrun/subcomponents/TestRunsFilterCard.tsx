@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { SearchInput } from '@/components/design/SearchInput';
-import { FilterDropdown, type FilterOption } from '@/components/design/FilterDropdown';
+import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
+import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
 import { TestRunFilters } from '../types';
 
 interface TestRunsFilterCardProps {

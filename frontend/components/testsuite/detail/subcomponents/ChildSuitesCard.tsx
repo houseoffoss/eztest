@@ -1,4 +1,4 @@
-import { DetailCard } from '@/components/design/DetailCard';
+﻿import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Folder, TestTube2 } from 'lucide-react';
 import { ChildSuite } from '../types';
 

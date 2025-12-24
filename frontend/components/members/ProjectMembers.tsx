@@ -1,14 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Plus, Users } from 'lucide-react';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Card, CardContent } from '@/elements/card';
-import { Loader } from '@/elements/loader';
-import { TopBar } from '@/components/design';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { Project, ProjectMember } from './types';
 import { MembersCard } from './subcomponents/MembersCard';
 import { CreateAddMemberDialog } from './subcomponents/AddMemberDialog';

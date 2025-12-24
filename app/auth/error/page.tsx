@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { GlassPanel } from '@/components/design/GlassPanel';
-import { Loader } from '@/elements/loader';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 

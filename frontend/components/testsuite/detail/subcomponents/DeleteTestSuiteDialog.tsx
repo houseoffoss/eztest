@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/components/design/BaseConfirmDialog';
+import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 
 interface DeleteTestSuiteDialogProps {
   open: boolean;

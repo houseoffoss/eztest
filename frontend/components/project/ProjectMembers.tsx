@@ -1,18 +1,18 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDateTime } from '@/lib/date-utils';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { Loader } from '@/elements/loader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/elements/dialog';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/elements/select';
-import { Badge } from '@/elements/badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/frontend/reusable-elements/selects/Select';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Plus, Trash2, Mail, Shield, Eye, Users } from 'lucide-react';
 
 interface ProjectMember {

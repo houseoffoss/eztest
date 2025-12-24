@@ -1,15 +1,15 @@
-'use client';
+﻿'use client';
 
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/elements/select';
+} from '@/frontend/reusable-elements/selects/Select';
 
 export type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'email';
 

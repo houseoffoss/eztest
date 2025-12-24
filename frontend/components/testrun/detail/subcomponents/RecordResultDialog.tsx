@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,21 +6,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonSecondary } from '@/elements/button-secondary';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
-import { Input } from '@/elements/input';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/elements/select';
-import { Checkbox } from '@/elements/checkbox';
+} from '@/frontend/reusable-elements/selects/Select';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 import { CheckCircle, XCircle, AlertCircle, Circle, Bug, Search } from 'lucide-react';
 import { ResultFormData } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';

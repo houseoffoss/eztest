@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { TopBar } from '@/components/design';
-import { Loader } from '@/elements/loader';
-import { FloatingAlert, FloatingAlertMessage } from '@/components/design/FloatingAlert';
+﻿import { useEffect, useState } from 'react';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { FloatingAlert, FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
 import { TestCasesListCard } from './subcomponents/TestCasesListCard';

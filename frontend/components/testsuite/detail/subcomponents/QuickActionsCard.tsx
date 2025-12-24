@@ -1,5 +1,5 @@
-import { DetailCard } from '@/components/design/DetailCard';
-import { Button } from '@/elements/button';
+﻿import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { Plus, TestTube2, Folder } from 'lucide-react';
 
 interface QuickActionsCardProps {

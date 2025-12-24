@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @deprecated Use AddTestCasesDialog from @/frontend/components/common/dialogs instead
  * This component is kept for backward compatibility but should not be used for new code
  */
@@ -9,11 +9,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Checkbox } from '@/elements/checkbox';
-import { PriorityBadge } from '@/components/design/PriorityBadge';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
+import { PriorityBadge } from '@/frontend/reusable-components/badges/PriorityBadge';
 import { TestCase } from '../types';
 
 interface AddTestCasesDialogProps {

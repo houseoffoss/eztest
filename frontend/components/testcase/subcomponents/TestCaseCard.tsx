@@ -1,14 +1,14 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { Card, CardContent, CardHeader } from '@/elements/card';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { Card, CardContent, CardHeader } from '@/frontend/reusable-elements/cards/Card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import { Clock, MoreVertical, Trash2 } from 'lucide-react';
 import { TestCase } from '../types';
 

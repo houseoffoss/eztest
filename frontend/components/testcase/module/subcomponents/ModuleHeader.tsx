@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
-import { Input } from '@/elements/input';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonDestructive } from '@/elements/button-destructive';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Edit, Save, X, Trash2 } from 'lucide-react';
 import { Module } from '../../types';
 

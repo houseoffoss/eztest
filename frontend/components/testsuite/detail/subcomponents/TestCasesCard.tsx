@@ -1,8 +1,8 @@
-import { DetailCard } from '@/components/design/DetailCard';
-import { ButtonPrimary } from '@/elements/button-primary';
+﻿import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Plus } from 'lucide-react';
 import { TestCase, Module } from '@/frontend/components/testcase/types';
-import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
+import { TestCaseTable } from '@/frontend/reusable-components/tables/TestCaseTable';
 
 interface TestCasesCardProps {
   testCases: TestCase[];

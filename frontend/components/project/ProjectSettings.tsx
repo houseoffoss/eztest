@@ -1,17 +1,17 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDateTime } from '@/lib/date-utils';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { Loader } from '@/elements/loader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/elements/dialog';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { Save, Trash2 } from 'lucide-react';
 
 interface Project {

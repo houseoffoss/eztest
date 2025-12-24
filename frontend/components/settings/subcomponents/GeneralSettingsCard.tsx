@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { Save } from 'lucide-react';
 import { Project, ProjectFormData } from '../types';
 

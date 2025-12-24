@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   Dialog,
@@ -7,11 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { CheckboxListItem } from '@/elements/checkbox-list-item';
-import { PriorityBadge } from '@/components/design/PriorityBadge';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { CheckboxListItem } from '@/frontend/reusable-elements/checkboxes/CheckboxListItem';
+import { PriorityBadge } from '@/frontend/reusable-components/badges/PriorityBadge';
 
 interface TestCase {
   id: string;

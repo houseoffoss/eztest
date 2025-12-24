@@ -1,18 +1,18 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Alert, AlertDescription } from '@/elements/alert';
-import { GlassPanel } from '@/components/design/GlassPanel';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/elements/dialog';
-import { Loader } from '@/elements/loader';
-import { SettingsSidebar } from '@/components/layout/SettingsSidebar';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { SettingsSidebar } from '@/app/components/layout/SettingsSidebar';
 
 interface AccountStatus {
   isMarkedForDeletion: boolean;

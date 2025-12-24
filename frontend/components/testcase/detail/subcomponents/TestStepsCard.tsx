@@ -1,15 +1,15 @@
-'use client';
+﻿'use client';
 
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { GripVertical, Plus, Trash2, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
 import { TestStep } from '../types';
 import { type Attachment } from '@/lib/s3';
-import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
+import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
 
 interface TestStepsCardProps {
   steps: TestStep[];

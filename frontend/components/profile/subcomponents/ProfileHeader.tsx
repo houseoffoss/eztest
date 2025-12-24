@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { ButtonDestructive } from '@/elements/button-destructive';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { LogOut } from 'lucide-react';
 import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 

@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
-import { ButtonPrimary } from '@/elements/button-primary';
-import { DetailCard } from '@/components/design/DetailCard';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Plus, TestTube2 } from 'lucide-react';
 import { TestCase } from '../../types';
-import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
+import { TestCaseTable } from '@/frontend/reusable-components/tables/TestCaseTable';
 
 interface ModuleTestCasesCardProps {
   testCases: TestCase[];

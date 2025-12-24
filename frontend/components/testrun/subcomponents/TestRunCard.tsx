@@ -1,12 +1,12 @@
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { ItemCard } from '@/components/design/ItemCard';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import { formatDateTime } from '@/lib/date-utils';
 import { Calendar, MoreVertical, Play, Trash2, User } from 'lucide-react';
 import { TestRun } from '../types';

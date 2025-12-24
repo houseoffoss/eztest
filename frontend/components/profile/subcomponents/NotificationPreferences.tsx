@@ -1,5 +1,5 @@
-import { Switch } from '@/elements/switch';
-import { GlassPanel } from '@/components/design/GlassPanel';
+﻿import { Switch } from '@/frontend/reusable-elements/switches/Switch';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 
 interface NotificationSettingsProps {
   settings: {

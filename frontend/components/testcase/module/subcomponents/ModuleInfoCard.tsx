@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { DetailCard } from '@/components/design/DetailCard';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { formatDateTime } from '@/lib/date-utils';
 import { Module } from '../../types';
 

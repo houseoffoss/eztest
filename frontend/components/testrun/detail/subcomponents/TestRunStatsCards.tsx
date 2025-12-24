@@ -1,5 +1,5 @@
-import { formatDateTime } from '@/lib/date-utils';
-import { StatCard } from '@/components/design/StatCard';
+﻿import { formatDateTime } from '@/lib/date-utils';
+import { StatCard } from '@/frontend/reusable-components/cards/StatCard';
 import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
 import { TestRunStats } from '../types';
 

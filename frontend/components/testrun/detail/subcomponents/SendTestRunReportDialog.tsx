@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -7,9 +7,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Loader2 } from 'lucide-react';
 
 interface SendTestRunReportDialogProps {

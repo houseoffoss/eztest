@@ -1,13 +1,13 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { Badge } from '@/elements/badge';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Loader } from '@/elements/loader';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { formatDateTime } from '@/lib/date-utils';
-import { Breadcrumbs } from '@/components/design/Breadcrumbs';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
 import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 

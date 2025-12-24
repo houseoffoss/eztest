@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { Card, CardContent, CardDescription, CardHeader } from '@/elements/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/frontend/reusable-elements/cards/Card';
 
 interface StatCardProps {
   icon: React.ReactNode;

@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Send } from 'lucide-react';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Avatar, AvatarImage, AvatarFallback } from '@/elements/avatar';
-import { TextareaWithAttachments, Attachment } from '@/elements/textarea-with-attachments';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Avatar, AvatarImage, AvatarFallback } from '@/frontend/reusable-elements/avatars/Avatar';
+import { TextareaWithAttachments, Attachment } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 
 // Extended type for pending attachments with file object
 interface PendingAttachment extends Attachment {
@@ -59,8 +59,8 @@ function CommentAttachmentItem({ attachment }: { attachment: { id: string; filen
     />
   );
 }
-import { ButtonPrimary } from '@/elements/button-primary';
-import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
 
 import { DefectComment } from '../types';
 

@@ -1,9 +1,9 @@
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { formatDateTime } from '@/lib/date-utils';
-import { DetailCard } from '@/components/design/DetailCard';
-import { DataTable, type ColumnDef } from '@/components/design/DataTable';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
 import { AlertCircle, Plus } from 'lucide-react';
 import { TestResult, TestCase } from '../types';
 

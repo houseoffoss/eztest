@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import {
   BaseConfirmDialog,
   BaseConfirmDialogConfig,
-} from '@/components/design/BaseConfirmDialog';
+} from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { Defect } from '../types';
 
 interface DeleteDefectDialogProps {

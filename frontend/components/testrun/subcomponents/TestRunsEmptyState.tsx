@@ -1,6 +1,6 @@
 'use client';
 
-import { EmptyStateCard } from '@/components/design';
+import { EmptyStateCard } from '@/frontend/reusable-components/cards/EmptyStateCard';
 import { AlertCircle } from 'lucide-react';
 
 interface TestRunsEmptyStateProps {

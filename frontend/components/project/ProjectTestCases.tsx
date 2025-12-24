@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Loader } from '@/elements/loader';
-import { Card, CardContent, CardHeader } from '@/elements/card';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Card, CardContent, CardHeader } from '@/frontend/reusable-elements/cards/Card';
 import {
   Dialog,
   DialogContent,
@@ -15,23 +15,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/elements/dialog';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/elements/select';
+} from '@/frontend/reusable-elements/selects/Select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import {
   AlertCircle,
   Clock,

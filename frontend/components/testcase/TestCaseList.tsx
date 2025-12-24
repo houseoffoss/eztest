@@ -1,17 +1,17 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Badge } from '@/elements/badge';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonSecondary } from '@/elements/button-secondary';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Plus, FolderPlus } from 'lucide-react';
-import { TopBar } from '@/components/design';
-import { Loader } from '@/elements/loader';
-import { Pagination } from '@/elements/pagination';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { TestCase, TestSuite, Project, Module } from './types';
-import { TestCaseTable } from '@/components/common/tables/TestCaseTable';
+import { TestCaseTable } from '@/frontend/reusable-components/tables/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
 import { CreateModuleDialog } from './subcomponents/CreateModuleDialog';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';

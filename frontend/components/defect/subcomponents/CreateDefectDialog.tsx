@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
-import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { useEffect, useState } from 'react';
-import { SearchableSelect } from '@/elements/searchable-select';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { SearchableSelect } from '@/frontend/reusable-elements/selects/SearchableSelect';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { type Attachment } from '@/lib/s3';
 
 interface Defect {

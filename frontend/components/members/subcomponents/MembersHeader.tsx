@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { ButtonPrimary } from '@/elements/button-primary';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Plus } from 'lucide-react';
 import { Project } from '../types';
 

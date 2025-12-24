@@ -1,17 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/elements/button";
-import { ButtonPrimary } from "@/elements/button-primary";
-import { ButtonSecondary } from "@/elements/button-secondary";
+import { Button } from "@/frontend/reusable-elements/buttons/Button";
+import { ButtonPrimary } from "@/frontend/reusable-elements/buttons/ButtonPrimary";
+import { ButtonSecondary } from "@/frontend/reusable-elements/buttons/ButtonSecondary";
 // UI primitives
-import { Input } from "@/elements/input";
-import { Badge } from "@/elements/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/elements/alert";
-import { Avatar, AvatarFallback, AvatarImage } from "@/elements/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/elements/card";
-import { Checkbox } from "@/elements/checkbox";
+import { Input } from "@/frontend/reusable-elements/inputs/Input";
+import { Badge } from "@/frontend/reusable-elements/badges/Badge";
+import { Alert, AlertDescription, AlertTitle } from "@/frontend/reusable-elements/alerts/Alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/frontend/reusable-elements/avatars/Avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/frontend/reusable-elements/cards/Card";
+import { Checkbox } from "@/frontend/reusable-elements/checkboxes/Checkbox";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/elements/dialog";
+} from "@/frontend/reusable-elements/dialogs/Dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -30,9 +30,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/elements/dropdown-menu";
-import { Label } from "@/elements/label";
-import { RadioGroup, RadioGroupItem } from "@/elements/radio-group";
+} from "@/frontend/reusable-elements/dropdowns/DropdownMenu";
+import { Label } from "@/frontend/reusable-elements/labels/Label";
+import { RadioGroup, RadioGroupItem } from "@/frontend/reusable-elements/radios/RadioGroup";
 import {
   Select,
   SelectContent,
@@ -41,9 +41,9 @@ import {
   SelectLabel as UiSelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/elements/select";
-import { Separator } from "@/elements/separator";
-import { Switch } from "@/elements/switch";
+} from "@/frontend/reusable-elements/selects/Select";
+import { Separator } from "@/frontend/reusable-elements/separators/Separator";
+import { Switch } from "@/frontend/reusable-elements/switches/Switch";
 import {
   Table,
   TableBody,
@@ -53,12 +53,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/elements/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/elements/tabs";
-import { Textarea } from "@/elements/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/elements/tooltip";
-import { GlassPanel, PageHeader, StatCard, StatusBadge, PriorityBadge, ProgressBar, FilterBar, Assignee, EmptyState, ConfirmDialog, Section, DetailCard } from "@/components/design";
-import { GlassFooter } from "@/components/design/GlassFooter";
+} from "@/frontend/reusable-elements/tables/BaseTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/frontend/reusable-elements/tabs/Tabs";
+import { Textarea } from "@/frontend/reusable-elements/textareas/Textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/frontend/reusable-elements/tooltips/Tooltip";
+import { GlassPanel } from "@/frontend/reusable-components/layout/GlassPanel";
+import { PageHeader } from "@/frontend/reusable-components/layout/PageHeader";
+import { StatCard } from "@/frontend/reusable-components/cards/StatCard";
+import { StatusBadge } from "@/frontend/reusable-components/badges/StatusBadge";
+import { PriorityBadge } from "@/frontend/reusable-components/badges/PriorityBadge";
+import { ProgressBar } from "@/frontend/reusable-components/badges/ProgressBar";
+import { FilterBar } from "@/frontend/reusable-components/inputs/FilterBar";
+import { Assignee } from "@/frontend/reusable-elements/avatars/Assignee";
+import { EmptyState } from "@/frontend/reusable-components/empty-states/EmptyState";
+import { ConfirmDialog } from "@/frontend/reusable-components/dialogs/ConfirmDialog";
+import { Section } from "@/frontend/reusable-components/layout/Section";
+import { DetailCard } from "@/frontend/reusable-components/cards/DetailCard";
+import { GlassFooter } from "@/frontend/reusable-components/layout/GlassFooter";
 
 export default function UIShowcasePage() {
   useEffect(() => {

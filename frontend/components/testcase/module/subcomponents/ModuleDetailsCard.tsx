@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import { Textarea } from '@/elements/textarea';
-import { Label } from '@/elements/label';
-import { DetailCard } from '@/components/design/DetailCard';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Module } from '../../types';
 
 interface ModuleDetailsCardProps {

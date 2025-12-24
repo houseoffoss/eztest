@@ -1,20 +1,20 @@
-'use client';
+﻿'use client';
 
-import { DetailCard } from '@/components/design/DetailCard';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Clock, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
 import { TestCase, TestCaseFormData, Module } from '../../types';
-import { Label } from '@/elements/label';
-import { Input } from '@/elements/input';
-import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/elements/select';
+} from '@/frontend/reusable-elements/selects/Select';
 import { type Attachment } from '@/lib/s3';
-import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
+import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../../constants/testCaseFormConfig';
 
 interface TestCaseDetailsCardProps {

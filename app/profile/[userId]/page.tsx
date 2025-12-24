@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { Badge } from '@/elements/badge';
-import { TopBar } from '@/components/design/TopBar';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Mail, MapPin, Phone, Calendar, Briefcase, User } from 'lucide-react';
 
 interface UserProfile {

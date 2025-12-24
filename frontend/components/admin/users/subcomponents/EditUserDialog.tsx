@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { BaseDialog, type BaseDialogField } from '@/components/design/BaseDialog';
+import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { Role, User, EditUserFormData } from '../types';
 
 interface EditUserDialogProps {

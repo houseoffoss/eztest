@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import HomePage from '@/components/pages/HomePage';
+import HomePage from '@/app/components/pages/HomePage';
 
 // Prevent caching to ensure fresh session checks
 export const dynamic = 'force-dynamic';

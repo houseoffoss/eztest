@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { formatDateTime } from '@/lib/date-utils';
 
 interface ProjectHeaderProps {

@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Checkbox } from '@/elements/checkbox';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 import { TestCase } from '../types';
 
 /**

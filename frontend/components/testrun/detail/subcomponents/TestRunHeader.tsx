@@ -1,7 +1,7 @@
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { DetailCard } from '@/components/design/DetailCard';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Play, Square } from 'lucide-react';
 
 interface TestRunHeaderProps {

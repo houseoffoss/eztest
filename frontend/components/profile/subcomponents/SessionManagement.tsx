@@ -1,6 +1,6 @@
-import { Badge } from '@/elements/badge';
-import { ButtonDestructive } from '@/elements/button-destructive';
-import { GlassPanel } from '@/components/design/GlassPanel';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import { LogOut } from 'lucide-react';
 import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 

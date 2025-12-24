@@ -1,8 +1,8 @@
-import { Button } from '@/elements/button';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Textarea } from '@/elements/textarea';
-import { GlassPanel } from '@/components/design/GlassPanel';
+﻿import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 
 interface ProfileInformationProps {
   profileData: {

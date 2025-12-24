@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { GlassPanel } from '@/components/design/GlassPanel';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import Link from 'next/link';
 
 function ResetPasswordContent() {

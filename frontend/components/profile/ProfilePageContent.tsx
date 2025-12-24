@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { DetailCard } from '@/components/design';
-import { TopBar } from '@/components/design';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import {
   ProfileInformation,
   NotificationPreferences,

@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Settings } from 'lucide-react';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Card, CardContent } from '@/elements/card';
-import { Loader } from '@/elements/loader';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { Project, ProjectFormData } from './types';
 import { SettingsHeader } from './subcomponents/SettingsHeader';
 import { GeneralSettingsCard } from './subcomponents/GeneralSettingsCard';

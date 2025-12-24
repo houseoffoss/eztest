@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Checkbox } from '@/elements/checkbox';
-import { Loader } from '@/elements/loader';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { TestCase } from '../types';
 
 interface AddTestCaseDialogProps {

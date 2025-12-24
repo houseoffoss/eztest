@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { Bug, AlertCircle } from 'lucide-react';
-import { DetailCard } from '@/components/design/DetailCard';
-import { DataTable, type ColumnDef } from '@/components/design/DataTable';
-import { Badge } from '@/elements/badge';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { TestCase } from '../types';
 
 interface LinkedDefectsCardProps {

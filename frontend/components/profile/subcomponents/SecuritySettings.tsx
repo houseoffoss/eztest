@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { Separator } from '@/elements/separator';
-import { GlassPanel } from '@/components/design/GlassPanel';
+﻿import { useState } from 'react';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Separator } from '@/frontend/reusable-elements/separators/Separator';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import { Eye, EyeOff } from 'lucide-react';
-import { Switch } from '@/elements/switch';
+import { Switch } from '@/frontend/reusable-elements/switches/Switch';
 
 interface SecuritySettingsProps {
   settings: {

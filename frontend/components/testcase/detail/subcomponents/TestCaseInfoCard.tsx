@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
-import { DetailCard } from '@/components/design/DetailCard';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { formatDateTime } from '@/lib/date-utils';
 import { TestCase } from '../types';
 

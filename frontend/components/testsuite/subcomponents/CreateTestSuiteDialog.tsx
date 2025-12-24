@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestSuite } from '../types';
 
 export interface CreateTestSuiteDialogProps {

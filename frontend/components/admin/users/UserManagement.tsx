@@ -1,13 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Input } from '@/elements/input';
-import { TopBar, UserCard } from '@/components/design';
-import { Loader } from '@/elements/loader';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { UserCard } from '@/frontend/reusable-components/cards/UserCard';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { 
   Users, 
   UserPlus, 

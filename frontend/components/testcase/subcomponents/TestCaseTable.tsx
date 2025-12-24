@@ -1,16 +1,16 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import { MoreVertical, Trash2, ChevronDown } from 'lucide-react';
-import { PriorityBadge } from '@/components/design/PriorityBadge';
+import { PriorityBadge } from '@/frontend/reusable-components/badges/PriorityBadge';
 import { TestCase, Module } from '../types';
 import { useRouter } from 'next/navigation';
 

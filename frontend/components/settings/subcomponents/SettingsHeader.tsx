@@ -1,6 +1,6 @@
 'use client';
 
-import { TopBar } from '@/components/design';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Project } from '../types';
 
 interface SettingsHeaderProps {

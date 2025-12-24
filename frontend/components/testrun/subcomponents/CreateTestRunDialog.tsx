@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestRun } from '../types';
 import { ENVIRONMENT_OPTIONS } from '../constants/testRunFormConfig';
 

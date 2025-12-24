@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TestTube2, Play, FileText, Folder } from 'lucide-react';
-import { Loader } from '@/elements/loader';
-import { TopBar, StatCard } from '@/components/design';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { StatCard } from '@/frontend/reusable-components/cards/StatCard';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
 
 interface Project {

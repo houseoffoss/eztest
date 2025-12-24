@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { formatDateTime } from '@/lib/date-utils';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Label } from '@/elements/label';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Project } from '../types';
 
 interface ProjectInfoCardProps {

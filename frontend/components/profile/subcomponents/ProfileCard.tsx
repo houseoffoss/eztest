@@ -1,8 +1,8 @@
-import { Badge } from '@/elements/badge';
-import { GlassPanel } from '@/components/design/GlassPanel';
-import { Avatar, AvatarFallback, AvatarImage } from '@/elements/avatar';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
+import { Avatar, AvatarFallback, AvatarImage } from '@/frontend/reusable-elements/avatars/Avatar';
 import { Shield, Bell, Lock, Upload } from 'lucide-react';
-import { Button } from '@/elements/button';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
 
 interface ProfileCardProps {
   name: string;

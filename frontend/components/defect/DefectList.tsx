@@ -1,18 +1,18 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
-import { Badge } from '@/elements/badge';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { ButtonSecondary } from '@/elements/button-secondary';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Plus, Trash2 } from 'lucide-react';
-import { TopBar } from '@/components/design';
-import { Loader } from '@/elements/loader';
-import { Pagination } from '@/elements/pagination';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
-import { DefectTable, type Defect, type SortField, type SortOrder } from '@/components/common/tables/DefectTable';
-import { BaseConfirmDialog } from '@/components/design/BaseConfirmDialog';
+import { DefectTable, type Defect, type SortField, type SortOrder } from '@/frontend/reusable-components/tables/DefectTable';
+import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { DefectFilters } from './subcomponents/DefectFilters';
 import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';

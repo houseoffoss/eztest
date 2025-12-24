@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { Badge } from '@/elements/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
 import { formatDateTime } from '@/lib/date-utils';
 
 interface ProjectMember {

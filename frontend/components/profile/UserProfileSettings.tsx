@@ -1,16 +1,16 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Input } from '@/elements/input';
-import { Textarea } from '@/elements/textarea';
-import { Label } from '@/elements/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/elements/card';
-import { TopBar } from '@/components/design';
-import { DetailCard } from '@/components/design/DetailCard';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
-import { Loader } from '@/elements/loader';
+import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);

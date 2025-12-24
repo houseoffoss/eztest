@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { BaseDialog, type BaseDialogField } from '@/components/design/BaseDialog';
+import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { Role, UserFormData } from '../types';
 
 interface AddUserDialogProps {

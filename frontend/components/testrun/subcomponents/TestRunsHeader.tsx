@@ -1,4 +1,4 @@
-import { Badge } from '@/elements/badge';
+﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 
 interface TestRunsHeaderProps {
   project: {

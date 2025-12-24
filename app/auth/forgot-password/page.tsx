@@ -1,14 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Input } from '@/elements/input';
-import { Label } from '@/elements/label';
-import { GlassPanel } from '@/components/design';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { FloatingAlert, type FloatingAlertMessage } from '@/components/design/FloatingAlert';
+import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 
 export default function ForgotPasswordPage() {
   useEffect(() => {

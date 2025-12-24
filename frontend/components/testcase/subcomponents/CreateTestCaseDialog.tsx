@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/components/design/BaseDialog';
+import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestCase, Module } from '../types';
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../constants/testCaseFormConfig';
 import { useEffect, useState } from 'react';

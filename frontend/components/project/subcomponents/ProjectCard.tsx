@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { formatDateTime } from '@/lib/date-utils';
-import { Badge } from '@/elements/badge';
-import { Button } from '@/elements/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/elements/dropdown-menu';
-import { ItemCard } from '@/components/design/ItemCard';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
+import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import { MoreVertical, Folder, Settings, Users, Trash2, TestTube2, Play, FileText } from 'lucide-react';
 
 interface ProjectCardProps {

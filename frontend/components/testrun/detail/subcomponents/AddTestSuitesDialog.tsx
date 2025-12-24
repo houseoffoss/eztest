@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/elements/dialog';
-import { Button } from '@/elements/button';
-import { ButtonPrimary } from '@/elements/button-primary';
-import { Checkbox } from '@/elements/checkbox';
-import { Badge } from '@/elements/badge';
+} from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { ChevronDown, ChevronRight, FolderOpen, TestTube2 } from 'lucide-react';
-import { PriorityBadge, Priority } from '@/components/design/PriorityBadge';
+import { PriorityBadge, Priority } from '@/frontend/reusable-components/badges/PriorityBadge';
 
 interface TestSuite {
   id: string;

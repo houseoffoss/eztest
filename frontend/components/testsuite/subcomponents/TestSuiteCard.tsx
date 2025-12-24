@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { Button } from '@/elements/button';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import {
   Edit,
   Folder,
@@ -13,7 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/elements/dropdown-menu';
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 
 interface TestSuiteCardProps {
   suite: TestSuite;

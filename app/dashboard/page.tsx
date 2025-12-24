@@ -1,10 +1,10 @@
-import { getServerSession } from 'next-auth';
+﻿import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Button } from '@/elements/button';
-import { Card, CardContent } from '@/elements/card';
-import { GlassPanel } from '@/components/design/GlassPanel';
-import { TopBar } from '@/components/design/TopBar';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
+import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

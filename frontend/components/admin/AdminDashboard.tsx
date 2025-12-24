@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/elements/card';
-import { TopBar } from '@/components/design';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Users } from 'lucide-react';
 
 export default function AdminDashboard() {

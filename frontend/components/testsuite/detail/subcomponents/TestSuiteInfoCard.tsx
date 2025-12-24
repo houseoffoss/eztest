@@ -1,6 +1,6 @@
-import { formatDateTime } from '@/lib/date-utils';
-import { DetailCard } from '@/components/design/DetailCard';
-import { Button } from '@/elements/button';
+﻿import { formatDateTime } from '@/lib/date-utils';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { Folder } from 'lucide-react';
 
 interface TestSuiteInfoCardProps {

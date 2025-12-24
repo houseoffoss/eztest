@@ -1,21 +1,21 @@
-'use client';
+﻿'use client';
 
-import { DetailCard } from '@/components/design/DetailCard';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Defect, DefectFormData } from '../types';
 import { FormBuilder, FormFieldConfig, SelectOption } from '@/frontend/components/form';
 import { useEffect, useState } from 'react';
-import { Label } from '@/elements/label';
-import { Input } from '@/elements/input';
-import { TextareaWithAttachments } from '@/elements/textarea-with-attachments';
+import { Label } from '@/frontend/reusable-elements/labels/Label';
+import { Input } from '@/frontend/reusable-elements/inputs/Input';
+import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { type Attachment } from '@/lib/s3';
-import { AttachmentDisplay } from '@/components/common/AttachmentDisplay';
+import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/elements/select';
+} from '@/frontend/reusable-elements/selects/Select';
 
 interface DefectDetailsCardProps {
   defect: Defect;
