@@ -41,7 +41,6 @@ export default function EditDropdownOptionsModal({
         value: option.value.toUpperCase().replace(/\s+/g, '_'),
         label: option.label,
         order: option.order,
-        color: option.color ?? undefined,
       };
 
       const response = await fetch('/api/dropdown-options', {
@@ -64,14 +63,12 @@ export default function EditDropdownOptionsModal({
       // Check if anything changed
       const hasChanges =
         original.label !== option.label ||
-        original.color !== option.color ||
         original.isActive !== option.isActive;
 
       if (hasChanges) {
         const updateData: UpdateDropdownOptionInput = {
           label: option.label,
           order: option.order,
-          color: option.color ?? undefined,
           isActive: option.isActive,
         };
 
@@ -122,7 +119,7 @@ export default function EditDropdownOptionsModal({
   return (
     <DropdownOptionsEditor
       title={`Edit ${formatEntityName(entity)} - ${formatFieldName(field)}`}
-      description="Manage dropdown values, colors, and order"
+      description="Manage dropdown values and order"
       entity={entity}
       field={field}
       options={options}

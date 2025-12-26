@@ -28,7 +28,6 @@ interface DropdownOption {
   label: string;
   order: number;
   isActive: boolean;
-  color: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -145,7 +144,6 @@ export class DropdownOptionService {
         value: data.value,
         label: data.label,
         order: data.order ?? 0,
-        color: data.color,
       } as any,
     });
 

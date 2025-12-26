@@ -7,8 +7,8 @@ import { hasPermission } from '@/lib/rbac';
  * Required permission: dropdowns:read
  */
 export const GET = hasPermission(
-  async (request) => {
-    return dropdownOptionController.getGrouped(request);
+  async () => {
+    return dropdownOptionController.getGrouped();
   },
   'dropdowns',
   'read'
