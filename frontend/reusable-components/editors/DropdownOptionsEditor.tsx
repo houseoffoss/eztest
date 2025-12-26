@@ -113,7 +113,7 @@ export function DropdownOptionsEditor({
         id: opt.id,
         value: opt.value,
         label: opt.label,
-        color: opt.color || '#3B82F6',
+        color: opt.color,
         isActive: opt.isActive,
         order: opt.order,
       }))
@@ -140,7 +140,7 @@ export function DropdownOptionsEditor({
     const newOption: OptionFormData = {
       value: '',
       label: '',
-      color: '#3B82F6',
+      color: null,
       isActive: true,
       isNew: true,
       isEditing: true,
@@ -204,7 +204,7 @@ export function DropdownOptionsEditor({
         handleUpdateOption(index, {
           value: original.value,
           label: original.label,
-          color: original.color || '#3B82F6',
+          color: original.color,
           isEditing: false,
         });
       }
@@ -341,23 +341,6 @@ export function DropdownOptionsEditor({
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="text-xs text-white/60 mb-1 block">Color</label>
-                        <div className="flex gap-2">
-                          <Input
-                            type="color"
-                            value={option.color || '#3B82F6'}
-                            onChange={(e) => handleUpdateOption(index, { color: e.target.value })}
-                            className="w-20 h-9 cursor-pointer"
-                          />
-                          <Input
-                            value={option.color || '#3B82F6'}
-                            onChange={(e) => handleUpdateOption(index, { color: e.target.value })}
-                            placeholder="#3B82F6"
-                            className="bg-[#0f172a] border-[#334155] flex-1 text-sm font-mono"
-                          />
-                        </div>
-                      </div>
                       <div className="flex gap-2 justify-end">
                         <Button
                           size="sm"
@@ -383,10 +366,6 @@ export function DropdownOptionsEditor({
                     // View Mode
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <div
-                          className="w-4 h-4 rounded border border-white/20"
-                          style={{ backgroundColor: option.color || '#3B82F6' }}
-                        />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-white">{option.label}</span>

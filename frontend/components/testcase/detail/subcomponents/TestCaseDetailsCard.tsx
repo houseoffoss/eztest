@@ -108,7 +108,6 @@ export function TestCaseDetailsCard({
                       <SelectItem 
                         key={opt.id} 
                         value={opt.value}
-                        style={{ color: opt.color || undefined }}
                       >
                         {opt.label}
                       </SelectItem>
@@ -135,7 +134,6 @@ export function TestCaseDetailsCard({
                       <SelectItem 
                         key={opt.id} 
                         value={opt.value}
-                        style={{ color: opt.color || undefined }}
                       >
                         {opt.label}
                       </SelectItem>
