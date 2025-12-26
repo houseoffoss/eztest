@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { TestRunStatus, TestResultStatus } from '@prisma/client';
 
 interface CreateTestRunInput {
   projectId: string;
@@ -15,7 +14,7 @@ interface CreateTestRunInput {
 interface UpdateTestRunInput {
   name?: string;
   description?: string;
-  status?: TestRunStatus;
+  status?: string;
   assignedToId?: string;
   environment?: string;
   startedAt?: Date;
@@ -23,7 +22,7 @@ interface UpdateTestRunInput {
 }
 
 interface TestRunFilters {
-  status?: TestRunStatus;
+  status?: string;
   assignedToId?: string;
   environment?: string;
   search?: string;
@@ -194,7 +193,7 @@ export class TestRunService {
         data: testCaseIds.map((testCaseId) => ({
           testRunId: testRun.id,
           testCaseId,
-          status: 'SKIPPED' as TestResultStatus,
+          status: 'SKIPPED',
           executedById: data.assignedToId || '', // Will be updated when actually executed
         })),
         skipDuplicates: true,
@@ -329,7 +328,7 @@ export class TestRunService {
     testRunId: string,
     testCaseId: string,
     data: {
-      status: TestResultStatus;
+      status: string;
       executedById: string;
       duration?: number;
       comment?: string;

@@ -2,7 +2,7 @@
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestRun } from '../types';
-import { ENVIRONMENT_OPTIONS } from '../constants/testRunFormConfig';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface CreateTestRunDialogProps {
   projectId: string;
@@ -17,6 +17,9 @@ export function CreateTestRunDialog({
   onOpenChange,
   onTestRunCreated,
 }: CreateTestRunDialogProps) {
+  // Fetch dynamic dropdown options
+  const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
+
   const fields: BaseDialogField[] = [
     {
       name: 'name',
@@ -37,7 +40,7 @@ export function CreateTestRunDialog({
       defaultValue: 'none',
       options: [
         { value: 'none', label: 'Select environment' },
-        ...ENVIRONMENT_OPTIONS.map(opt => ({ value: opt.value, label: opt.label })),
+        ...environmentOptions.map(opt => ({ value: opt.value, label: opt.label })),
       ],
       cols: 2,
     },

@@ -1,13 +1,12 @@
 import { z } from 'zod';
-import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 
 export const createDefectSchema = z.object({
   testRunId: z.string().optional().nullable(),
   title: z.string().min(1, 'Title is required').max(500, 'Title too long'),
   description: z.string().optional().nullable(),
-  severity: z.nativeEnum(DefectSeverity),
-  priority: z.nativeEnum(Priority),
-  status: z.nativeEnum(DefectStatus).optional(),
+  severity: z.string(),
+  priority: z.string(),
+  status: z.string().optional(),
   assignedToId: z.string().optional().nullable(),
   environment: z.string().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
@@ -18,9 +17,9 @@ export const createDefectSchema = z.object({
 export const updateDefectSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500, 'Title too long').optional(),
   description: z.string().optional().nullable(),
-  severity: z.nativeEnum(DefectSeverity).optional(),
-  priority: z.nativeEnum(Priority).optional(),
-  status: z.nativeEnum(DefectStatus).optional(),
+  severity: z.string().optional(),
+  priority: z.string().optional(),
+  status: z.string().optional(),
   assignedToId: z.string().optional().nullable(),
   environment: z.string().optional().nullable(),
   testRunId: z.string().optional().nullable(),
@@ -44,7 +43,7 @@ export const bulkDeleteSchema = z.object({
 
 export const bulkUpdateStatusSchema = z.object({
   defectIds: z.array(z.string()).min(1, 'At least one defect ID is required'),
-  status: z.nativeEnum(DefectStatus),
+  status: z.string(),
 });
 
 export const bulkAssignSchema = z.object({

@@ -25,6 +25,7 @@ import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 import { CheckCircle, XCircle, AlertCircle, Circle, Bug } from 'lucide-react';
 import { ResultFormData } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface Defect {
   id: string;
@@ -66,6 +67,28 @@ export function RecordResultDialog({
   const [loadingDefects, setLoadingDefects] = useState(false);
   const [defectFilter, setDefectFilter] = useState<'all' | 'existing' | 'other'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch dynamic dropdown options
+  const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
+
+  // Helper function to get icon for status
+  const getStatusIcon = (status: string) => {
+    const upperStatus = status.toUpperCase();
+    switch (upperStatus) {
+      case 'PASSED':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'FAILED':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'BLOCKED':
+        return <AlertCircle className="w-4 h-4 text-orange-500" />;
+      case 'SKIPPED':
+        return <Circle className="w-4 h-4 text-gray-500" />;
+      case 'RETEST':
+        return <AlertCircle className="w-4 h-4 text-purple-500" />;
+      default:
+        return <Circle className="w-4 h-4 text-gray-500" />;
+    }
+  };
 
   useEffect(() => {
     if (open && formData.status === 'FAILED') {
@@ -188,36 +211,14 @@ export function RecordResultDialog({
                 <SelectValue placeholder="Select result status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="PASSED">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Passed</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="FAILED">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-red-500" />
-                    <span>Failed</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="BLOCKED">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-orange-500" />
-                    <span>Blocked</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="SKIPPED">
-                  <div className="flex items-center gap-2">
-                    <Circle className="w-4 h-4 text-gray-500" />
-                    <span>Skipped</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="RETEST">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-purple-500" />
-                    <span>Retest</span>
-                  </div>
-                </SelectItem>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(option.value)}
+                      <span>{option.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

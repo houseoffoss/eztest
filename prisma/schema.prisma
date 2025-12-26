@@ -11,59 +11,9 @@ datasource db {
 }
 
 // ====================================
-// Enums
+// Enums - Converted to dynamic dropdown options (String fields)
+// Values are now managed through the DropdownOption table
 // ====================================
-
-enum Priority {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum TestStatus {
-  ACTIVE
-  DEPRECATED
-  DRAFT
-}
-
-enum TestRunStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum TestResultStatus {
-  PASSED
-  FAILED
-  BLOCKED
-  SKIPPED
-  RETEST
-}
-
-enum RequirementStatus {
-  DRAFT
-  APPROVED
-  IMPLEMENTED
-  VERIFIED
-  DEPRECATED
-}
-
-enum DefectSeverity {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum DefectStatus {
-  NEW
-  IN_PROGRESS
-  FIXED
-  TESTED
-  CLOSED
-}
 
 // ====================================
 // User Management
@@ -220,8 +170,8 @@ model TestCase {
   title         String
   description   String?
   expectedResult String?  // Overall expected result for the test case
-  priority      Priority @default(MEDIUM)
-  status        TestStatus @default(ACTIVE)
+  priority      String   @default("MEDIUM") // Dynamic dropdown value
+  status        String   @default("ACTIVE") // Dynamic dropdown value
   estimatedTime Int?     // in minutes
   preconditions String?
   postconditions String?
@@ -247,6 +197,7 @@ model TestCase {
   @@index([suiteId])
   @@index([createdById])
   @@index([status])
+  @@index([priority])
 }
 
 // Join table for many-to-many relationship between TestCase and TestSuite
@@ -285,9 +236,9 @@ model TestRun {
   projectId   String
   name        String
   description String?
-  status      TestRunStatus @default(PLANNED)
+  status      String   @default("PLANNED") // Dynamic dropdown value
   assignedToId String?
-  environment String?  // e.g., "Production", "Staging", "QA"
+  environment String?  // Dynamic dropdown value e.g., "Production", "Staging", "QA"
   startedAt   DateTime?
   completedAt DateTime?
   createdById String
@@ -305,6 +256,7 @@ model TestRun {
   @@index([assignedToId])
   @@index([createdById])
   @@index([status])
+  @@index([environment])
 }
 
 model TestRunSuite {
@@ -325,7 +277,7 @@ model TestResult {
   id          String   @id @default(cuid())
   testRunId   String
   testCaseId  String
-  status      TestResultStatus
+  status      String   // Dynamic dropdown value: PASSED, FAILED, BLOCKED, SKIPPED, RETEST
   executedById String
   duration    Int?     // in seconds
   comment     String?
@@ -352,8 +304,8 @@ model Requirement {
   key         String   // e.g., "REQ-001"
   title       String
   description String?
-  priority    Priority @default(MEDIUM)
-  status      RequirementStatus @default(DRAFT)
+  priority    String   @default("MEDIUM") // Dynamic dropdown value
+  status      String   @default("DRAFT") // Dynamic dropdown value
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -362,6 +314,8 @@ model Requirement {
 
   @@unique([projectId, key])
   @@index([projectId])
+  @@index([status])
+  @@index([priority])
 }
 
 // Supporting Models
@@ -445,6 +399,26 @@ model RolePermission {
 }
 
 // ====================================
+// Dropdown Options Management
+// ====================================
+
+model DropdownOption {
+  id          String   @id @default(cuid())
+  entity      String   // e.g., "TestCase", "Defect", "TestRun", "Requirement"
+  field       String   // e.g., "priority", "status", "severity"
+  value       String   // The actual value stored in database (e.g., "CRITICAL", "HIGH")
+  label       String   // The display label for users (e.g., "Critical", "High Priority")
+  order       Int      @default(0) // For sorting options
+  isActive    Boolean  @default(true) // Soft delete flag
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([entity, field, value])
+  @@index([entity, field])
+  @@index([isActive])
+}
+
+// ====================================
 // Defect Management
 // ====================================
 
@@ -454,12 +428,12 @@ model Defect {
   projectId     String
   title         String
   description   String?       @db.Text
-  severity      DefectSeverity @default(MEDIUM)
-  priority      Priority      @default(MEDIUM)
-  status        DefectStatus  @default(NEW)
+  severity      String        @default("MEDIUM") // Dynamic dropdown value
+  priority      String        @default("MEDIUM") // Dynamic dropdown value
+  status        String        @default("NEW") // Dynamic dropdown value
   assignedToId  String?
   testRunId     String?       // Optional link to test run
-  environment   String?       // e.g., "Production", "Staging", "QA"
+  environment   String?       // Dynamic dropdown value e.g., "Production", "Staging", "QA"
   dueDate       DateTime?     // Optional due date for the defect
   progressPercentage Int?      // Optional progress percentage (0-100)
   createdById   String
@@ -483,6 +457,8 @@ model Defect {
   @@index([testRunId])
   @@index([status])
   @@index([severity])
+  @@index([priority])
+  @@index([environment])
 }
 
 model DefectAttachment {

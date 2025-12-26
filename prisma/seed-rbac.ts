@@ -56,6 +56,10 @@ export async function seedRBAC() {
     { name: 'defects:update', description: 'Update defects' },
     { name: 'defects:delete', description: 'Delete defects' },
     { name: 'defects:assign', description: 'Assign defects to users' },
+    
+    // Dropdown options permissions (Admin and Project Manager only)
+    { name: 'dropdowns:read', description: 'View dropdown options' },
+    { name: 'dropdowns:manage', description: 'Manage dropdown options (create, update, delete)' },
   ];
 
   // Upsert all permissions
@@ -112,7 +116,7 @@ export async function seedRBAC() {
   console.log('    ✅ ADMIN: Full access (all permissions)');
 
   // Assign permissions to PROJECT_MANAGER
-  // PROJECT_MANAGER can: view projects + all test operations (cannot update/delete projects or manage members)
+  // PROJECT_MANAGER can: view projects + all test operations + manage dropdowns (cannot update/delete projects or manage members)
   const pmPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
@@ -139,6 +143,8 @@ export async function seedRBAC() {
       'defects:delete',
       'defects:assign',
       'users:read',
+      'dropdowns:read',
+      'dropdowns:manage',
     ].includes(perm.name)
   );
   await prisma.rolePermission.createMany({
@@ -178,6 +184,7 @@ export async function seedRBAC() {
       'defects:delete',
       'defects:assign',
       'users:read',
+      'dropdowns:read', // Need to read dropdown options for forms
     ].includes(perm.name)
   );
   await prisma.rolePermission.createMany({
@@ -199,6 +206,7 @@ export async function seedRBAC() {
       'requirements:read',
       'defects:read',
       'users:read',
+      'dropdowns:read', // Need to read dropdown options for forms
     ].includes(perm.name)
   );
   await prisma.rolePermission.createMany({

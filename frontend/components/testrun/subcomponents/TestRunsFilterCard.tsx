@@ -3,6 +3,7 @@
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
 import { TestRunFilters } from '../types';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface TestRunsFilterCardProps {
   filters: TestRunFilters;
@@ -11,28 +12,26 @@ interface TestRunsFilterCardProps {
   onEnvironmentFilterChange: (environment: string) => void;
 }
 
-const statusOptions: FilterOption[] = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'PLANNED', label: 'Planned' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
-];
-
-const environmentOptions: FilterOption[] = [
-  { value: 'all', label: 'All Environments' },
-  { value: 'Production', label: 'Production' },
-  { value: 'Staging', label: 'Staging' },
-  { value: 'QA', label: 'QA' },
-  { value: 'Development', label: 'Development' },
-];
-
 export function TestRunsFilterCard({
   filters,
   onSearchChange,
   onStatusFilterChange,
   onEnvironmentFilterChange,
 }: TestRunsFilterCardProps) {
+  // Fetch dynamic dropdown options
+  const { options: statusOptionsData } = useDropdownOptions('TestRun', 'status');
+  const { options: environmentOptionsData } = useDropdownOptions('TestRun', 'environment');
+
+  // Map to FilterOption format with "All" option
+  const statusOptions: FilterOption[] = [
+    { value: 'all', label: 'All Statuses' },
+    ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
+  ];
+
+  const environmentOptions: FilterOption[] = [
+    { value: 'all', label: 'All Environments' },
+    ...environmentOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
+  ];
   return (
     <div className="mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

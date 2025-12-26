@@ -7,7 +7,6 @@ import {
 } from '@/backend/validators/testrun.validator';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
-import { TestRunStatus } from '@prisma/client';
 import { TestRunMessages } from '@/backend/constants/static_messages';
 
 export class TestRunController {
@@ -17,7 +16,7 @@ export class TestRunController {
   async getProjectTestRuns(
     projectId: string,
     filters?: {
-      status?: TestRunStatus;
+      status?: string;
       assignedToId?: string;
       environment?: string;
       search?: string;

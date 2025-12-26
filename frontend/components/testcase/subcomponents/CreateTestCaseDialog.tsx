@@ -2,10 +2,10 @@
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestCase, Module } from '../types';
-import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../constants/testCaseFormConfig';
 import { useEffect, useState } from 'react';
 import { attachmentStorage } from '@/lib/attachment-storage';
 import type { Attachment } from '@/lib/s3';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface CreateTestCaseDialogProps {
   projectId: string;
@@ -29,6 +29,10 @@ export function CreateTestCaseDialog({
   const [expectedResultAttachments, setExpectedResultAttachments] = useState<Attachment[]>([]);
   const [preconditionsAttachments, setPreconditionsAttachments] = useState<Attachment[]>([]);
   const [postconditionsAttachments, setPostconditionsAttachments] = useState<Attachment[]>([]);
+
+  // Fetch dynamic dropdown options
+  const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
+  const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -82,7 +86,7 @@ export function CreateTestCaseDialog({
       label: 'Priority',
       type: 'select',
       defaultValue: 'MEDIUM',
-      options: PRIORITY_OPTIONS.map(opt => ({ value: opt.value, label: opt.label })),
+      options: priorityOptions.map(opt => ({ value: opt.value, label: opt.label })),
       cols: 1,
     },
     {
@@ -90,7 +94,7 @@ export function CreateTestCaseDialog({
       label: 'Status',
       type: 'select',
       defaultValue: 'DRAFT',
-      options: STATUS_OPTIONS.map(opt => ({ value: opt.value, label: opt.label })),
+      options: statusOptions.map(opt => ({ value: opt.value, label: opt.label })),
       cols: 1,
     },
     {

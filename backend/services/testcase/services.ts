@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { Priority, TestStatus } from '@prisma/client';
 import { CustomRequest } from '@/backend/utils/interceptor';
 
 interface CreateTestCaseInput {
@@ -9,8 +8,8 @@ interface CreateTestCaseInput {
   title: string;
   description?: string;
   expectedResult?: string;
-  priority?: Priority;
-  status?: TestStatus;
+  priority?: string;
+  status?: string;
   estimatedTime?: number;
   preconditions?: string;
   postconditions?: string;
@@ -26,8 +25,8 @@ interface UpdateTestCaseInput {
   title?: string;
   description?: string;
   expectedResult?: string;
-  priority?: Priority;
-  status?: TestStatus;
+  priority?: string;
+  status?: string;
   estimatedTime?: number;
   preconditions?: string;
   postconditions?: string;
@@ -37,8 +36,8 @@ interface UpdateTestCaseInput {
 
 interface TestCaseFilters {
   suiteId?: string;
-  priority?: Priority;
-  status?: TestStatus;
+  priority?: string;
+  status?: string;
   search?: string;
 }
 

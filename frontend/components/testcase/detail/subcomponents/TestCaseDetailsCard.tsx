@@ -15,7 +15,7 @@ import {
 } from '@/frontend/reusable-elements/selects/Select';
 import { type Attachment } from '@/lib/s3';
 import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
-import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '../../constants/testCaseFormConfig';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface TestCaseDetailsCardProps {
   testCase: TestCase;
@@ -55,6 +55,10 @@ export function TestCaseDetailsCard({
   onPreconditionAttachmentsChange,
   onPostconditionAttachmentsChange,
 }: TestCaseDetailsCardProps) {
+  // Fetch dynamic dropdown options
+  const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
+  const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestCase', 'status');
+
   const handleFieldChange = onFieldChange || ((field, value) => {
     onFormChange({ ...formData, [field]: value });
   });
@@ -97,11 +101,18 @@ export function TestCaseDetailsCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent variant="glass">
-                  {PRIORITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {loadingPriority ? (
+                    <SelectItem value="" disabled>Loading...</SelectItem>
+                  ) : (
+                    priorityOptions.map((opt) => (
+                      <SelectItem 
+                        key={opt.id} 
+                        value={opt.value}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -116,11 +127,18 @@ export function TestCaseDetailsCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent variant="glass">
-                  {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {loadingStatus ? (
+                    <SelectItem value="" disabled>Loading...</SelectItem>
+                  ) : (
+                    statusOptions.map((opt) => (
+                      <SelectItem 
+                        key={opt.id} 
+                        value={opt.value}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

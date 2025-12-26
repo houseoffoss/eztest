@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { TestRunStatus } from '@prisma/client';
 
 /**
  * Create Test Run Schema
@@ -28,7 +27,7 @@ export const updateTestRunSchema = z.object({
     .trim()
     .optional(),
   description: z.string().optional(),
-  status: z.nativeEnum(TestRunStatus).optional(),
+  status: z.string().optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
 });

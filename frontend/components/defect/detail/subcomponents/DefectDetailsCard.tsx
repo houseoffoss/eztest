@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/frontend/reusable-elements/selects/Select';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface DefectDetailsCardProps {
   defect: Defect;
@@ -48,6 +49,11 @@ export function DefectDetailsCard({
   onDescriptionAttachmentsChange,
 }: DefectDetailsCardProps) {
   const [users, setUsers] = useState<User[]>([]);
+  
+  // Fetch dynamic dropdown options
+  const { options: severityOptions, loading: loadingSeverity } = useDropdownOptions('Defect', 'severity');
+  const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('Defect', 'priority');
+  const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('Defect', 'status');
 
   const handleFieldChange = onFieldChange || ((field, value) => {
     onFormChange({ ...formData, [field]: value });
@@ -73,28 +79,6 @@ export function DefectDetailsCard({
         .catch((err) => console.error('Failed to fetch users:', err));
     }
   }, [isEditing, defect.projectId]);
-
-  const SEVERITY_OPTIONS: SelectOption[] = [
-    { value: 'CRITICAL', label: 'Critical' },
-    { value: 'HIGH', label: 'High' },
-    { value: 'MEDIUM', label: 'Medium' },
-    { value: 'LOW', label: 'Low' },
-  ];
-
-  const PRIORITY_OPTIONS: SelectOption[] = [
-    { value: 'CRITICAL', label: 'Critical' },
-    { value: 'HIGH', label: 'High' },
-    { value: 'MEDIUM', label: 'Medium' },
-    { value: 'LOW', label: 'Low' },
-  ];
-
-  const STATUS_OPTIONS: SelectOption[] = [
-    { value: 'NEW', label: 'New' },
-    { value: 'IN_PROGRESS', label: 'In Progress' },
-    { value: 'FIXED', label: 'Fixed' },
-    { value: 'TESTED', label: 'Tested' },
-    { value: 'CLOSED', label: 'Closed' },
-  ];
 
   const assignedToOptions: SelectOption[] = [
     { value: 'unassigned', label: 'Not Assigned' },
@@ -139,11 +123,18 @@ export function DefectDetailsCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent variant="glass">
-                  {SEVERITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {loadingSeverity ? (
+                    <SelectItem value="" disabled>Loading...</SelectItem>
+                  ) : (
+                    severityOptions.map((opt) => (
+                      <SelectItem 
+                        key={opt.id} 
+                        value={opt.value}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -160,11 +151,18 @@ export function DefectDetailsCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent variant="glass">
-                  {PRIORITY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {loadingPriority ? (
+                    <SelectItem value="" disabled>Loading...</SelectItem>
+                  ) : (
+                    priorityOptions.map((opt) => (
+                      <SelectItem 
+                        key={opt.id} 
+                        value={opt.value}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -184,11 +182,18 @@ export function DefectDetailsCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent variant="glass">
-                  {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
+                  {loadingStatus ? (
+                    <SelectItem value="" disabled>Loading...</SelectItem>
+                  ) : (
+                    statusOptions.map((opt) => (
+                      <SelectItem 
+                        key={opt.id} 
+                        value={opt.value}
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

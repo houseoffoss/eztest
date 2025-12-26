@@ -12,7 +12,6 @@ import { linkAttachmentsSchema } from '@/backend/validators/attachment.validator
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
 import { ZodError } from 'zod';
-import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 import { DefectMessages } from '@/backend/constants/static_messages';
 
 const emailService = new EmailService();
@@ -45,9 +44,9 @@ export class DefectController {
     const query = validationResult.data;
 
     const filters = {
-      severity: query.severity?.split(',').filter(Boolean) as DefectSeverity[] | undefined,
-      priority: query.priority?.split(',').filter(Boolean) as Priority[] | undefined,
-      status: query.status?.split(',').filter(Boolean) as DefectStatus[] | undefined,
+      severity: query.severity?.split(',').filter(Boolean),
+      priority: query.priority?.split(',').filter(Boolean),
+      status: query.status?.split(',').filter(Boolean),
       assignedToId: query.assignedToId?.split(',').filter(Boolean),
       search: query.search,
       dateFrom: query.dateFrom,

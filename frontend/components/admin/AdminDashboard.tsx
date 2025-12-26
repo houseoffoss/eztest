@@ -5,7 +5,7 @@ import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
-import { Users } from 'lucide-react';
+import { Users, Settings } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -45,6 +45,25 @@ export default function AdminDashboard() {
               }
               borderColor="accent"
               onClick={() => router.push('/admin/users')}
+              className="hover:shadow-xl hover:shadow-primary/10 transition-all"
+            />
+
+            {/* Dropdown Options Management */}
+            <ItemCard
+              title="Dropdown Options"
+              description="Manage dropdown options for various entities"
+              badges={
+                <div className="p-3 bg-purple-500/10 rounded-lg">
+                  <Settings className="w-6 h-6 text-purple-500" />
+                </div>
+              }
+              content={
+                <p className="text-sm text-white/60">
+                  Configure dropdown options for priorities, statuses, and more
+                </p>
+              }
+              borderColor="accent"
+              onClick={() => router.push('/admin/dropdown-options')}
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
           </ResponsiveGrid>

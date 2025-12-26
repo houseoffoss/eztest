@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { SearchableSelect } from '@/frontend/reusable-elements/selects/SearchableSelect';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { type Attachment } from '@/lib/s3';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface Defect {
   id: string;
@@ -23,20 +24,6 @@ interface CreateDefectDialogProps {
   testRunEnvironment?: string; // When creating from test run, auto-populate environment
 }
 
-const SEVERITY_OPTIONS = [
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
-];
-
-const PRIORITY_OPTIONS = [
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
-];
-
 export function CreateDefectDialog({
   projectId,
   triggerOpen,
@@ -49,6 +36,11 @@ export function CreateDefectDialog({
   const [assignees, setAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [testCases, setTestCases] = useState<Array<{ id: string; testCaseId: string; title: string }>>([]);
   const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
+
+  // Fetch dynamic dropdown options
+  const { options: severityOptions } = useDropdownOptions('Defect', 'severity');
+  const { options: priorityOptions } = useDropdownOptions('Defect', 'priority');
+  const { options: environmentOptions } = useDropdownOptions('Defect', 'environment');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,12 +88,10 @@ export function CreateDefectDialog({
     label: assignee.name,
   }));
 
-  const ENVIRONMENT_OPTIONS = [
-    { value: 'Production', label: 'Production' },
-    { value: 'Staging', label: 'Staging' },
-    { value: 'QA', label: 'QA' },
-    { value: 'Development', label: 'Development' },
-  ];
+  // Map dropdown options to the format expected by BaseDialog
+  const SEVERITY_OPTIONS = severityOptions.map(opt => ({ value: opt.value, label: opt.label }));
+  const PRIORITY_OPTIONS = priorityOptions.map(opt => ({ value: opt.value, label: opt.label }));
+  const ENVIRONMENT_OPTIONS = environmentOptions.map(opt => ({ value: opt.value, label: opt.label }));
 
   const fields: BaseDialogField[] = [
     {

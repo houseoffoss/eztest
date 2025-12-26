@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { DefectSeverity, DefectStatus, Priority } from '@prisma/client';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { s3Client, getS3Bucket } from '@/lib/s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -9,9 +8,9 @@ interface CreateDefectInput {
   testRunId?: string | null;
   title: string;
   description?: string | null;
-  severity: DefectSeverity;
-  priority: Priority;
-  status?: DefectStatus;
+  severity: string;
+  priority: string;
+  status?: string;
   assignedToId?: string | null;
   createdById: string;
   environment?: string | null;
@@ -23,9 +22,9 @@ interface CreateDefectInput {
 interface UpdateDefectInput {
   title?: string;
   description?: string | null;
-  severity?: DefectSeverity;
-  priority?: Priority;
-  status?: DefectStatus;
+  severity?: string;
+  priority?: string;
+  status?: string;
   assignedToId?: string | null;
   environment?: string | null;
   testRunId?: string | null;
@@ -34,9 +33,9 @@ interface UpdateDefectInput {
 }
 
 interface DefectFilters {
-  severity?: DefectSeverity[];
-  priority?: Priority[];
-  status?: DefectStatus[];
+  severity?: string[];
+  priority?: string[];
+  status?: string[];
   assignedToId?: string[];
   search?: string;
   dateFrom?: string;

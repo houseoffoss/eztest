@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
+import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { MembersList } from '@/frontend/reusable-components/users/MembersList';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
@@ -27,6 +28,7 @@ export default function UserManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   useEffect(() => {
@@ -144,12 +146,25 @@ export default function UserManagement() {
   };
 
 
-  const filteredUsers = users.filter(
-    (user) =>
+  // Build role filter options from roles
+  const roleFilterOptions: FilterOption[] = [
+    { value: 'all', label: 'All Roles' },
+    ...roles.map((role) => ({
+      value: role.id,
+      label: role.name,
+    })),
+  ];
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = 
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.role.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      user.role.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesRole = roleFilter === 'all' || user.role.id === roleFilter;
+    
+    return matchesSearch && matchesRole;
+  });
 
   return (
     <>
@@ -183,12 +198,22 @@ export default function UserManagement() {
             />
           }
           filters={
-            <div className="w-full lg:w-64">
-              <SearchInput
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search users..."
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              <div className="md:col-span-2">
+                <SearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search users..."
+                />
+              </div>
+              <div>
+                <FilterDropdown
+                  value={roleFilter}
+                  onValueChange={setRoleFilter}
+                  placeholder="Role"
+                  options={roleFilterOptions}
+                />
+              </div>
             </div>
           }
         />

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { Priority, TestStatus } from '@prisma/client';
 
 /**
  * Test Step Schema
@@ -23,12 +22,8 @@ export const createTestCaseSchema = z.object({
   title: z.string().min(1, 'Title is required').trim(),
   description: z.string().optional(),
   expectedResult: z.string().optional(),
-  priority: z.nativeEnum(Priority, {
-    message: 'Invalid priority value',
-  }).optional(),
-  status: z.nativeEnum(TestStatus, {
-    message: 'Invalid status value',
-  }).optional(),
+  priority: z.string().optional(),
+  status: z.string().optional(),
   estimatedTime: z
     .number()
     .nonnegative('Estimated time must be a positive number')
@@ -45,12 +40,8 @@ export const updateTestCaseSchema = z.object({
   title: z.string().min(1, 'Title cannot be empty').trim().optional(),
   description: z.string().optional(),
   expectedResult: z.string().optional(),
-  priority: z.nativeEnum(Priority, {
-    message: 'Invalid priority value',
-  }).optional(),
-  status: z.nativeEnum(TestStatus, {
-    message: 'Invalid status value',
-  }).optional(),
+  priority: z.string().optional(),
+  status: z.string().optional(),
   estimatedTime: z
     .number()
     .nonnegative('Estimated time must be a positive number')
@@ -76,8 +67,8 @@ export const updateTestStepsSchema = z.object({
  */
 export const testCaseQuerySchema = z.object({
   suiteId: z.string().min(1, 'Suite ID cannot be empty').optional(),
-  priority: z.nativeEnum(Priority).optional(),
-  status: z.nativeEnum(TestStatus).optional(),
+  priority: z.string().optional(),
+  status: z.string().optional(),
   search: z.string().optional(),
 });
 

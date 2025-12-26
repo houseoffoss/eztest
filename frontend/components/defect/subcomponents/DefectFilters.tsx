@@ -2,6 +2,7 @@
 
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
+import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface DefectFiltersProps {
   searchQuery: string;
@@ -17,31 +18,6 @@ interface DefectFiltersProps {
   availableAssignees?: Array<{ id: string; name: string }>;
 }
 
-const severityOptions: FilterOption[] = [
-  { value: 'all', label: 'All Severities' },
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
-];
-
-const priorityOptions: FilterOption[] = [
-  { value: 'all', label: 'All Priorities' },
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
-];
-
-const statusOptions: FilterOption[] = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'NEW', label: 'New' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'FIXED', label: 'Fixed' },
-  { value: 'TESTED', label: 'Tested' },
-  { value: 'CLOSED', label: 'Closed' },
-];
-
 export function DefectFilters({
   searchQuery,
   severityFilter,
@@ -55,6 +31,26 @@ export function DefectFilters({
   onAssigneeChange,
   availableAssignees = [],
 }: DefectFiltersProps) {
+  // Fetch dynamic dropdown options
+  const { options: severityOptionsData } = useDropdownOptions('Defect', 'severity');
+  const { options: priorityOptionsData } = useDropdownOptions('Defect', 'priority');
+  const { options: statusOptionsData } = useDropdownOptions('Defect', 'status');
+
+  // Map to FilterOption format with "All" option
+  const severityOptions: FilterOption[] = [
+    { value: 'all', label: 'All Severities' },
+    ...severityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
+  ];
+
+  const priorityOptions: FilterOption[] = [
+    { value: 'all', label: 'All Priorities' },
+    ...priorityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
+  ];
+
+  const statusOptions: FilterOption[] = [
+    { value: 'all', label: 'All Statuses' },
+    ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
+  ];
   // Build assignee options from available assignees
   const assigneeOptions: FilterOption[] = [
     { value: 'all', label: 'All Assignees' },
