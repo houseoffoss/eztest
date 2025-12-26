@@ -8,7 +8,7 @@ echo "Waiting for database connection..."
 MAX_RETRIES=30
 RETRY_COUNT=0
 
-until npx prisma migrate deploy --skip-generate 2>&1 | tee /tmp/prisma_error.log || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+until npx prisma migrate deploy 2>&1 | tee /tmp/prisma_error.log || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
   RETRY_COUNT=$((RETRY_COUNT + 1))
   echo "Database is unavailable - attempt $RETRY_COUNT/$MAX_RETRIES"
   if [ -f /tmp/prisma_error.log ]; then
@@ -27,7 +27,7 @@ echo "Database is ready!"
 
 # Run migrations
 echo "Running database migrations..."
-npx prisma migrate deploy --skip-generate
+npx prisma migrate deploy
 
 # Seed database if SEED_DATABASE is set to true
 if [ "$SEED_DATABASE" = "true" ]; then
