@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Import } from 'lucide-react';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
@@ -16,6 +16,7 @@ import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseCo
 import { DefectFilters } from './subcomponents/DefectFilters';
 import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';
+import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
 
 interface Project {
   id: string;
@@ -30,7 +31,7 @@ interface DefectListProps {
 
 export default function DefectList({ projectId }: DefectListProps) {
   const router = useRouter();
-  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading, role } = usePermissions();
 
   const [project, setProject] = useState<Project | null>(null);
   const [defects, setDefects] = useState<Defect[]>([]);
@@ -40,6 +41,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [mounted, setMounted] = useState(false);
   const [availableAssignees, setAvailableAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [singleDeleteConfirmOpen, setSingleDeleteConfirmOpen] = useState(false);
   const [defectToDelete, setDefectToDelete] = useState<Defect | null>(null);
@@ -412,6 +414,7 @@ export default function DefectList({ projectId }: DefectListProps) {
 
   const canCreateDefect = hasPermissionCheck('defects:create');
   const canDeleteDefect = hasPermissionCheck('defects:delete');
+  const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
 
   return (
     <>
@@ -426,10 +429,18 @@ export default function DefectList({ projectId }: DefectListProps) {
         ]}
         actions={
           canCreateDefect ? (
-            <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
-              <Plus className="w-4 h-4 mr-2" />
-              New Defect
-            </ButtonPrimary>
+            <div className="flex gap-2">
+              {canImport && (
+                <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
+                  <Import className="w-4 h-4 mr-2" />
+                  Import
+                </ButtonSecondary>
+              )}
+              <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
+                <Plus className="w-4 h-4 mr-2" />
+                New Defect
+              </ButtonPrimary>
+            </div>
           ) : undefined
         }
       />
@@ -581,6 +592,21 @@ export default function DefectList({ projectId }: DefectListProps) {
           });
           setTimeout(() => setAlert(null), 5000);
           fetchDefects();
+        }}
+      />
+
+      {/* Import Dialog */}
+      <FileImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        title="Import Defects"
+        description="Upload a CSV or Excel file to import multiple defects at once."
+        importEndpoint={`/api/projects/${projectId}/defects/import`}
+        templateEndpoint={`/api/projects/${projectId}/defects/import/template`}
+        itemName="defects"
+        onImportComplete={() => {
+          fetchDefects();
+          setImportDialogOpen(false);
         }}
       />
     </>

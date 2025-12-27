@@ -13,6 +13,7 @@ Comprehensive documentation for all EZTest features.
 | **Test Suites** | ✅ Complete | [View Docs](./test-suites/README.md) |
 | **Test Runs** | ✅ Complete | [View Docs](./test-runs/README.md) |
 | **Defect Tracking** | ✅ Complete | [View Docs](./defects/README.md) |
+| **Data Migration & Bulk Import** | ✅ Complete | [View Docs](./data-migration/README.md) |
 | **File Attachments** | ✅ Complete | [View Docs](./attachments/README.md) |
 | **Email Notifications** | ✅ Complete | [View Docs](./email/README.md) |
 | **Dashboard & Analytics** | 🚧 In Progress | Coming Soon |
@@ -135,7 +136,26 @@ Track and manage bugs found during testing.
 
 ---
 
-### 📎 [File Attachments](./attachments/README.md)
+### � [Data Migration & Bulk Import](./data-migration/README.md)
+
+Import test cases and defects in bulk using CSV or Excel files.
+
+**Capabilities:**
+- Import multiple test cases from CSV/Excel
+- Import multiple defects from CSV/Excel
+- Auto-create modules and test suites during import
+- Duplicate detection and validation
+- Link defects to test cases automatically
+- Professional templates with examples
+
+**Quick Links:**
+- [Test Case Import](./data-migration/README.md#test-case-import) - Field requirements and examples
+- [Defect Import](./data-migration/README.md#defect-import) - Field requirements and linking
+- [Troubleshooting](./data-migration/README.md#troubleshooting) - Common errors and solutions
+
+---
+
+### �📎 [File Attachments](./attachments/README.md)
 
 Attach files to test cases, defects, and comments.
 

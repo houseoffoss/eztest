@@ -48,6 +48,8 @@ export { ConfirmDeleteDialog } from './dialogs/ConfirmDeleteDialog';
 export type { ConfirmDeleteDialogProps } from './dialogs/ConfirmDeleteDialog';
 export { CreateDialog } from './dialogs/CreateDialog';
 export type { CreateDialogProps } from './dialogs/CreateDialog';
+export { FileImportDialog } from './dialogs/FileImportDialog';
+export type { FileImportDialogProps } from './dialogs/FileImportDialog';
 export { AddModulesAndTestCasesDialog } from './dialogs/AddModulesAndTestCasesDialog';
 
 // Emails
