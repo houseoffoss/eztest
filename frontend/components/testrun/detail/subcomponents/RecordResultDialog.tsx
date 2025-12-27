@@ -69,7 +69,7 @@ export function RecordResultDialog({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch dynamic dropdown options
-  const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
+  const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
 
   // Helper function to get icon for status
   const getStatusIcon = (status: string) => {

@@ -40,8 +40,8 @@ export function TestCasesListCard({
   onCreateDefect,
   getResultIcon,
 }: TestCasesListCardProps) {
-  const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
-  const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
+  const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
+  const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,6 +96,9 @@ export function TestCasesListCard({
       label: 'Status',
       render: (_, row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
+        const label = !loadingStatus && statusOptions.length > 0
+          ? statusOptions.find(opt => opt.value === row.status)?.label || row.status
+          : row.status;
         return (
           <div className="flex items-center gap-2">
             {getResultIcon(row.status)}
@@ -104,7 +107,7 @@ export function TestCasesListCard({
               className={`text-xs px-2 py-0.5 ${badgeProps.className}`}
               style={badgeProps.style}
             >
-              {row.status}
+              {label}
             </Badge>
           </div>
         );
