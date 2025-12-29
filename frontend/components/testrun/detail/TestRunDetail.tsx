@@ -15,10 +15,13 @@ import {
   XCircle,
   AlertCircle,
   Circle,
+  Upload,
 } from 'lucide-react';
 import { TestRun, TestCase, ResultFormData, TestRunStats, TestSuite } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 
 interface TestRunDetailProps {
   testRunId: string;
@@ -49,6 +52,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [addingTestCases, setAddingTestCases] = useState(false);
   const [addingTestSuites, setAddingTestSuites] = useState(false);
   const [loadingSuites, setLoadingSuites] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -578,6 +582,16 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           },
           { label: testRun.name },
         ]}
+        actions={
+          <ButtonSecondary 
+            onClick={() => setExportDialogOpen(true)} 
+            className="cursor-pointer"
+            title="Export detailed report"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Export Report
+          </ButtonSecondary>
+        }
       />
 
       <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -696,6 +710,22 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           onOpenChange={setSendReportDialogOpen}
           onConfirm={handleSendReportYes}
         />
+
+        {/* Export Dialog */}
+        {testRun && (
+          <FileExportDialog
+            open={exportDialogOpen}
+            onOpenChange={setExportDialogOpen}
+            title="Export Test Run Report"
+            description="Choose a format to export the detailed test run report with test cases and defects."
+            exportOptions={{
+              projectId: testRun.project?.id || '',
+              endpoint: `/api/testruns/${testRunId}/export`,
+              filters: {},
+            }}
+            itemName="test run report"
+          />
+        )}
       </div>
 
       <FloatingAlert

@@ -11,18 +11,23 @@ import {
   DialogTitle,
 } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
-import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ImportResult {
   success: number;
   failed: number;
-  errors: Array<{
+  skipped: number;
+  errors?: Array<{
     row: number;
     title: string;
     error: string;
   }>;
-  imported: Array<{
+  skippedItems?: Array<{
+    row: number;
+    title: string;
+    reason: string;
+  }>;
+  imported?: Array<{
     tcId?: string;
     defectId?: string;
     title: string;
@@ -130,10 +135,28 @@ export function FileImportDialog({
         throw new Error(data.message || 'Import failed');
       }
 
-      setResult(data.data);
+      // The response structure is: { message: "...", data: { success, failed, skipped, ... } }
+      const resultData = data.data;
       
-      // Auto-refresh only if all items imported successfully (no failures)
-      if (data.data.success > 0 && data.data.failed === 0) {
+      if (!resultData || typeof resultData !== 'object') {
+        console.error('Unexpected response structure:', data);
+        throw new Error('Invalid response format from server');
+      }
+      
+      // Ensure all required fields exist with defaults
+      const finalResult: ImportResult = {
+        success: Number(resultData.success) || 0,
+        failed: Number(resultData.failed) || 0,
+        skipped: Number(resultData.skipped) || 0,
+        errors: Array.isArray(resultData.errors) ? resultData.errors : [],
+        skippedItems: Array.isArray(resultData.skippedItems) ? resultData.skippedItems : [],
+        imported: Array.isArray(resultData.imported) ? resultData.imported : [],
+      };
+      
+      setResult(finalResult);
+      
+      // Auto-refresh only if all items imported successfully (no failures or skips)
+      if (Number(resultData.success) > 0 && Number(resultData.failed) === 0 && Number(resultData.skipped) === 0) {
         setTimeout(() => {
           onImportComplete();
           onOpenChange(false);
@@ -149,7 +172,7 @@ export function FileImportDialog({
   const handleClose = () => {
     if (!uploading) {
       // Refresh data if there were successful imports
-      if (result && result.success > 0) {
+      if (result && Number(result.success) > 0) {
         onImportComplete();
       }
       setFile(null);
@@ -258,23 +281,26 @@ export function FileImportDialog({
             </Alert>
           )}
 
-          {/* Upload Progress */}
-          {uploading && (
-            <div className="flex justify-center py-4">
-              <Loader size="md" text={`Importing ${itemName}...`} />
-            </div>
-          )}
 
           {/* Import Result */}
           {result && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="flex items-center gap-3 p-4 border border-green-500/30 rounded-lg bg-green-500/10">
                   <CheckCircle className="h-6 w-6 text-green-500" />
                   <div>
                     <p className="text-sm font-medium text-white/90">Success</p>
                     <p className="text-2xl font-bold text-green-500">
-                      {result.success}
+                      {Number(result.success) || 0}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/10">
+                  <AlertCircle className="h-6 w-6 text-yellow-500" />
+                  <div>
+                    <p className="text-sm font-medium text-white/90">Skipped</p>
+                    <p className="text-2xl font-bold text-yellow-500">
+                      {Number(result.skipped) || 0}
                     </p>
                   </div>
                 </div>
@@ -283,15 +309,33 @@ export function FileImportDialog({
                   <div>
                     <p className="text-sm font-medium text-white/90">Failed</p>
                     <p className="text-2xl font-bold text-red-500">
-                      {result.failed}
+                      {Number(result.failed) || 0}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {result.errors.length > 0 && (
-                <div className="border border-white/20 rounded-lg p-4 max-h-60 overflow-y-auto bg-[#0f172a]">
-                  <h4 className="text-sm font-medium mb-2 text-white/90">Import Errors:</h4>
+              {result.skippedItems && result.skippedItems.length > 0 && (
+                <div className="border border-yellow-500/30 rounded-lg p-4 max-h-60 overflow-y-auto bg-yellow-500/5">
+                  <h4 className="text-sm font-medium mb-2 text-yellow-400">
+                    Skipped Items ({result.skippedItems.length}):
+                  </h4>
+                  <ul className="space-y-2">
+                    {result.skippedItems.map((item, index) => (
+                      <li key={index} className="text-sm text-yellow-300">
+                        <span className="font-medium text-white/70">Row {item.row}:</span>{' '}
+                        <span className="text-white/60">{item.title}</span> - {item.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.errors && result.errors.length > 0 && (
+                <div className="border border-red-500/30 rounded-lg p-4 max-h-60 overflow-y-auto bg-red-500/5">
+                  <h4 className="text-sm font-medium mb-2 text-red-400">
+                    Import Errors ({result.errors.length}):
+                  </h4>
                   <ul className="space-y-2">
                     {result.errors.map((err, index) => (
                       <li key={index} className="text-sm text-red-400">
@@ -303,20 +347,32 @@ export function FileImportDialog({
                 </div>
               )}
 
-              {result.success > 0 && result.failed === 0 && (
+              {Number(result.success) > 0 && Number(result.failed) === 0 && Number(result.skipped) === 0 && (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Successfully imported {result.success} {itemName}. Refreshing...
+                    Successfully imported {Number(result.success) || 0} {itemName}. Refreshing...
                   </AlertDescription>
                 </Alert>
               )}
-              {result.success > 0 && result.failed > 0 && (
+              {Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) && (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Partially imported: {result.success} succeeded, {result.failed} failed.
+                    Partially imported: {Number(result.success) || 0} succeeded
+                    {Number(result.skipped) > 0 && `, ${Number(result.skipped) || 0} skipped`}
+                    {Number(result.failed) > 0 && `, ${Number(result.failed) || 0} failed`}.
                     Click Close & Refresh to see the imported items.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {Number(result.success) === 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) && (
+                <Alert variant="destructive">
+                  <XCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Import completed with issues:
+                    {Number(result.skipped) > 0 && ` ${Number(result.skipped) || 0} skipped`}
+                    {Number(result.failed) > 0 && ` ${Number(result.failed) || 0} failed`}.
                   </AlertDescription>
                 </Alert>
               )}
@@ -334,7 +390,7 @@ export function FileImportDialog({
             disabled={uploading}
             className="cursor-pointer"
           >
-            {result && result.success > 0 && result.failed > 0 ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}
+            {result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}
           </Button>
           {!result && (
             <ButtonPrimary
@@ -343,8 +399,12 @@ export function FileImportDialog({
               disabled={!file || uploading}
               className="cursor-pointer"
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Import
+              {uploading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4 mr-2" />
+              )}
+              {uploading ? 'Importing...' : 'Import'}
             </ButtonPrimary>
           )}
         </div>

@@ -128,8 +128,13 @@ export function validateRequiredFields(
   const firstRow = data[0];
   const availableFields = Object.keys(firstRow);
   
+  // Create a case-insensitive map of available fields
+  const availableFieldsLower = new Map(
+    availableFields.map((field) => [field.toLowerCase(), field])
+  );
+  
   const missingFields = requiredFields.filter(
-    (field) => !availableFields.includes(field)
+    (field) => !availableFieldsLower.has(field.toLowerCase())
   );
 
   if (missingFields.length > 0) {

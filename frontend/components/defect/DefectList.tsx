@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
-import { Plus, Trash2, Import } from 'lucide-react';
+import { Plus, Trash2, Import, Upload } from 'lucide-react';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
@@ -17,6 +17,7 @@ import { DefectFilters } from './subcomponents/DefectFilters';
 import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
+import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
 
 interface Project {
   id: string;
@@ -42,6 +43,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const [availableAssignees, setAvailableAssignees] = useState<Array<{ id: string; name: string }>>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [singleDeleteConfirmOpen, setSingleDeleteConfirmOpen] = useState(false);
   const [defectToDelete, setDefectToDelete] = useState<Defect | null>(null);
@@ -408,6 +410,7 @@ export default function DefectList({ projectId }: DefectListProps) {
     setTimeout(() => setAlert(null), 3000);
   };
 
+
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading defects..." />;
   }
@@ -431,10 +434,20 @@ export default function DefectList({ projectId }: DefectListProps) {
           canCreateDefect ? (
             <div className="flex gap-2">
               {canImport && (
-                <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
-                  <Import className="w-4 h-4 mr-2" />
-                  Import
-                </ButtonSecondary>
+                <>
+                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
+                    <Import className="w-4 h-4 mr-2" />
+                    Import
+                  </ButtonSecondary>
+                  <ButtonSecondary 
+                    onClick={() => setExportDialogOpen(true)} 
+                    className="cursor-pointer"
+                    title="Export defects"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Export
+                  </ButtonSecondary>
+                </>
               )}
               <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
                 <Plus className="w-4 h-4 mr-2" />
@@ -608,6 +621,25 @@ export default function DefectList({ projectId }: DefectListProps) {
           fetchDefects();
           setImportDialogOpen(false);
         }}
+      />
+
+      {/* Export Dialog */}
+      <FileExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        title="Export Defects"
+        description="Choose a format to export your defects."
+        exportOptions={{
+          projectId,
+          endpoint: `/api/projects/${projectId}/defects/export`,
+          filters: {
+            status: statusFilter !== 'all' ? statusFilter : undefined,
+            severity: severityFilter !== 'all' ? severityFilter : undefined,
+            priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+            assignedToId: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : undefined,
+          },
+        }}
+        itemName="defects"
       />
     </>
   );

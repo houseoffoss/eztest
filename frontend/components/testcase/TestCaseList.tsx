@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Plus, FolderPlus, Import } from 'lucide-react';
+import { Plus, FolderPlus, Import, Upload } from 'lucide-react';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
@@ -20,6 +20,7 @@ import { TestCaseFilters } from './subcomponents/TestCaseFilters';
 import { EmptyTestCaseState } from './subcomponents/EmptyTestCaseState';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
+import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
 
 interface TestCaseListProps {
   projectId: string;
@@ -39,6 +40,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [createModuleDialogOpen, setCreateModuleDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
   
   // Filters
@@ -240,6 +242,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setDeleteDialogOpen(true);
   };
 
+
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading test cases..." />;
   }
@@ -264,10 +267,20 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
           canCreateTestCase ? (
             <div className="flex gap-2">
               {canImport && (
-                <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
-                  <Import className="w-4 h-4 mr-2" />
-                  Import
-                </ButtonSecondary>
+                <>
+                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
+                    <Import className="w-4 h-4 mr-2" />
+                    Import
+                  </ButtonSecondary>
+                  <ButtonSecondary 
+                    onClick={() => setExportDialogOpen(true)} 
+                    className="cursor-pointer"
+                    title="Export test cases"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Export
+                  </ButtonSecondary>
+                </>
               )}
               <ActionButtonGroup
                 buttons={[
@@ -394,6 +407,25 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             fetchTestCases();
             setImportDialogOpen(false);
           }}
+        />
+
+        {/* Export Dialog */}
+        <FileExportDialog
+          open={exportDialogOpen}
+          onOpenChange={setExportDialogOpen}
+          title="Export Test Cases"
+          description="Choose a format to export your test cases."
+          exportOptions={{
+            projectId,
+            endpoint: `/api/projects/${projectId}/testcases/export`,
+            filters: {
+              moduleId: undefined,
+              suiteId: undefined,
+              status: statusFilter !== 'all' ? statusFilter : undefined,
+              priority: priorityFilter !== 'all' ? priorityFilter : undefined,
+            },
+          }}
+          itemName="test cases"
         />
       </div>
     </>
