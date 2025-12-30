@@ -70,43 +70,57 @@ The data migration feature allows you to:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `title` | ✅ **Yes** | Unique test case title (max 200 chars) |
+| `Test Case Title` | ✅ **Yes** | Unique test case title (max 200 chars) |
 
 ### Optional Fields
 
 | Field | Optional | Default | Description |
 |-------|----------|---------|-------------|
-| `description` | ✅ | Empty | Detailed description of the test |
-| `expectedResult` | ✅ | Empty | Expected outcome |
-| `priority` | ✅ | `MEDIUM` | Test priority (HIGH, MEDIUM, LOW) |
-| `status` | ✅ | `DRAFT` | Test status (DRAFT, ACTIVE, DEPRECATED) |
-| `estimatedTime` | ✅ | `0` | Time in minutes |
-| `preconditions` | ✅ | Empty | Prerequisites before testing |
-| `postconditions` | ✅ | Empty | Cleanup steps |
-| `module` | ✅ | None | Module name (auto-created if doesn't exist) |
-| `testsuite` | ✅ | None | Test suite name (auto-created if doesn't exist) |
+| `Test Case ID` | ✅ | Auto-generated | Unique identifier (e.g., TC_LOGIN_001). Format: capital letters and hyphens. Auto-generated as TC-1, TC-2, etc. if not provided |
+| `Description` | ✅ | Empty | Detailed description of the test |
+| `Module / Feature` | ✅ | None | Module name (auto-created if doesn't exist) |
+| `Priority` | ✅ | `MEDIUM` | Test priority (CRITICAL, HIGH, MEDIUM, LOW) |
+| `Preconditions` | ✅ | Empty | Prerequisites before testing |
+| `Test Steps` | ✅ | Empty | Step-by-step actions (JSON array format) |
+| `Test Data` | ✅ | Empty | Input values or test data |
+| `Expected Result` | ✅ | Empty | Expected outcome |
+| `Status` | ✅ | `DRAFT` | Test status (DRAFT, ACTIVE, DEPRECATED) |
+| `Defect ID` | ✅ | None | Defect ID(s) to link (comma or semicolon-separated). Test case skipped if defect not found |
+| `Test Suites` | ✅ | None | Test suite name(s) (comma or semicolon-separated, auto-created if doesn't exist) |
+| `Estimated Time` | ✅ | `0` | Time in minutes |
+| `Postconditions` | ✅ | Empty | Cleanup steps |
 
 ### Example CSV Template
 
 ```csv
-title,description,expectedResult,priority,status,estimatedTime,preconditions,postconditions,module,testsuite
-"Verify user authentication with valid credentials","Test the login functionality with correct username and password to ensure successful authentication and redirection to dashboard","User should be successfully logged in and redirected to the dashboard page with a welcome message displayed",HIGH,ACTIVE,15,"1. User account exists in the system
-2. User has valid credentials
-3. Login page is accessible","1. User session is created
-2. Login attempt is logged
-3. User can access protected resources",Authentication,Login Tests
+Test Case ID,Test Case Title,Module / Feature,Priority,Preconditions,Test Steps,Test Data,Expected Result,Status,Defect ID,Test Suites,Estimated Time,Postconditions,Description
+TC_LOGIN_001,"Verify user authentication with valid credentials",Authentication,HIGH,"1. User account exists
+2. User has valid credentials","[{""stepNumber"":1,""action"":""Navigate to login page"",""expectedResult"":""Login form displayed""}]","username: testuser, password: Test123!","User should be successfully logged in and redirected to the dashboard",ACTIVE,DEF-1,Login Tests,15,"1. User session is created
+2. Login attempt is logged","Test the login functionality with correct username and password"
 ```
 
 ### Import Behavior
 
 **Duplicate Detection:**
-- Test cases with existing titles (case-insensitive) are skipped
-- You'll see a warning: `"Test case with title 'X' already exists (tc123)"`
+- Test cases with existing Test Case IDs are skipped
+- You'll see a warning: `"Test case with ID 'TC-1' already exists (title: 'X')"`
+- Test cases with existing titles (case-insensitive) are skipped if Test Case ID is not provided
 
 **Auto-Creation:**
 - **Modules**: Created automatically if module name doesn't exist
 - **Test Suites**: Created automatically if suite name doesn't exist
-- **IDs**: Generated sequentially (tc1, tc2, tc3...)
+- **IDs**: Generated sequentially (TC-1, TC-2, TC-3...) if not provided
+
+**Test Steps Format:**
+- JSON array format: `[{"stepNumber":1,"action":"...","expectedResult":"..."}]`
+- JSON string format: `"[{\"stepNumber\":1,\"action\":\"...\"}]"`
+- Text formats: Pipe-separated (`|`), newline-separated, semicolon/colon-separated
+- Expected result for each step is optional
+
+**Defect Linking:**
+- Multiple defects can be linked using comma or semicolon-separated Defect IDs
+- Test case is skipped if any provided Defect ID is not found
+- Error message shows which Defect ID was not found
 
 **Many-to-Many Relationships:**
 - Test cases can belong to multiple test suites
@@ -120,26 +134,28 @@ title,description,expectedResult,priority,status,estimatedTime,preconditions,pos
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `title` | ✅ **Yes** | Unique defect title (max 200 chars) |
-| `severity` | ✅ **Yes** | Bug severity (CRITICAL, HIGH, MEDIUM, LOW) |
+| `Defect Title / Summary` | ✅ **Yes** | Unique defect title (max 200 chars) |
+| `Assigned To` | ✅ **Yes** | Assignee email (must be project member) |
 
 ### Optional Fields
 
 | Field | Optional | Default | Description |
 |-------|----------|---------|-------------|
-| `description` | ✅ | Empty | Detailed bug description |
-| `priority` | ✅ | `MEDIUM` | Fix priority (CRITICAL, HIGH, MEDIUM, LOW) |
-| `status` | ✅ | `NEW` | Defect status (NEW, IN_PROGRESS, RESOLVED, etc.) |
-| `assignedTo` | ✅ | None | Assignee email (must be project member) |
-| `environment` | ✅ | None | Testing environment (DEV, QA, STAGING, PROD) |
-| `dueDate` | ✅ | None | Due date in YYYY-MM-DD format |
-| `testCase` | ✅ | None | Related test case title for linking |
+| `Defect ID` | ✅ | Auto-generated | Unique identifier (e.g., DEF-LOGIN-001). Format: capital letters and hyphens. Auto-generated as DEF-1, DEF-2, etc. if not provided |
+| `Description` | ✅ | Empty | Detailed bug description |
+| `Severity` | ✅ | `MEDIUM` | Bug severity (CRITICAL, HIGH, MEDIUM, LOW) |
+| `Priority` | ✅ | `MEDIUM` | Fix priority (CRITICAL, HIGH, MEDIUM, LOW) |
+| `Status` | ✅ | `NEW` | Defect status (NEW, IN_PROGRESS, FIXED, RETEST, CLOSED) |
+| `Environment` | ✅ | None | Testing environment (QA, Staging, Prod, etc.) |
+| `Reported By` | ✅ | Importing user | Reporter name or email |
+| `Reported Date` | ✅ | Current date | Date in YYYY-MM-DD format |
+| `Due Date` | ✅ | None | Due date in YYYY-MM-DD format |
 
 ### Example CSV Template
 
 ```csv
-title,description,severity,priority,status,assignedTo,environment,dueDate,testCase
-"Login button not responding on mobile devices","The login button on the mobile app (iOS 15+ and Android 12+) becomes unresponsive after entering credentials. Users must restart the app to attempt login again. This impacts user experience and prevents access to the application.",CRITICAL,HIGH,NEW,john.doe@company.com,PROD,2024-02-15,"Verify user authentication with valid credentials"
+Defect ID,Defect Title / Summary,Description,Severity,Priority,Status,Environment,Reported By,Reported Date,Assigned To,Due Date
+DEF-LOGIN-001,"Login button not responding on mobile devices","The login button on the mobile app (iOS 15+ and Android 12+) becomes unresponsive after entering credentials. Users must restart the app to attempt login again. This impacts user experience and prevents access to the application.",CRITICAL,HIGH,NEW,Prod,john.doe@company.com,2024-01-15,jane.smith@company.com,2024-02-15
 ```
 
 ### Import Behavior
@@ -147,20 +163,16 @@ title,description,severity,priority,status,assignedTo,environment,dueDate,testCa
 **Assignee Validation:**
 - Email must belong to a project member
 - Invalid/non-member emails will cause import failure
-- Leave empty if no assignee
-
-**Test Case Linking:**
-- Links defect to test case by title match (case-insensitive)
-- Creates TestCaseDefect relationship automatically
-- Skips linking if test case not found (no error)
+- **Required field** - cannot be empty
 
 **Duplicate Detection:**
-- Defect IDs must be unique within project
-- System prevents ID collisions automatically
+- Defects with existing Defect IDs are skipped
+- You'll see a warning: `"Defect with ID 'DEF-1' already exists (title: 'X')"`
+- Defects with existing titles (case-insensitive) are skipped if Defect ID is not provided
 
 **Auto-Creation:**
-- **IDs**: Generated sequentially (def1, def2, def3...)
-- **Reporter**: Set to importing user automatically
+- **IDs**: Generated sequentially (DEF-1, DEF-2, DEF-3...) if not provided
+- **Reporter**: Set to importing user automatically if not provided
 
 ---
 
@@ -229,9 +241,9 @@ Line 3"
 **Defects:**
 - `NEW` - Just reported (default)
 - `IN_PROGRESS` - Being worked on
-- `RESOLVED` - Fixed
+- `FIXED` - Fixed and ready for retest
+- `RETEST` - Ready for retesting
 - `CLOSED` - Verified and closed
-- `REOPENED` - Reopened after resolution
 
 ### Severity Values (Defects Only)
 
@@ -379,14 +391,15 @@ Project: E-Commerce Website
 - Check for extra commas creating empty columns
 - Verify file encoding (use UTF-8)
 
-#### "Test case with title 'X' already exists"
+#### "Test case with ID 'TC-1' already exists" or "Test case with title 'X' already exists"
 
 **Cause:** Duplicate title (case-insensitive)
 
 **Solution:**
 - Check existing test cases
-- Use unique titles
+- Use unique Test Case IDs or titles
 - Add distinguishing information (e.g., "Login - Desktop" vs "Login - Mobile")
+- If Test Case ID is provided and exists, the row will be skipped
 
 #### "Invalid severity: X"
 
@@ -404,7 +417,7 @@ Project: E-Commerce Website
 **Solution:**
 - Verify email spelling
 - Add user to project first
-- Leave assignedTo empty if unsure
+- **Note:** Assigned To is required for defects - cannot be left empty
 
 #### "Invalid date format"
 
@@ -430,9 +443,10 @@ Success: 45
 Failed: 5
 
 Errors:
-Row 12: "Login Test" - Title already exists (tc67)
+Row 12: "Login Test" - Test case with ID 'TC-1' already exists (title: 'Existing Test')
 Row 23: "Payment Test" - Invalid severity: URGENT
-Row 31: "Checkout Test" - User not found: old.user@company.com
+Row 31: "Checkout Test" - Defect ID 'DEF-999' not found
+Row 35: "User Test" - User not found or not a project member: old.user@company.com
 ```
 
 **Resolution:**

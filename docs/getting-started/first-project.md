@@ -43,7 +43,7 @@ In this guide, you'll learn how to:
 
 Your project is now created! You'll be redirected to the project dashboard.
 
-> 💡 **Tip**: The project key (ECOM) will be used as a prefix for test case IDs (e.g., tc1, tc2) and defect IDs (e.g., DEF-001).
+> 💡 **Tip**: The project key (ECOM) will be used as a prefix for test case IDs (e.g., TC-1, TC-2) and defect IDs (e.g., DEF-1, DEF-2).
 
 ---
 

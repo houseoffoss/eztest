@@ -1,11 +1,12 @@
 ﻿'use client';
 
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { Clock, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { TestCase, TestCaseFormData, Module } from '../../types';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import {
   Select,
   SelectContent,
@@ -84,7 +85,7 @@ export function TestCaseDetailsCard({
               value={formData.title}
               onChange={(e) => handleFieldChange('title', e.target.value)}
               placeholder="Enter test case title"
-              maxLength={50}
+              maxLength={200}
             />
             {errors.title && <p className="text-xs text-red-400">{errors.title}</p>}
           </div>
@@ -260,6 +261,21 @@ export function TestCaseDetailsCard({
               showAttachments={true}
             />
           </div>
+
+          {/* Test Data */}
+          <div className="space-y-2">
+            <Label htmlFor="testData">Test Data</Label>
+            <Textarea
+              id="testData"
+              variant="glass"
+              value={formData.testData}
+              onChange={(e) => handleFieldChange('testData', e.target.value)}
+              placeholder="Enter test data or input values"
+              rows={3}
+              maxLength={500}
+            />
+            {errors.testData && <p className="text-xs text-red-400">{errors.testData}</p>}
+          </div>
         </div>
       ) : (
         <>
@@ -409,6 +425,17 @@ export function TestCaseDetailsCard({
                   <AttachmentDisplay attachments={postconditionAttachments} />
                 </div>
               ) : null}
+            </div>
+          )}
+
+          {testCase.testData && (
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Test Data
+              </h4>
+              <p className="text-white/90 whitespace-pre-wrap break-words">
+                {testCase.testData}
+              </p>
             </div>
           )}
         </>

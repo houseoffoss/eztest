@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import {
@@ -61,6 +61,20 @@ export function FileImportDialog({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setFile(null);
+      setResult(null);
+      setError(null);
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [open]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -90,7 +104,9 @@ export function FileImportDialog({
       const headers = data.data.columns.map((col: Column) => col.name).join(',');
       const example = data.data.columns.map((col: Column) => {
         const value = data.data.example[col.name] || '';
-        return `"${value}"`;
+        // Properly escape CSV: replace double quotes with double double quotes, then wrap in quotes
+        const escapedValue = String(value).replace(/"/g, '""');
+        return `"${escapedValue}"`;
       }).join(',');
       
       const csv = `${headers}\n${example}`;
@@ -159,6 +175,13 @@ export function FileImportDialog({
       if (Number(resultData.success) > 0 && Number(resultData.failed) === 0 && Number(resultData.skipped) === 0) {
         setTimeout(() => {
           onImportComplete();
+          // Reset state before closing
+          setFile(null);
+          setResult(null);
+          setError(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
           onOpenChange(false);
         }, 2000);
       }
@@ -316,7 +339,7 @@ export function FileImportDialog({
               </div>
 
               {result.skippedItems && result.skippedItems.length > 0 && (
-                <div className="border border-yellow-500/30 rounded-lg p-4 max-h-60 overflow-y-auto bg-yellow-500/5">
+                <div className="border border-yellow-500/30 rounded-lg p-4 max-h-60 overflow-y-auto custom-scrollbar bg-yellow-500/5">
                   <h4 className="text-sm font-medium mb-2 text-yellow-400">
                     Skipped Items ({result.skippedItems.length}):
                   </h4>
@@ -332,7 +355,7 @@ export function FileImportDialog({
               )}
 
               {result.errors && result.errors.length > 0 && (
-                <div className="border border-red-500/30 rounded-lg p-4 max-h-60 overflow-y-auto bg-red-500/5">
+                <div className="border border-red-500/30 rounded-lg p-4 max-h-60 overflow-y-auto custom-scrollbar bg-red-500/5">
                   <h4 className="text-sm font-medium mb-2 text-red-400">
                     Import Errors ({result.errors.length}):
                   </h4>

@@ -76,10 +76,12 @@ Create and manage comprehensive test cases.
 
 **Capabilities:**
 - Full CRUD operations for test cases
-- Auto-generated sequential IDs (tc1, tc2, tc3)
+- Auto-generated sequential IDs (TC-1, TC-2, TC-3)
 - Priority levels: Critical, High, Medium, Low
 - Status tracking: Active, Draft, Deprecated
-- Detailed test steps with expected results
+- Detailed test steps with expected results (expected result optional)
+- Test data field for input values
+- Link defects to test cases
 - File attachments support
 
 **Quick Links:**

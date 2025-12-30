@@ -175,6 +175,7 @@ model TestCase {
   estimatedTime Int?     // in minutes
   preconditions String?
   postconditions String?
+  testData      String?  // Test data/input values for the test case
   createdById   String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

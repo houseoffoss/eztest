@@ -37,6 +37,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     title: '',
     description: '',
     expectedResult: '',
+    testData: '',
     priority: 'MEDIUM',
     status: 'DRAFT',
     estimatedTime: '',
@@ -92,6 +93,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           title: data.data.title,
           description: data.data.description || '',
           expectedResult: data.data.expectedResult || '',
+          testData: data.data.testData || '',
           priority: data.data.priority,
           status: data.data.status,
           estimatedTime: data.data.estimatedTime?.toString() || '',
@@ -670,7 +672,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               onNewStepExpectedResultAttachmentsChange={setNewStepExpectedResultAttachments}
             />
 
-            <LinkedDefectsCard testCase={testCase} />
+            <LinkedDefectsCard testCase={testCase} onRefresh={fetchTestCase} />
 
             <TestCaseHistoryCard testCaseId={testCaseId} />
           </div>
