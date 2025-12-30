@@ -22,6 +22,7 @@ export const createTestCaseSchema = z.object({
   title: z.string().min(1, 'Title is required').trim(),
   description: z.string().optional(),
   expectedResult: z.string().optional(),
+  testData: z.string().optional(),
   priority: z.string().optional(),
   status: z.string().optional(),
   estimatedTime: z
@@ -40,6 +41,7 @@ export const updateTestCaseSchema = z.object({
   title: z.string().min(1, 'Title cannot be empty').trim().optional(),
   description: z.string().optional(),
   expectedResult: z.string().optional(),
+  testData: z.string().optional(),
   priority: z.string().optional(),
   status: z.string().optional(),
   estimatedTime: z

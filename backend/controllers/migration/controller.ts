@@ -1,7 +1,8 @@
 import { importService, ImportType } from '@/backend/services/migration/import/services';
-import { parseFile, validateRequiredFields } from '@/lib/file-parser';
+import { parseFile } from '@/lib/file-parser';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
+import { validateTestCaseImportColumns, validateDefectImportColumns } from '@/backend/validators/migration.validator';
 
 export class MigrationController {
   /**
@@ -23,15 +24,18 @@ export class MigrationController {
         throw new ValidationException('File parsing errors', parseResult.errors);
       }
 
-      // Validate required fields
-      const requiredFields = ['title'];
-      const validationErrors = validateRequiredFields(
-        parseResult.data,
-        requiredFields
-      );
-
-      if (validationErrors.length > 0) {
-        throw new ValidationException('Missing required fields', validationErrors);
+      // Validate required fields using dedicated validator
+      if (type === 'testcases') {
+        const validationErrors = validateTestCaseImportColumns(parseResult.data);
+        if (validationErrors.length > 0) {
+          throw new ValidationException('Missing required fields', validationErrors);
+        }
+      } else {
+        // For defects, use dedicated validator
+        const validationErrors = validateDefectImportColumns(parseResult.data);
+        if (validationErrors.length > 0) {
+          throw new ValidationException('Missing required fields', validationErrors);
+        }
       }
 
       // Import data
@@ -75,28 +79,33 @@ export class MigrationController {
   getTestCaseImportTemplate() {
     const template = {
       columns: [
-        { name: 'Title', required: true, description: 'Test case title' },
-        { name: 'Description', required: false, description: 'Test case description' },
-        { name: 'Expected Result', required: false, description: 'Expected result' },
-        { name: 'Priority', required: false, description: 'Priority (e.g., HIGH, MEDIUM, LOW)' },
-        { name: 'Status', required: false, description: 'Status (e.g., ACTIVE, INACTIVE, DRAFT)' },
-        { name: 'Estimated Time (minutes)', required: false, description: 'Estimated time in minutes' },
-        { name: 'Preconditions', required: false, description: 'Preconditions' },
-        { name: 'Postconditions', required: false, description: 'Postconditions' },
-        { name: 'Module', required: false, description: 'Module name (will be created if not exists)' },
-        { name: 'Test Suites', required: false, description: 'Test suite name (will be created if not exists)' },
+        { name: 'Test Case ID', required: false, description: 'Unique identifier (e.g., TC-001, TC-002). If not provided, will be auto-generated in TC-XXX format' },
+        { name: 'Test Case Title', required: true, description: 'Short, clear description of the test case' },
+        { name: 'Module / Feature', required: false, description: 'Application area (Login, Payments, IoT Device, etc.). Will be created if not exists' },
+        { name: 'Priority', required: false, description: 'Priority level: High / Medium / Low' },
+        { name: 'Preconditions', required: false, description: 'Conditions required before test execution' },
+        { name: 'Test Steps', required: false, description: 'Step-by-step actions in JSON array format: [{"stepNumber":1,"action":"...","expectedResult":"..."}]. Note: In CSV files, wrap this field in double quotes to prevent splitting across columns.' },
+        { name: 'Test Data', required: false, description: 'Input values or test data to be used' },
+        { name: 'Expected Result', required: false, description: 'Expected system behavior or outcome' },
+        { name: 'Status', required: false, description: 'Test case status: Active / Draft / Deprecated (execution statuses like Pass/Fail are for test results, not test cases)' },
+        { name: 'Defect ID', required: false, description: 'Bug reference if failed. Can specify multiple defects separated by comma or semicolon (e.g., DEF-001, DEF-002). All must exist in the project. Test case will be linked to these defects' },
+        // Older fields (kept for backward compatibility)
+        { name: 'Description', required: false, description: 'Detailed test case description (older field)' },
+        { name: 'Estimated Time (minutes)', required: false, description: 'Estimated time in minutes (older field)' },
+        { name: 'Postconditions', required: false, description: 'Postconditions (older field)' },
+        { name: 'Test Suites', required: false, description: 'Test suite name (will be created if not exists) (older field)' },
       ],
       example: {
-        'Title': 'Verify user authentication with valid credentials',
-        'Description': 'Validate that a registered user can successfully authenticate using correct username and password combination',
-        'Expected Result': 'User successfully authenticates and is redirected to the dashboard page with appropriate session established',
+        'Test Case ID': 'TC-001',
+        'Test Case Title': 'Verify user authentication with valid credentials',
+        'Module / Feature': 'Login',
         'Priority': 'HIGH',
-        'Status': 'ACTIVE',
-        'Estimated Time (minutes)': '15',
         'Preconditions': 'User account must be registered in the system with valid credentials',
-        'Postconditions': 'User session is active and audit log records the successful login event',
-        'Module': 'Authentication',
-        'Test Suites': 'User Authentication Tests',
+        'Test Steps': '[{"stepNumber":1,"action":"Navigate to login page","expectedResult":"Login page displays"},{"stepNumber":2,"action":"Enter valid email and password","expectedResult":"Credentials accepted"},{"stepNumber":3,"action":"Click Login button","expectedResult":"User redirected to dashboard"}]',
+        'Test Data': 'Email: user@example.com, Password: Test123!',
+        'Expected Result': 'User successfully authenticates and is redirected to the dashboard page',
+        'Status': 'ACTIVE',
+        'Defect ID': 'DEF-001, DEF-002',
       },
     };
 
@@ -111,26 +120,28 @@ export class MigrationController {
   getDefectImportTemplate() {
     const template = {
       columns: [
-        { name: 'Title', required: true, description: 'Defect title' },
-        { name: 'Description', required: false, description: 'Defect description' },
-        { name: 'Severity', required: false, description: 'Severity (e.g., CRITICAL, HIGH, MEDIUM, LOW)' },
-        { name: 'Priority', required: false, description: 'Priority (e.g., HIGH, MEDIUM, LOW)' },
-        { name: 'Status', required: false, description: 'Status (e.g., NEW, IN_PROGRESS, RESOLVED, CLOSED)' },
-        { name: 'Assigned To', required: false, description: 'Assignee email address (must be project member)' },
-        { name: 'Environment', required: false, description: 'Environment (e.g., PRODUCTION, STAGING, QA)' },
+        { name: 'Defect Title / Summary', required: true, description: 'Short, precise problem statement' },
+        { name: 'Description', required: false, description: 'Detailed explanation of the issue' },
+        { name: 'Severity', required: false, description: 'Blocker / Critical / Major / Minor / Trivial' },
+        { name: 'Priority', required: false, description: 'CRITICAL / HIGH / MEDIUM / LOW' },
+        { name: 'Status', required: false, description: 'New / Open / Fixed / Retest / Closed' },
+        { name: 'Environment', required: false, description: 'QA / Staging / Prod' },
+        { name: 'Reported By', required: false, description: 'Tester name or email (must be project member)' },
+        { name: 'Reported Date', required: false, description: 'Date when defect was reported (YYYY-MM-DD format)' },
+        { name: 'Assigned To', required: true, description: 'Name or email of Developer/Tester (must be project member)' },
         { name: 'Due Date', required: false, description: 'Due date (YYYY-MM-DD format)' },
-        { name: 'Linked Test Cases', required: false, description: 'Test case title to link (e.g., "Login with valid credentials")' },
       ],
       example: {
-        'Title': 'Authentication button unresponsive on mobile devices',
+        'Defect Title / Summary': 'Authentication button unresponsive on mobile devices',
         'Description': 'The primary authentication button fails to respond to touch events on mobile devices running iOS 15+ and Android 12+. Users are unable to complete the login process, resulting in blocked access to the application.',
         'Severity': 'CRITICAL',
         'Priority': 'HIGH',
         'Status': 'NEW',
+        'Environment': 'PROD',
+        'Reported By': 'john.tester@company.com',
+        'Reported Date': '2025-01-15',
         'Assigned To': 'senior.developer@company.com',
-        'Environment': 'PRODUCTION',
         'Due Date': '2025-12-31',
-        'Linked Test Cases': 'Verify user authentication with valid credentials',
       },
     };
 

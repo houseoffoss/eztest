@@ -34,28 +34,49 @@ export class ImportService {
     
     // Map export format column names to import format
     const columnMap: Record<string, string> = {
+      // New test case fields
+      'test case id': 'testCaseId',
+      'testcase id': 'testCaseId',
+      'test case title': 'title',
+      'testcase title': 'title',
       'title': 'title',
-      'description': 'description',
-      'expected result': 'expectedResult',
+      'module / feature': 'module',
+      'module/feature': 'module',
+      'module': 'module',
+      'feature': 'module',
       'priority': 'priority',
+      'preconditions': 'preconditions',
+      'test steps': 'testSteps',
+      'teststeps': 'testSteps',
+      'test data': 'testData',
+      'testdata': 'testData',
+      'expected result': 'expectedResult',
+      'expectedresult': 'expectedResult',
       'status': 'status',
+      // Defect linking for test cases
+      'defect id': 'defectId',
+      'defectid': 'defectId',
+      'defect': 'defectId',
+      // Older fields (kept for backward compatibility)
+      'description': 'description',
       'estimated time (minutes)': 'estimatedTime',
       'estimated time': 'estimatedTime',
-      'preconditions': 'preconditions',
       'postconditions': 'postconditions',
-      'module': 'module',
       'test suites': 'testsuite',
       'testsuite': 'testsuite',
       'test suite': 'testsuite',
-      // Defect columns
-      'defect id': 'defectId',
+      // Defect columns (for defect import)
+      'defect title / summary': 'title',
+      'defect title': 'title',
+      'summary': 'title',
       'severity': 'severity',
       'assigned to': 'assignedTo',
       'environment': 'environment',
+      'reported by': 'reportedBy',
+      'reportedby': 'reportedBy',
+      'reported date': 'reportedDate',
+      'reporteddate': 'reportedDate',
       'due date': 'dueDate',
-      'test case': 'testCase',
-      'testcase': 'testCase',
-      'linked test cases': 'testCase',
     };
     
     return columnMap[normalized] || normalized;
@@ -130,16 +151,32 @@ export class ImportService {
     // Get existing test cases to generate next tcId
     const existingTestCases = await prisma.testCase.findMany({
       where: { projectId },
-      select: { tcId: true },
+      select: { tcId: true, title: true },
       orderBy: { tcId: 'desc' },
     });
 
     // Create a set of existing tcIds for quick lookup
     const existingTcIds = new Set(existingTestCases.map((tc) => tc.tcId));
+    // Create a map of tcId to title for showing existing test case info
+    const existingTcIdToTitle = new Map(
+      existingTestCases.map((tc) => [tc.tcId, tc.title])
+    );
+
+    // Get existing defects to validate defect IDs
+    const existingDefects = await prisma.defect.findMany({
+      where: { projectId },
+      select: { id: true, defectId: true, title: true },
+    });
+
+    // Create a map of defectId (display ID) to defect database id and title
+    const defectIdToDefect = new Map(
+      existingDefects.map((d) => [d.defectId.toUpperCase(), { id: d.id, title: d.title }])
+    );
 
     let nextTcIdNumber = 1;
     if (existingTestCases.length > 0) {
       const lastTcId = existingTestCases[0].tcId;
+      // Extract number from TC-XXX or tcXXX format
       const match = lastTcId.match(/\d+/);
       if (match) {
         nextTcIdNumber = parseInt(match[0], 10) + 1;
@@ -168,6 +205,7 @@ export class ImportService {
 
       try {
         // Get values using normalized column names
+        const testCaseId = this.getRowValue(row, 'testCaseId');
         const title = this.getRowValue(row, 'title');
         const description = this.getRowValue(row, 'description');
         const expectedResult = this.getRowValue(row, 'expectedResult');
@@ -178,13 +216,53 @@ export class ImportService {
         const postconditions = this.getRowValue(row, 'postconditions');
         const moduleValue = this.getRowValue(row, 'module');
         const testsuite = this.getRowValue(row, 'testsuite');
+        const testSteps = this.getRowValue(row, 'testSteps');
+        const testData = this.getRowValue(row, 'testData');
+        const defectId = this.getRowValue(row, 'defectId');
 
         // Validate required field
         if (!title || typeof title !== 'string' || title.toString().trim() === '') {
-          throw new Error('Title is required');
+          throw new Error('Test Case Title is required');
         }
 
         const testCaseTitle = title.toString().trim();
+
+        // Validate defect IDs if provided (supports multiple defects: comma or semicolon separated)
+        const defectsToLink: Array<{ id: string; title: string; defectId: string }> = [];
+        if (defectId && typeof defectId === 'string' && defectId.toString().trim()) {
+          // Parse multiple defect IDs (comma or semicolon separated)
+          const defectIdString = defectId.toString().trim();
+          const defectIdList = defectIdString
+            .split(/[,;]/)
+            .map(id => id.trim().toUpperCase())
+            .filter(id => id.length > 0);
+          
+          const missingDefectIds: string[] = [];
+          
+          for (const providedDefectId of defectIdList) {
+            const foundDefect = defectIdToDefect.get(providedDefectId);
+            
+            if (!foundDefect) {
+              missingDefectIds.push(providedDefectId);
+            } else {
+              defectsToLink.push({
+                ...foundDefect,
+                defectId: providedDefectId,
+              });
+            }
+          }
+          
+          // If any defect ID is not found, skip the test case
+          if (missingDefectIds.length > 0) {
+            result.skipped++;
+            result.skippedItems.push({
+              row: rowNumber,
+              title: testCaseTitle,
+              reason: `Defect ID(s) not found: ${missingDefectIds.join(', ')}`,
+            });
+            continue; // Skip this row
+          }
+        }
 
         // Check if test case with same title already exists
         const existingTestCase = await prisma.testCase.findFirst({
@@ -278,14 +356,121 @@ export class ImportService {
           }
         }
 
-        // Generate tcId - skip existing ones
-        let tcId = `tc${nextTcIdNumber}`;
-        while (existingTcIds.has(tcId)) {
-          nextTcIdNumber++;
-          tcId = `tc${nextTcIdNumber}`;
+        // Parse test steps if provided
+        let testStepsData: Array<{ stepNumber: number; action: string; expectedResult: string }> | undefined;
+        if (testSteps) {
+          try {
+            // Check if it's already an array
+            if (Array.isArray(testSteps)) {
+              testStepsData = testSteps
+                .filter((step) => {
+                  // Filter out invalid steps
+                  if (typeof step === 'object' && step !== null) {
+                    return step.action || step.step;
+                  }
+                  return Boolean(step);
+                })
+                .map((step, index) => ({
+                  stepNumber: step.stepNumber || (typeof step === 'object' && step !== null ? index + 1 : index + 1),
+                  action: (typeof step === 'object' && step !== null) 
+                    ? (step.action || step.step || `Step ${index + 1}`) 
+                    : String(step),
+                  expectedResult: (typeof step === 'object' && step !== null) 
+                    ? (step.expectedResult || step.expected || '') 
+                    : '',
+                }));
+            }
+            // If it's a string, try to parse it
+            else if (typeof testSteps === 'string' && testSteps.trim()) {
+              try {
+                // Try to parse as JSON first (if it's a JSON array string)
+                const parsed = JSON.parse(testSteps);
+                if (Array.isArray(parsed)) {
+                  testStepsData = parsed
+                    .filter((step) => step && (step.action || step.step)) // Filter out invalid steps
+                    .map((step, index) => ({
+                      stepNumber: step.stepNumber || index + 1,
+                      action: step.action || step.step || `Step ${index + 1}`,
+                      expectedResult: step.expectedResult || step.expected || '',
+                    }));
+                }
+              } catch {
+                // If not JSON, try to parse as newline-separated or pipe-separated
+                const stepsText = testSteps.trim();
+                let stepLines: string[] = [];
+                
+                // Try pipe-separated format first: "Step 1; Expected 1|Step 2; Expected 2"
+                if (stepsText.includes('|')) {
+                  stepLines = stepsText.split('|').map(s => s.trim()).filter(s => s);
+                } 
+                // Try newline-separated format
+                else if (stepsText.includes('\n')) {
+                  stepLines = stepsText.split('\n').map(s => s.trim()).filter(s => s);
+                }
+                // Single step
+                else {
+                  stepLines = [stepsText];
+                }
+                
+                if (stepLines.length > 0) {
+                  testStepsData = stepLines.map((line, index) => {
+                    // Split by semicolon or colon
+                    const parts = line.split(/[;:]/).map(p => p.trim()).filter(p => p);
+                    return {
+                      stepNumber: index + 1,
+                      action: parts[0] || `Step ${index + 1}`,
+                      expectedResult: parts[1] || '', // expectedResult is optional
+                    };
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to parse test steps for row ${rowNumber}:`, error);
+            // Continue without steps if parsing fails
+          }
         }
-        nextTcIdNumber++;
-        existingTcIds.add(tcId);
+
+        // Parse test data
+        const testDataValue = testData && typeof testData === 'string' && testData.toString().trim()
+          ? testData.toString().trim()
+          : null;
+
+        // Generate or use provided tcId
+        let tcId: string;
+        if (testCaseId && typeof testCaseId === 'string' && testCaseId.toString().trim()) {
+          // User provided test case ID - validate format and uniqueness
+          const providedTcId = testCaseId.toString().trim().toUpperCase();
+          
+          // Validate format: should be uppercase with hyphens (e.g., TC-LOGIN-001, TC-001)
+          if (!/^TC-[A-Z0-9_-]+$/.test(providedTcId)) {
+            throw new Error(`Invalid Test Case ID format: ${providedTcId}. Expected format: TC-XXX or TC-MODULE-XXX`);
+          }
+          
+          // Check if already exists
+          if (existingTcIds.has(providedTcId)) {
+            const existingTitle = existingTcIdToTitle.get(providedTcId) || 'Unknown';
+            result.skipped++;
+            result.skippedItems.push({
+              row: rowNumber,
+              title: testCaseTitle,
+              reason: `Test Case ID already exists: ${providedTcId} (Existing: "${existingTitle}")`,
+            });
+            continue;
+          }
+          
+          tcId = providedTcId;
+          existingTcIds.add(tcId);
+        } else {
+          // Auto-generate tcId in TC-XXX format without padding (TC-1, TC-2, etc.)
+          tcId = `TC-${nextTcIdNumber}`;
+          while (existingTcIds.has(tcId)) {
+            nextTcIdNumber++;
+            tcId = `TC-${nextTcIdNumber}`;
+          }
+          nextTcIdNumber++;
+          existingTcIds.add(tcId);
+        }
 
         // Create test case
         const testCase = await prisma.testCase.create({
@@ -308,9 +493,23 @@ export class ImportService {
             postconditions: postconditions
               ? postconditions.toString().trim()
               : null,
+            testData: testDataValue,
             moduleId,
             suiteId,
             createdById: userId,
+            steps: testStepsData && testStepsData.length > 0
+              ? {
+                  create: testStepsData
+                    .filter((step) => step.action && step.action.trim()) // Only include steps with actions
+                    .map((step) => ({
+                      stepNumber: step.stepNumber,
+                      action: step.action.trim(),
+                      expectedResult: step.expectedResult && step.expectedResult.trim() 
+                        ? step.expectedResult.trim() 
+                        : '', // expectedResult is optional, allow empty string
+                    })),
+                }
+              : undefined,
           },
         });
 
@@ -322,6 +521,23 @@ export class ImportService {
               testSuiteId: suiteId,
             },
           });
+        }
+
+        // Link to defects if defect IDs were provided and found
+        if (defectsToLink.length > 0) {
+          for (const defect of defectsToLink) {
+            try {
+              await prisma.testCaseDefect.create({
+                data: {
+                  testCaseId: testCase.id,
+                  defectId: defect.id,
+                },
+              });
+            } catch {
+              // If link already exists, that's okay - just log it
+              console.warn(`Defect ${defect.defectId} (${defect.id}) already linked to test case ${testCase.id}`);
+            }
+          }
         }
 
         result.success++;
@@ -445,9 +661,10 @@ export class ImportService {
         const priority = this.getRowValue(row, 'priority');
         const status = this.getRowValue(row, 'status');
         const environment = this.getRowValue(row, 'environment');
+        const reportedBy = this.getRowValue(row, 'reportedBy');
+        const reportedDate = this.getRowValue(row, 'reportedDate');
         const assignedTo = this.getRowValue(row, 'assignedTo');
         const dueDate = this.getRowValue(row, 'dueDate');
-        const testCase = this.getRowValue(row, 'testCase');
 
         // Validate required field
         if (!title || typeof title !== 'string' || title.toString().trim() === '') {
@@ -516,23 +733,58 @@ export class ImportService {
           }
         }
 
-        // Find assignee by email
-        let assignedToId: string | undefined;
-        if (assignedTo && typeof assignedTo === 'string') {
-          const email = assignedTo.toString().trim().toLowerCase();
+        // Find reported by user (name or email)
+        let createdById = userId; // Default to current user
+        if (reportedBy && typeof reportedBy === 'string') {
+          const reportedByValue = reportedBy.toString().trim();
+          // Try to find by email first, then by name
           const projectMember = project.members.find(
-            (m) => m.user.email.toLowerCase() === email
+            (m) => 
+              m.user.email.toLowerCase() === reportedByValue.toLowerCase() ||
+              m.user.name?.toLowerCase() === reportedByValue.toLowerCase()
           );
 
           if (projectMember) {
-            assignedToId = projectMember.userId;
+            createdById = projectMember.userId;
           } else {
-            // Log warning but don't fail
+            // Log warning but use current user as fallback
             console.warn(
-              `User with email ${email} not found in project members. Defect will be unassigned.`
+              `User "${reportedByValue}" not found in project members. Using current user as reporter.`
             );
           }
         }
+
+        // Parse reported date
+        let createdAtValue: Date | undefined;
+        if (reportedDate && typeof reportedDate === 'string') {
+          const parsedDate = new Date(reportedDate);
+          if (!isNaN(parsedDate.getTime())) {
+            createdAtValue = parsedDate;
+          } else {
+            console.warn(`Invalid reported date format: ${reportedDate}. Using current date.`);
+          }
+        }
+
+        // Find assignee by name or email (required field)
+        if (!assignedTo || typeof assignedTo !== 'string' || assignedTo.toString().trim() === '') {
+          throw new Error('Assigned To is required');
+        }
+
+        const assignedToValue = assignedTo.toString().trim();
+        // Try to find by email first, then by name
+        const projectMember = project.members.find(
+          (m) => 
+            m.user.email.toLowerCase() === assignedToValue.toLowerCase() ||
+            m.user.name?.toLowerCase() === assignedToValue.toLowerCase()
+        );
+
+        if (!projectMember) {
+          throw new Error(
+            `User "${assignedToValue}" not found in project members. Please provide a valid name or email of a project member.`
+          );
+        }
+
+        const assignedToId = projectMember.userId;
 
         // Parse due date
         let dueDateValue: Date | undefined;
@@ -543,67 +795,53 @@ export class ImportService {
           }
         }
 
-        // Generate defectId - skip existing ones
-        let defectId = `DEF-${String(nextDefectIdNumber).padStart(3, '0')}`;
+        // Generate defectId - skip existing ones (format: DEF-1, DEF-2, etc. without padding)
+        let defectId = `DEF-${nextDefectIdNumber}`;
         while (existingDefectIds.has(defectId)) {
           nextDefectIdNumber++;
-          defectId = `DEF-${String(nextDefectIdNumber).padStart(3, '0')}`;
+          defectId = `DEF-${nextDefectIdNumber}`;
         }
         nextDefectIdNumber++;
         existingDefectIds.add(defectId);
 
-        // Find test case by title if provided
-        let testCaseId: string | undefined;
-        if (testCase && typeof testCase === 'string' && testCase.toString().trim()) {
-          const testCaseName = testCase.toString().trim();
-          const foundTestCase = await prisma.testCase.findFirst({
-            where: {
-              projectId,
-              title: {
-                equals: testCaseName,
-                mode: 'insensitive',
-              },
-            },
-            select: { id: true },
-          });
-
-          if (!foundTestCase) {
-            console.warn(
-              `Test case "${testCaseName}" not found in project. Defect will be created without test case link.`
-            );
-          } else {
-            testCaseId = foundTestCase.id;
-          }
-        }
-
         // Create defect
-        const defect = await prisma.defect.create({
-          data: {
-            defectId,
-            projectId,
-            title: title.toString().trim(),
-            description: description
-              ? description.toString().trim()
-              : null,
-            severity: severityValue,
-            priority: priorityValue,
-            status: statusValue,
-            assignedToId,
-            environment: environmentValue,
-            dueDate: dueDateValue,
-            createdById: userId,
-          },
-        });
+        const defectData: {
+          defectId: string;
+          projectId: string;
+          title: string;
+          description: string | null;
+          severity: string;
+          priority: string;
+          status: string;
+          assignedToId?: string;
+          environment?: string;
+          dueDate?: Date;
+          createdById: string;
+          createdAt?: Date;
+        } = {
+          defectId,
+          projectId,
+          title: title.toString().trim(),
+          description: description
+            ? description.toString().trim()
+            : null,
+          severity: severityValue,
+          priority: priorityValue,
+          status: statusValue,
+          assignedToId,
+          environment: environmentValue,
+          dueDate: dueDateValue,
+          createdById,
+        };
 
-        // Link to test case if found
-        if (testCaseId) {
-          await prisma.testCaseDefect.create({
-            data: {
-              testCaseId,
-              defectId: defect.id,
-            },
-          });
+        // Set createdAt if reportedDate is provided
+        if (createdAtValue) {
+          defectData.createdAt = createdAtValue;
         }
+
+        const defect = await prisma.defect.create({
+          data: defectData,
+        });
 
         result.success++;
         result.imported.push({

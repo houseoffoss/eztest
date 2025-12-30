@@ -82,7 +82,18 @@ export class ExportService {
     // Fetch test cases with related data
     const testCases = await prisma.testCase.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        tcId: true,
+        title: true,
+        description: true,
+        expectedResult: true,
+        priority: true,
+        status: true,
+        estimatedTime: true,
+        preconditions: true,
+        postconditions: true,
+        testData: true,
         module: {
           select: {
             name: true,
@@ -119,29 +130,54 @@ export class ExportService {
       },
     });
 
+    // Fetch all linked defects for test cases in one query
+    const testCaseIds = testCases.map((tc) => tc.id);
+    const allTestCaseDefects = await prisma.testCaseDefect.findMany({
+      where: { testCaseId: { in: testCaseIds } },
+      include: { defect: { select: { defectId: true } } },
+    });
+    const defectsByTestCaseId = new Map<string, string[]>();
+    allTestCaseDefects.forEach((td) => {
+      const existing = defectsByTestCaseId.get(td.testCaseId) || [];
+      existing.push(td.defect.defectId);
+      defectsByTestCaseId.set(td.testCaseId, existing);
+    });
+
     // Transform data for export
     const exportData = testCases.map((tc) => {
       const suites = tc.testCaseSuites.map((tcs) => tcs.testSuite.name).join('; ');
-      const steps = tc.steps
-        .map((step) => `${step.stepNumber}. ${step.action} | Expected: ${step.expectedResult}`)
-        .join(' || ');
+
+      // Format test steps as JSON array (matching import format)
+      const testStepsArray = tc.steps.map((step) => ({
+        stepNumber: step.stepNumber,
+        action: step.action,
+        expectedResult: step.expectedResult || '',
+      }));
+      const testStepsJson = JSON.stringify(testStepsArray);
+
+      // Get test data (from testData field if available)
+      const testData = tc.testData || '';
+
+      // Get linked defect IDs from pre-fetched map
+      const linkedDefectIds = defectsByTestCaseId.get(tc.id) || [];
+      const defectIds = linkedDefectIds.join(', ');
 
       return {
         'Test Case ID': tc.tcId,
-        'Title': tc.title,
-        'Description': tc.description || '',
-        'Expected Result': tc.expectedResult || '',
+        'Test Case Title': tc.title,
+        'Module / Feature': tc.module?.name || '',
         'Priority': tc.priority,
-        'Status': tc.status,
-        'Estimated Time (minutes)': tc.estimatedTime || '',
         'Preconditions': tc.preconditions || '',
+        'Test Steps': testStepsJson,
+        'Test Data': testData,
+        'Expected Result': tc.expectedResult || '',
+        'Status': tc.status,
+        'Defect ID': defectIds,
+        // Older fields (for backward compatibility)
+        'Description': tc.description || '',
+        'Estimated Time (minutes)': tc.estimatedTime || '',
         'Postconditions': tc.postconditions || '',
-        'Module': tc.module?.name || '',
         'Test Suites': suites,
-        'Test Steps': steps,
-        'Created By': tc.createdBy.name || tc.createdBy.email,
-        'Created At': tc.createdAt.toISOString(),
-        'Updated At': tc.updatedAt.toISOString(),
       };
     });
 
@@ -229,28 +265,20 @@ export class ExportService {
 
     // Transform data for export
     const exportData = defects.map((defect) => {
-      const testCases = defect.testCases
-        .map((tc) => `${tc.testCase.tcId}: ${tc.testCase.title}`)
-        .join('; ');
-
       return {
-        'Defect ID': defect.defectId,
-        'Title': defect.title,
+        'Defect Title / Summary': defect.title,
         'Description': defect.description || '',
         'Severity': defect.severity,
         'Priority': defect.priority,
         'Status': defect.status,
-        'Assigned To': defect.assignedTo?.name || defect.assignedTo?.email || '',
         'Environment': defect.environment || '',
-        'Test Run': defect.testRun?.name || '',
-        'Linked Test Cases': testCases,
+        'Reported By': defect.createdBy.name || defect.createdBy.email,
+        'Reported Date': defect.createdAt.toISOString().split('T')[0],
+        'Assigned To': defect.assignedTo?.name || defect.assignedTo?.email || '',
         'Due Date': defect.dueDate ? defect.dueDate.toISOString().split('T')[0] : '',
-        'Progress (%)': defect.progressPercentage || '',
-        'Created By': defect.createdBy.name || defect.createdBy.email,
-        'Resolved At': defect.resolvedAt ? defect.resolvedAt.toISOString() : '',
-        'Closed At': defect.closedAt ? defect.closedAt.toISOString() : '',
-        'Created At': defect.createdAt.toISOString(),
-        'Updated At': defect.updatedAt.toISOString(),
+        'Progress (%)': defect.progressPercentage ?? 0,
+        'Closed At': defect.closedAt ? defect.closedAt.toISOString().split('T')[0] : '',
+        'Updated At': defect.updatedAt.toISOString().split('T')[0],
       };
     });
 
@@ -497,30 +525,6 @@ export class ExportService {
     // Calculate total duration
     const totalDuration = testRun.results.reduce((sum, r) => sum + (r.duration || 0), 0);
     const totalDurationMinutes = Math.round(totalDuration / 60);
-
-    // Base test run information
-    const baseInfo = {
-      'Test Run Name': testRun.name,
-      'Test Run Description': testRun.description || '',
-      'Test Run Status': testRun.status,
-      'Project': testRun.project.name,
-      'Project Key': testRun.project.key,
-      'Environment': testRun.environment || '',
-      'Assigned To': testRun.assignedTo?.name || testRun.assignedTo?.email || '',
-      'Test Suites': suites,
-      'Total Results': totalResults,
-      'Passed': passed,
-      'Failed': failed,
-      'Blocked': blocked,
-      'Skipped': skipped,
-      'Retest': retest,
-      'Total Defects': testRun.defects.length,
-      'Started At': testRun.startedAt ? testRun.startedAt.toISOString() : '',
-      'Completed At': testRun.completedAt ? testRun.completedAt.toISOString() : '',
-      'Created By': testRun.createdBy.name || testRun.createdBy.email,
-      'Created At': testRun.createdAt.toISOString(),
-      'Updated At': testRun.updatedAt.toISOString(),
-    };
 
     // Transform data for export - only summary with counts
     const exportData: Record<string, string | number>[] = [];
