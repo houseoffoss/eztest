@@ -144,17 +144,9 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
             <p className="text-white/60 text-sm">
               No defects linked to this test case yet
             </p>
-            <p className="text-white/40 text-xs mt-1 mb-4">
+            <p className="text-white/40 text-xs mt-1">
               Defects will appear here when they are linked to this test case
             </p>
-            <ButtonPrimary
-              size="sm"
-              onClick={() => setLinkDialogOpen(true)}
-              className="flex items-center gap-2 mx-auto"
-            >
-              <Plus className="w-4 h-4" />
-              Link Defect
-            </ButtonPrimary>
           </div>
         ) : (
           <DataTable

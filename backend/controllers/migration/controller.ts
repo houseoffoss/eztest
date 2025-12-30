@@ -79,7 +79,7 @@ export class MigrationController {
   getTestCaseImportTemplate() {
     const template = {
       columns: [
-        { name: 'Test Case ID', required: false, description: 'Unique identifier (e.g., TC-001, TC-002). If not provided, will be auto-generated in TC-XXX format' },
+        { name: 'Test Case ID', required: false, description: 'Unique identifier (e.g., TC-1, TC-2). If not provided, will be auto-generated in TC-1, TC-2 format' },
         { name: 'Test Case Title', required: true, description: 'Short, clear description of the test case' },
         { name: 'Module / Feature', required: false, description: 'Application area (Login, Payments, IoT Device, etc.). Will be created if not exists' },
         { name: 'Priority', required: false, description: 'Priority level: High / Medium / Low' },
@@ -88,7 +88,7 @@ export class MigrationController {
         { name: 'Test Data', required: false, description: 'Input values or test data to be used' },
         { name: 'Expected Result', required: false, description: 'Expected system behavior or outcome' },
         { name: 'Status', required: false, description: 'Test case status: Active / Draft / Deprecated (execution statuses like Pass/Fail are for test results, not test cases)' },
-        { name: 'Defect ID', required: false, description: 'Bug reference if failed. Can specify multiple defects separated by comma or semicolon (e.g., DEF-001, DEF-002). All must exist in the project. Test case will be linked to these defects' },
+        { name: 'Defect ID', required: false, description: 'Bug reference if failed. Can specify multiple defects separated by comma or semicolon (e.g., DEF-1, DEF-2). IMPORTANT: All defect IDs must already exist in the target project. If any defect ID is not found, the test case will be skipped with an error. Leave empty if no defects to link.' },
         // Older fields (kept for backward compatibility)
         { name: 'Description', required: false, description: 'Detailed test case description (older field)' },
         { name: 'Estimated Time (minutes)', required: false, description: 'Estimated time in minutes (older field)' },
@@ -96,7 +96,7 @@ export class MigrationController {
         { name: 'Test Suites', required: false, description: 'Test suite name (will be created if not exists) (older field)' },
       ],
       example: {
-        'Test Case ID': 'TC-001',
+        'Test Case ID': 'TC-1',
         'Test Case Title': 'Verify user authentication with valid credentials',
         'Module / Feature': 'Login',
         'Priority': 'HIGH',
@@ -105,7 +105,7 @@ export class MigrationController {
         'Test Data': 'Email: user@example.com, Password: Test123!',
         'Expected Result': 'User successfully authenticates and is redirected to the dashboard page',
         'Status': 'ACTIVE',
-        'Defect ID': 'DEF-001, DEF-002',
+        'Defect ID': 'DEF-1, DEF-2',
       },
     };
 
