@@ -5,6 +5,7 @@ import { TestCase, Module } from '../types';
 import { useEffect, useState } from 'react';
 import { attachmentStorage } from '@/lib/attachment-storage';
 import type { Attachment } from '@/lib/s3';
+import { uploadFileToS3 } from '@/lib/s3';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface CreateTestCaseDialogProps {
@@ -78,7 +79,7 @@ export function CreateTestCaseDialog({
       type: 'text',
       required: true,
       minLength: 3,
-      maxLength: 50,
+      maxLength: 200,
       cols: 2,
     },
     {
@@ -156,6 +157,14 @@ export function CreateTestCaseDialog({
       attachments: postconditionsAttachments,
       onAttachmentsChange: setPostconditionsAttachments,
     },
+    {
+      name: 'testData',
+      label: 'Test Data',
+      type: 'textarea',
+      placeholder: 'Enter test data or input values',
+      rows: 3,
+      cols: 2,
+    },
   ];
 
   const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
@@ -176,12 +185,11 @@ export function CreateTestCaseDialog({
 
     // Upload all pending files
     for (const attachment of pendingAttachments) {
-      // @ts-ignore - Access the pending file object
+      // @ts-expect-error - Access the pending file object
       const file = attachment._pendingFile;
       if (!file) continue;
 
       try {
-        const { uploadFileToS3 } = await import('@/lib/s3');
         const result = await uploadFileToS3({
           file,
           fieldName: attachment.fieldName || 'attachment',
@@ -228,6 +236,7 @@ export function CreateTestCaseDialog({
         title: formData.title,
         description: formData.description || undefined,
         expectedResult: formData.expectedResult || undefined,
+        testData: formData.testData || undefined,
         priority: formData.priority,
         status: formData.status,
         estimatedTime,

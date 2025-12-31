@@ -29,7 +29,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       type: 'text',
       placeholder: 'Enter test case title',
       required: true,
-      maxLength: 50,
+      maxLength: 200,
     },
     {
       name: 'priority',

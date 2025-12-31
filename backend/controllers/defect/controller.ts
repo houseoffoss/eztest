@@ -386,7 +386,13 @@ export class DefectController {
       // Validate request body
       const validatedData = linkAttachmentsSchema.parse(body);
       
-      const result = await defectService.associateAttachments(defectId, validatedData.attachments);
+      // Get user ID from request (set by hasPermission wrapper)
+      const userId = req.userInfo?.id;
+      if (!userId) {
+        throw new ValidationException('User not authenticated');
+      }
+      
+      const result = await defectService.associateAttachments(defectId, validatedData.attachments, userId);
       return {
         data: result,
         statusCode: 201,

@@ -6,6 +6,7 @@ import { Send } from 'lucide-react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Avatar, AvatarImage, AvatarFallback } from '@/frontend/reusable-elements/avatars/Avatar';
 import { TextareaWithAttachments, Attachment } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
+import { uploadFileToS3 } from '@/lib/s3';
 
 // Extended type for pending attachments with file object
 interface PendingAttachment extends Attachment {
@@ -114,7 +115,6 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
           }
 
           // Upload the file
-          const { uploadFileToS3 } = await import('@/lib/s3');
           const uploadResult = await uploadFileToS3({
             file,
             fieldName: 'comment',

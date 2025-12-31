@@ -43,8 +43,10 @@ Test cases are the core of your testing effort. Each test case defines:
 
 Test case IDs are automatically generated:
 
-- Format: `tc1`, `tc2`, `tc3`, ...
+- Format: `TC-1`, `TC-2`, `TC-3`, ...
 - Unique within each project
+- Can be provided during import (must follow format: capital letters and hyphens, e.g., `TC_LOGIN_001`)
+- Auto-generated if not provided
 - Cannot be changed after creation
 
 ---
@@ -64,6 +66,7 @@ Test case IDs are automatically generated:
 |-------|-------------|---------|
 | **Description** | Detailed test description | - |
 | **Expected Result** | Overall expected outcome | - |
+| **Test Data** | Input values or test data | - |
 | **Priority** | Execution importance | Medium |
 | **Status** | Current state | Active |
 | **Module** | Associated module | - |
@@ -100,7 +103,7 @@ Each step consists of:
 |-------|-------------|---------|
 | **Step Number** | Sequential order | 1, 2, 3... |
 | **Action** | What to do | "Click the Login button" |
-| **Expected Result** | What should happen | "Login form submits" |
+| **Expected Result** | What should happen (optional) | "Login form submits" |
 
 ### Adding Steps
 
@@ -141,16 +144,32 @@ Attach files to individual steps:
 
 ## <a id="organizing-test-cases"></a>Organizing Test Cases
 
+### Linking Defects
+
+Test cases can be linked to defects to track issues found during testing:
+
+1. Open the test case detail page
+2. Scroll to **"Linked Defects"** card
+3. Click **"Link Defect"** button
+4. Select a defect from the dropdown
+5. Click **"Link Defect"** to confirm
+
+**Features:**
+- Link multiple defects to a single test case
+- View all linked defects in the test case detail page
+- Navigate to defect details by clicking on a linked defect
+- Defects can also be linked during import using Defect ID
+
 ### Using Test Suites
 
 Group related test cases into suites:
 
 ```
 Authentication (Suite)
-├── tc1 - User Login
-├── tc2 - User Registration  
-├── tc3 - Password Reset
-└── tc4 - Logout
+├── TC-1 - User Login
+├── TC-2 - User Registration  
+├── TC-3 - Password Reset
+└── TC-4 - Logout
 ```
 
 ### Using Modules
@@ -159,9 +178,9 @@ Modules provide another organization layer:
 
 ```
 User Management (Module)
-├── tc1 - Create User
-├── tc5 - Edit User
-└── tc9 - Delete User
+├── TC-1 - Create User
+├── TC-5 - Edit User
+└── TC-9 - Delete User
 ```
 
 ### Filtering Test Cases
@@ -281,6 +300,7 @@ Document all requirements:
 | `GET` | `/api/testcases/:id` | Get test case |
 | `PUT` | `/api/testcases/:id` | Update test case |
 | `DELETE` | `/api/testcases/:id` | Delete test case |
+| `POST` | `/api/testcases/:id/defects` | Link defects to test case |
 
 See [Test Cases API](../../api/test-cases.md) for complete reference.
 

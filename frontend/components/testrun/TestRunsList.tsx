@@ -3,9 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
@@ -17,6 +18,7 @@ import { CreateTestRunDialog } from './subcomponents/CreateTestRunDialog';
 import { DeleteTestRunDialog } from './subcomponents/DeleteTestRunDialog';
 import { TestRun, Project, TestRunFormData, TestRunFilters } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
+import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
 
 interface TestRunsListProps {
   projectId: string;
@@ -32,6 +34,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedTestRun, setSelectedTestRun] = useState<TestRun | null>(null);
 
   const [filters, setFilters] = useState<TestRunFilters>({
@@ -168,6 +171,8 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
 
   const canCreateTestRun = hasPermissionCheck('testruns:create');
   const canDeleteTestRun = hasPermissionCheck('testruns:delete');
+  const canReadTestRun = hasPermissionCheck('testruns:read');
+
 
   return (
     <>
@@ -181,14 +186,26 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           { label: 'Test Runs' },
         ]}
         actions={
-          canCreateTestRun ? (
-            <ButtonPrimary
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Test Run
-            </ButtonPrimary>
-          ) : undefined
+          <div className="flex gap-2">
+            {canReadTestRun && (
+              <ButtonSecondary 
+                onClick={() => setExportDialogOpen(true)} 
+                className="cursor-pointer"
+                title="Export test runs"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Export
+              </ButtonSecondary>
+            )}
+            {canCreateTestRun && (
+              <ButtonPrimary
+                onClick={() => setCreateDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Test Run
+              </ButtonPrimary>
+            )}
+          </div>
         }
       />
 
@@ -267,6 +284,23 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           triggerOpen={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={handleDeleteTestRun}
+        />
+
+        {/* Export Dialog */}
+        <FileExportDialog
+          open={exportDialogOpen}
+          onOpenChange={setExportDialogOpen}
+          title="Export Test Runs"
+          description="Choose a format to export your test runs."
+          exportOptions={{
+            projectId,
+            endpoint: `/api/projects/${projectId}/testruns/export`,
+            filters: {
+              status: filters.statusFilter !== 'all' ? filters.statusFilter : undefined,
+              environment: filters.environmentFilter !== 'all' ? filters.environmentFilter : undefined,
+            },
+          }}
+          itemName="test runs"
         />
       </div>
     </>

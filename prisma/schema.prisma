@@ -175,6 +175,8 @@ model TestCase {
   estimatedTime Int?     // in minutes
   preconditions String?
   postconditions String?
+  testData      String?  // Test data/input values for the test case
+  pendingDefectIds String?  // Comma-separated defect IDs that don't exist yet (e.g., "DEF-1, DEF-2")
   createdById   String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

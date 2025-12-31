@@ -51,6 +51,9 @@ export class TestCaseMessages {
   static FailedToUpdateTestCase = 'Failed to update test case.';
   static FailedToDeleteTestCase = 'Failed to delete test case.';
   static FailedToUpdateTestSteps = 'Failed to update test steps.';
+  static TestCasesExportedSuccessfully = 'Test cases exported successfully.';
+  static FailedToExportTestCases = 'Failed to export test cases.';
+  static InvalidExportFormat = 'Invalid export format. Use "csv" or "excel".';
 }
 
 export class ModuleMessages {
@@ -114,6 +117,8 @@ export class DefectMessages {
   static FailedToDeleteDefect = 'Failed to delete defect.';
   static FailedToLinkDefect = 'Failed to link defect.';
   static FailedToUnlinkDefect = 'Failed to unlink defect.';
+  static DefectsExportedSuccessfully = 'Defects exported successfully.';
+  static FailedToExportDefects = 'Failed to export defects.';
 }
 
 export class UserMessages {
@@ -209,4 +214,6 @@ export class TestRunMessages {
   static FailedToCompleteTestRun = 'Failed to complete test run.';
   static FailedToSendTestRunReport = 'Failed to send test run report.';
   static AccessDeniedTestRun = 'Access denied. Only project owners/admins can manage test runs.';
+  static TestRunsExportedSuccessfully = 'Test runs exported successfully.';
+  static FailedToExportTestRuns = 'Failed to export test runs.';
 }

@@ -13,6 +13,7 @@ import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionB
 import { List, TestTube2, PlayCircle } from 'lucide-react';
 import { Defect, DefectFormData } from './types';
 import type { Attachment } from '@/lib/s3';
+import { uploadFileToS3 } from '@/lib/s3';
 import {
   DefectHeader,
   DefectDetailsCard,
@@ -129,7 +130,6 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
           if (!file) continue;
 
           try {
-            const { uploadFileToS3 } = await import('@/lib/s3');
             const result = await uploadFileToS3({
               file,
               fieldName: attachment.fieldName || 'attachment',

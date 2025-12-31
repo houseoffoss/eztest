@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { SearchableSelect } from '@/frontend/reusable-elements/selects/SearchableSelect';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { type Attachment } from '@/lib/s3';
+import { uploadFileToS3 } from '@/lib/s3';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface Defect {
@@ -220,7 +221,6 @@ export function CreateDefectDialog({
       if (!file) continue;
 
       try {
-        const { uploadFileToS3 } = await import('@/lib/s3');
         const result = await uploadFileToS3({
           file,
           fieldName: attachment.fieldName || 'attachment',

@@ -159,18 +159,30 @@ If fix verification fails:
 
 When creating defect from failed test, link is automatic.
 
-### Manual Linking
+### Manual Linking from Defect
 
-1. Open defect
+1. Open defect detail page
 2. Click **"Link Test Cases"**
 3. Search/select test cases
 4. Save
+
+### Manual Linking from Test Case
+
+1. Open test case detail page
+2. Scroll to **"Linked Defects"** card
+3. Click **"Link Defect"** button
+4. Select a defect from the dropdown
+5. Click **"Link Defect"** to confirm
 
 ### View Links
 
 On the defect page:
 - **Linked Test Cases** section shows all linked tests
 - Click to view test case details
+
+On the test case page:
+- **Linked Defects** section shows all linked defects
+- Click to navigate to defect details
 
 ### Unlink Test Cases
 
@@ -332,3 +344,4 @@ curl -X POST http://localhost:3000/api/projects/proj-id/defects \
 - [Test Runs](../test-runs/README.md)
 - [Attachments](../attachments/README.md)
 - [API Reference](../../api/defects.md)
+

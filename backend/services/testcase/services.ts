@@ -8,6 +8,7 @@ interface CreateTestCaseInput {
   title: string;
   description?: string;
   expectedResult?: string;
+  testData?: string;
   priority?: string;
   status?: string;
   estimatedTime?: number;
@@ -25,6 +26,7 @@ interface UpdateTestCaseInput {
   title?: string;
   description?: string;
   expectedResult?: string;
+  testData?: string;
   priority?: string;
   status?: string;
   estimatedTime?: number;
@@ -43,17 +45,28 @@ interface TestCaseFilters {
 
 export class TestCaseService {
   /**
-   * Generate next test case ID for a project (e.g., tc1, tc2, tc3...)
+   * Generate next test case ID for a project (e.g., TC-1, TC-2, TC-3...)
    */
   private async generateTestCaseId(projectId: string): Promise<string> {
-    // Get the count of existing test cases in the project
-    const count = await prisma.testCase.count({
+    // Get existing test cases to find the highest number
+    const existingTestCases = await prisma.testCase.findMany({
       where: { projectId },
+      select: { tcId: true },
+      orderBy: { tcId: 'desc' },
     });
+
+    let nextTestCaseNumber = 1;
+    if (existingTestCases.length > 0) {
+      // Extract number from existing TC-XXX format
+      const lastTcId = existingTestCases[0].tcId;
+      const match = lastTcId.match(/\d+/);
+      if (match) {
+        nextTestCaseNumber = parseInt(match[0], 10) + 1;
+      }
+    }
     
-    // Start from count + 1 and find the first available ID
-    let testCaseNumber = count + 1;
-    let tcId = `tc${testCaseNumber}`;
+    // Generate ID in TC-XXX format without padding (TC-1, TC-2, etc.)
+    let tcId = `TC-${nextTestCaseNumber}`;
     
     // Check if this ID already exists
     let exists = await prisma.testCase.findFirst({
@@ -65,8 +78,8 @@ export class TestCaseService {
     
     // If exists, keep incrementing until we find an available ID
     while (exists) {
-      testCaseNumber++;
-      tcId = `tc${testCaseNumber}`;
+      nextTestCaseNumber++;
+      tcId = `TC-${nextTestCaseNumber}`;
       exists = await prisma.testCase.findFirst({
         where: {
           projectId,
@@ -538,6 +551,7 @@ export class TestCaseService {
             title: data.title,
             description: data.description,
             expectedResult: data.expectedResult,
+            testData: data.testData,
             priority: data.priority || 'MEDIUM',
             status: data.status || 'DRAFT',
             estimatedTime: data.estimatedTime,
@@ -679,6 +693,7 @@ export class TestCaseService {
     if (data.title !== undefined) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.expectedResult !== undefined) updateData.expectedResult = data.expectedResult;
+    if (data.testData !== undefined) updateData.testData = data.testData;
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.status !== undefined) updateData.status = data.status;
     if (data.estimatedTime !== undefined) updateData.estimatedTime = data.estimatedTime;

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const createDefectSchema = z.object({
   testRunId: z.string().optional().nullable(),
+  defectId: z.string().optional().nullable(), // Optional: if provided, use it; otherwise auto-generate
   title: z.string().min(1, 'Title is required').max(500, 'Title too long'),
   description: z.string().optional().nullable(),
   severity: z.string(),

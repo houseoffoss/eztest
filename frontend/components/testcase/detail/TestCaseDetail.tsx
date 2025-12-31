@@ -19,6 +19,7 @@ import { LinkedDefectsCard } from './subcomponents/LinkedDefectsCard';
 import { DeleteTestCaseDialog } from './subcomponents/DeleteTestCaseDialog';
 import { attachmentStorage } from '@/lib/attachment-storage';
 import type { Attachment } from '@/lib/s3';
+import { uploadFileToS3 } from '@/lib/s3';
 
 interface TestCaseDetailProps {
   testCaseId: string;
@@ -37,6 +38,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     title: '',
     description: '',
     expectedResult: '',
+    testData: '',
     priority: 'MEDIUM',
     status: 'DRAFT',
     estimatedTime: '',
@@ -92,6 +94,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           title: data.data.title,
           description: data.data.description || '',
           expectedResult: data.data.expectedResult || '',
+          testData: data.data.testData || '',
           priority: data.data.priority,
           status: data.data.status,
           estimatedTime: data.data.estimatedTime?.toString() || '',
@@ -223,7 +226,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       if (!file) continue;
 
       try {
-        const { uploadFileToS3 } = await import('@/lib/s3');
         const result = await uploadFileToS3({
           file,
           fieldName: attachment.fieldName || 'attachment',
@@ -313,7 +315,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
             if (pendingAttachments.length > 0) {
               console.log(`Uploading ${pendingAttachments.length} pending attachments for step ${stepId}`);
               // Upload pending attachments first
-              const { uploadFileToS3 } = await import('@/lib/s3');
               const uploadedAttachments = await Promise.all(
                 pendingAttachments.map(async (att) => {
                   try {
@@ -670,7 +671,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               onNewStepExpectedResultAttachmentsChange={setNewStepExpectedResultAttachments}
             />
 
-            <LinkedDefectsCard testCase={testCase} />
+            <LinkedDefectsCard testCase={testCase} onRefresh={fetchTestCase} />
 
             <TestCaseHistoryCard testCaseId={testCaseId} />
           </div>

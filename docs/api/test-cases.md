@@ -11,6 +11,7 @@ API endpoints for test case management.
 | `GET` | `/api/testcases/:id` | Get test case |
 | `PUT` | `/api/testcases/:id` | Update test case |
 | `DELETE` | `/api/testcases/:id` | Delete test case |
+| `POST` | `/api/testcases/:id/defects` | Link defects to test case |
 | `GET` | `/api/testcases/:id/steps` | Get test steps |
 | `POST` | `/api/testcases/:id/steps` | Create/update steps |
 | `GET` | `/api/testcases/:id/history` | Get change history |
@@ -45,7 +46,7 @@ Cookie: next-auth.session-token=...
   "data": [
     {
       "id": "tc_abc123",
-      "tcId": "tc1",
+      "tcId": "TC-1",
       "title": "Verify user can login",
       "description": "Test user login functionality",
       "priority": "HIGH",
@@ -99,6 +100,7 @@ Cookie: next-auth.session-token=...
   "preconditions": "User account exists",
   "postconditions": "User is logged in",
   "expectedResult": "User redirected to dashboard",
+  "testData": "username: testuser, password: Test123!",
   "steps": [
     {
       "stepNumber": 1,
@@ -128,6 +130,7 @@ Cookie: next-auth.session-token=...
 | `preconditions` | string | No | Prerequisites |
 | `postconditions` | string | No | Post-execution state |
 | `expectedResult` | string | No | Overall expected result |
+| `testData` | string | No | Input values or test data |
 | `steps` | array | No | Test steps array |
 
 **Response (201 Created):**
@@ -135,7 +138,7 @@ Cookie: next-auth.session-token=...
 {
   "data": {
     "id": "tc_abc123",
-    "tcId": "tc1",
+    "tcId": "TC-1",
     "title": "Verify user can login with valid credentials",
     "priority": "HIGH",
     "status": "ACTIVE",
@@ -162,7 +165,7 @@ Cookie: next-auth.session-token=...
 {
   "data": {
     "id": "tc_abc123",
-    "tcId": "tc1",
+    "tcId": "TC-1",
     "projectId": "proj_abc123",
     "title": "Verify user can login with valid credentials",
     "description": "Test that users can login successfully",
@@ -172,6 +175,7 @@ Cookie: next-auth.session-token=...
     "preconditions": "User account exists",
     "postconditions": "User is logged in",
     "expectedResult": "User redirected to dashboard",
+    "testData": "username: testuser, password: Test123!",
     "createdAt": "2024-01-15T10:30:00Z",
     "updatedAt": "2024-01-15T10:30:00Z",
     "createdBy": {
@@ -195,6 +199,12 @@ Cookie: next-auth.session-token=...
         "stepNumber": 2,
         "action": "Enter valid credentials",
         "expectedResult": "Fields accept input"
+      },
+      {
+        "id": "step_3",
+        "stepNumber": 3,
+        "action": "Click login button",
+        "expectedResult": null
       }
     ],
     "attachments": [],
@@ -232,7 +242,7 @@ Cookie: next-auth.session-token=...
 {
   "data": {
     "id": "tc_abc123",
-    "tcId": "tc1",
+    "tcId": "TC-1",
     "title": "Verify user can login with valid email and password",
     "priority": "CRITICAL",
     "status": "ACTIVE",
@@ -330,6 +340,11 @@ Cookie: next-auth.session-token=...
       "stepNumber": 4,
       "action": "Click Login button",
       "expectedResult": "User redirected to dashboard"
+    },
+    {
+      "stepNumber": 5,
+      "action": "Verify dashboard loads",
+      "expectedResult": null
     }
   ]
 }
@@ -348,6 +363,53 @@ Cookie: next-auth.session-token=...
     // ... more steps
   ],
   "message": "Steps updated successfully"
+}
+```
+
+---
+
+## POST /api/testcases/:id/defects
+
+Link defects to a test case.
+
+**Required Permission:** `testcases:update`
+
+**Request:**
+```http
+POST /api/testcases/tc_abc123/defects
+Content-Type: application/json
+Cookie: next-auth.session-token=...
+
+{
+  "defectIds": ["defect_123", "defect_456"]
+}
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `defectIds` | array | Yes | Array of defect IDs to link |
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": "tc_abc123",
+    "defects": [
+      {
+        "id": "defect_123",
+        "defectId": "DEF-1",
+        "title": "Login button not responding"
+      },
+      {
+        "id": "defect_456",
+        "defectId": "DEF-2",
+        "title": "Password field validation error"
+      }
+    ]
+  },
+  "message": "Defects linked successfully"
 }
 ```
 
@@ -440,3 +502,4 @@ curl http://localhost:3000/api/testcases/tc_abc123 \
 
 - [Test Cases Feature](../features/test-cases/README.md)
 - [API Overview](./README.md)
+

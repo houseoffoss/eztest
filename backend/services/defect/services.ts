@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { s3Client, getS3Bucket } from '@/lib/s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 interface CreateDefectInput {
   projectId: string;
   testRunId?: string | null;
+  defectId?: string | null; // Optional: if provided, use it; otherwise auto-generate
   title: string;
   description?: string | null;
   severity: string;
@@ -45,15 +45,34 @@ interface DefectFilters {
 export class DefectService {
   /**
    * Generate next defect ID for a project (e.g., DEF-1, DEF-2, DEF-3...)
+   * Finds the highest DEF-X number and generates the next sequential number
    */
   private async generateDefectId(projectId: string): Promise<string> {
-    const count = await prisma.defect.count({
+    // Get all existing defects to find the highest DEF-X number
+    const existingDefects = await prisma.defect.findMany({
       where: { projectId },
+      select: { defectId: true },
     });
     
-    let defectNumber = count + 1;
+    // Find the highest DEF-X number (only consider DEF-X format, not custom formats)
+    let maxDefectNumber = 0;
+    const defectNumberPattern = /^DEF-(\d+)$/;
+    
+    for (const defect of existingDefects) {
+      const match = defect.defectId.match(defectNumberPattern);
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > maxDefectNumber) {
+          maxDefectNumber = number;
+        }
+      }
+    }
+    
+    // Generate next sequential number
+    let defectNumber = maxDefectNumber + 1;
     let defectId = `DEF-${defectNumber}`;
     
+    // Double-check it doesn't exist (in case of race condition or custom formats)
     let exists = await prisma.defect.findFirst({
       where: {
         projectId,
@@ -180,7 +199,32 @@ export class DefectService {
    * Create a new defect
    */
   async createDefect(data: CreateDefectInput) {
-    const defectId = await this.generateDefectId(data.projectId);
+    // Use provided defectId or auto-generate one
+    let defectId: string;
+    
+    if (data.defectId && data.defectId.trim()) {
+      // User provided defect ID - validate it doesn't already exist
+      // Accept any value as defect ID (no format restriction)
+      // Examples: DEF-1, BUG-123, na, ISSUE-001, any-text, etc.
+      const providedDefectId = data.defectId.trim(); // Preserve original case
+      
+      // Check if already exists in the project (case-sensitive)
+      const existingDefect = await prisma.defect.findFirst({
+        where: {
+          projectId: data.projectId,
+          defectId: providedDefectId,
+        },
+      });
+      
+      if (existingDefect) {
+        throw new Error(`Defect ID already exists in this project: ${providedDefectId}`);
+      }
+      
+      defectId = providedDefectId;
+    } else {
+      // Auto-generate defect ID
+      defectId = await this.generateDefectId(data.projectId);
+    }
 
     const defect = await prisma.defect.create({
       data: {
@@ -238,6 +282,77 @@ export class DefectService {
         },
       },
     });
+
+    // Auto-link test cases that have this defect ID in their pendingDefectIds field
+    // Find all test cases in the same project with this defect ID in pendingDefectIds
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const testCasesWithPendingDefect = await (prisma.testCase.findMany as any)({
+      where: {
+        projectId: data.projectId,
+        pendingDefectIds: {
+          not: null,
+        },
+      },
+      select: {
+        id: true,
+        pendingDefectIds: true,
+      },
+    });
+
+    // Filter test cases that have this defect ID in their pending list
+    // Case-sensitive matching - exact match required
+    const testCasesToLink: Array<{ id: string; remainingPendingIds: string | null }> = [];
+
+    for (const testCase of testCasesWithPendingDefect) {
+      if (!testCase.pendingDefectIds) continue;
+
+      // Parse comma-separated defect IDs (preserve original case)
+      const pendingIds = (testCase.pendingDefectIds || '')
+        .split(',')
+        .map((id: string) => id.trim())
+        .filter((id: string) => id.length > 0);
+
+      // Check if this defect ID is in the pending list (case-sensitive match)
+      if (pendingIds.includes(defectId)) {
+        // Remove this defect ID from pending list
+        const remainingPendingIds = pendingIds
+          .filter((id: string) => id !== defectId)
+          .join(', ');
+
+        testCasesToLink.push({
+          id: testCase.id,
+          remainingPendingIds: remainingPendingIds.length > 0 ? remainingPendingIds : null,
+        });
+      }
+    }
+
+    // Link test cases and update their pendingDefectIds
+    if (testCasesToLink.length > 0) {
+      await Promise.all(
+        testCasesToLink.map(async ({ id: testCaseId, remainingPendingIds }) => {
+          // Create link (ignore if already exists)
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (prisma as any).testCaseDefect.create({
+              data: {
+                testCaseId,
+                defectId: defect.id,
+              },
+            });
+          } catch {
+            // Link might already exist, that's okay
+            console.warn(`Defect ${defectId} already linked to test case ${testCaseId}`);
+          }
+
+          // Update pendingDefectIds to remove the linked defect ID
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (prisma.testCase.update as any)({
+            where: { id: testCaseId },
+            data: { pendingDefectIds: remainingPendingIds },
+          });
+        })
+      );
+    }
 
     return defect;
   }
@@ -618,17 +733,12 @@ export class DefectService {
    */
   async associateAttachments(
     defectId: string, 
-    attachments: Array<{ id: string; fieldName?: string }>
+    attachments: Array<{ id: string; fieldName?: string }>,
+    userId: string
   ) {
-    // Get user from session
-    const { getServerSession } = await import('next-auth');
-    const { authOptions } = await import('@/lib/auth');
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      throw new Error('User not authenticated');
+    if (!userId) {
+      throw new Error('User ID is required');
     }
-    const userId = session.user.id;
 
     // Verify defect exists
     const defect = await prisma.defect.findUnique({

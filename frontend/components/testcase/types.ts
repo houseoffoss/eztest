@@ -27,6 +27,7 @@ export interface TestCase {
   title: string;
   description?: string;
   expectedResult?: string;
+  testData?: string;
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   status: 'ACTIVE' | 'DEPRECATED' | 'DRAFT';
   estimatedTime?: number;
@@ -67,6 +68,7 @@ export interface TestCaseFormData {
   title: string;
   description: string;
   expectedResult: string;
+  testData: string;
   priority: string;
   status: string;
   estimatedTime: string;
