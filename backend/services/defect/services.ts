@@ -204,15 +204,11 @@ export class DefectService {
     
     if (data.defectId && data.defectId.trim()) {
       // User provided defect ID - validate it doesn't already exist
-      const providedDefectId = data.defectId.trim().toUpperCase();
+      // Accept any value as defect ID (no format restriction)
+      // Examples: DEF-1, BUG-123, na, ISSUE-001, any-text, etc.
+      const providedDefectId = data.defectId.trim(); // Preserve original case
       
-      // Validate format: should have prefix followed by alphanumeric characters, hyphens, or underscores
-      // Examples: DEF-1, BUG-123, ISSUE-001, DEF-LOGIN-001, BUG-MOBILE-001, etc.
-      if (!/^[A-Z]+-[A-Z0-9_-]+$/.test(providedDefectId)) {
-        throw new Error(`Invalid Defect ID format: ${providedDefectId}. Expected format: PREFIX-XXX (e.g., DEF-1, BUG-123, ISSUE-001)`);
-      }
-      
-      // Check if already exists in the project
+      // Check if already exists in the project (case-sensitive)
       const existingDefect = await prisma.defect.findFirst({
         where: {
           projectId: data.projectId,

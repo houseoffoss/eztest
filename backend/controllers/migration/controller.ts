@@ -87,7 +87,7 @@ export class MigrationController {
         { name: 'Test Data', required: false, description: 'Input values or test data to be used' },
         { name: 'Expected Result', required: false, description: 'Expected system behavior or outcome for each test step. Each newline or numbered point (1., 2., etc.) matches a test step by position (line 1 matches step 1, line 2 matches step 2, etc.). Can be empty if Test Steps column has values. Formats: 1) Newline-separated without numbers (one per step): "Login page displays\nCredentials accepted\nUser redirected to dashboard" 2) Numbered with newlines: "1. Login page displays\n2. Credentials accepted\n3. User redirected to dashboard" 3) Numbered points (same line): "1. Login page displays 2. Credentials accepted 3. User redirected to dashboard" 4) Single value (applies to all steps): "User successfully logs in". Note: If Test Steps is empty, steps will be created from this column. If both columns have values, they are matched by line number/index.' },
         { name: 'Status', required: false, description: 'Test case status: Active / Draft / Deprecated (execution statuses like Pass/Fail are for test results, not test cases)' },
-        { name: 'Defect ID', required: false, description: 'Bug reference if failed. Can specify multiple defects separated by comma or semicolon (e.g., DEF-1, BUG-123, ISSUE-001). Any prefix format is allowed. Defects will be linked automatically when they are created. You can use defect IDs that don\'t exist yet - they will be linked when the defects are created.' },
+        { name: 'Defect ID', required: false, description: 'Bug reference if failed. Can specify multiple defects separated by comma or semicolon (e.g., DEF-1, BUG-123, na, any-text). Any value is allowed. Defects will be linked automatically when they are created. You can use defect IDs that don\'t exist yet - they will be linked when the defects are created (case-sensitive matching).' },
         // Older fields (kept for backward compatibility)
         { name: 'Description', required: false, description: 'Detailed test case description (older field)' },
         { name: 'Estimated Time (minutes)', required: false, description: 'Estimated time in minutes (older field)' },
@@ -181,7 +181,7 @@ export class MigrationController {
   getDefectImportTemplate() {
     const template = {
       columns: [
-        { name: 'Defect ID', required: false, description: 'Unique identifier with any prefix format (e.g., DEF-1, BUG-123, ISSUE-001, DEF-LOGIN-001, BUG-MOBILE-001). If not provided, will be auto-generated in DEF-1, DEF-2 format. Can use any prefix format - will be matched with test cases that reference this ID.' },
+        { name: 'Defect ID', required: false, description: 'Unique identifier - can be any value (e.g., DEF-1, BUG-123, na, ISSUE-001, any-text). If not provided, will be auto-generated in DEF-1, DEF-2 format. Will be matched with test cases that reference this ID (case-sensitive).' },
         { name: 'Defect Title / Summary', required: true, description: 'Short, precise problem statement' },
         { name: 'Description', required: false, description: 'Detailed explanation of the issue' },
         { name: 'Severity', required: false, description: 'Blocker / Critical / Major / Minor / Trivial' },
