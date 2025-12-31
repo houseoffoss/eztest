@@ -102,14 +102,21 @@ export function FileImportDialog({
       // Create CSV template
       interface Column { name: string; }
       const headers = data.data.columns.map((col: Column) => col.name).join(',');
-      const example = data.data.columns.map((col: Column) => {
-        const value = data.data.example[col.name] || '';
-        // Properly escape CSV: replace double quotes with double double quotes, then wrap in quotes
-        const escapedValue = String(value).replace(/"/g, '""');
-        return `"${escapedValue}"`;
-      }).join(',');
       
-      const csv = `${headers}\n${example}`;
+      // Include all examples if available, otherwise just the single example
+      const examples = data.data.examples || [data.data.example];
+      
+      const exampleRows = examples.map((example: Record<string, string>) => {
+        // Skip description field if present (it's not a column)
+        return data.data.columns.map((col: Column) => {
+          const value = example[col.name] || '';
+          // Properly escape CSV: replace double quotes with double double quotes, then wrap in quotes
+          const escapedValue = String(value).replace(/"/g, '""');
+          return `"${escapedValue}"`;
+        }).join(',');
+      });
+      
+      const csv = `${headers}\n${exampleRows.join('\n')}`;
       
       // Download file
       const blob = new Blob([csv], { type: 'text/csv' });
