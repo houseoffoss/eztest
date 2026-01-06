@@ -6,6 +6,7 @@ import { Settings } from 'lucide-react';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { NotFoundState } from '@/frontend/reusable-components/errors/NotFoundState';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Project, ProjectFormData } from './types';
 import { SettingsHeader } from './subcomponents/SettingsHeader';
 import { GeneralSettingsCard } from './subcomponents/GeneralSettingsCard';
@@ -19,12 +20,15 @@ interface ProjectSettingsProps {
 
 export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck } = usePermissions();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+  
+  const canDeleteProject = hasPermissionCheck('projects:delete');
 
   const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
@@ -197,11 +201,13 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
 
         <ProjectInfoCard project={project} />
 
-        <DangerZoneCard
-          project={project}
-          deleting={deleting}
-          onDelete={() => setDeleteDialogOpen(true)}
-        />
+        {canDeleteProject && (
+          <DangerZoneCard
+            project={project}
+            deleting={deleting}
+            onDelete={() => setDeleteDialogOpen(true)}
+          />
+        )}
         </div>
       </div>
 
