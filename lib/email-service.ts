@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { User } from '@prisma/client';
+import { isDefaultAdminEmail } from './auth-utils';
 
 interface EmailOptions {
   to: string;
@@ -203,6 +204,12 @@ function isValidEmail(email: string): boolean {
  */
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
+    // Skip sending emails to default admin email
+    if (isDefaultAdminEmail(options.to)) {
+      console.log(`[EMAIL] Skipping email to default admin email: ${options.to}`);
+      return true; // Return true to indicate "success" (email was intentionally skipped)
+    }
+
     console.log(`[EMAIL] Preparing to send email to: ${options.to}`);
     
     const transporter = getTransporter();

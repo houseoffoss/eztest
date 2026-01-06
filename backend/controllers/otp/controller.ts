@@ -3,6 +3,7 @@ import { otpService } from '@/backend/services/otp/services';
 interface SendOtpInput {
   email: string;
   type: 'login' | 'register';
+  password?: string; // Optional password for login verification
 }
 
 interface VerifyOtpInput {
@@ -40,6 +41,7 @@ export class OtpController {
         email: email.toLowerCase().trim(),
         type,
         appUrl,
+        password: body.password, // Pass password for login verification
       });
 
       return result;
