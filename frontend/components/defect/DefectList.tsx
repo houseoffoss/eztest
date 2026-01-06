@@ -18,6 +18,7 @@ import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
+import { DefectStatistics } from './subcomponents/DefectStatistics';
 
 interface Project {
   id: string;
@@ -493,6 +494,9 @@ export default function DefectList({ projectId }: DefectListProps) {
               </div>
             )}
           </div>
+
+          {/* Statistics Chart */}
+          <DefectStatistics projectId={projectId} refreshTrigger={defects.length} />
 
           {/* Filters */}
           {mounted && (
