@@ -151,6 +151,10 @@
     /* Subtle vignette for glass depth */
     box-shadow: inset 0 0 200px rgba(0,0,0,0.25);
   }
+  /* Make select options show pointer cursor */
+  select option {
+    cursor: pointer !important;
+  }
 }
 
 /* Glass utility class - reusable across the app */

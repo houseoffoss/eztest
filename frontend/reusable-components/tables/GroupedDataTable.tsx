@@ -224,31 +224,36 @@ export function GroupedDataTable<T = Record<string, unknown>>({
     }
 
     return (
-      <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors">
+      <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors overflow-hidden">
         <button
           onClick={() => toggleGroup(groupId)}
-          className="flex items-center gap-2 flex-1 text-left cursor-pointer"
+          className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0 overflow-hidden"
         >
           <ChevronDown
             className={`w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${
               isExpanded ? 'rotate-180' : ''
             }`}
           />
-          {groupConfig?.onGroupClick ? (
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                groupConfig.onGroupClick?.(groupId);
-              }}
-              className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer"
-            >
-              {groupName}
-            </span>
-          ) : (
-            <span className="text-sm font-semibold text-white/80">{groupName}</span>
-          )}
+          <span className="min-w-0 flex-1 overflow-hidden max-w-[200px]">
+            {groupConfig?.onGroupClick ? (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  groupConfig.onGroupClick?.(groupId);
+                }}
+                className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer truncate block"
+                title={groupName}
+              >
+                {groupName}
+              </span>
+            ) : (
+              <span className="text-sm font-semibold text-white/80 truncate block" title={groupName}>
+                {groupName}
+              </span>
+            )}
+          </span>
         </button>
-        <span className="text-xs text-white/50">
+        <span className="text-xs text-white/50 flex-shrink-0 whitespace-nowrap">
           ({displayCount} item{displayCount !== 1 ? 's' : ''})
         </span>
       </div>

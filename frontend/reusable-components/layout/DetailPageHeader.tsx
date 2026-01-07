@@ -40,6 +40,7 @@ export interface DetailPageHeaderProps {
   className?: string;
   titleClassName?: string;
   subtitleClassName?: string;
+  maxLength?: number;
 }
 
 /**
@@ -81,14 +82,15 @@ export function DetailPageHeader({
   className = '',
   titleClassName = '',
   subtitleClassName = '',
+  maxLength,
 }: DetailPageHeaderProps) {
   const visibleActions = actions.filter(action => action.show !== false);
 
   return (
     <div className={cn('mb-6', className)}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="w-full">
-          <h1 className={cn('text-3xl font-bold text-white mb-1', titleClassName)}>
+        <div className="w-full min-w-0">
+          <h1 className={cn('text-3xl font-bold text-white mb-1 break-words', titleClassName)}>
             {isEditing && onTitleChange ? (
               <Input
                 value={editTitle || title}
@@ -96,9 +98,10 @@ export function DetailPageHeader({
                   onTitleChange(e.target.value)
                 }
                 className="text-3xl font-bold text-white bg-white/5 border-white/10"
+                maxLength={maxLength}
               />
             ) : (
-              title
+              <span className="block">{title}</span>
             )}
           </h1>
           {subtitle && (

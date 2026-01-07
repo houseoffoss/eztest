@@ -16,23 +16,24 @@ export interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb" className={cn("flex items-center gap-2 text-sm", className)}>
+    <nav aria-label="Breadcrumb" className={cn("flex items-center gap-2 text-sm min-w-0", className)}>
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         
         return (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-2 min-w-0 max-w-[200px]">
             {index > 0 && (
-              <ChevronRight className="w-4 h-4 text-white/40" />
+              <ChevronRight className="w-4 h-4 text-white/40 flex-shrink-0" />
             )}
             {isLast ? (
-              <span className="text-white font-medium">
+              <span className="text-white font-medium truncate block" title={item.label}>
                 {item.label}
               </span>
             ) : (
               <Link
                 href={item.href || "#"}
-                className="text-white/60 hover:text-white transition-colors"
+                className="text-white/60 hover:text-white transition-colors truncate block min-w-0"
+                title={item.label}
               >
                 {item.label}
               </Link>

@@ -78,6 +78,7 @@ export function TestCaseHeader({
       isEditing={isEditing}
       editTitle={formData.title}
       onTitleChange={(title) => onFormChange({ ...formData, title })}
+      maxLength={200}
       badges={[
         { 
           label: 'Priority', 

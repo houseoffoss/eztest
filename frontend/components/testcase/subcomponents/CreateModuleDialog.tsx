@@ -24,7 +24,7 @@ export function CreateModuleDialog({
       type: 'text',
       required: true,
       minLength: 1,
-      maxLength: 50,
+      maxLength: 150,
       cols: 2,
     },
     {
