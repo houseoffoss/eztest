@@ -132,9 +132,10 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     {
       key: 'testRun',
       label: 'Test Run',
+      className: 'min-w-0 max-w-[150px]',
       render: (_, row: TestResult) => (
-        <div className="min-w-0">
-          <p className="text-sm text-white/90 font-medium truncate">{row.testRun.name}</p>
+        <div className="min-w-0 max-w-[150px] overflow-hidden">
+          <p className="text-sm text-white/90 font-medium truncate block">{row.testRun.name}</p>
           {row.testRun.environment && (
             <Badge
               variant="outline"
@@ -199,11 +200,13 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
           </p>
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={history}
-          emptyMessage="No execution history"
-        />
+        <div className="w-full min-w-0 overflow-hidden">
+          <DataTable
+            columns={columns}
+            data={history}
+            emptyMessage="No execution history"
+          />
+        </div>
       )}
     </DetailCard>
   );
