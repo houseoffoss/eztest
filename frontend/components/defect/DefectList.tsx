@@ -433,16 +433,16 @@ export default function DefectList({ projectId }: DefectListProps) {
         ]}
         actions={
           canCreateDefect ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap items-center">
               {canImport && (
                 <>
-                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
+                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer flex-shrink-0">
                     <Import className="w-4 h-4 mr-2" />
                     Import
                   </ButtonSecondary>
                   <ButtonSecondary 
                     onClick={() => setExportDialogOpen(true)} 
-                    className="cursor-pointer"
+                    className="cursor-pointer flex-shrink-0"
                     title="Export defects"
                   >
                     <Upload className="w-4 h-4 mr-2" />
@@ -450,7 +450,7 @@ export default function DefectList({ projectId }: DefectListProps) {
                   </ButtonSecondary>
                 </>
               )}
-              <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
+              <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer flex-shrink-0">
                 <Plus className="w-4 h-4 mr-2" />
                 New Defect
               </ButtonPrimary>
@@ -459,14 +459,14 @@ export default function DefectList({ projectId }: DefectListProps) {
         }
       />
       
-      <div className="px-8 pt-4">
+      <div className="px-4 sm:px-6 lg:px-8 pt-4 w-full min-w-0 overflow-hidden">
         {/* Header Section */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="shrink-0">
-              <div className="flex items-center gap-3 mb-2">
+        <div className="flex flex-col gap-4 mb-6 w-full min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full min-w-0">
+            <div className="shrink-0 min-w-0">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 {project && (
-                  <Badge variant="outline" className="font-mono border-primary/40 bg-primary/10 text-primary text-xs px-2.5 py-0.5">
+                  <Badge variant="outline" className="font-mono border-primary/40 bg-primary/10 text-primary text-xs px-2.5 py-0.5 flex-shrink-0">
                     {project.key}
                   </Badge>
                 )}
@@ -479,7 +479,7 @@ export default function DefectList({ projectId }: DefectListProps) {
 
             {/* Selection Counter and Bulk Actions */}
             {selectedDefects.size > 0 && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                   {selectedDefects.size} selected
                 </Badge>
@@ -523,7 +523,7 @@ export default function DefectList({ projectId }: DefectListProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-[1600px] mx-auto px-8 py-4">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full min-w-0 overflow-hidden">
         {/* Defects Table */}
         {loading ? (
           <div className="space-y-3">

@@ -142,6 +142,31 @@ export function DefectStatistics({ projectId, refreshTrigger }: DefectStatistics
     };
   });
 
+  // Calculate number of columns based on number of statuses (max 5 per column)
+  // Responsive: on mobile (sm), show fewer columns; on larger screens, show more
+  const itemsPerColumn = 5;
+  const totalItems = segments.length;
+  const columnsCount = Math.ceil(totalItems / itemsPerColumn);
+  
+  // Responsive column calculation
+  // Mobile: max 1 column, Small: max 2 columns, Medium+: allow more columns
+  const getResponsiveColumns = () => {
+    if (totalItems <= 5) return 1;
+    if (totalItems <= 10) return 2;
+    if (totalItems <= 15) return 3;
+    return Math.min(columnsCount, 4); // Max 4 columns
+  };
+
+  const responsiveColumns = getResponsiveColumns();
+  
+  // Split segments into columns
+  const columns: typeof segments[] = [];
+  for (let i = 0; i < responsiveColumns; i++) {
+    const start = i * itemsPerColumn;
+    const end = start + itemsPerColumn;
+    columns.push(segments.slice(start, end));
+  }
+
   return (
     <DetailCard 
       title="Defect Status Statistics"
@@ -174,20 +199,29 @@ export function DefectStatistics({ projectId, refreshTrigger }: DefectStatistics
           ))}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-between text-xs">
-          {segments.map((segment) => (
-            <div key={segment.status} className="flex items-center gap-1.5 flex-nowrap">
-              <div
-                className="w-2 h-2 rounded flex-shrink-0"
-                style={{ backgroundColor: segment.color }}
-              />
-              <span className="text-white/90 text-xs whitespace-nowrap">
-                {segment.label}
-              </span>
-              <span className="text-white/60 text-xs whitespace-nowrap">
-                {segment.count} ({Math.round(segment.percentage)}%)
-              </span>
+        {/* Legend - Vertical layout with responsive multi-column support */}
+        <div className={`grid gap-2 text-xs ${
+          responsiveColumns === 1 ? 'grid-cols-1' :
+          responsiveColumns === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+          responsiveColumns === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+        }`}>
+          {columns.map((column, columnIndex) => (
+            <div key={columnIndex} className="flex flex-col gap-2">
+              {column.map((segment) => (
+                <div key={segment.status} className="flex items-center gap-1.5">
+                  <div
+                    className="w-2 h-2 rounded flex-shrink-0"
+                    style={{ backgroundColor: segment.color }}
+                  />
+                  <span className="text-white/90 text-xs whitespace-nowrap">
+                    {segment.label}
+                  </span>
+                  <span className="text-white/60 text-xs whitespace-nowrap">
+                    {segment.count} ({Math.round(segment.percentage)}%)
+                  </span>
+                </div>
+              ))}
             </div>
           ))}
         </div>

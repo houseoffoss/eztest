@@ -103,7 +103,32 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           suiteId: data.data.suiteId || null,
           moduleId: data.data.moduleId || null,
         });
-        setSteps(data.data.steps || []);
+
+        // Initialize steps and ensure the test case level expected result is
+        // always reflected in the first step's expected result for display/editing.
+        let apiSteps: TestStep[] = data.data.steps || [];
+
+        if (data.data.expectedResult) {
+          if (apiSteps.length === 0) {
+            // No steps yet: create an initial first step with the expected result.
+            apiSteps = [
+              {
+                id: `temp-initial-${Date.now()}`,
+                stepNumber: 1,
+                action: '',
+                expectedResult: data.data.expectedResult,
+              },
+            ];
+          } else {
+            // Ensure first step shows the test case expected result.
+            apiSteps[0] = {
+              ...apiSteps[0],
+              expectedResult: data.data.expectedResult,
+            };
+          }
+        }
+
+        setSteps(apiSteps);
         
         // Fetch attachments for all fields
         if (data.data.id) {
@@ -267,11 +292,22 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         ? parseInt(formData.estimatedTime)
         : undefined;
 
+      // Keep the test case level expectedResult in sync with the first step's
+      // expected result when it's provided. If the first step's expected
+      // result is cleared/empty, preserve the existing test case
+      // expectedResult so saves (like action-only edits) still succeed.
+      const firstStepExpectedResult = steps[0]?.expectedResult?.trim() || '';
+      const updatedFormData: TestCaseFormData = {
+        ...formData,
+        expectedResult: firstStepExpectedResult || formData.expectedResult,
+      };
+      setFormData(updatedFormData);
+
       const response = await fetch(`/api/testcases/${testCaseId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          ...updatedFormData,
           estimatedTime,
         }),
       });
@@ -410,10 +446,18 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
 
   const updateSteps = async () => {
     try {
-      // Clean steps data - only send necessary fields to prevent backend issues
-      const cleanedSteps = steps.map(step => ({
+      // Clean steps data - only send necessary fields to prevent backend issues.
+      // Also drop any steps where both action and expectedResult are empty,
+      // and re-number remaining steps sequentially.
+      const nonEmptySteps = steps.filter(
+        (step) =>
+          step.action.trim().length > 0 ||
+          step.expectedResult.trim().length > 0
+      );
+
+      const cleanedSteps = nonEmptySteps.map((step, index) => ({
         id: step.id,
-        stepNumber: step.stepNumber,
+        stepNumber: index + 1,
         action: step.action,
         expectedResult: step.expectedResult,
       }));
@@ -429,7 +473,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         // Preserve all existing attachments and map temp IDs to real IDs
         const updatedStepAttachments: Record<string, Record<string, Attachment[]>> = { ...stepAttachments };
         
-        steps.forEach((step, index) => {
+        nonEmptySteps.forEach((step, index) => {
           const realStep = data.data[index];
           if (realStep && realStep.id && step.id) {
             if (step.id.startsWith('temp-')) {
@@ -460,11 +504,13 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   };
 
   const handleAddStep = () => {
-    if (!newStep.action || !newStep.expectedResult) {
+    // Allow creating a step with either Action, Expected Result, or both.
+    // Only enforce that at least one of them is provided.
+    if (!newStep.action.trim() && !newStep.expectedResult.trim()) {
       setAlert({
         type: 'error',
         title: 'Missing Required Fields',
-        message: 'Please fill in both action and expected result',
+        message: 'Please fill in Action or Expected Result',
       });
       return;
     }

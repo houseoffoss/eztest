@@ -340,8 +340,8 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-2 top-2 bottom-2 h-auto bg-white/[0.05] backdrop-blur-2xl border border-white/[0.1] overflow-y-auto custom-scrollbar transition-all duration-300 flex flex-col rounded-xl shadow-2xl',
-        isMounted && isCollapsed ? 'w-16' : 'w-56',
+        'fixed left-2 top-2 bottom-2 h-auto bg-white/[0.05] backdrop-blur-2xl border border-white/[0.1] transition-all duration-300 flex flex-col rounded-xl shadow-2xl',
+        isMounted && isCollapsed ? 'w-16 overflow-hidden' : 'w-56 overflow-y-auto custom-scrollbar',
         className
       )}
     >

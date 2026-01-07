@@ -35,15 +35,17 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
 
   return (
     <div className={`sticky top-0 z-40 backdrop-blur-xl border-b border-white/10 ${className}`}>
-      <div className="px-8 py-4">
-        <div className="flex items-center justify-between">
-          <Breadcrumbs items={breadcrumbs} />
-          <div className="flex items-center gap-3">
+      <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <Breadcrumbs items={breadcrumbs} />
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0">
             {actions}
             <ButtonDestructive 
               type="button" 
               size="default" 
-              className="px-5 cursor-pointer"
+              className="px-5 cursor-pointer flex-shrink-0"
               onClick={() => setSignOutDialogOpen(true)}
             >
               <LogOut className="w-4 h-4 mr-2" />

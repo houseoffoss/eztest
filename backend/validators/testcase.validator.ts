@@ -2,16 +2,30 @@ import { z } from 'zod';
 
 /**
  * Test Step Schema
+ *
+ * Business rule:
+ * - A step must have at least one of:
+ *   - action
+ *   - expectedResult
+ * - Either field can be empty as long as the other is provided.
  */
-export const testStepSchema = z.object({
-  id: z.string().optional(), // Allow ID for updates
-  stepNumber: z
-    .number()
-    .int('Step number must be an integer')
-    .positive('Step number must be positive'),
-  action: z.string().min(1, 'Action is required').trim(),
-  expectedResult: z.string().min(1, 'Expected result is required').trim(),
-});
+export const testStepSchema = z
+  .object({
+    id: z.string().optional(), // Allow ID for updates
+    stepNumber: z
+      .number()
+      .int('Step number must be an integer')
+      .positive('Step number must be positive'),
+    action: z.string().trim().optional().default(''),
+    expectedResult: z.string().trim().optional().default(''),
+  })
+  .refine(
+    (data) => data.action.length > 0 || data.expectedResult.length > 0,
+    {
+      path: ['action'],
+      message: 'Action or expected result is required',
+    }
+  );
 
 /**
  * Test Case Creation Schema

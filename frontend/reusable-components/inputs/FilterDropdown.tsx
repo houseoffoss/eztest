@@ -1,12 +1,12 @@
 ﻿'use client';
 
 import { Filter } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/frontend/reusable-elements/selects/Select';
 
 export interface FilterOption {
@@ -37,9 +37,9 @@ export function FilterDropdown({
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={className}>
+      <SelectTrigger className={cn('min-w-0 overflow-hidden', className)}>
         {icon}
-        <span className="flex-1 text-left">{displayValue}</span>
+        <span className="flex-1 text-left truncate min-w-0 block">{displayValue}</span>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

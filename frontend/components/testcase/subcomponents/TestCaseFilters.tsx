@@ -36,9 +36,9 @@ export function TestCaseFilters({
     ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
   return (
-    <div className="mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-2">
+    <div className="mb-6 w-full min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full min-w-0">
+        <div className="sm:col-span-2 min-w-0">
           <SearchInput
             value={searchQuery}
             onChange={onSearchChange}
@@ -46,7 +46,7 @@ export function TestCaseFilters({
           />
         </div>
 
-        <div>
+        <div className="min-w-0 w-full">
           <FilterDropdown
             value={priorityFilter}
             onValueChange={onPriorityChange}
@@ -55,7 +55,7 @@ export function TestCaseFilters({
           />
         </div>
 
-        <div>
+        <div className="min-w-0 w-full">
           <FilterDropdown
             value={statusFilter}
             onValueChange={onStatusChange}

@@ -11,6 +11,7 @@ import { TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 import { LinkDefectDialog } from './LinkDefectDialog';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface LinkedDefectsCardProps {
   testCase: TestCase;
@@ -31,6 +32,10 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { options: severityOptions } = useDropdownOptions('Defect', 'severity');
   const { options: statusOptions } = useDropdownOptions('Defect', 'status');
+  const { hasPermission: hasPermissionCheck } = usePermissions();
+  
+  // Check if user has permission to link defects
+  const canLinkDefect = hasPermissionCheck('defects:update');
 
   // Ensure defects is an array
   const defects = Array.isArray(testCase.defects) ? testCase.defects : [];
@@ -128,14 +133,16 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
                 {defects.length} {defects.length === 1 ? 'Defect' : 'Defects'}
               </span>
             )}
-            <ButtonPrimary
-              size="sm"
-              onClick={() => setLinkDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Link Defect
-            </ButtonPrimary>
+            {canLinkDefect && (
+              <ButtonPrimary
+                size="sm"
+                onClick={() => setLinkDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Link Defect
+              </ButtonPrimary>
+            )}
           </div>
         }
         contentClassName=""

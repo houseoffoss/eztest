@@ -52,10 +52,13 @@ export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardPr
     {
       key: 'title',
       label: 'Title',
+      className: 'min-w-0 max-w-xs whitespace-normal',
       render: (value: unknown) => (
-        <span className="text-white/90 text-sm font-medium">
-          {value as string}
-        </span>
+        <div className="min-w-0 max-w-xs overflow-hidden">
+          <span className="text-white/90 text-sm font-medium truncate block">
+            {value as string}
+          </span>
+        </div>
       ),
     },
     {

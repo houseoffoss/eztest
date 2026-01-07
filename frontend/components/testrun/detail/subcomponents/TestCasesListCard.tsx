@@ -8,6 +8,7 @@ import { AlertCircle, Plus } from 'lucide-react';
 import { TestResult, TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface TestCasesListCardProps {
   results: TestResult[];
@@ -33,6 +34,7 @@ interface ResultRow {
 export function TestCasesListCard({
   results,
   testRunStatus,
+  canUpdate = true,
   canCreate = true,
   onAddTestCases,
   onAddTestSuites,
@@ -42,6 +44,10 @@ export function TestCasesListCard({
 }: TestCasesListCardProps) {
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
+  const { hasPermission: hasPermissionCheck } = usePermissions();
+  
+  // Check if user can create defects
+  const canCreateDefect = hasPermissionCheck('defects:create');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,9 +70,10 @@ export function TestCasesListCard({
     {
       key: 'testCase',
       label: 'Test Case',
+      className: 'min-w-0 max-w-xs whitespace-normal',
       render: (_, row: ResultRow) => (
-        <div>
-          <p className="font-medium text-white/90">{row.testCase.title}</p>
+        <div className="min-w-0 max-w-xs overflow-hidden">
+          <p className="font-medium text-white/90 truncate block">{row.testCase.title}</p>
           {row.comment && (
             <p className="text-xs text-white/60 mt-1 break-words whitespace-pre-wrap">
               {row.comment}
@@ -143,15 +150,17 @@ export function TestCasesListCard({
         <div className="flex items-center gap-2 justify-end">
           {testRunStatus === 'IN_PROGRESS' && (
             <>
-              <Button
-                variant="glass"
-                size="sm"
-                onClick={() => onExecuteTestCase(row.testCase)}
-                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-              >
-                {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
-              </Button>
-              {row.status === 'FAILED' && onCreateDefect && (
+              {canUpdate && (
+                <Button
+                  variant="glass"
+                  size="sm"
+                  onClick={() => onExecuteTestCase(row.testCase)}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                >
+                  {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
+                </Button>
+              )}
+              {row.status === 'FAILED' && onCreateDefect && canCreateDefect && (
                 <ButtonPrimary
                   size="sm"
                   onClick={() => onCreateDefect(row.testCase.id)}

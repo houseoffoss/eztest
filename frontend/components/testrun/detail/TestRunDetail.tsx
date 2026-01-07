@@ -565,6 +565,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const canUpdateTestRun = hasPermissionCheck('testruns:update');
   const canCreateTestRun = hasPermissionCheck('testruns:create');
+  const canReadTestRun = hasPermissionCheck('testruns:read');
 
   return (
     <div className="flex-1">
@@ -583,14 +584,16 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           { label: testRun.name },
         ]}
         actions={
-          <ButtonSecondary 
-            onClick={() => setExportDialogOpen(true)} 
-            className="cursor-pointer"
-            title="Export detailed report"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Export Report
-          </ButtonSecondary>
+          canReadTestRun && (
+            <ButtonSecondary 
+              onClick={() => setExportDialogOpen(true)} 
+              className="cursor-pointer"
+              title="Export detailed report"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Export Report
+            </ButtonSecondary>
+          )
         }
       />
 
