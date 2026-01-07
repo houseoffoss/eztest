@@ -98,7 +98,10 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    // Allow submission if either text or attachments exist
+    const hasText = newComment.trim().length > 0;
+    const hasAttachments = commentAttachments.length > 0;
+    if (!hasText && !hasAttachments) return;
 
     setSubmitting(true);
     try {
@@ -134,11 +137,12 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
         }
       }
 
-      // Create the comment
+      // Create the comment (allow empty content if attachments exist)
+      const commentContent = newComment.trim() || '';
       const response = await fetch(`/api/projects/${projectId}/defects/${defectId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment.trim() }),
+        body: JSON.stringify({ content: commentContent }),
       });
 
       if (!response.ok) throw new Error('Failed to add comment');
@@ -262,11 +266,13 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                           : 'bg-gray-800/80 backdrop-blur-sm text-gray-100 border border-gray-700/50'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                        {comment.content}
-                      </p>
+                      {comment.content && comment.content.trim() && (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                          {comment.content}
+                        </p>
+                      )}
                       {comment.attachments && comment.attachments.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                        <div className={`space-y-2 ${comment.content && comment.content.trim() ? 'mt-3 pt-3 border-t border-white/10' : ''}`}>
                           {comment.attachments.map(att => (
                             <CommentAttachmentItem key={att.id} attachment={att} />
                           ))}
@@ -299,7 +305,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             <div className="flex justify-end">
               <ButtonPrimary
                 type="submit"
-                disabled={!newComment.trim() || submitting}
+                disabled={(!newComment.trim() && commentAttachments.length === 0) || submitting}
                 size="sm"
                 className="min-w-[120px]"
               >
