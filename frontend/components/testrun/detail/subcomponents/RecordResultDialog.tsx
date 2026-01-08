@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import { CheckCircle, XCircle, AlertCircle, Circle, Bug } from 'lucide-react';
 import { ResultFormData } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface Defect {
   id: string;
@@ -67,6 +68,8 @@ export function RecordResultDialog({
   const [loadingDefects, setLoadingDefects] = useState(false);
   const [defectFilter, setDefectFilter] = useState<'all' | 'existing' | 'other'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { trackDialog, trackForm } = useAnalytics();
+  const wasOpenedRef = useRef(false);
 
   // Fetch dynamic dropdown options
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
@@ -89,6 +92,17 @@ export function RecordResultDialog({
         return <Circle className="w-4 h-4 text-gray-500" />;
     }
   };
+
+  // Track dialog open/close
+  useEffect(() => {
+    if (open && !wasOpenedRef.current) {
+      wasOpenedRef.current = true;
+      trackDialog('opened', 'Record Test Result Dialog', `Test Case: ${testCaseName}`).catch(console.error);
+    } else if (!open && wasOpenedRef.current) {
+      wasOpenedRef.current = false;
+      trackDialog('closed', 'Record Test Result Dialog', `Test Case: ${testCaseName}`).catch(console.error);
+    }
+  }, [open, testCaseName, trackDialog]);
 
   useEffect(() => {
     if (open && formData.status === 'FAILED') {
@@ -143,19 +157,28 @@ export function RecordResultDialog({
   };
 
   const handleSubmitWithDefects = async () => {
-    // Link selected defects to test case if any are selected
-    if (selectedDefectIds.length > 0) {
-      try {
-        await fetch(`/api/testcases/${testCaseId}/defects`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ defectIds: selectedDefectIds }),
-        });
-      } catch (error) {
-        console.error('Error linking defects:', error);
+    try {
+      // Link selected defects to test case if any are selected
+      if (selectedDefectIds.length > 0) {
+        try {
+          await fetch(`/api/testcases/${testCaseId}/defects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ defectIds: selectedDefectIds }),
+          });
+        } catch (error) {
+          console.error('Error linking defects:', error);
+        }
       }
+      await onSubmit();
+      // Track successful form submission
+      trackForm('Record Test Result Dialog', true, `Status: ${formData.status}, Defects: ${selectedDefectIds.length}`).catch(console.error);
+    } catch (error) {
+      // Track failed form submission
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      trackForm('Record Test Result Dialog', false, errorMsg).catch(console.error);
+      throw error;
     }
-    onSubmit();
   };
 
   const getSeverityColor = (severity: string) => {
@@ -337,10 +360,17 @@ export function RecordResultDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="glass" 
+            onClick={() => onOpenChange(false)}
+            buttonName="Record Test Result Dialog - Cancel"
+          >
             Cancel
           </Button>
-          <ButtonPrimary onClick={handleSubmitWithDefects}>
+          <ButtonPrimary 
+            onClick={handleSubmitWithDefects}
+            buttonName="Record Test Result Dialog - Save Result"
+          >
             Save Result
             {formData.status === 'FAILED' && selectedDefectIds.length > 0 && (
               <span className="ml-2 text-xs">

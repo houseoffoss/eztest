@@ -73,6 +73,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
           onClick: onDelete,
           variant: 'destructive',
           show: canDelete,
+          buttonName: `Project Card - Delete (${project.name})`,
         },
       ]}
     />

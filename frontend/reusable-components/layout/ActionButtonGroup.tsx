@@ -14,6 +14,10 @@ export interface ActionButton {
   show?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  /** Button name for analytics tracking (defaults to label if not provided) */
+  buttonName?: string;
+  /** Disable analytics tracking for this button */
+  disableTracking?: boolean;
 }
 
 export interface ActionButtonGroupProps {
@@ -51,6 +55,8 @@ export function ActionButtonGroup({
             onClick={button.onClick}
             className="cursor-pointer"
             disabled={button.disabled || button.loading}
+            buttonName={button.buttonName || button.label}
+            disableTracking={button.disableTracking}
           >
             {button.loading ? (
               <>

@@ -279,6 +279,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 onClick={() => setDeleteDialogOpen(true)}
                 disabled={deleting}
                 className="ml-4"
+                buttonName={`Project Settings - Delete Project Button (${project?.name})`}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Project
@@ -314,6 +315,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 variant="ghost"
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={deleting}
+                data-analytics-button={`Project Settings - Delete Dialog - Cancel (${project?.name})`}
               >
                 Cancel
               </Button>
@@ -321,6 +323,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
+                buttonName={`Project Settings - Delete Dialog - Delete Project (${project?.name})`}
               >
                 {deleting ? 'Deleting...' : 'Delete Project'}
               </ButtonDestructive>

@@ -289,12 +289,14 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
                     icon: FolderPlus,
                     onClick: () => setCreateModuleDialogOpen(true),
                     variant: 'secondary',
+                    buttonName: 'Test Case List - New Module',
                   },
                   {
                     label: 'New Test Case',
                     icon: Plus,
                     onClick: () => setCreateDialogOpen(true),
                     variant: 'primary',
+                    buttonName: 'Test Case List - New Test Case',
                   },
                 ]}
               />

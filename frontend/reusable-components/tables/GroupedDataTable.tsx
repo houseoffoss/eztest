@@ -29,6 +29,8 @@ export interface ActionConfig<T> {
     onClick: (row: T) => void;
     variant?: 'default' | 'destructive';
     show?: boolean | ((row: T) => boolean);
+    /** Button name for analytics tracking (defaults to label if not provided) */
+    buttonName?: string | ((row: T) => string);
   }>;
   align?: 'start' | 'end';
   iconSize?: string;
@@ -203,6 +205,9 @@ export function GroupedDataTable<T = Record<string, unknown>>({
                   icon: item.icon as LucideIcon,
                   onClick: () => item.onClick(row),
                   variant: item.variant,
+                  buttonName: typeof item.buttonName === 'function' 
+                    ? item.buttonName(row) 
+                    : item.buttonName || item.label,
                 }))}
                 align={actions.align || 'end'}
                 iconSize={actions.iconSize || 'w-3 h-3'}

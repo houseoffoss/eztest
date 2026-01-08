@@ -1,14 +1,56 @@
+'use client';
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { useAnalytics } from "@/hooks/useAnalytics"
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "default" | "light" | "outline" | "ghost"
   size?: "default" | "sm" | "lg" | "icon"
+  /** Button name for analytics tracking (auto-detected from data-analytics-button if not provided) */
+  buttonName?: string
+  /** Disable analytics tracking for this button */
+  disableTracking?: boolean
 }
 
 const ButtonDestructive = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", ...props }, ref) => {
+  ({ className, variant = "default", size = "default", buttonName, disableTracking = false, onClick, ...props }, ref) => {
+    const { trackButton } = useAnalytics();
+
+    const handleClick = React.useCallback(
+      async (e: React.MouseEvent<HTMLButtonElement>) => {
+        // Call original onClick handler first
+        // Note: onClick is typed as void, so we call it synchronously
+        // If the handler needs async behavior, it should handle that internally
+        if (onClick) {
+          onClick(e);
+        }
+
+        // Track button click if enabled (runs after onClick is called)
+        // Analytics tracking is fire-and-forget and won't block the original logic
+        if (!disableTracking) {
+          // Get button name from various sources
+          const dataAttr = (e.currentTarget as HTMLElement)?.getAttribute('data-analytics-button');
+          const nameToTrack = buttonName || dataAttr || (typeof props.children === 'string' ? props.children : 'Button');
+          try {
+            // Track asynchronously without blocking
+            trackButton(nameToTrack, {
+              variant,
+              size,
+              type: 'destructive',
+            }).catch((error) => {
+              // Silently fail - analytics should not break the app
+              console.error('Failed to track button click:', error);
+            });
+          } catch (error) {
+            // Silently fail - analytics should not break the app
+            console.error('Failed to track button click:', error);
+          }
+        }
+      },
+      [onClick, trackButton, buttonName, disableTracking, variant, size, props]
+    );
     const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
 
     const variants = {
@@ -31,6 +73,7 @@ const ButtonDestructive = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <button
             className={cn("rounded-full bg-gradient-to-br from-[#642424] to-[#4e1a1a] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#dc2626]/30 dark:from-[#642424] dark:to-[#4e1a1a] cursor-pointer", sizes[size], className)}
             ref={ref}
+            onClick={handleClick}
             {...props}
           />
         </div>
@@ -41,6 +84,7 @@ const ButtonDestructive = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
+        onClick={handleClick}
         {...props}
       />
     )

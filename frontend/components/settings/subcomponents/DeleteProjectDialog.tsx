@@ -46,6 +46,7 @@ export function DeleteProjectDialog({
               variant="ghost"
               onClick={() => onOpenChange(false)}
               disabled={deleting}
+              data-analytics-button="Delete Project Dialog (Settings) - Cancel"
             >
               Cancel
             </Button>
@@ -53,6 +54,7 @@ export function DeleteProjectDialog({
               type="button"
               onClick={onConfirm}
               disabled={deleting}
+              buttonName="Delete Project Dialog (Settings) - Delete Project"
             >
               {deleting ? 'Deleting...' : 'Delete Project'}
             </ButtonDestructive>

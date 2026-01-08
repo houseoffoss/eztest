@@ -30,6 +30,9 @@ export function DeleteDefectDialog({
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
+    dialogName: 'Delete Defect Dialog',
+    submitButtonName: 'Delete Defect Dialog - Delete',
+    cancelButtonName: 'Delete Defect Dialog - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

@@ -25,7 +25,10 @@ export const EmptyProjectsState = ({ onCreateProject, canCreateProject = true }:
             : 'You do not have permission to create projects. Contact an admin to get started.'}
         </p>
         {canCreateProject && (
-          <ButtonPrimary onClick={onCreateProject}>
+          <ButtonPrimary 
+            onClick={onCreateProject}
+            buttonName="Project List - Create Your First Project (Empty State)"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Project
           </ButtonPrimary>

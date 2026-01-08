@@ -43,8 +43,21 @@ export function TestSuiteHeader({
       onTitleChange={onNameChange}
       badges={[]}
       actions={[
-        { label: 'Edit', icon: Edit, onClick: onEdit, show: canUpdate },
-        { label: 'Delete', icon: Trash2, onClick: onDelete, variant: 'destructive', show: canDelete },
+        { 
+          label: 'Edit', 
+          icon: Edit, 
+          onClick: onEdit, 
+          show: canUpdate,
+          buttonName: 'Test Suite Detail - Edit',
+        },
+        { 
+          label: 'Delete', 
+          icon: Trash2, 
+          onClick: onDelete, 
+          variant: 'destructive', 
+          show: canDelete,
+          buttonName: 'Test Suite Detail - Delete',
+        },
       ]}
       editActions={{
         onSave,

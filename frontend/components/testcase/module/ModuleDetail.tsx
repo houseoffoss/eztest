@@ -309,12 +309,14 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
               icon: TestTube2,
               onClick: () => router.push(`/projects/${projectId}/testcases`),
               variant: 'secondary',
+              buttonName: 'Module Detail - View All Test Cases',
             },
             {
               label: 'View All Test Suites',
               icon: Folder,
               onClick: () => router.push(`/projects/${projectId}/testsuites`),
               variant: 'secondary',
+              buttonName: 'Module Detail - View All Test Suites',
             },
           ]}
           className="mb-6"
