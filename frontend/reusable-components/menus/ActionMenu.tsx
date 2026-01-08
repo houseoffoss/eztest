@@ -66,22 +66,21 @@ export function ActionMenu({
           return (
             <DropdownMenuItem
               key={index}
-              onClick={async (e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 
-                // Track button click
+                // Execute onClick immediately (don't wait for analytics)
+                item.onClick();
+                
+                // Track button click (fire-and-forget, non-blocking)
                 const buttonName = item.buttonName || item.label;
-                try {
-                  await trackButton(buttonName, {
-                    variant: item.variant || 'default',
-                    context: 'ActionMenu',
-                  });
-                } catch (error) {
+                trackButton(buttonName, {
+                  variant: item.variant || 'default',
+                  context: 'ActionMenu',
+                }).catch((error) => {
                   // Silently fail - analytics should not break the app
                   console.error('Failed to track action menu click:', error);
-                }
-                
-                item.onClick();
+                });
               }}
               className={cn(
                 'hover:bg-white/10',

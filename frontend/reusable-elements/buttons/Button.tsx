@@ -68,7 +68,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const { trackButton } = useAnalytics();
 
     const handleClick = React.useCallback(
-      async (e: React.MouseEvent<HTMLButtonElement>) => {
+      (e: React.MouseEvent<HTMLButtonElement>) => {
         // Call original onClick handler first
         if (onClick) {
           onClick(e);
@@ -79,23 +79,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         if (!disableTracking && !asChild) {
           // Get button name from various sources
           const dataAttr = (e.currentTarget as HTMLElement)?.getAttribute('data-analytics-button');
-          const nameToTrack = buttonName || dataAttr || (typeof props.children === 'string' ? props.children : 'Button');
-          try {
-            // Track asynchronously without blocking
-            trackButton(nameToTrack, {
-              variant: variant || 'default',
-              size: size || 'default',
-            }).catch((error) => {
-              // Silently fail - analytics should not break the app
-              console.error('Failed to track button click:', error);
-            });
-          } catch (error) {
+          const children = (e.currentTarget as HTMLElement)?.textContent?.trim();
+          const nameToTrack = buttonName || dataAttr || children || 'Button';
+          // Track asynchronously without blocking (fire-and-forget)
+          trackButton(nameToTrack, {
+            variant: variant || 'default',
+            size: size || 'default',
+          }).catch((error) => {
             // Silently fail - analytics should not break the app
             console.error('Failed to track button click:', error);
-          }
+          });
         }
       },
-      [onClick, trackButton, buttonName, disableTracking, variant, size, props, asChild]
+      [onClick, trackButton, buttonName, disableTracking, variant, size, asChild]
     );
 
     const Comp = asChild ? Slot : "button"

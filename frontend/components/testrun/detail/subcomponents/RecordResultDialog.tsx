@@ -170,8 +170,9 @@ export function RecordResultDialog({
           console.error('Error linking defects:', error);
         }
       }
+      // Wait for onSubmit to complete successfully
       await onSubmit();
-      // Track successful form submission
+      // Track successful form submission only after onSubmit succeeds
       trackForm('Record Test Result Dialog', true, `Status: ${formData.status}, Defects: ${selectedDefectIds.length}`).catch(console.error);
     } catch (error) {
       // Track failed form submission

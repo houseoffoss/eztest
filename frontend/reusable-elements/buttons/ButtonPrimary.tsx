@@ -19,7 +19,7 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const { trackButton } = useAnalytics();
 
     const handleClick = React.useCallback(
-      async (e: React.MouseEvent<HTMLButtonElement>) => {
+      (e: React.MouseEvent<HTMLButtonElement>) => {
         // Call original onClick handler first
         // Note: onClick is typed as void, so we call it synchronously
         // If the handler needs async behavior, it should handle that internally
@@ -32,23 +32,19 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
         if (!disableTracking) {
           // Get button name from various sources
           const dataAttr = (e.currentTarget as HTMLElement)?.getAttribute('data-analytics-button');
-          const nameToTrack = buttonName || dataAttr || (typeof props.children === 'string' ? props.children : 'Button');
-          try {
-            // Track asynchronously without blocking
-            trackButton(nameToTrack, {
-              variant,
-              size,
-            }).catch((error) => {
-              // Silently fail - analytics should not break the app
-              console.error('Failed to track button click:', error);
-            });
-          } catch (error) {
+          const children = (e.currentTarget as HTMLElement)?.textContent?.trim();
+          const nameToTrack = buttonName || dataAttr || children || 'Button';
+          // Track asynchronously without blocking (fire-and-forget)
+          trackButton(nameToTrack, {
+            variant,
+            size,
+          }).catch((error) => {
             // Silently fail - analytics should not break the app
             console.error('Failed to track button click:', error);
-          }
+          });
         }
       },
-      [onClick, trackButton, buttonName, disableTracking, variant, size, props]
+      [onClick, trackButton, buttonName, disableTracking, variant, size]
     );
     const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
 
