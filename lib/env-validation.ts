@@ -13,6 +13,7 @@ export interface ValidatedEnv {
   uploadDir: string;
   debug: boolean;
   enableAttachments: boolean;
+  firebaseConfigured: boolean;
 }
 
 /**
@@ -52,6 +53,14 @@ For production, generate a secure secret:
 
   const nodeEnv = (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test';
 
+  // Check if Firebase is configured (optional - backend-only approach)
+  // Firebase config comes from backend API endpoint (/api/config/firebase)
+  const firebaseConfigured = !!(
+    process.env.FIREBASE_API_KEY &&
+    process.env.FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_APP_ID
+  );
+
   return {
     databaseUrl: process.env.DATABASE_URL!,
     nextAuthSecret: process.env.NEXTAUTH_SECRET!,
@@ -62,6 +71,7 @@ For production, generate a secure secret:
     uploadDir: process.env.UPLOAD_DIR || './uploads',
     debug: process.env.DEBUG === 'true',
     enableAttachments: process.env.ENABLE_ATTACHMENTS === 'true', // Default to false if not set
+    firebaseConfigured,
   };
 }
 
@@ -90,4 +100,5 @@ export function logEnvStatus() {
   console.log(`   NextAuth Secret: ${env.nextAuthSecret ? '✓ Configured' : '✗ Missing'}`);
   console.log(`   NextAuth URL: ${env.nextAuthUrl}`);
   console.log(`   Debug Mode: ${env.debug ? 'Enabled' : 'Disabled'}`);
+  console.log(`   Firebase Analytics: ${env.firebaseConfigured ? '✓ Configured' : '✗ Not configured (optional)'}`);
 }
