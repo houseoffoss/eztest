@@ -5,6 +5,7 @@ import { LucideIcon, MoreVertical } from 'lucide-react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import { cn } from '@/lib/utils';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface ActionMenuItem {
   label: string;
@@ -12,6 +13,8 @@ export interface ActionMenuItem {
   onClick: () => void;
   variant?: 'default' | 'destructive';
   show?: boolean;
+  /** Button name for analytics tracking (defaults to label if not provided) */
+  buttonName?: string;
 }
 
 export interface ActionMenuProps {
@@ -31,6 +34,8 @@ export function ActionMenu({
   buttonSize = 'icon',
   iconSize = 'w-3.5 h-3.5',
 }: ActionMenuProps) {
+  const { trackButton } = useAnalytics();
+  
   // Filter items based on show prop
   const visibleItems = items.filter(item => item.show !== false);
 
@@ -63,7 +68,19 @@ export function ActionMenu({
               key={index}
               onClick={(e) => {
                 e.stopPropagation();
+                
+                // Execute onClick immediately (don't wait for analytics)
                 item.onClick();
+                
+                // Track button click (fire-and-forget, non-blocking)
+                const buttonName = item.buttonName || item.label;
+                trackButton(buttonName, {
+                  variant: item.variant || 'default',
+                  context: 'ActionMenu',
+                }).catch((error) => {
+                  // Silently fail - analytics should not break the app
+                  console.error('Failed to track action menu click:', error);
+                });
               }}
               className={cn(
                 'hover:bg-white/10',

@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useEffect, useRef } from 'react';
 
 export interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -21,6 +23,8 @@ export interface ConfirmDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
   cancelLabel?: string;
   confirmLabel?: string;
+  /** Button name for analytics tracking (defaults to title) */
+  dialogName?: string;
 }
 
 export function ConfirmDeleteDialog({
@@ -33,9 +37,34 @@ export function ConfirmDeleteDialog({
   onConfirm,
   cancelLabel = 'Cancel',
   confirmLabel = 'Delete',
+  dialogName,
 }: ConfirmDeleteDialogProps) {
+  const { trackDialog, trackForm } = useAnalytics();
+  const wasOpenedRef = useRef(false);
+  const dialogTrackingName = dialogName || title;
+
+  // Track dialog open/close
+  useEffect(() => {
+    if (open && !wasOpenedRef.current) {
+      wasOpenedRef.current = true;
+      trackDialog('opened', dialogTrackingName, description).catch(console.error);
+    } else if (!open && wasOpenedRef.current) {
+      wasOpenedRef.current = false;
+      trackDialog('closed', dialogTrackingName, description).catch(console.error);
+    }
+  }, [open, dialogTrackingName, description, trackDialog]);
+
   const handleConfirm = async () => {
-    await onConfirm();
+    try {
+      await onConfirm();
+      // Track successful deletion
+      trackForm(dialogTrackingName, true, 'Delete confirmed').catch(console.error);
+    } catch (error) {
+      // Track failed deletion
+      const errorMsg = error instanceof Error ? error.message : 'Delete failed';
+      trackForm(dialogTrackingName, false, errorMsg).catch(console.error);
+      throw error;
+    }
   };
 
   return (
@@ -52,12 +81,14 @@ export function ConfirmDeleteDialog({
             variant="ghost" 
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            data-analytics-button={`${dialogTrackingName} - Cancel`}
           >
             {cancelLabel}
           </Button>
           <ButtonDestructive 
             onClick={handleConfirm}
             disabled={isLoading}
+            buttonName={`${dialogTrackingName} - ${confirmLabel}`}
           >
             {isLoading ? 'Deleting...' : confirmLabel}
           </ButtonDestructive>

@@ -233,6 +233,7 @@ export function TestCaseTable({
               icon: Trash2,
               onClick: onDelete,
               variant: 'destructive',
+              buttonName: (row) => `Test Case Table - Delete (${row.tcId || row.title})`,
             },
           ],
           align: 'end',

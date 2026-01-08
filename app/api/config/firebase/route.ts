@@ -18,7 +18,12 @@ import { NextResponse } from 'next/server';
  * - FIREBASE_MESSAGING_SENDER_ID
  * - FIREBASE_MEASUREMENT_ID
  * 
- * Note: Firebase config is safe to expose - it's public by design.
+ * SECURITY:
+ * - Firebase API keys are PUBLIC by design (not secrets)
+ * - They identify your project, not authenticate users
+ * - Real security comes from Firebase Security Rules and App Check
+ * - No sensitive credentials (Admin SDK keys, passwords) are exposed
+ * - Configure domain restrictions in Firebase Console for additional protection
  */
 export async function GET() {
   // BACKEND-ONLY: Only use server-side env vars (FIREBASE_*)

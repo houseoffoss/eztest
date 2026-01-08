@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import {
@@ -13,6 +13,7 @@ import {
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
 import { FileSpreadsheet, FileText, Upload, AlertCircle, Loader2 } from 'lucide-react';
 import { exportData, ExportOptions } from '@/frontend/lib/export-utils';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface FileExportDialogProps {
   open: boolean;
@@ -31,9 +32,22 @@ export function FileExportDialog({
   exportOptions,
   itemName,
 }: FileExportDialogProps) {
+  const { trackDialog, trackForm } = useAnalytics();
+  const wasOpenedRef = useRef(false);
   const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | null>(null);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track dialog open/close
+  useEffect(() => {
+    if (open && !wasOpenedRef.current) {
+      wasOpenedRef.current = true;
+      trackDialog('opened', title, description).catch(console.error);
+    } else if (!open && wasOpenedRef.current) {
+      wasOpenedRef.current = false;
+      trackDialog('closed', title, description).catch(console.error);
+    }
+  }, [open, title, description, trackDialog]);
 
   const handleExport = async () => {
     if (!selectedFormat) {
@@ -50,6 +64,9 @@ export function FileExportDialog({
         format: selectedFormat,
       });
       
+      // Track successful export
+      trackForm(title, true, `Format: ${selectedFormat.toUpperCase()}`).catch(console.error);
+      
       // Close dialog after successful export
       setTimeout(() => {
         onOpenChange(false);
@@ -57,7 +74,10 @@ export function FileExportDialog({
         setExporting(false);
       }, 500);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Export failed');
+      // Track failed export
+      const errorMsg = error instanceof Error ? error.message : 'Export failed';
+      trackForm(title, false, errorMsg).catch(console.error);
+      setError(errorMsg);
       setExporting(false);
     }
   };
@@ -167,6 +187,7 @@ export function FileExportDialog({
             onClick={handleClose}
             disabled={exporting}
             className="cursor-pointer"
+            buttonName={`${title} - Cancel`}
           >
             Cancel
           </Button>
@@ -175,6 +196,7 @@ export function FileExportDialog({
             onClick={handleExport}
             disabled={!selectedFormat || exporting}
             className="cursor-pointer"
+            buttonName={`${title} - Export`}
           >
             {exporting ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

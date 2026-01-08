@@ -16,6 +16,7 @@ export function EmptyTestSuiteState({ onCreateClick, canCreate = false }: EmptyT
       description="Organize your test cases into suites to keep your testing structured and manageable."
       actionLabel={canCreate ? 'Create Test Suite' : undefined}
       onAction={canCreate ? onCreateClick : undefined}
+      actionButtonName="Test Suite List - Create Test Suite (Empty State)"
     />
   );
 }

@@ -94,8 +94,21 @@ export function TestCaseHeader({
         },
       ]}
       actions={[
-        { label: 'Edit', icon: Edit, onClick: onEdit, show: canUpdate },
-        { label: 'Delete', icon: Trash2, onClick: onDelete, variant: 'destructive', show: canDelete },
+        { 
+          label: 'Edit', 
+          icon: Edit, 
+          onClick: onEdit, 
+          show: canUpdate,
+          buttonName: 'TestCase Detail - Edit',
+        },
+        { 
+          label: 'Delete', 
+          icon: Trash2, 
+          onClick: onDelete, 
+          variant: 'destructive', 
+          show: canDelete,
+          buttonName: 'TestCase Detail - Delete',
+        },
       ]}
       editActions={{
         onSave,

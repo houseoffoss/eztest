@@ -19,6 +19,7 @@ export function EmptyDefectState({ hasFilters, onCreateClick, canCreate = true }
         : 'Get started by creating your first defect'}
       actionLabel={!hasFilters && canCreate ? 'Create Defect' : undefined}
       onAction={!hasFilters && canCreate ? onCreateClick : undefined}
+      actionButtonName="Defect List - Create Defect (Empty State)"
     />
   );
 }

@@ -19,6 +19,7 @@ export function EmptyTestCaseState({ hasFilters, onCreateClick, canCreate = true
         : 'Get started by creating your first test case'}
       actionLabel={!hasFilters && canCreate ? 'Create Test Case' : undefined}
       onAction={!hasFilters && canCreate ? onCreateClick : undefined}
+      actionButtonName="Test Case List - Create Test Case (Empty State)"
     />
   );
 }

@@ -12,6 +12,7 @@ import {
 } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
 import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface ImportResult {
   success: number;
@@ -55,11 +56,24 @@ export function FileImportDialog({
   itemName,
   onImportComplete,
 }: FileImportDialogProps) {
+  const { trackDialog, trackForm } = useAnalytics();
+  const wasOpenedRef = useRef(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Track dialog open/close
+  useEffect(() => {
+    if (open && !wasOpenedRef.current) {
+      wasOpenedRef.current = true;
+      trackDialog('opened', title, description).catch(console.error);
+    } else if (!open && wasOpenedRef.current) {
+      wasOpenedRef.current = false;
+      trackDialog('closed', title, description).catch(console.error);
+    }
+  }, [open, title, description, trackDialog]);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -178,6 +192,9 @@ export function FileImportDialog({
       
       setResult(finalResult);
       
+      // Track successful import
+      trackForm(title, true, `Success: ${finalResult.success}, Failed: ${finalResult.failed}, Skipped: ${finalResult.skipped}`).catch(console.error);
+      
       // Auto-refresh only if all items imported successfully (no failures or skips)
       if (Number(resultData.success) > 0 && Number(resultData.failed) === 0 && Number(resultData.skipped) === 0) {
         setTimeout(() => {
@@ -193,6 +210,9 @@ export function FileImportDialog({
         }, 2000);
       }
     } catch (error) {
+      // Track failed import
+      const errorMsg = error instanceof Error ? error.message : 'Import failed';
+      trackForm(title, false, errorMsg).catch(console.error);
       setError(error instanceof Error ? error.message : 'Import failed');
     } finally {
       setUploading(false);
@@ -262,6 +282,7 @@ export function FileImportDialog({
               size="sm"
               onClick={handleDownloadTemplate}
               disabled={uploading}
+              buttonName={`${title} - Download Template`}
             >
               <Download className="h-4 w-4 mr-2" />
               Download
@@ -419,6 +440,7 @@ export function FileImportDialog({
             onClick={handleClose}
             disabled={uploading}
             className="cursor-pointer"
+            buttonName={`${title} - ${result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}`}
           >
             {result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}
           </Button>
@@ -427,6 +449,7 @@ export function FileImportDialog({
               type="button"
               onClick={handleImport}
               disabled={!file || uploading}
+              buttonName={`${title} - Import`}
               className="cursor-pointer"
             >
               {uploading ? (

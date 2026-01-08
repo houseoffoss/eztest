@@ -24,12 +24,12 @@ export const HeroSection = () => {
       </p>
       <div className="flex gap-4 justify-center flex-wrap">
         <Link href="/auth/register">
-          <ButtonPrimary size="lg" className="cursor-pointer">
+          <ButtonPrimary size="lg" className="cursor-pointer" buttonName="Home Page - Hero Section - Start Testing">
             Start Testing 🚀
           </ButtonPrimary>
         </Link>
         <Link href="/auth/login">
-          <ButtonSecondary size="lg" className="cursor-pointer">
+          <ButtonSecondary size="lg" className="cursor-pointer" buttonName="Home Page - Hero Section - Sign In">
             Sign In
           </ButtonSecondary>
         </Link>

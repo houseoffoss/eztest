@@ -299,6 +299,8 @@ export function CreateTestCaseDialog({
         attachmentStorage.clearContext();
       }
     },
+    submitButtonName: 'Create Test Case Dialog - Create Test Case',
+    cancelButtonName: 'Create Test Case Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

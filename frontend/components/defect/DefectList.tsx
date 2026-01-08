@@ -436,7 +436,11 @@ export default function DefectList({ projectId }: DefectListProps) {
             <div className="flex gap-2 flex-wrap items-center">
               {canImport && (
                 <>
-                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer flex-shrink-0">
+                  <ButtonSecondary 
+                    onClick={() => setImportDialogOpen(true)} 
+                    className="cursor-pointer flex-shrink-0"
+                    buttonName="Defect List - Import"
+                  >
                     <Import className="w-4 h-4 mr-2" />
                     Import
                   </ButtonSecondary>
@@ -444,13 +448,18 @@ export default function DefectList({ projectId }: DefectListProps) {
                     onClick={() => setExportDialogOpen(true)} 
                     className="cursor-pointer flex-shrink-0"
                     title="Export defects"
+                    buttonName="Defect List - Export"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     Export
                   </ButtonSecondary>
                 </>
               )}
-              <ButtonPrimary onClick={() => setCreateDialogOpen(true)} className="cursor-pointer flex-shrink-0">
+              <ButtonPrimary 
+                onClick={() => setCreateDialogOpen(true)} 
+                className="cursor-pointer flex-shrink-0"
+                buttonName="Defect List - New Defect"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New Defect
               </ButtonPrimary>
@@ -486,6 +495,7 @@ export default function DefectList({ projectId }: DefectListProps) {
                 {canDeleteDefect && (
                   <ButtonSecondary 
                     onClick={handleBulkDelete}
+                    buttonName="Defect List - Bulk Delete"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete

@@ -192,6 +192,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
                 onClick={() => setExportDialogOpen(true)} 
                 className="cursor-pointer"
                 title="Export test runs"
+                buttonName="Test Runs List - Export"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Export
@@ -200,6 +201,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
             {canCreateTestRun && (
               <ButtonPrimary
                 onClick={() => setCreateDialogOpen(true)}
+                buttonName="Test Runs List - New Test Run"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Test Run

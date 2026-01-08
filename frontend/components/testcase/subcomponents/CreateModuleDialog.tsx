@@ -71,6 +71,8 @@ export function CreateModuleDialog({
         onModuleCreated(module as Module);
       }
     },
+    submitButtonName: 'Create Module Dialog - Create Module',
+    cancelButtonName: 'Create Module Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

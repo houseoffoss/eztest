@@ -93,6 +93,8 @@ export function CreateTestSuiteDialog({
         onTestSuiteCreated(suite);
       }
     },
+    submitButtonName: 'Create Test Suite Dialog - Create Test Suite',
+    cancelButtonName: 'Create Test Suite Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

@@ -31,6 +31,9 @@ export function DeleteTestSuiteDialog({
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
+    dialogName: 'Delete Test Suite Dialog (Detail)',
+    submitButtonName: 'Delete Test Suite Dialog (Detail) - Delete',
+    cancelButtonName: 'Delete Test Suite Dialog (Detail) - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

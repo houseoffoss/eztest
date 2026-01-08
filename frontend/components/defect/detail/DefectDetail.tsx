@@ -382,18 +382,21 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               icon: List,
               onClick: () => router.push(`/projects/${defect.project.id}/defects`),
               variant: 'secondary',
+              buttonName: 'Defect Detail - View All Defects',
             },
             {
               label: 'View All Test Cases',
               icon: TestTube2,
               onClick: () => router.push(`/projects/${defect.project.id}/testcases`),
               variant: 'secondary',
+              buttonName: 'Defect Detail - View All Test Cases',
             },
             {
               label: 'View All Test Runs',
               icon: PlayCircle,
               onClick: () => router.push(`/projects/${defect.project.id}/testruns`),
               variant: 'secondary',
+              buttonName: 'Defect Detail - View All Test Runs',
             },
           ]}
           className="mb-6"

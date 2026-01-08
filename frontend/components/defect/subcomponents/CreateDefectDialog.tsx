@@ -261,6 +261,8 @@ export function CreateDefectDialog({
     onOpenChange: handleDialogOpenChange,
     formPersistenceKey: `create-defect-${projectId}`,
     projectId,
+    submitButtonName: 'Create Defect Dialog - Create Defect',
+    cancelButtonName: 'Create Defect Dialog - Cancel',
     onSubmit: async (formData) => {
       // Upload pending attachments first
       const uploadedAttachments = await uploadPendingAttachments();

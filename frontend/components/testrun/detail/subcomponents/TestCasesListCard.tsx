@@ -156,6 +156,7 @@ export function TestCasesListCard({
                   size="sm"
                   onClick={() => onExecuteTestCase(row.testCase)}
                   className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  buttonName={`Test Cases List Card - ${row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'} (${row.testCase.title || row.testCase.id})`}
                 >
                   {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
                 </Button>
@@ -164,6 +165,7 @@ export function TestCasesListCard({
                 <ButtonPrimary
                   size="sm"
                   onClick={() => onCreateDefect(row.testCase.id)}
+                  buttonName={`Test Cases List Card - Create Defect (${row.testCase.title || row.testCase.id})`}
                 >
                   Create Defect
                 </ButtonPrimary>

@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
 
@@ -14,6 +12,8 @@ interface EmptyStateCardProps {
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
+  /** Button name for analytics tracking (defaults to actionLabel if not provided) */
+  actionButtonName?: string;
 }
 
 /**
@@ -27,6 +27,7 @@ export function EmptyStateCard({
   actionLabel,
   onAction,
   className,
+  actionButtonName,
 }: EmptyStateCardProps) {
   return (
     <Card variant="glass" className={className}>
@@ -43,7 +44,10 @@ export function EmptyStateCard({
           </p>
         )}
         {actionLabel && onAction && (
-          <ButtonPrimary onClick={onAction}>
+          <ButtonPrimary 
+            onClick={onAction}
+            buttonName={actionButtonName || actionLabel}
+          >
             {actionLabel}
           </ButtonPrimary>
         )}

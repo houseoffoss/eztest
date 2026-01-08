@@ -33,6 +33,12 @@ const CONFIG_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Get cached config from localStorage (persists across browser sessions)
+ * 
+ * SECURITY NOTE: Firebase API keys are PUBLIC by design, not secrets.
+ * - They identify your project, not authenticate users
+ * - Real security comes from Firebase Security Rules and App Check
+ * - Storing in localStorage is safe because config is already public
+ * - No sensitive credentials (Admin SDK keys, passwords) are stored
  */
 function getCachedConfigFromStorage(): FirebaseConfig | null {
   if (typeof window === 'undefined') {
@@ -68,6 +74,12 @@ function getCachedConfigFromStorage(): FirebaseConfig | null {
 
 /**
  * Save config to localStorage (persists across browser sessions)
+ * 
+ * SECURITY NOTE: This stores public Firebase identifiers only.
+ * These values are safe to expose and are already visible in:
+ * - Network requests (browser DevTools)
+ * - JavaScript source code
+ * - Client-side bundles
  */
 function saveConfigToStorage(config: FirebaseConfig): void {
   if (typeof window === 'undefined') {

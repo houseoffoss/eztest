@@ -27,6 +27,9 @@ export function DeleteTestRunDialog({
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
+    dialogName: 'Delete Test Run Dialog',
+    submitButtonName: 'Delete Test Run Dialog - Delete',
+    cancelButtonName: 'Delete Test Run Dialog - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

@@ -22,6 +22,8 @@ export interface ActionButton {
   onClick: () => void;
   variant?: 'default' | 'destructive';
   show?: boolean;
+  /** Button name for analytics tracking (defaults to label if not provided) */
+  buttonName?: string;
 }
 
 export interface DetailPageHeaderProps {
@@ -130,11 +132,22 @@ export function DetailPageHeader({
         <div className="flex gap-2">
           {isEditing && editActions ? (
             <>
-              <Button variant="glass" onClick={editActions.onCancel} className="cursor-pointer" disabled={editActions.saving}>
+              <Button 
+                variant="glass" 
+                onClick={editActions.onCancel} 
+                className="cursor-pointer" 
+                disabled={editActions.saving}
+                data-analytics-button={`${title} - Cancel Edit`}
+              >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <ButtonPrimary onClick={editActions.onSave} className="cursor-pointer" disabled={editActions.saving}>
+              <ButtonPrimary 
+                onClick={editActions.onSave} 
+                className="cursor-pointer" 
+                disabled={editActions.saving}
+                buttonName={`${title} - Save Edit`}
+              >
                 {editActions.saving ? (
                   <>
                     <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -158,6 +171,7 @@ export function DetailPageHeader({
                     key={index}
                     onClick={action.onClick}
                     className="cursor-pointer"
+                    buttonName={action.buttonName || action.label}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {action.label}
@@ -171,6 +185,7 @@ export function DetailPageHeader({
                   variant="glass"
                   onClick={action.onClick}
                   className="cursor-pointer"
+                  data-analytics-button={action.buttonName || action.label}
                 >
                   <Icon className="w-4 h-4 mr-2" />
                   {action.label}

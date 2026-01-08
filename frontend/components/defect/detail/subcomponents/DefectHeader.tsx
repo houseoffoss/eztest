@@ -128,9 +128,28 @@ export function DefectHeader({
         },
       ]}
       actions={[
-        { label: 'Reopen', icon: RotateCcw, onClick: onReopen, show: defect.status === 'CLOSED' && canUpdate },
-        { label: 'Edit', icon: Edit, onClick: onEdit, show: canUpdate },
-        { label: 'Delete', icon: Trash2, onClick: onDelete, variant: 'destructive', show: canDelete },
+        { 
+          label: 'Reopen', 
+          icon: RotateCcw, 
+          onClick: onReopen, 
+          show: defect.status === 'CLOSED' && canUpdate,
+          buttonName: 'Defect Detail - Reopen',
+        },
+        { 
+          label: 'Edit', 
+          icon: Edit, 
+          onClick: onEdit, 
+          show: canUpdate,
+          buttonName: 'Defect Detail - Edit',
+        },
+        { 
+          label: 'Delete', 
+          icon: Trash2, 
+          onClick: onDelete, 
+          variant: 'destructive', 
+          show: canDelete,
+          buttonName: 'Defect Detail - Delete',
+        },
       ]}
       editActions={{
         onSave,

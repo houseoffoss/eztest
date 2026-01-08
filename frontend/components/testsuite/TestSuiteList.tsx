@@ -187,6 +187,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
                 size="default"
                 onClick={() => setCreateDialogOpen(true)}
                 className="cursor-pointer"
+                buttonName="Test Suite List - Create Test Suite"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Test Suite

@@ -108,6 +108,7 @@ export const LoginForm = ({
                 type="submit"
                 disabled={isLoading}
                 className="w-auto px-12"
+                buttonName="Login Page - Sign In"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">

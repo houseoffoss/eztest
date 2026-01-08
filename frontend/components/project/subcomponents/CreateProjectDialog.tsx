@@ -84,6 +84,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
         onProjectCreated(project);
       }
     },
+    submitButtonName: 'Create Project Dialog - Create Project',
+    cancelButtonName: 'Create Project Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;
