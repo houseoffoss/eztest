@@ -18,7 +18,6 @@ import { InlineError } from '@/frontend/reusable-elements/alerts/InlineError';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import type { Attachment } from '@/lib/s3';
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface BaseDialogField {
   name: string;
@@ -221,25 +220,17 @@ export const BaseDialog = <T = unknown,>({
     }
   }, [triggerOpen]);
 
-  // Track dialog open/close events
+  // Track dialog open state
   const [wasOpened, setWasOpened] = useState(false);
   
   useEffect(() => {
     if (open && !wasOpened) {
-      // Track dialog opened (only once when it first opens)
       setWasOpened(true);
-      trackDialog('opened', title, projectId).catch(console.error);
     }
-  }, [open, wasOpened, title, projectId, trackDialog]);
+  }, [open, wasOpened]);
 
   const handleOpenChange = (newOpen: boolean) => {
-    const wasOpen = open;
     setOpen(newOpen);
-    
-    // Track dialog close event
-    if (wasOpen && !newOpen) {
-      trackDialog('closed', title, projectId).catch(console.error);
-    }
     
     // Clear attachments when dialog closes
     if (!newOpen) {
@@ -289,8 +280,6 @@ export const BaseDialog = <T = unknown,>({
         title: 'Validation Error',
         message: 'Please fix the validation errors before submitting',
       });
-      // Track form submission failure
-      trackForm(title, false, projectId).catch(console.error);
       return;
     }
 
@@ -298,9 +287,6 @@ export const BaseDialog = <T = unknown,>({
 
     try {
       const result = await onSubmit(formData);
-
-      // Track successful form submission
-      trackForm(title, true, projectId).catch(console.error);
 
       // Clear form data after successful submission
       clearFormData();
@@ -319,8 +305,6 @@ export const BaseDialog = <T = unknown,>({
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      // Track failed form submission
-      trackForm(title, false, projectId).catch(console.error);
       setAlert({
         type: 'error',
         title: 'Submission Failed',
