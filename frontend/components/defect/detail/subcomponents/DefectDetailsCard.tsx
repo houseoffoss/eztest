@@ -343,7 +343,7 @@ export function DefectDetailsCard({
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-full bg-primary transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-300"
                     style={{ width: `${defect.progressPercentage}%` }}
                   />
                 </div>

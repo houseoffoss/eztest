@@ -135,7 +135,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <div className="w-32 h-32 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-5xl font-bold text-white">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-5xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                 {user.name.charAt(0).toUpperCase()}
               </div>
             </div>

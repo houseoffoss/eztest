@@ -20,27 +20,34 @@ async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
   const adminName = process.env.ADMIN_NAME || 'System Administrator';
 
-  // Check if admin user already exists
+  // Get all roles
+  const adminRole = await prisma.role.findUnique({
+    where: { name: 'ADMIN' },
+  });
+  const projectManagerRole = await prisma.role.findUnique({
+    where: { name: 'PROJECT_MANAGER' },
+  });
+  const testerRole = await prisma.role.findUnique({
+    where: { name: 'TESTER' },
+  });
+  const viewerRole = await prisma.role.findUnique({
+    where: { name: 'VIEWER' },
+  });
+
+  if (!adminRole || !projectManagerRole || !testerRole || !viewerRole) {
+    throw new Error('Roles not found. Make sure RBAC seeding completed successfully.');
+  }
+
+  // Create or get users with different roles
+  console.log('\n👥 Creating demo users...');
+  
+  // Admin user
   let adminUser = await prisma.user.findUnique({
     where: { email: adminEmail },
   });
 
-  if (adminUser) {
-    console.log('✅ Admin user already exists:', adminEmail);
-  } else {
-    // Get ADMIN role
-    const adminRole = await prisma.role.findUnique({
-      where: { name: 'ADMIN' },
-    });
-
-    if (!adminRole) {
-      throw new Error('ADMIN role not found. Make sure RBAC seeding completed successfully.');
-    }
-
-    // Hash the password
+  if (!adminUser) {
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-    // Create admin user
     adminUser = await prisma.user.create({
       data: {
         email: adminEmail,
@@ -49,13 +56,87 @@ async function main() {
         roleId: adminRole.id,
       },
     });
-
-    console.log('✅ Admin user created successfully!');
-    console.log('   Email:', adminUser.email);
-    console.log('   Name:', adminUser.name);
-    console.log('   Role: ADMIN');
-    console.log('\n⚠️  Please change the default admin password after first login!');
+    console.log('   ✅ Admin:', adminUser.email);
+  } else {
+    console.log('   ✅ Admin already exists:', adminUser.email);
   }
+
+  // Project Manager
+  let projectManager = await prisma.user.findUnique({
+    where: { email: 'pm@eztest.local' },
+  });
+
+  if (!projectManager) {
+    const hashedPassword = await bcrypt.hash('Pm@123456', 10);
+    projectManager = await prisma.user.create({
+      data: {
+        email: 'pm@eztest.local',
+        name: 'Sarah Johnson',
+        password: hashedPassword,
+        roleId: projectManagerRole.id,
+        bio: 'Project Manager with 5+ years of experience in QA management',
+        phone: '+1-555-0101',
+        location: 'San Francisco, CA',
+      },
+    });
+    console.log('   ✅ Project Manager:', projectManager.email);
+  } else {
+    console.log('   ✅ Project Manager already exists:', projectManager.email);
+  }
+
+  // Testers
+  const testerEmails = [
+    { email: 'tester1@eztest.local', name: 'John Smith', bio: 'Senior QA Engineer specializing in API testing' },
+    { email: 'tester2@eztest.local', name: 'Emily Davis', bio: 'QA Engineer with expertise in UI/UX testing' },
+    { email: 'tester3@eztest.local', name: 'Michael Chen', bio: 'Automation Test Engineer' },
+  ];
+
+  const testers = [];
+  for (const testerData of testerEmails) {
+    let tester = await prisma.user.findUnique({
+      where: { email: testerData.email },
+    });
+
+    if (!tester) {
+      const hashedPassword = await bcrypt.hash('Tester@123456', 10);
+      tester = await prisma.user.create({
+        data: {
+          email: testerData.email,
+          name: testerData.name,
+          password: hashedPassword,
+          roleId: testerRole.id,
+          bio: testerData.bio,
+        },
+      });
+      console.log('   ✅ Tester:', tester.email);
+    } else {
+      console.log('   ✅ Tester already exists:', tester.email);
+    }
+    testers.push(tester);
+  }
+
+  // Viewer
+  let viewer = await prisma.user.findUnique({
+    where: { email: 'viewer@eztest.local' },
+  });
+
+  if (!viewer) {
+    const hashedPassword = await bcrypt.hash('Viewer@123456', 10);
+    viewer = await prisma.user.create({
+      data: {
+        email: 'viewer@eztest.local',
+        name: 'David Wilson',
+        password: hashedPassword,
+        roleId: viewerRole.id,
+        bio: 'Stakeholder and project observer',
+      },
+    });
+    console.log('   ✅ Viewer:', viewer.email);
+  } else {
+    console.log('   ✅ Viewer already exists:', viewer.email);
+  }
+
+  console.log('✅ Demo users created/verified!\n');
 
   // Check if any project already exists for admin
   const existingProject = await prisma.project.findFirst({
@@ -68,8 +149,33 @@ async function main() {
 
   if (existingProject) {
     console.log('✅ Project(s) already exist for admin user - skipping demo project creation');
+    demoProject = existingProject;
+    
+    // Ensure all demo users are added as project members
+    console.log('\n👥 Ensuring all demo users are project members...');
+    const existingMembers = await prisma.projectMember.findMany({
+      where: { projectId: demoProject.id },
+      select: { userId: true },
+    });
+    const existingMemberIds = new Set(existingMembers.map((m: { userId: string }) => m.userId));
+    
+    const allUsers = [adminUser, projectManager, ...testers, viewer];
+    const usersToAdd = allUsers.filter(u => !existingMemberIds.has(u.id));
+    
+    if (usersToAdd.length > 0) {
+      await prisma.projectMember.createMany({
+        data: usersToAdd.map(u => ({
+          projectId: demoProject.id,
+          userId: u.id,
+        })),
+        skipDuplicates: true,
+      });
+      console.log(`   ✅ Added ${usersToAdd.length} users as project members`);
+    } else {
+      console.log('   ✅ All demo users are already project members');
+    }
   } else {
-    // Create demo project for admin user
+    // Create demo project for admin user with all team members
     demoProject = await prisma.project.create({
       data: {
         name: 'Demo Project',
@@ -78,9 +184,12 @@ async function main() {
         createdById: adminUser.id,
         members: {
           create: [
-            {
-              userId: adminUser.id,
-            },
+            { userId: adminUser.id },
+            { userId: projectManager.id },
+            { userId: testers[0].id },
+            { userId: testers[1].id },
+            { userId: testers[2].id },
+            { userId: viewer.id },
           ],
         },
       },
@@ -263,7 +372,7 @@ async function main() {
         projectId: demoProject.id,
         suiteId: uiSuite.id,
         moduleId: uiModule.id,
-        priority: 'MEDIUM',
+        priority: 'LOW',
         status: 'ACTIVE',
         estimatedTime: 5,
         preconditions: 'User is logged in',
@@ -281,7 +390,7 @@ async function main() {
         projectId: demoProject.id,
         suiteId: uiSuite.id,
         moduleId: uiModule.id,
-        priority: 'MEDIUM',
+        priority: 'HIGH',
         status: 'ACTIVE',
         estimatedTime: 10,
         preconditions: 'Access application from mobile device or emulator',
@@ -337,7 +446,7 @@ async function main() {
         projectId: demoProject.id,
         suiteId: apiSuite.id,
         moduleId: apiModule.id,
-        priority: 'HIGH',
+        priority: 'MEDIUM',
         status: 'ACTIVE',
         estimatedTime: 6,
         preconditions: 'User is authenticated',
@@ -355,7 +464,7 @@ async function main() {
         projectId: demoProject.id,
         suiteId: apiSuite.id,
         moduleId: apiModule.id,
-        priority: 'HIGH',
+        priority: 'MEDIUM',
         status: 'ACTIVE',
         estimatedTime: 12,
         preconditions: 'API server is running',
@@ -393,7 +502,7 @@ async function main() {
         expectedResult: 'User input is sanitized and XSS payloads are neutralized',
         projectId: demoProject.id,
         moduleId: securityModule.id,
-        priority: 'CRITICAL',
+        priority: 'HIGH',
         status: 'ACTIVE',
         estimatedTime: 15,
         preconditions: 'Application has input fields that display user-generated content',
@@ -411,7 +520,7 @@ async function main() {
         expectedResult: 'All sensitive data is properly encrypted using industry-standard algorithms',
         projectId: demoProject.id,
         moduleId: securityModule.id,
-        priority: 'CRITICAL',
+        priority: 'HIGH',
         status: 'DRAFT',
         estimatedTime: 25,
         preconditions: 'Access to database and network traffic monitoring tools',
@@ -421,13 +530,51 @@ async function main() {
     });
     console.log('   ✅ Test Cases: Security Module (3 cases - not assigned to suite)');
 
-    // Create demo test run
+    // Add a few more test cases with different statuses for variety
+    const deprecatedTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `tc${testCaseCounter++}`,
+        title: 'Legacy Login Method (Deprecated)',
+        description: 'Old login method using username instead of email. This test case is deprecated.',
+        expectedResult: 'N/A - Deprecated',
+        projectId: demoProject.id,
+        suiteId: authSuite.id,
+        moduleId: authModule.id,
+        priority: 'LOW',
+        status: 'DEPRECATED',
+        estimatedTime: 0,
+        preconditions: 'N/A',
+        postconditions: 'N/A',
+        createdById: adminUser.id,
+      },
+    });
+
+    const draftTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `tc${testCaseCounter++}`,
+        title: 'Two-Factor Authentication',
+        description: 'Test case for 2FA implementation (work in progress)',
+        expectedResult: 'User can enable and use 2FA for login',
+        projectId: demoProject.id,
+        suiteId: authSuite.id,
+        moduleId: authModule.id,
+        priority: 'HIGH',
+        status: 'DRAFT',
+        estimatedTime: 15,
+        preconditions: '2FA feature is implemented',
+        postconditions: 'User can successfully authenticate with 2FA',
+        createdById: projectManager.id,
+      },
+    });
+    console.log('   ✅ Additional test cases: 1 DEPRECATED, 1 DRAFT');
+
+    // Create demo test run (assigned to project manager)
     const testRun = await prisma.testRun.create({
       data: {
         name: 'Sprint 1 Regression Testing',
         description: 'End-to-end regression testing for Sprint 1 release',
         projectId: demoProject.id,
-        assignedToId: adminUser.id,
+        assignedToId: projectManager.id,
         environment: 'Staging',
         status: 'IN_PROGRESS',
         createdById: adminUser.id,
@@ -435,14 +582,14 @@ async function main() {
       },
     });
 
-    // Create test results for the test run
+    // Create test results for the test run (executed by different testers)
     await prisma.testResult.createMany({
       data: [
         {
           testRunId: testRun.id,
           testCaseId: loginTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[0].id,
           executedAt: new Date(Date.now() - 3600000), // 1 hour ago
           comment: 'User successfully logged in with valid credentials',
           duration: 4,
@@ -451,7 +598,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: logoutTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[0].id,
           executedAt: new Date(Date.now() - 3000000), // 50 minutes ago
           comment: 'User successfully logged out',
           duration: 2,
@@ -460,7 +607,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: passwordResetTestCase.id,
           status: 'FAILED',
-          executedById: adminUser.id,
+          executedById: testers[1].id,
           executedAt: new Date(Date.now() - 2400000), // 40 minutes ago
           comment: 'Email service might be experiencing delays',
           errorMessage: 'Email not received within expected time',
@@ -470,7 +617,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: sessionManagementTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[1].id,
           executedAt: new Date(Date.now() - 2100000), // 35 minutes ago
           comment: 'Session timeout working as expected',
           duration: 14,
@@ -479,7 +626,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: dashboardTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[2].id,
           executedAt: new Date(Date.now() - 1800000), // 30 minutes ago
           comment: 'Dashboard renders correctly with all widgets',
           duration: 6,
@@ -488,7 +635,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: navigationTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[2].id,
           executedAt: new Date(Date.now() - 1200000), // 20 minutes ago
           comment: 'All navigation items working as expected',
           duration: 4,
@@ -497,7 +644,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: responsiveDesignTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[1].id,
           executedAt: new Date(Date.now() - 900000), // 15 minutes ago
           comment: 'Mobile responsive design working correctly',
           duration: 9,
@@ -506,7 +653,7 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: formValidationTestCase.id,
           status: 'PASSED',
-          executedById: adminUser.id,
+          executedById: testers[0].id,
           executedAt: new Date(Date.now() - 600000), // 10 minutes ago
           comment: 'All form validations working as expected',
           duration: 7,
@@ -515,22 +662,410 @@ async function main() {
           testRunId: testRun.id,
           testCaseId: apiAuthTestCase.id,
           status: 'SKIPPED',
-          executedById: adminUser.id,
+          executedById: testers[2].id,
         },
         {
           testRunId: testRun.id,
           testCaseId: apiProjectsTestCase.id,
           status: 'SKIPPED',
-          executedById: adminUser.id,
+          executedById: testers[2].id,
         },
         {
           testRunId: testRun.id,
           testCaseId: apiErrorHandlingTestCase.id,
           status: 'SKIPPED',
-          executedById: adminUser.id,
+          executedById: testers[2].id,
         },
       ],
     });
+    // Link test cases to suites using many-to-many relationship
+    console.log('\n🔗 Linking test cases to suites...');
+    await prisma.testCaseSuite.createMany({
+      data: [
+        { testCaseId: loginTestCase.id, testSuiteId: authSuite.id },
+        { testCaseId: logoutTestCase.id, testSuiteId: authSuite.id },
+        { testCaseId: passwordResetTestCase.id, testSuiteId: authSuite.id },
+        { testCaseId: sessionManagementTestCase.id, testSuiteId: authSuite.id },
+        { testCaseId: dashboardTestCase.id, testSuiteId: uiSuite.id },
+        { testCaseId: navigationTestCase.id, testSuiteId: uiSuite.id },
+        { testCaseId: responsiveDesignTestCase.id, testSuiteId: uiSuite.id },
+        { testCaseId: formValidationTestCase.id, testSuiteId: uiSuite.id },
+        { testCaseId: apiAuthTestCase.id, testSuiteId: apiSuite.id },
+        { testCaseId: apiProjectsTestCase.id, testSuiteId: apiSuite.id },
+        { testCaseId: apiErrorHandlingTestCase.id, testSuiteId: apiSuite.id },
+      ],
+    });
+    console.log('   ✅ Linked 11 test cases to suites');
+
+    // Link test run to suites
+    await prisma.testRunSuite.createMany({
+      data: [
+        { testRunId: testRun.id, testSuiteId: authSuite.id },
+        { testRunId: testRun.id, testSuiteId: uiSuite.id },
+        { testRunId: testRun.id, testSuiteId: apiSuite.id },
+      ],
+    });
+    console.log('   ✅ Linked test run to 3 suites');
+
+    // Add test steps for all test cases
+    console.log('\n📋 Adding test steps...');
+    
+    // Login test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: loginTestCase.id, stepNumber: 1, action: 'Navigate to login page', expectedResult: 'Login form is displayed with email and password fields' },
+        { testCaseId: loginTestCase.id, stepNumber: 2, action: 'Enter valid email address', expectedResult: 'Email field accepts input' },
+        { testCaseId: loginTestCase.id, stepNumber: 3, action: 'Enter valid password', expectedResult: 'Password field shows masked characters' },
+        { testCaseId: loginTestCase.id, stepNumber: 4, action: 'Click Login button', expectedResult: 'Form submits and user is redirected to dashboard' },
+      ],
+    });
+
+    // Logout test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: logoutTestCase.id, stepNumber: 1, action: 'Login to the application', expectedResult: 'User is authenticated and dashboard is displayed' },
+        { testCaseId: logoutTestCase.id, stepNumber: 2, action: 'Click logout button in user menu', expectedResult: 'User is logged out and redirected to login page' },
+      ],
+    });
+
+    // Password reset test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: passwordResetTestCase.id, stepNumber: 1, action: 'Navigate to login page', expectedResult: 'Login form is displayed' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 2, action: 'Click "Forgot Password" link', expectedResult: 'Password reset form is displayed' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 3, action: 'Enter registered email address', expectedResult: 'Email field accepts input' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 4, action: 'Click "Send Reset Link" button', expectedResult: 'Success message is displayed' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 5, action: 'Check email inbox', expectedResult: 'Password reset email is received within 5 minutes' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 6, action: 'Click reset link in email', expectedResult: 'Password reset page is displayed' },
+        { testCaseId: passwordResetTestCase.id, stepNumber: 7, action: 'Enter new password and confirm', expectedResult: 'Password is successfully reset' },
+      ],
+    });
+
+    // Session management test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: sessionManagementTestCase.id, stepNumber: 1, action: 'Login to the application', expectedResult: 'User is authenticated' },
+        { testCaseId: sessionManagementTestCase.id, stepNumber: 2, action: 'Wait for session timeout period (configured time)', expectedResult: 'Session expires after timeout' },
+        { testCaseId: sessionManagementTestCase.id, stepNumber: 3, action: 'Try to access protected page', expectedResult: 'User is redirected to login page with session expired message' },
+      ],
+    });
+
+    // Dashboard test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: dashboardTestCase.id, stepNumber: 1, action: 'Login to the application', expectedResult: 'User is authenticated' },
+        { testCaseId: dashboardTestCase.id, stepNumber: 2, action: 'Navigate to dashboard', expectedResult: 'Dashboard page loads' },
+        { testCaseId: dashboardTestCase.id, stepNumber: 3, action: 'Verify all widgets are displayed', expectedResult: 'All required widgets are visible and properly formatted' },
+      ],
+    });
+
+    // Navigation test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: navigationTestCase.id, stepNumber: 1, action: 'Login to the application', expectedResult: 'User is authenticated' },
+        { testCaseId: navigationTestCase.id, stepNumber: 2, action: 'Click each menu item in navigation', expectedResult: 'Each menu item navigates to its respective page without errors' },
+        { testCaseId: navigationTestCase.id, stepNumber: 3, action: 'Verify breadcrumb navigation', expectedResult: 'Breadcrumb trail is displayed correctly' },
+      ],
+    });
+
+    // Responsive design test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: responsiveDesignTestCase.id, stepNumber: 1, action: 'Open application in mobile browser or emulator', expectedResult: 'Application loads' },
+        { testCaseId: responsiveDesignTestCase.id, stepNumber: 2, action: 'Set viewport to 320x568 (iPhone SE)', expectedResult: 'Viewport is set' },
+        { testCaseId: responsiveDesignTestCase.id, stepNumber: 3, action: 'Navigate through all pages', expectedResult: 'All UI elements are properly sized and accessible' },
+        { testCaseId: responsiveDesignTestCase.id, stepNumber: 4, action: 'Verify no horizontal scrolling required', expectedResult: 'All content fits within viewport' },
+      ],
+    });
+
+    // Form validation test case steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: formValidationTestCase.id, stepNumber: 1, action: 'Navigate to any form', expectedResult: 'Form is displayed' },
+        { testCaseId: formValidationTestCase.id, stepNumber: 2, action: 'Submit form with invalid data', expectedResult: 'Form validation errors are displayed' },
+        { testCaseId: formValidationTestCase.id, stepNumber: 3, action: 'Verify error messages are clear and helpful', expectedResult: 'Error messages are informative' },
+        { testCaseId: formValidationTestCase.id, stepNumber: 4, action: 'Correct errors and resubmit', expectedResult: 'Form submits successfully' },
+      ],
+    });
+
+    // API test cases steps
+    await prisma.testStep.createMany({
+      data: [
+        { testCaseId: apiAuthTestCase.id, stepNumber: 1, action: 'Send POST request to /api/auth/login with valid credentials', expectedResult: 'HTTP 200 response received' },
+        { testCaseId: apiAuthTestCase.id, stepNumber: 2, action: 'Verify response contains JWT token', expectedResult: 'Valid JWT token is present in response body' },
+        { testCaseId: apiProjectsTestCase.id, stepNumber: 1, action: 'Send GET request to /api/projects with valid auth token', expectedResult: 'HTTP 200 response received' },
+        { testCaseId: apiProjectsTestCase.id, stepNumber: 2, action: 'Verify response contains projects array', expectedResult: 'Projects array is present with user projects' },
+        { testCaseId: apiErrorHandlingTestCase.id, stepNumber: 1, action: 'Send request with invalid auth token', expectedResult: 'HTTP 401 Unauthorized response' },
+        { testCaseId: apiErrorHandlingTestCase.id, stepNumber: 2, action: 'Send request with invalid data', expectedResult: 'HTTP 400 Bad Request with error message' },
+        { testCaseId: apiErrorHandlingTestCase.id, stepNumber: 3, action: 'Send request to non-existent endpoint', expectedResult: 'HTTP 404 Not Found response' },
+      ],
+    });
+
+    console.log('   ✅ Added test steps for all test cases');
+
+    // Create requirements and link to test cases
+    console.log('\n📄 Creating requirements...');
+    const req1 = await prisma.requirement.create({
+      data: {
+        key: 'REQ-001',
+        projectId: demoProject.id,
+        title: 'User Authentication System',
+        description: 'Users must be able to authenticate using email and password. The system must support login, logout, and password reset functionality.',
+        priority: 'CRITICAL',
+        status: 'APPROVED',
+      },
+    });
+
+    const req2 = await prisma.requirement.create({
+      data: {
+        key: 'REQ-002',
+        projectId: demoProject.id,
+        title: 'Responsive User Interface',
+        description: 'The application must be fully responsive and work correctly on mobile, tablet, and desktop devices.',
+        priority: 'HIGH',
+        status: 'APPROVED',
+      },
+    });
+
+    const req3 = await prisma.requirement.create({
+      data: {
+        key: 'REQ-003',
+        projectId: demoProject.id,
+        title: 'RESTful API',
+        description: 'The application must provide RESTful API endpoints for all core functionality with proper authentication and error handling.',
+        priority: 'CRITICAL',
+        status: 'APPROVED',
+      },
+    });
+
+    // Add more requirements with different priorities and statuses
+    const req4 = await prisma.requirement.create({
+      data: {
+        key: 'REQ-004',
+        projectId: demoProject.id,
+        title: 'Email Notification System',
+        description: 'System should send email notifications for important events like password resets and defect assignments.',
+        priority: 'MEDIUM',
+        status: 'IMPLEMENTED',
+      },
+    });
+
+    const req5 = await prisma.requirement.create({
+      data: {
+        key: 'REQ-005',
+        projectId: demoProject.id,
+        title: 'Dark Mode Support',
+        description: 'Application should support dark mode theme for better user experience in low-light conditions.',
+        priority: 'LOW',
+        status: 'DRAFT',
+      },
+    });
+
+    // Link requirements to test cases (many-to-many relationship)
+    await prisma.requirement.update({
+      where: { id: req1.id },
+      data: { 
+        testCases: { 
+          connect: [
+            { id: loginTestCase.id },
+            { id: logoutTestCase.id },
+            { id: passwordResetTestCase.id },
+          ],
+        },
+      },
+    });
+    await prisma.requirement.update({
+      where: { id: req2.id },
+      data: { 
+        testCases: { 
+          connect: [{ id: responsiveDesignTestCase.id }],
+        },
+      },
+    });
+    await prisma.requirement.update({
+      where: { id: req3.id },
+      data: { 
+        testCases: { 
+          connect: [
+            { id: apiAuthTestCase.id },
+            { id: apiProjectsTestCase.id },
+            { id: apiErrorHandlingTestCase.id },
+          ],
+        },
+      },
+    });
+    console.log('   ✅ Created 3 requirements and linked to test cases');
+
+    // Add comments to test cases (from different users)
+    console.log('\n💬 Adding comments to test cases...');
+    await prisma.comment.createMany({
+      data: [
+        {
+          testCaseId: loginTestCase.id,
+          userId: projectManager.id,
+          content: 'This test case covers the core authentication flow. Make sure to test with various email formats.',
+        },
+        {
+          testCaseId: passwordResetTestCase.id,
+          userId: testers[1].id,
+          content: 'Email delivery might be delayed in test environments. Consider using email testing services.',
+        },
+        {
+          testCaseId: formValidationTestCase.id,
+          userId: testers[0].id,
+          content: 'Accessibility testing is crucial here. Ensure screen readers can announce validation errors.',
+        },
+        {
+          testCaseId: apiAuthTestCase.id,
+          userId: testers[2].id,
+          content: 'API tests should be automated. Consider adding to CI/CD pipeline.',
+        },
+        {
+          testCaseId: dashboardTestCase.id,
+          userId: viewer.id,
+          content: 'Great work on the dashboard layout! Looks professional.',
+        },
+      ],
+    });
+    console.log('   ✅ Added comments to test cases from different team members');
+
+    // Create additional test runs for better demo (assigned to different users)
+    console.log('\n🏃 Creating additional test runs...');
+    const testRun2 = await prisma.testRun.create({
+      data: {
+        name: 'Sprint 2 Smoke Testing',
+        description: 'Quick smoke tests for critical functionality',
+        projectId: demoProject.id,
+        assignedToId: testers[0].id,
+        environment: 'QA',
+        status: 'COMPLETED',
+        createdById: projectManager.id,
+        startedAt: new Date(Date.now() - 172800000), // 2 days ago
+        completedAt: new Date(Date.now() - 86400000), // 1 day ago
+      },
+    });
+
+    await prisma.testRunSuite.createMany({
+      data: [
+        { testRunId: testRun2.id, testSuiteId: authSuite.id },
+      ],
+    });
+
+    await prisma.testResult.createMany({
+      data: [
+        {
+          testRunId: testRun2.id,
+          testCaseId: loginTestCase.id,
+          status: 'PASSED',
+          executedById: testers[0].id,
+          executedAt: new Date(Date.now() - 172800000),
+          comment: 'All smoke tests passed',
+          duration: 3,
+        },
+        {
+          testRunId: testRun2.id,
+          testCaseId: logoutTestCase.id,
+          status: 'PASSED',
+          executedById: testers[0].id,
+          executedAt: new Date(Date.now() - 172800000),
+          duration: 2,
+        },
+      ],
+    });
+
+    const testRun3 = await prisma.testRun.create({
+      data: {
+        name: 'Production Release Testing',
+        description: 'Full regression testing before production release',
+        projectId: demoProject.id,
+        assignedToId: testers[1].id,
+        environment: 'Production',
+        status: 'PLANNED',
+        createdById: projectManager.id,
+      },
+    });
+
+    await prisma.testRunSuite.createMany({
+      data: [
+        { testRunId: testRun3.id, testSuiteId: authSuite.id },
+        { testRunId: testRun3.id, testSuiteId: uiSuite.id },
+        { testRunId: testRun3.id, testSuiteId: apiSuite.id },
+      ],
+    });
+
+    await prisma.testResult.createMany({
+      data: [
+        {
+          testRunId: testRun3.id,
+          testCaseId: loginTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: logoutTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: passwordResetTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: sessionManagementTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: dashboardTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: navigationTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: responsiveDesignTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: formValidationTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: apiAuthTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: apiProjectsTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+        {
+          testRunId: testRun3.id,
+          testCaseId: apiErrorHandlingTestCase.id,
+          status: 'PENDING',
+          executedById: testers[1].id,
+        },
+      ],
+    });
+
+    console.log('   ✅ Created 2 additional test runs');
+
     console.log('   ✅ Test Run: Sprint 1 Regression Testing');
     console.log('      - 8 tests executed (7 passed, 1 failed)');
     console.log('      - 3 tests pending');
@@ -545,25 +1080,25 @@ async function main() {
     if (existingDefects === 0) {
       console.log('\n📝 Creating sample defects...');
       
-      // Get test cases for linking (if they exist)
+      // Get test cases for linking (using correct titles)
       const passwordResetTestCase = await prisma.testCase.findFirst({
-        where: { projectId: demoProject.id, title: 'Password reset functionality' },
+        where: { projectId: demoProject.id, title: 'Password Reset Flow' },
       });
       
       const dashboardTestCase = await prisma.testCase.findFirst({
-        where: { projectId: demoProject.id, title: 'Dashboard data display' },
+        where: { projectId: demoProject.id, title: 'Dashboard Layout Validation' },
       });
       
       const formValidationTestCase = await prisma.testCase.findFirst({
-        where: { projectId: demoProject.id, title: 'Form field validation' },
+        where: { projectId: demoProject.id, title: 'Form Input Validation' },
       });
       
       const navigationTestCase = await prisma.testCase.findFirst({
-        where: { projectId: demoProject.id, title: 'Navigation between pages' },
+        where: { projectId: demoProject.id, title: 'Navigation Menu Functionality' },
       });
       
       const sessionManagementTestCase = await prisma.testCase.findFirst({
-        where: { projectId: demoProject.id, title: 'Session timeout handling' },
+        where: { projectId: demoProject.id, title: 'Session Timeout Handling' },
       });
       
       const testRun = await prisma.testRun.findFirst({
@@ -580,8 +1115,8 @@ async function main() {
         severity: 'HIGH',
         priority: 'HIGH',
         status: 'NEW',
-        assignedToId: adminUser.id,
-        createdById: adminUser.id,
+        assignedToId: testers[1].id, // Assigned to tester who found it
+        createdById: testers[1].id,
         environment: 'Production',
       },
     });
@@ -605,8 +1140,8 @@ async function main() {
         severity: 'MEDIUM',
         priority: 'MEDIUM',
         status: 'IN_PROGRESS',
-        assignedToId: adminUser.id,
-        createdById: adminUser.id,
+        assignedToId: testers[2].id, // Assigned to tester
+        createdById: testers[2].id,
         environment: 'Staging',
         progressPercentage: 45,
       },
@@ -630,7 +1165,8 @@ async function main() {
         severity: 'MEDIUM',
         priority: 'HIGH',
         status: 'NEW',
-        createdById: adminUser.id,
+        assignedToId: testers[0].id, // Assigned to tester
+        createdById: testers[0].id,
         environment: 'Production',
         dueDate: new Date(Date.now() + 604800000),
       },
@@ -645,7 +1181,7 @@ async function main() {
       });
     }
 
-    await prisma.defect.create({
+    const defect4 = await prisma.defect.create({
       data: {
         defectId: 'DEF-4',
         projectId: demoProject.id,
@@ -653,11 +1189,12 @@ async function main() {
         description: 'API endpoints do not enforce rate limiting, allowing potential DDoS attacks.\n\nSteps: 1. Use API testing tool (Postman/curl)\n2. Send 1000 requests per second to /api/projects endpoint\n3. Observe response codes\n\nExpected: After 100 requests per minute, should return 429 Too Many Requests\nActual: All requests processed successfully without rate limiting',
         severity: 'CRITICAL',
         priority: 'CRITICAL',
-        status: 'NEW',
-        assignedToId: adminUser.id,
-        createdById: adminUser.id,
+        status: 'IN_PROGRESS',
+        assignedToId: testers[2].id, // Assigned to automation tester
+        createdById: testers[2].id,
         environment: 'Production',
         dueDate: new Date(Date.now() + 259200000),
+        progressPercentage: 30,
       },
     });
 
@@ -670,8 +1207,8 @@ async function main() {
         severity: 'LOW',
         priority: 'LOW',
         status: 'FIXED',
-        assignedToId: adminUser.id,
-        createdById: adminUser.id,
+        assignedToId: testers[1].id,
+        createdById: testers[1].id,
         environment: 'QA',
         resolvedAt: new Date(Date.now() - 86400000),
         progressPercentage: 100,
@@ -696,8 +1233,8 @@ async function main() {
         severity: 'HIGH',
         priority: 'CRITICAL',
         status: 'TESTED',
-        assignedToId: adminUser.id,
-        createdById: adminUser.id,
+        assignedToId: testers[0].id,
+        createdById: testers[0].id,
         environment: 'Staging',
         resolvedAt: new Date(Date.now() - 172800000),
         progressPercentage: 100,
@@ -722,13 +1259,72 @@ async function main() {
         severity: 'LOW',
         priority: 'MEDIUM',
         status: 'CLOSED',
-        createdById: adminUser.id,
+        assignedToId: testers[1].id,
+        createdById: testers[1].id,
         environment: 'Production',
         resolvedAt: new Date(Date.now() - 259200000),
         closedAt: new Date(Date.now() - 172800000),
         progressPercentage: 100,
       },
     });
+
+    // Add comments to defects (from different team members)
+    console.log('\n💬 Adding comments to defects...');
+    await prisma.defectComment.createMany({
+      data: [
+        {
+          defectId: defect1.id,
+          userId: projectManager.id,
+          content: 'I\'ve checked the email service logs. The emails are being sent but might be getting caught by spam filters. We should add SPF and DKIM records.',
+        },
+        {
+          defectId: defect1.id,
+          userId: testers[1].id,
+          content: 'Update: Email service provider confirmed delivery. Issue might be on recipient side. Will investigate further.',
+        },
+        {
+          defectId: defect2.id,
+          userId: testers[2].id,
+          content: 'Started working on responsive CSS. Using CSS Grid and Flexbox for better mobile support.',
+        },
+        {
+          defectId: defect2.id,
+          userId: projectManager.id,
+          content: 'Great progress! Let me know when ready for review.',
+        },
+        {
+          defectId: defect3.id,
+          userId: testers[0].id,
+          content: 'This is a critical accessibility issue. We need to add proper ARIA labels and live regions for screen readers.',
+        },
+        {
+          defectId: defect3.id,
+          userId: projectManager.id,
+          content: 'Agreed. This should be prioritized. Accessibility is important for compliance.',
+        },
+        {
+          defectId: defect4.id,
+          userId: testers[2].id,
+          content: 'This is a security vulnerability. We need to implement rate limiting immediately. Suggest using express-rate-limit middleware.',
+        },
+        {
+          defectId: defect4.id,
+          userId: adminUser.id,
+          content: 'Approved. This is critical. Please implement ASAP.',
+        },
+        {
+          defectId: defect6.id,
+          userId: testers[0].id,
+          content: 'Fixed by invalidating all user sessions when password is changed. Tested and verified.',
+        },
+        {
+          defectId: defect6.id,
+          userId: projectManager.id,
+          content: 'Excellent work! Security issue resolved.',
+        },
+      ],
+    });
+    console.log('   ✅ Added comments to defects from different team members');
 
     console.log('   ✅ Created 7 sample defects:');
     console.log('      - DEF-1: Password reset email (HIGH/NEW)');
