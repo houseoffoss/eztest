@@ -43,6 +43,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
   const [history, setHistory] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
   const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
+  const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
 
   useEffect(() => {
     fetchHistory();
@@ -136,14 +137,19 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
       render: (_, row: TestResult) => (
         <div className="min-w-0 max-w-[150px] overflow-hidden">
           <p className="text-sm text-white/90 font-medium truncate block">{row.testRun.name}</p>
-          {row.testRun.environment && (
-            <Badge
-              variant="outline"
-              className="text-xs bg-purple-500/10 text-purple-500 border-purple-500/20 mt-1"
-            >
-              {row.testRun.environment}
-            </Badge>
-          )}
+          {row.testRun.environment && (() => {
+            const badgeProps = getDynamicBadgeProps(row.testRun.environment, environmentOptions);
+            const environmentLabel = environmentOptions.find(opt => opt.value === row.testRun.environment)?.label || row.testRun.environment.toUpperCase();
+            return (
+              <Badge
+                variant="outline"
+                className={`text-xs mt-1 ${badgeProps.className}`}
+                style={badgeProps.style}
+              >
+                {environmentLabel}
+              </Badge>
+            );
+          })()}
         </div>
       ),
     },

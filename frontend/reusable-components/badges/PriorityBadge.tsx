@@ -29,11 +29,17 @@ export function PriorityBadge({
     ? dynamicClassName
     : styles[priority as Priority] || styles.medium;
 
+  // Use "outline" variant when dynamic styles are provided to match other badges
+  // Otherwise use "glass" variant for default styling
+  const variant = dynamicClassName ? "outline" : "glass";
+
   return (
     <Badge
-      variant="glass"
+      variant={variant}
       className={[
-        "px-2.5 py-0.5 text-xs font-semibold",
+        dynamicClassName ? "px-2 py-0.5" : "px-2.5 py-0.5", // Match defect table padding when using dynamic styles
+        "text-xs",
+        dynamicClassName ? "" : "font-semibold", // Only apply font-semibold when using default styles
         badgeClassName,
         className,
       ].join(" ")}

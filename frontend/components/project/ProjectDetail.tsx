@@ -2,44 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TestTube2, Play, FileText, Folder } from 'lucide-react';
+import { TestTube2, Play, FileText, Folder, Bug } from 'lucide-react';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ClickableStatCard } from '@/frontend/reusable-components/cards/ClickableStatCard';
 import { NotFoundState } from '@/frontend/reusable-components/errors/NotFoundState';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
+import { ProjectDetail as ProjectDetailType } from './types';
 
-interface Project {
-  id: string;
-  name: string;
-  key: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    email: string;
-    avatar: string | null;
-  };
-  members: Array<{
-    id: string;
-    role: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      avatar: string | null;
-    };
-  }>;
-  _count: {
-    testCases: number;
-    testRuns: number;
-    testSuites: number;
-    requirements: number;
-  };
-}
+type Project = ProjectDetailType;
 
 interface ProjectDetailProps {
   projectId: string;
@@ -113,7 +85,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-8 py-8">
         <ResponsiveGrid
-          columns={{ default: 1, md: 4 }}
+          columns={{ default: 1, md: 3, lg: 5 }}
           gap="lg"
           className="mb-8"
         >
@@ -140,6 +112,14 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
             borderColor="border-l-purple-400/30"
             hoverColor="group-hover:bg-purple-400/10"
             onClick={() => router.push(`/projects/${projectId}/testsuites`)}
+          />
+          <ClickableStatCard
+            icon={<Bug className="w-4 h-4" />}
+            label="Defects"
+            value={project._count?.defects || 0}
+            borderColor="border-l-red-400/30"
+            hoverColor="group-hover:bg-red-400/10"
+            onClick={() => router.push(`/projects/${projectId}/defects`)}
           />
           <ClickableStatCard
             icon={<Folder className="w-4 h-4" />}

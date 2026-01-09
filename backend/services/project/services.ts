@@ -73,13 +73,44 @@ export class ProjectService {
     }
     // 'all' scope: no additional filtering (admin access)
 
-    return await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: whereClause,
       include: baseInclude,
       orderBy: {
         updatedAt: 'desc',
       },
     });
+
+    // Get defect counts for all projects (non-closed defects only)
+    if (projects.length > 0) {
+      const projectIds = projects.map(p => p.id);
+      const defectCounts = await prisma.defect.groupBy({
+        by: ['projectId'],
+        where: {
+          projectId: { in: projectIds },
+          status: { not: 'CLOSED' },
+        },
+        _count: {
+          id: true,
+        },
+      });
+
+      // Create a map of projectId -> defect count
+      const defectCountMap = new Map(
+        defectCounts.map(dc => [dc.projectId, dc._count.id])
+      );
+
+      // Add defect counts to each project's _count
+      return projects.map(project => ({
+        ...project,
+        _count: {
+          ...project._count,
+          defects: defectCountMap.get(project.id) || 0,
+        },
+      }));
+    }
+
+    return projects;
   }
 
   /**
@@ -164,7 +195,7 @@ export class ProjectService {
     }
     // 'all' scope: no additional filtering
 
-    return await prisma.project.findFirst({
+    const project = await prisma.project.findFirst({
       where: whereClause,
       include: {
         createdBy: {
@@ -203,6 +234,26 @@ export class ProjectService {
         }),
       },
     });
+
+    // Add defect count if stats are included
+    if (project && includeStats && project._count) {
+      const defectCount = await prisma.defect.count({
+        where: {
+          projectId: project.id,
+          status: { not: 'CLOSED' },
+        },
+      });
+
+      return {
+        ...project,
+        _count: {
+          ...project._count,
+          defects: defectCount,
+        },
+      };
+    }
+
+    return project;
   }
 
   /**
