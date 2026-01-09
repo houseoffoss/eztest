@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -27,7 +26,6 @@ interface FieldErrors {
 
 export default function RegisterPageComponent() {
   const router = useRouter();
-  const { trackForm } = useAnalytics();
   const [stars, setStars] = useState<number | null>(null);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [formData, setFormData, clearFormData] = useFormPersistence('register-form', {
@@ -228,9 +226,6 @@ export default function RegisterPageComponent() {
       const otpData = await otpResponse.json();
 
       if (!otpData.success) {
-        // Track failed form submission
-        trackForm('Register', false, otpData.message || 'Failed to send OTP').catch(console.error);
-        
         setError(otpData.message || 'Failed to send OTP');
         setAlert({
           type: 'error',
@@ -258,10 +253,6 @@ export default function RegisterPageComponent() {
       setShowOtpVerification(true);
     } catch (error) {
       const errorMsg = 'An unexpected error occurred';
-      
-      // Track failed form submission
-      trackForm('Register', false, errorMsg).catch(console.error);
-      
       setError(errorMsg);
       setAlert({
         type: 'error',
@@ -293,10 +284,6 @@ export default function RegisterPageComponent() {
 
       if (!response.ok) {
         const errorMsg = data.error || 'Registration failed';
-        
-        // Track failed registration
-        trackForm('Register', false, errorMsg).catch(console.error);
-        
         setError(errorMsg);
         setAlert({
           type: 'error',
@@ -307,9 +294,6 @@ export default function RegisterPageComponent() {
         setIsLoading(false);
         return;
       }
-
-      // Track successful registration
-      trackForm('Register', true).catch(console.error);
 
       setAlert({
         type: 'success',

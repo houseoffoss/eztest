@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useRef } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Button } from "../../reusable-elements/buttons/Button";
 import { ButtonDestructive } from "../../reusable-elements/buttons/ButtonDestructive";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../reusable-elements/dialogs/Dialog";
 import { InlineError } from "../../reusable-elements/alerts/InlineError";
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface BaseConfirmDialogConfig {
   title: string;
@@ -39,23 +38,10 @@ export const BaseConfirmDialog = ({
   submitButtonName,
   cancelButtonName,
 }: BaseConfirmDialogConfig) => {
-  const { trackDialog, trackForm } = useAnalytics();
-  const wasOpenedRef = useRef(false);
   const dialogTrackingName = dialogName || title;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Track dialog open/close
-  useEffect(() => {
-    if (open && !wasOpenedRef.current) {
-      wasOpenedRef.current = true;
-      trackDialog('opened', dialogTrackingName, description).catch(console.error);
-    } else if (!open && wasOpenedRef.current) {
-      wasOpenedRef.current = false;
-      trackDialog('closed', dialogTrackingName, description).catch(console.error);
-    }
-  }, [open, dialogTrackingName, description, trackDialog]);
 
   useEffect(() => {
     if (triggerOpen) {
@@ -76,16 +62,12 @@ export const BaseConfirmDialog = ({
 
     try {
       await onSubmit();
-      // Track successful confirmation
-      trackForm(dialogTrackingName, true, submitLabel).catch(console.error);
       handleOpenChange(false);
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      // Track failed confirmation
-      trackForm(dialogTrackingName, false, errorMessage).catch(console.error);
       setError(errorMessage);
     } finally {
       setLoading(false);

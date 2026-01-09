@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import {
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Loader2 } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface SendTestRunReportDialogProps {
   open: boolean;
@@ -24,34 +23,17 @@ export function SendTestRunReportDialog({
   onOpenChange,
   onConfirm,
 }: SendTestRunReportDialogProps) {
-  const { trackDialog, trackForm } = useAnalytics();
-  const wasOpenedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Track dialog open/close
-  useEffect(() => {
-    if (open && !wasOpenedRef.current) {
-      wasOpenedRef.current = true;
-      trackDialog('opened', 'Send Test Run Report Dialog', 'Send test run report via email').catch(console.error);
-    } else if (!open && wasOpenedRef.current) {
-      wasOpenedRef.current = false;
-      trackDialog('closed', 'Send Test Run Report Dialog', 'Send test run report via email').catch(console.error);
-    }
-  }, [open, trackDialog]);
 
   const handleConfirm = async () => {
     setError('');
     setIsLoading(true);
     try {
       await onConfirm();
-      // Track successful confirmation
-      trackForm('Send Test Run Report Dialog', true, 'Report sent successfully').catch(console.error);
       onOpenChange(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send report';
-      // Track failed confirmation
-      trackForm('Send Test Run Report Dialog', false, errorMessage).catch(console.error);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

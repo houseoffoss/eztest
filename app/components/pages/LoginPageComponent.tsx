@@ -11,7 +11,6 @@ import { LoginLeftPanel } from './subcomponents/LoginLeftPanel';
 import { OtpVerification } from '@/frontend/reusable-components/auth/OtpVerification';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 const navItems = [
   { label: 'Features', href: '/#features' },
@@ -25,7 +24,6 @@ interface FieldErrors {
 
 export default function LoginPageComponent() {
   const router = useRouter();
-  const { trackForm } = useAnalytics();
   const [stars, setStars] = useState<number | null>(null);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [formData, setFormData, clearFormData] = useFormPersistence('login-form', {
@@ -178,10 +176,6 @@ export default function LoginPageComponent() {
       setShowOtpVerification(true);
     } catch (error) {
       const errorMsg = 'An unexpected error occurred';
-      
-      // Track failed form submission
-      trackForm('Login', false, errorMsg).catch(console.error);
-      
       setError(errorMsg);
       setAlert({
         type: 'error',
@@ -204,10 +198,6 @@ export default function LoginPageComponent() {
 
       if (result?.error) {
         const errorMsg = 'Invalid email or password';
-        
-        // Track failed login
-        trackForm('Login', false, errorMsg).catch(console.error);
-        
         setError(errorMsg);
         setAlert({
           type: 'error',
@@ -220,9 +210,6 @@ export default function LoginPageComponent() {
       }
 
       if (result?.ok) {
-        // Track successful login
-        trackForm('Login', true).catch(console.error);
-        
         // Clear form data on successful login
         clearFormData();
         setAlert({

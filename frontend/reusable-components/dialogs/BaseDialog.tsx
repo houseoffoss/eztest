@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode, useRef } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
@@ -18,7 +18,6 @@ import { InlineError } from '@/frontend/reusable-elements/alerts/InlineError';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import type { Attachment } from '@/lib/s3';
-import { useAnalytics } from '@/hooks/useAnalytics';
 
 export interface BaseDialogField {
   name: string;
@@ -87,8 +86,6 @@ export const BaseDialog = <T = unknown,>({
   const [error, setError] = useState('');
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const { trackDialog, trackForm } = useAnalytics();
-  const wasOpenedRef = useRef(false);
 
   // Validate a single field
   const validateField = (field: BaseDialogField, value: string, currentFormData?: Record<string, string>): string | undefined => {
@@ -228,21 +225,6 @@ export const BaseDialog = <T = unknown,>({
     }
   }, [triggerOpen]);
 
-  // Track dialog open
-  useEffect(() => {
-    if (open && !wasOpenedRef.current) {
-      wasOpenedRef.current = true;
-      trackDialog('opened', title, description).catch((error) => {
-        console.error('Failed to track dialog open:', error);
-      });
-    } else if (!open && wasOpenedRef.current) {
-      wasOpenedRef.current = false;
-      trackDialog('closed', title, description).catch((error) => {
-        console.error('Failed to track dialog close:', error);
-      });
-    }
-  }, [open, title, description, trackDialog]);
-
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     
@@ -302,11 +284,6 @@ export const BaseDialog = <T = unknown,>({
     try {
       const result = await onSubmit(formData);
 
-      // Track successful form submission
-      trackForm(title, true, description).catch((error) => {
-        console.error('Failed to track form submission:', error);
-      });
-
       // Clear form data after successful submission
       clearFormData();
       
@@ -324,11 +301,6 @@ export const BaseDialog = <T = unknown,>({
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      
-      // Track failed form submission
-      trackForm(title, false, `Error: ${errorMessage}`).catch((error) => {
-        console.error('Failed to track form submission:', error);
-      });
       
       setAlert({
         type: 'error',
