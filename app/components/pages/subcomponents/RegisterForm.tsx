@@ -146,6 +146,7 @@ export const RegisterForm = ({
               type="submit"
               disabled={isLoading}
               className="w-auto px-12"
+              buttonName="Register Page - Create Account"
             >
               {isLoading ? 'Creating account...' : 'Create account'}
             </ButtonPrimary>

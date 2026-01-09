@@ -52,9 +52,23 @@ export function ModuleHeader({
         isEditing={isEditing}
         editTitle={formData.name}
         onTitleChange={(name) => onFormChange({ ...formData, name })}
+        maxLength={150}
         actions={[
-          { label: 'Edit', icon: Edit, onClick: onEdit, show: canUpdate },
-          { label: 'Delete', icon: Trash2, onClick: onDelete, variant: 'destructive', show: canDelete },
+          { 
+            label: 'Edit', 
+            icon: Edit, 
+            onClick: onEdit, 
+            show: canUpdate,
+            buttonName: 'Module Detail - Edit',
+          },
+          { 
+            label: 'Delete', 
+            icon: Trash2, 
+            onClick: onDelete, 
+            variant: 'destructive', 
+            show: canDelete,
+            buttonName: 'Module Detail - Delete',
+          },
         ]}
         editActions={{
           onSave,

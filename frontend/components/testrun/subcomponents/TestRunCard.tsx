@@ -120,6 +120,7 @@ export function TestRunCard({
           label: 'View Details',
           icon: Play,
           onClick: onViewDetails,
+          buttonName: `Test Run Card - View Details (${testRun.name})`,
         },
         {
           label: 'Delete',
@@ -127,6 +128,7 @@ export function TestRunCard({
           onClick: onDelete,
           variant: 'destructive',
           show: canDelete,
+          buttonName: `Test Run Card - Delete (${testRun.name})`,
         },
       ]}
       align="end"

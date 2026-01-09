@@ -55,6 +55,9 @@ export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDele
       }
     },
     destructive: true,
+    dialogName: 'Delete Project Dialog',
+    submitButtonName: 'Delete Project Dialog - Delete Project',
+    cancelButtonName: 'Delete Project Dialog - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

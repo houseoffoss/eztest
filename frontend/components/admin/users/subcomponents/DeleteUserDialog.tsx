@@ -19,6 +19,9 @@ export function DeleteUserDialog({ open, userName, onOpenChange, onConfirm }: De
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
+    dialogName: 'Delete User Dialog',
+    submitButtonName: 'Delete User Dialog - Delete',
+    cancelButtonName: 'Delete User Dialog - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

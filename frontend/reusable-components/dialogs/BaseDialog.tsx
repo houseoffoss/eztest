@@ -59,6 +59,9 @@ export interface BaseDialogConfig<T = unknown> {
   formPersistenceKey?: string;
   /** Disable form persistence (default: false) */
   disablePersistence?: boolean;
+  /** Button name for analytics tracking (defaults to title if not provided) */
+  submitButtonName?: string;
+  cancelButtonName?: string;
 }
 
 export const BaseDialog = <T = unknown,>({
@@ -75,6 +78,8 @@ export const BaseDialog = <T = unknown,>({
   projectId,
   formPersistenceKey,
   disablePersistence = false,
+  submitButtonName,
+  cancelButtonName,
 }: BaseDialogConfig<T>) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -296,6 +301,7 @@ export const BaseDialog = <T = unknown,>({
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      
       setAlert({
         type: 'error',
         title: 'Submission Failed',
@@ -479,6 +485,7 @@ export const BaseDialog = <T = unknown,>({
             variant="glass"
             onClick={() => handleOpenChange(false)}
             className="cursor-pointer"
+            data-analytics-button={cancelButtonName || `${title} - Cancel`}
           >
             {cancelLabel}
           </Button>
@@ -487,6 +494,7 @@ export const BaseDialog = <T = unknown,>({
             form="base-dialog-form"
             disabled={loading}
             className="cursor-pointer"
+            buttonName={submitButtonName || `${title} - ${submitLabel}`}
           >
             {loading ? 'Loading...' : submitLabel}
           </ButtonPrimary>

@@ -31,6 +31,7 @@ export function DangerZoneCard({ project, deleting, onDelete }: DangerZoneCardPr
           <ButtonDestructive
             onClick={onDelete}
             disabled={deleting}
+            buttonName={`Project Settings - Delete Project (${project.name})`}
             // className="ml-4"
           >
             <Trash2 className="w-4 h-4 mr-2" />

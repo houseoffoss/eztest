@@ -62,12 +62,12 @@ export default function HomePage() {
         actions={
           <div className="flex items-center gap-2">
             <Link href="/auth/login">
-              <ButtonSecondary className="cursor-pointer">
+              <ButtonSecondary className="cursor-pointer" buttonName="Home Page - Navbar - Sign In">
                 Sign in
               </ButtonSecondary>
             </Link>
             <Link href="/auth/register">
-              <ButtonPrimary className="cursor-pointer">
+              <ButtonPrimary className="cursor-pointer" buttonName="Home Page - Navbar - Get Started">
                 Get started
               </ButtonPrimary>
             </Link>

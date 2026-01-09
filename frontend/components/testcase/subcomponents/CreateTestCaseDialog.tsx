@@ -257,7 +257,6 @@ export function CreateTestCaseDialog({
     // Associate uploaded attachments with the test case
     if (uploadedAttachments.length > 0) {
       try {
-        console.log('Linking attachments:', uploadedAttachments);
         const attachmentResponse = await fetch(`/api/testcases/${createdTestCase.id}/attachments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -270,8 +269,43 @@ export function CreateTestCaseDialog({
           throw new Error('Failed to link attachments to test case');
         }
         
-        const attachmentResult = await attachmentResponse.json();
-        console.log('Attachments linked successfully:', attachmentResult);
+        await attachmentResponse.json();
+
+        // If there's an expectedResult with attachments, also link them to the first step
+        // This follows the same pattern as expectedResult text - it's saved at test case level
+        // and displayed in the first step, so attachments should also be associated with the first step
+        const expectedResultAttachmentsToLink = uploadedAttachments.filter(
+          (att) => att.fieldName === 'expectedResult'
+        );
+
+        if (expectedResultAttachmentsToLink.length > 0 && formData.expectedResult) {
+          try {
+            // Fetch the test case with steps to check if there's a first step
+            const testCaseResponse = await fetch(`/api/testcases/${createdTestCase.id}`);
+            if (testCaseResponse.ok) {
+              const testCaseData = await testCaseResponse.json();
+              const steps = testCaseData.data?.steps || [];
+              
+              // If there's a first step, link expectedResult attachments to it
+              // This mirrors how expectedResult text is handled - it's shown in the first step
+              if (steps.length > 0 && steps[0]?.id) {
+                const firstStepId = steps[0].id;
+                const stepAttachmentResponse = await fetch(`/api/teststeps/${firstStepId}/attachments`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ attachments: expectedResultAttachmentsToLink }),
+                });
+                
+                if (!stepAttachmentResponse.ok) {
+                  console.warn('Failed to link expectedResult attachments to first step, but test case attachments are saved');
+                }
+              }
+            }
+          } catch (error) {
+            // Non-critical error - attachments are already linked to test case
+            console.warn('Error linking expectedResult attachments to step:', error);
+          }
+        }
       } catch (error) {
         console.error('Error associating attachments:', error);
         throw new Error('Failed to link attachments. Test case was created but attachments were not saved.');
@@ -299,6 +333,8 @@ export function CreateTestCaseDialog({
         attachmentStorage.clearContext();
       }
     },
+    submitButtonName: 'Create Test Case Dialog - Create Test Case',
+    cancelButtonName: 'Create Test Case Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

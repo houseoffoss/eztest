@@ -13,6 +13,7 @@ import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { Save, Trash2 } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Project {
   id: string;
@@ -29,6 +30,7 @@ interface ProjectSettingsProps {
 
 export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   const router = useRouter();
+  const { hasPermission: hasPermissionCheck } = usePermissions();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,6 +38,8 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  
+  const canDeleteProject = hasPermissionCheck('projects:delete');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -270,14 +274,17 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 Once you delete a project, there is no going back. All data will be permanently deleted.
               </p>
             </div>
-            <ButtonDestructive
-              onClick={() => setDeleteDialogOpen(true)}
-              disabled={deleting}
-              className="ml-4"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Project
-            </ButtonDestructive>
+            {canDeleteProject && (
+              <ButtonDestructive
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={deleting}
+                className="ml-4"
+                buttonName={`Project Settings - Delete Project Button (${project?.name})`}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Project
+              </ButtonDestructive>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -308,6 +315,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 variant="ghost"
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={deleting}
+                data-analytics-button={`Project Settings - Delete Dialog - Cancel (${project?.name})`}
               >
                 Cancel
               </Button>
@@ -315,6 +323,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
+                buttonName={`Project Settings - Delete Dialog - Delete Project (${project?.name})`}
               >
                 {deleting ? 'Deleting...' : 'Delete Project'}
               </ButtonDestructive>

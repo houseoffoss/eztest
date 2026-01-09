@@ -265,16 +265,16 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         ]}
         actions={
           canCreateTestCase ? (
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-end">
               {canImport && (
                 <>
-                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer">
+                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer flex-shrink-0">
                     <Import className="w-4 h-4 mr-2" />
                     Import
                   </ButtonSecondary>
                   <ButtonSecondary 
                     onClick={() => setExportDialogOpen(true)} 
-                    className="cursor-pointer"
+                    className="cursor-pointer flex-shrink-0"
                     title="Export test cases"
                   >
                     <Upload className="w-4 h-4 mr-2" />
@@ -289,12 +289,14 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
                     icon: FolderPlus,
                     onClick: () => setCreateModuleDialogOpen(true),
                     variant: 'secondary',
+                    buttonName: 'Test Case List - New Module',
                   },
                   {
                     label: 'New Test Case',
                     icon: Plus,
                     onClick: () => setCreateDialogOpen(true),
                     variant: 'primary',
+                    buttonName: 'Test Case List - New Test Case',
                   },
                 ]}
               />
@@ -303,7 +305,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         }
       />
       
-      <div className="px-8 pt-4">
+      <div className="px-4 sm:px-6 lg:px-8 pt-4 w-full min-w-0 overflow-hidden">
         {/* Header and Filters Section */}
         <HeaderWithFilters
           header={

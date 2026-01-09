@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { SidebarProvider } from '@/lib/sidebar-context';
 import { TimezoneProvider } from '@/frontend/context/TimezoneContext';
+import { FirebaseAnalytics } from './FirebaseAnalytics';
 import { ReactNode } from 'react';
 
 interface ProvidersProps {
@@ -14,6 +15,7 @@ export function Providers({ children }: ProvidersProps) {
     <SessionProvider>
       <TimezoneProvider>
         <SidebarProvider>
+          <FirebaseAnalytics />
           {children}
         </SidebarProvider>
       </TimezoneProvider>

@@ -20,13 +20,13 @@ export function HeaderWithFilters({
 }: HeaderWithFiltersProps) {
   return (
     <div className={cn(
-      'flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-4',
+      'flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-4 w-full min-w-0',
       className
     )}>
-      <div className={cn('shrink-0', headerClassName)}>
+      <div className={cn('shrink-0 min-w-0', headerClassName)}>
         {header}
       </div>
-      <div className={cn('w-full lg:w-auto shrink-0', filtersClassName)}>
+      <div className={cn('w-full lg:w-auto lg:min-w-[400px] min-w-0', filtersClassName)}>
         {filters}
       </div>
     </div>

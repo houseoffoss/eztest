@@ -96,6 +96,8 @@ export function CreateTestRunDialog({
         onTestRunCreated(testRun);
       }
     },
+    submitButtonName: 'Create Test Run Dialog - Create Test Run',
+    cancelButtonName: 'Create Test Run Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

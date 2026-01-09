@@ -135,13 +135,14 @@ export default function LoginPageComponent() {
     setIsLoading(true);
 
     try {
-      // First, send OTP to email
+      // First, send OTP to email (also verify password)
       const otpResponse = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email.trim(),
           type: 'login',
+          password: formData.password, // Include password to verify before sending OTP
         }),
       });
 
@@ -173,7 +174,7 @@ export default function LoginPageComponent() {
       });
       setIsLoading(false);
       setShowOtpVerification(true);
-    } catch {
+    } catch (error) {
       const errorMsg = 'An unexpected error occurred';
       setError(errorMsg);
       setAlert({
@@ -281,7 +282,7 @@ export default function LoginPageComponent() {
         actions={
           <div className="flex items-center gap-2">
             <Link href="/auth/register">
-              <ButtonSecondary className="cursor-pointer">
+              <ButtonSecondary className="cursor-pointer" buttonName="Login Page - Navbar - Sign Up">
                 Sign up
               </ButtonSecondary>
             </Link>

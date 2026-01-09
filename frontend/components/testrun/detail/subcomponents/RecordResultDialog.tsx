@@ -143,19 +143,24 @@ export function RecordResultDialog({
   };
 
   const handleSubmitWithDefects = async () => {
-    // Link selected defects to test case if any are selected
-    if (selectedDefectIds.length > 0) {
-      try {
-        await fetch(`/api/testcases/${testCaseId}/defects`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ defectIds: selectedDefectIds }),
-        });
-      } catch (error) {
-        console.error('Error linking defects:', error);
+    try {
+      // Link selected defects to test case if any are selected
+      if (selectedDefectIds.length > 0) {
+        try {
+          await fetch(`/api/testcases/${testCaseId}/defects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ defectIds: selectedDefectIds }),
+          });
+        } catch (error) {
+          console.error('Error linking defects:', error);
+        }
       }
+      // Wait for onSubmit to complete successfully
+      await onSubmit();
+    } catch (error) {
+      throw error;
     }
-    onSubmit();
   };
 
   const getSeverityColor = (severity: string) => {
@@ -337,10 +342,17 @@ export function RecordResultDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="glass" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="glass" 
+            onClick={() => onOpenChange(false)}
+            buttonName="Record Test Result Dialog - Cancel"
+          >
             Cancel
           </Button>
-          <ButtonPrimary onClick={handleSubmitWithDefects}>
+          <ButtonPrimary 
+            onClick={handleSubmitWithDefects}
+            buttonName="Record Test Result Dialog - Save Result"
+          >
             Save Result
             {formData.status === 'FAILED' && selectedDefectIds.length > 0 && (
               <span className="ml-2 text-xs">

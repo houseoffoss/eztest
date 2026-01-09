@@ -251,7 +251,7 @@ export default function RegisterPageComponent() {
       });
       setIsLoading(false);
       setShowOtpVerification(true);
-    } catch {
+    } catch (error) {
       const errorMsg = 'An unexpected error occurred';
       setError(errorMsg);
       setAlert({
@@ -385,7 +385,7 @@ export default function RegisterPageComponent() {
         actions={
           <div className="flex items-center gap-2">
             <Link href="/auth/login">
-              <ButtonSecondary className="cursor-pointer">
+              <ButtonSecondary className="cursor-pointer" buttonName="Register Page - Navbar - Sign In">
                 Sign in
               </ButtonSecondary>
             </Link>

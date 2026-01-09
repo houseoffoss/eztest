@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { User } from '@prisma/client';
+import { isDefaultAdminEmail } from './auth-utils';
 
 interface EmailOptions {
   to: string;
@@ -169,10 +170,12 @@ function getTransporter(): nodemailer.Transporter | null {
 /**
  * Validate email address format
  * Returns true if valid, false otherwise
+ * 
+ * Allows the default admin email from environment variables (even if it has invalid domains)
  */
 function isValidEmail(email: string): boolean {
-  // Allow admin@eztest.local as it's the default admin email
-  if (email.toLowerCase() === 'admin@eztest.local') {
+  // Allow default admin email from environment (even if it has .local domain)
+  if (isDefaultAdminEmail(email)) {
     return true;
   }
 

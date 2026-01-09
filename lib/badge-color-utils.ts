@@ -5,6 +5,64 @@
 import { DropdownOption } from '@/hooks/useDropdownOptions';
 
 /**
+ * Static color mapping for existing badge values
+ * These are the original badge colors that should remain consistent
+ * New dropdown options added by users will use dynamic colors
+ */
+const STATIC_BADGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  // Defect Severity
+  'CRITICAL': { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' },
+  'HIGH': { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/20' },
+  'MEDIUM': { bg: 'bg-yellow-500/10', text: 'text-yellow-500', border: 'border-yellow-500/20' },
+  'LOW': { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+  
+  // Defect Priority (same as severity)
+  // Note: CRITICAL, HIGH, MEDIUM, LOW are already defined above
+  
+  // Defect Status
+  'NEW': { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
+  'IN_PROGRESS': { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/20' },
+  'FIXED': { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+  'TESTED': { bg: 'bg-yellow-500/10', text: 'text-yellow-500', border: 'border-yellow-500/20' },
+  'CLOSED': { bg: 'bg-gray-500/10', text: 'text-gray-500', border: 'border-gray-500/20' },
+  
+  // TestCase Priority (same as defect priority)
+  // Note: CRITICAL, HIGH, MEDIUM, LOW are already defined above
+  
+  // TestCase Status
+  'ACTIVE': { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+  'DRAFT': { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
+  'DEPRECATED': { bg: 'bg-gray-500/10', text: 'text-gray-500', border: 'border-gray-500/20' },
+  
+  // TestRun Status
+  'PLANNED': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+  // Note: IN_PROGRESS is already defined above for Defect Status (purple)
+  // For TestRun, IN_PROGRESS should be yellow, but since it shares the same value with Defect,
+  // we'll keep it as purple. If needed, we can add a separate mapping later.
+  'COMPLETED': { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+  'CANCELLED': { bg: 'bg-gray-500/10', text: 'text-gray-500', border: 'border-gray-500/20' },
+  
+  // TestResult Status
+  'PASSED': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
+  'FAILED': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+  'BLOCKED': { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
+  'SKIPPED': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/20' },
+  'RETEST': { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+  
+  // Requirement Status
+  // Note: DRAFT and DEPRECATED are already defined above for TestCase Status
+  'APPROVED': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
+  'IMPLEMENTED': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+  'VERIFIED': { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+  
+  // Environment (common values - note: values are case-sensitive as stored in DB)
+  'Production': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+  'Staging': { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
+  'QA': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/20' },
+  'Development': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+};
+
+/**
  * Color palette used when no custom color is specified
  * Generates consistent colors based on value hash
  */
@@ -82,7 +140,10 @@ function hexToTailwindClasses(hexColor: string): { bg: string; text: string; bor
 
 /**
  * Get badge color classes for a dropdown option value
- * Looks up the color from dropdown options, falls back to hash-based palette
+ * Priority order:
+ * 1. Static colors for existing badge values (CRITICAL, HIGH, etc.)
+ * 2. Dynamic colors from dropdown option (for new options added by users)
+ * 3. Hash-based palette fallback
  * 
  * @param value - The dropdown value (e.g., "HIGH", "CRITICAL")
  * @param options - Array of dropdown options to search for color
@@ -92,15 +153,19 @@ export function getBadgeColorClasses(
   value: string,
   options: DropdownOption[]
 ): { bg: string; text: string; border: string } {
-  // Find the option matching this value
-  const option = options.find(opt => opt.value === value);
+  // First, check if this is an existing badge with static color
+  const staticColor = STATIC_BADGE_COLORS[value];
+  if (staticColor) {
+    return staticColor;
+  }
   
-  // If option has a color, use it
+  // Second, check if dropdown option has a custom color (for new options)
+  const option = options.find(opt => opt.value === value);
   if (option?.color) {
     return hexToTailwindClasses(option.color);
   }
   
-  // Fall back to hash-based color
+  // Finally, fall back to hash-based color
   return getColorFromPalette(value);
 }
 
@@ -131,7 +196,10 @@ export function getBadgeInlineStyles(hexColor: string): {
 
 /**
  * Get combined classes and styles for a dropdown value
- * Uses dropdown option color if available, otherwise hash-based palette
+ * Priority order:
+ * 1. Static colors for existing badge values (CRITICAL, HIGH, etc.)
+ * 2. Dynamic colors from dropdown option (for new options added by users)
+ * 3. Hash-based palette fallback
  * 
  * @param value - The dropdown value
  * @param options - Array of dropdown options
@@ -144,8 +212,16 @@ export function getDynamicBadgeProps(
   className: string;
   style?: React.CSSProperties;
 } {
-  const option = options.find(opt => opt.value === value);
+  // First, check if this is an existing badge with static color
+  const staticColor = STATIC_BADGE_COLORS[value];
+  if (staticColor) {
+    return {
+      className: `${staticColor.bg} ${staticColor.text} ${staticColor.border}`,
+    };
+  }
   
+  // Second, check if dropdown option has a custom color (for new options)
+  const option = options.find(opt => opt.value === value);
   if (option?.color) {
     const styles = getBadgeInlineStyles(option.color);
     return {
@@ -154,6 +230,7 @@ export function getDynamicBadgeProps(
     };
   }
   
+  // Finally, fall back to hash-based palette for unknown values
   const classes = getColorFromPalette(value);
   return {
     className: `${classes.bg} ${classes.text} ${classes.border}`,

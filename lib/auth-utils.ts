@@ -68,3 +68,32 @@ EZTest - Self-hosted Test Management Platform
 
   return { subject, html, text };
 }
+
+/**
+ * Get default admin email from environment
+ */
+export function getDefaultAdminEmail(): string {
+  return process.env.ADMIN_EMAIL || 'admin@eztest.local';
+}
+
+/**
+ * Get default admin password from environment
+ */
+export function getDefaultAdminPassword(): string {
+  return process.env.ADMIN_PASSWORD || 'Admin@123456';
+}
+
+/**
+ * Check if email matches the default admin email
+ */
+export function isDefaultAdminEmail(email: string): boolean {
+  const defaultEmail = getDefaultAdminEmail();
+  return email.toLowerCase().trim() === defaultEmail.toLowerCase().trim();
+}
+
+/**
+ * Check if email and password match default admin credentials
+ */
+export function isDefaultAdminCredentials(email: string, password: string): boolean {
+  return isDefaultAdminEmail(email) && password === getDefaultAdminPassword();
+}

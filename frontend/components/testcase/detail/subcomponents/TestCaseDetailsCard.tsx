@@ -201,27 +201,6 @@ export function TestCaseDetailsCard({
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
           </div>
 
-          {/* Expected Result with Attachments */}
-          <div className="space-y-2">
-            <Label htmlFor="expectedResult">Expected Result</Label>
-            <TextareaWithAttachments
-              fieldName="expectedResult"
-              variant="glass"
-              value={formData.expectedResult}
-              onChange={(value) => handleFieldChange('expectedResult', value)}
-              placeholder="Enter expected result"
-              rows={3}
-              maxLength={250}
-              showCharCount={true}
-              attachments={expectedResultAttachments}
-              onAttachmentsChange={handleExpectedResultAttachmentsChange}
-              entityType="testcase"
-              projectId={projectId}
-              showAttachments={true}
-            />
-            {errors.expectedResult && <p className="text-xs text-red-400">{errors.expectedResult}</p>}
-          </div>
-
           {/* Preconditions with Attachments */}
           <div className="space-y-2">
             <Label htmlFor="preconditions">Preconditions</Label>
@@ -312,39 +291,6 @@ export function TestCaseDetailsCard({
               ) : descriptionAttachments.length > 0 ? (
                 <div className="flex justify-end">
                   <AttachmentDisplay attachments={descriptionAttachments} />
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {(testCase.expectedResult || expectedResultAttachments.length > 0) && (
-            <div className="border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-white/60">
-                  Expected Result
-                </h4>
-                {expectedResultAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{expectedResultAttachments.length} Attachments</span>
-                ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
-                )}
-              </div>
-              {testCase.expectedResult && expectedResultAttachments.length > 0 ? (
-                <div className="flex gap-4 items-start">
-                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
-                    {testCase.expectedResult}
-                  </p>
-                  <div className="flex-shrink-0">
-                    <AttachmentDisplay attachments={expectedResultAttachments} />
-                  </div>
-                </div>
-              ) : testCase.expectedResult ? (
-                <p className="text-white/90 whitespace-pre-wrap break-words">
-                  {testCase.expectedResult}
-                </p>
-              ) : expectedResultAttachments.length > 0 ? (
-                <div className="flex justify-end">
-                  <AttachmentDisplay attachments={expectedResultAttachments} />
                 </div>
               ) : null}
             </div>

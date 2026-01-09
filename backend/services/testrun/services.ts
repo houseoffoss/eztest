@@ -627,7 +627,16 @@ export class TestRunService {
     const { recipientIds } = await this.getTestRunReportRecipients(testRunId);
 
     if (recipientIds.length === 0) {
-      throw new Error('No recipients found for this test run report');
+      // Return result instead of throwing error - show alert but don't block
+      return {
+        success: false,
+        message: 'No recipients found for this test run report. No email sent.',
+        recipientCount: 0,
+        totalRecipients: 0,
+        failedRecipients: [],
+        recipientDetails: [],
+        invalidRecipients: [],
+      };
     }
 
     // Fetch recipient details with validation
@@ -650,20 +659,63 @@ export class TestRunService {
       },
     });
 
-    // Validate email addresses
+    // Validate email addresses (allows default admin email from environment)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validRecipients = recipients.filter(r => {
       if (!r.email) {
         return false;
       }
+      // // Allow default admin email from environment (even if it has invalid domains like .local)
+      // if (isDefaultAdminEmail(r.email)) {
+      //   return true;
+      // }
       if (!emailRegex.test(r.email)) {
         return false;
+      }
+      // Check for invalid domains like .local, .invalid, .test, .example
+      const invalidDomains = ['.local', '.invalid', '.test', '.example', '.localhost'];
+      const lowerEmail = r.email.toLowerCase();
+      for (const domain of invalidDomains) {
+        if (lowerEmail.endsWith(domain)) {
+          return false;
+        }
       }
       return true;
     });
 
+    // Get invalid recipients for error reporting
+    const invalidRecipients = recipients.filter(r => {
+      if (!r.email) return true;
+      if (!emailRegex.test(r.email)) return true;
+      const invalidDomains = ['.local', '.invalid', '.test', '.example', '.localhost'];
+      const lowerEmail = r.email.toLowerCase();
+      for (const domain of invalidDomains) {
+        if (lowerEmail.endsWith(domain)) {
+          return true;
+        }
+      }
+      return false;
+    }).map(r => ({
+      email: r.email || 'No email',
+      name: r.name,
+      role: r.role?.name || 'UNKNOWN',
+    }));
+
+    // Don't throw error if no valid recipients - return result with warning instead
     if (validRecipients.length === 0) {
-      throw new Error('No valid email addresses found for recipients');
+      return {
+        success: false,
+        message: `No valid email addresses found for recipients. Invalid emails: ${invalidRecipients.map(r => r.email).join(', ')}`,
+        recipientCount: 0,
+        totalRecipients: recipients.length,
+        failedRecipients: invalidRecipients.map(r => r.email),
+        recipientDetails: invalidRecipients.map(r => ({
+          email: r.email,
+          role: r.role,
+          status: 'invalid',
+        })),
+        invalidRecipients,
+      };
     }
 
     // Send email to each recipient
@@ -696,6 +748,7 @@ export class TestRunService {
           });
         }
       } catch (error) {
+        console.error(`[TEST RUN] Failed to send email to ${recipient.email}:`, error);
         failedRecipients.push(recipient.email);
         recipientDetails.push({
           email: recipient.email,
@@ -705,17 +758,39 @@ export class TestRunService {
       }
     }
 
+    // Build message prioritizing success, then warnings about invalid/failed emails
+    let message = '';
+    if (successCount > 0) {
+      message = `Report sent successfully to ${successCount} recipient(s)`;
+      
+      // Only mention invalid emails if there are any
+      if (invalidRecipients.length > 0) {
+        message += `. Invalid email addresses skipped: ${invalidRecipients.map(r => r.email).join(', ')}`;
+      }
+      
+      // Only mention failed sends if there are any
+      if (failedRecipients.length > 0) {
+        message += `. Failed to send to: ${failedRecipients.join(', ')}`;
+      }
+    } else {
+      // No emails sent at all - show error
+      if (invalidRecipients.length > 0) {
+        message = `No valid email addresses found. Invalid emails: ${invalidRecipients.map(r => r.email).join(', ')}`;
+      } else if (failedRecipients.length > 0) {
+        message = `Failed to send emails to: ${failedRecipients.join(', ')}`;
+      } else {
+        message = 'No emails were sent.';
+      }
+    }
+
     return {
       success: successCount > 0,
-      message: `Report sent to ${successCount} recipient(s)${
-        failedRecipients.length > 0
-          ? `. Failed to send to: ${failedRecipients.join(', ')}`
-          : ''
-      }`,
+      message,
       recipientCount: successCount,
       totalRecipients: validRecipients.length,
       failedRecipients,
       recipientDetails,
+      invalidRecipients: invalidRecipients.length > 0 ? invalidRecipients : [],
     };
   }
 }

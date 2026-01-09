@@ -24,7 +24,7 @@ export function CreateModuleDialog({
       type: 'text',
       required: true,
       minLength: 1,
-      maxLength: 50,
+      maxLength: 150,
       cols: 2,
     },
     {
@@ -71,6 +71,8 @@ export function CreateModuleDialog({
         onModuleCreated(module as Module);
       }
     },
+    submitButtonName: 'Create Module Dialog - Create Module',
+    cancelButtonName: 'Create Module Dialog - Cancel',
   };
 
   return <BaseDialog {...config} />;

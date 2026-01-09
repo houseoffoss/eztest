@@ -59,6 +59,9 @@ export function DeleteModuleDialog({
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
+    dialogName: 'Delete Module Dialog',
+    submitButtonName: 'Delete Module Dialog - Delete Module',
+    cancelButtonName: 'Delete Module Dialog - Cancel',
   };
 
   return <BaseConfirmDialog {...config} />;

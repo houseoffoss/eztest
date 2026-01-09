@@ -21,6 +21,8 @@ export interface ConfirmDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
   cancelLabel?: string;
   confirmLabel?: string;
+  /** Button name for analytics tracking (defaults to title) */
+  dialogName?: string;
 }
 
 export function ConfirmDeleteDialog({
@@ -33,9 +35,16 @@ export function ConfirmDeleteDialog({
   onConfirm,
   cancelLabel = 'Cancel',
   confirmLabel = 'Delete',
+  dialogName,
 }: ConfirmDeleteDialogProps) {
+  const dialogTrackingName = dialogName || title;
+
   const handleConfirm = async () => {
-    await onConfirm();
+    try {
+      await onConfirm();
+    } catch (error) {
+      throw error;
+    }
   };
 
   return (
@@ -52,12 +61,14 @@ export function ConfirmDeleteDialog({
             variant="ghost" 
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            data-analytics-button={`${dialogTrackingName} - Cancel`}
           >
             {cancelLabel}
           </Button>
           <ButtonDestructive 
             onClick={handleConfirm}
             disabled={isLoading}
+            buttonName={`${dialogTrackingName} - ${confirmLabel}`}
           >
             {isLoading ? 'Deleting...' : confirmLabel}
           </ButtonDestructive>

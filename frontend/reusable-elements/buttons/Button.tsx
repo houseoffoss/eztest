@@ -1,8 +1,11 @@
+'use client';
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { useAnalytics } from "@/hooks/useAnalytics"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer",
@@ -50,27 +53,63 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
-
-  return (
-    <Comp
-      suppressHydrationWarning
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+export interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  /** Button name for analytics tracking (auto-detected from data-analytics-button if not provided) */
+  buttonName?: string;
+  /** Disable analytics tracking for this button */
+  disableTracking?: boolean;
 }
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, buttonName, disableTracking = false, onClick, ...props }, ref) => {
+    const { trackButton } = useAnalytics();
+
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        // Call original onClick handler first
+        if (onClick) {
+          onClick(e);
+        }
+
+        // Track button click if enabled (runs after onClick is called)
+        // Analytics tracking is fire-and-forget and won't block the original logic
+        if (!disableTracking && !asChild) {
+          // Get button name from various sources
+          const dataAttr = (e.currentTarget as HTMLElement)?.getAttribute('data-analytics-button');
+          const children = (e.currentTarget as HTMLElement)?.textContent?.trim();
+          const nameToTrack = buttonName || dataAttr || children || 'Button';
+          // Track asynchronously without blocking (fire-and-forget)
+          trackButton(nameToTrack, {
+            variant: variant || 'default',
+            size: size || 'default',
+          }).catch((error) => {
+            // Silently fail - analytics should not break the app
+            console.error('Failed to track button click:', error);
+          });
+        }
+      },
+      [onClick, trackButton, buttonName, disableTracking, variant, size, asChild]
+    );
+
+    const Comp = asChild ? Slot : "button"
+
+    return (
+      <Comp
+        ref={ref}
+        suppressHydrationWarning
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        onClick={asChild ? onClick : handleClick}
+        {...props}
+      />
+    )
+  }
+)
+
+Button.displayName = "Button"
 
 export { Button, buttonVariants }
 

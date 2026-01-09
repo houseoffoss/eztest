@@ -1,11 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { sendOtpEmail } from '@/lib/email-service';
 import { isEmailServiceAvailable } from '@/lib/email-service';
+import * as bcrypt from 'bcryptjs';
 
 interface SendOtpInput {
   email: string;
   type: 'login' | 'register';
   appUrl: string;
+  password?: string; // Optional password for login verification
 }
 
 interface VerifyOtpInput {
@@ -28,6 +30,53 @@ export class OtpService {
    */
   async sendOtp(input: SendOtpInput): Promise<{ success: boolean; message: string; smtpDisabled?: boolean }> {
     const { email, type, appUrl } = input;
+
+    // For login type, check if user exists and password is correct before sending OTP
+    if (type === 'login') {
+      const user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          message: 'Invalid email or password',
+        };
+      }
+
+      // Check if user is deleted
+      if (user.deletedAt) {
+        return {
+          success: false,
+          message: 'Your account has been deleted. Please contact your administrator.',
+        };
+      }
+
+      // Verify password if provided
+      if (input.password) {
+        const isPasswordValid = await bcrypt.compare(input.password, user.password);
+        if (!isPasswordValid) {
+          return {
+            success: false,
+            message: 'Invalid email or password',
+          };
+        }
+      }
+    }
+
+    // For register type, check if user already exists before sending OTP
+    if (type === 'register') {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+
+      if (existingUser) {
+        return {
+          success: false,
+          message: 'User with this email already exists',
+        };
+      }
+    }
 
     // Check if email service is available
     const isAvailable = await isEmailServiceAvailable();

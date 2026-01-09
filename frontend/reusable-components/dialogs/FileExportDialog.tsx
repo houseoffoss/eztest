@@ -57,7 +57,8 @@ export function FileExportDialog({
         setExporting(false);
       }, 500);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Export failed');
+      const errorMsg = error instanceof Error ? error.message : 'Export failed';
+      setError(errorMsg);
       setExporting(false);
     }
   };
@@ -167,6 +168,7 @@ export function FileExportDialog({
             onClick={handleClose}
             disabled={exporting}
             className="cursor-pointer"
+            buttonName={`${title} - Cancel`}
           >
             Cancel
           </Button>
@@ -175,6 +177,7 @@ export function FileExportDialog({
             onClick={handleExport}
             disabled={!selectedFormat || exporting}
             className="cursor-pointer"
+            buttonName={`${title} - Export`}
           >
             {exporting ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

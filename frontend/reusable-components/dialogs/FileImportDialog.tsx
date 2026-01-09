@@ -262,6 +262,7 @@ export function FileImportDialog({
               size="sm"
               onClick={handleDownloadTemplate}
               disabled={uploading}
+              buttonName={`${title} - Download Template`}
             >
               <Download className="h-4 w-4 mr-2" />
               Download
@@ -419,6 +420,7 @@ export function FileImportDialog({
             onClick={handleClose}
             disabled={uploading}
             className="cursor-pointer"
+            buttonName={`${title} - ${result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}`}
           >
             {result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}
           </Button>
@@ -427,6 +429,7 @@ export function FileImportDialog({
               type="button"
               onClick={handleImport}
               disabled={!file || uploading}
+              buttonName={`${title} - Import`}
               className="cursor-pointer"
             >
               {uploading ? (

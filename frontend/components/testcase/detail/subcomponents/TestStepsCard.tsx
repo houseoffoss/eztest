@@ -3,10 +3,9 @@
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
-import { GripVertical, Plus, Trash2, Download, FileText, Image as ImageIcon, File as FileIcon } from 'lucide-react';
+import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import { TestStep } from '../types';
 import { type Attachment } from '@/lib/s3';
 import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
@@ -46,7 +45,6 @@ export function TestStepsCard({
   projectId,
   stepAttachments = {},
   onStepAttachmentsChange,
-  testCaseId,
   newStepActionAttachments = [],
   newStepExpectedResultAttachments = [],
   onNewStepActionAttachmentsChange,
@@ -110,12 +108,13 @@ export function TestStepsCard({
                           }}
                           placeholder="Enter action"
                           fieldName="action"
-                          attachments={step.id && stepAttachments ? stepAttachments[step.id]?.action || [] : []}
+                          attachments={step.id && stepAttachments && stepAttachments[step.id] ? (stepAttachments[step.id].action || []) : []}
                           onAttachmentsChange={(attachments) => {
                             if (onStepAttachmentsChange && step.id) {
                               onStepAttachmentsChange(step.id, 'action', attachments);
                             }
                           }}
+                          entityId={step.id}
                           entityType="teststep"
                           projectId={projectId}
                           showAttachments={true}
@@ -151,12 +150,13 @@ export function TestStepsCard({
                           }}
                           placeholder="Enter expected result"
                           fieldName="expectedResult"
-                          attachments={step.id && stepAttachments ? stepAttachments[step.id]?.expectedResult || [] : []}
+                          attachments={step.id && stepAttachments && stepAttachments[step.id] ? (stepAttachments[step.id].expectedResult || []) : []}
                           onAttachmentsChange={(attachments) => {
                             if (onStepAttachmentsChange && step.id) {
                               onStepAttachmentsChange(step.id, 'expectedResult', attachments);
                             }
                           }}
+                          entityId={step.id}
                           entityType="teststep"
                           projectId={projectId}
                           showAttachments={true}

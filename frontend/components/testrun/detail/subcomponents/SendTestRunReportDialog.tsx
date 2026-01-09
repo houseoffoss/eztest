@@ -59,6 +59,7 @@ export function SendTestRunReportDialog({
             variant="glass"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            buttonName="Send Test Run Report Dialog - Cancel"
           >
             No
           </Button>
@@ -66,6 +67,7 @@ export function SendTestRunReportDialog({
             onClick={handleConfirm}
             disabled={isLoading}
             className="flex items-center gap-2"
+            buttonName="Send Test Run Report Dialog - Send Report"
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {isLoading ? 'Sending...' : 'Yes, Send Report'}

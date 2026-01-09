@@ -27,6 +27,7 @@ export interface Project {
     testCases: number;
     testRuns: number;
     testSuites: number;
+    defects?: number;
   };
 }
 
@@ -36,5 +37,6 @@ export interface ProjectDetail extends Project {
     testRuns: number;
     testSuites: number;
     requirements: number;
+    defects?: number;
   };
 }

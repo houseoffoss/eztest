@@ -119,25 +119,19 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleCompleteTestRun = async () => {
     try {
       setActionLoading(true);
-      console.log('Starting complete test run...');
       const response = await fetch(`/api/testruns/${testRunId}/complete`, {
         method: 'POST',
       });
 
       const data = await response.json();
-      console.log('Complete test run response:', data);
-      console.log('Email available status:', data.data?.emailAvailable);
 
       if (data.data) {
-        console.log('Test run completed, updating test run state...');
         setTestRun(data.data);
         
         // Only show send report dialog if email is available
         if (data.data.emailAvailable === true) {
-          console.log('[TEST RUN] Email available - showing send report dialog');
           setSendReportDialogOpen(true);
         } else {
-          console.log('[TEST RUN] Email not available (value:', data.data.emailAvailable, ') - skipping send report dialog');
           // Ensure dialog is closed
           setSendReportDialogOpen(false);
         }
@@ -149,43 +143,55 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       alert('Failed to complete test run');
     } finally {
       setActionLoading(false);
-      console.log('Complete test run finished');
     }
   };
 
   const handleSendReportYes = async () => {
-    console.log('Calling send-report API...');
     const response = await fetch(`/api/testruns/${testRunId}/send-report`, {
       method: 'POST',
     });
 
     const data = await response.json();
-    console.log('Send report response:', data);
 
-    if (!data.data?.success) {
-      throw new Error(data.data?.message || data.error || 'Failed to send report');
+    // Refresh test run data regardless of success/failure (non-blocking)
+    await fetchTestRun();
+
+    // If SMTP is disabled, don't show any notification
+    if (data.data?.smtpDisabled) {
+      return;
     }
 
-    console.log('Report sent successfully, showing message and refreshing...');
-    
-    // If SMTP is disabled, don't show any notification
-    if (data.data.smtpDisabled) {
-      console.log('[TEST RUN] SMTP disabled - no email notification shown');
-      // Refresh test run data silently
-      await fetchTestRun();
+    // Handle response - show floating alert instead of throwing error
+    if (!data.data?.success) {
+      // No emails were sent at all - show error alert
+      const hasInvalidEmails = data.data.message?.includes('Invalid email') || data.data.message?.includes('No valid email');
+      setFloatingAlert({
+        type: 'error',
+        title: hasInvalidEmails ? 'Invalid Email Addresses' : 'Email Report Failed',
+        message: data.data.message || data.error || 'Failed to send report. Please check recipient email addresses.',
+      });
       return;
     }
     
-    // Check if message contains "Failed to send to:" to determine if there were partial failures
-    const hasFailures = data.data.message?.includes('Failed to send to:');
+    // Emails were sent successfully - check if there are warnings (invalid emails or failed sends)
+    const hasInvalidEmails = data.data.message?.includes('Invalid email addresses skipped:');
+    const hasFailedSends = data.data.message?.includes('Failed to send to:');
     
-    setFloatingAlert({
-      type: hasFailures ? 'error' : 'success',
-      title: hasFailures ? 'Report Sent with Errors' : 'Report Sent Successfully',
-      message: data.data.message,
-    });
-    // Refresh test run data
-    await fetchTestRun();
+    // Show success alert if all went well, or warning if some emails had issues
+    if (hasInvalidEmails || hasFailedSends) {
+      setFloatingAlert({
+        type: 'error', // Use error type to highlight the warning about invalid emails
+        title: 'Report Sent - Some Issues',
+        message: data.data.message, // Message will include: "Report sent successfully to X recipient(s). Invalid email addresses skipped: ..."
+      });
+    } else {
+      // All emails sent successfully, no issues
+      setFloatingAlert({
+        type: 'success',
+        title: 'Report Sent Successfully',
+        message: data.data.message,
+      });
+    }
   };
 
   const handleOpenResultDialog = (testCase: TestCase) => {
@@ -279,7 +285,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testCaseId,
           status: 'SKIPPED',
         };
-        console.log('Sending payload:', payload);
         
         const response = await fetch(`/api/testruns/${testRunId}/results`, {
           method: 'POST',
@@ -304,8 +309,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         return response.json();
       });
 
-      const results = await Promise.all(promises);
-      console.log('Test cases added successfully:', results);
+      await Promise.all(promises);
 
       setAddCasesDialogOpen(false);
       setSelectedCaseIds([]);
@@ -444,7 +448,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           try {
             const data = await response.json();
             errorMessage = data.message || data.error || errorMessage;
-          } catch (parseError) {
+          } catch {
             const text = await response.text();
             if (text) errorMessage = text;
           }
@@ -454,8 +458,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         return response.json();
       });
 
-      const results = await Promise.all(promises);
-      console.log('Test cases from suites added successfully:', results);
+      await Promise.all(promises);
 
       setAddSuitesDialogOpen(false);
       setSelectedSuiteIds([]);
@@ -565,6 +568,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const canUpdateTestRun = hasPermissionCheck('testruns:update');
   const canCreateTestRun = hasPermissionCheck('testruns:create');
+  const canReadTestRun = hasPermissionCheck('testruns:read');
 
   return (
     <div className="flex-1">
@@ -583,14 +587,16 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           { label: testRun.name },
         ]}
         actions={
-          <ButtonSecondary 
-            onClick={() => setExportDialogOpen(true)} 
-            className="cursor-pointer"
-            title="Export detailed report"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Export Report
-          </ButtonSecondary>
+          canReadTestRun && (
+            <ButtonSecondary 
+              onClick={() => setExportDialogOpen(true)} 
+              className="cursor-pointer"
+              title="Export detailed report"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Export Report
+            </ButtonSecondary>
+          )
         }
       />
 

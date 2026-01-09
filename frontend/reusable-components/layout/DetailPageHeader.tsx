@@ -22,6 +22,8 @@ export interface ActionButton {
   onClick: () => void;
   variant?: 'default' | 'destructive';
   show?: boolean;
+  /** Button name for analytics tracking (defaults to label if not provided) */
+  buttonName?: string;
 }
 
 export interface DetailPageHeaderProps {
@@ -40,6 +42,7 @@ export interface DetailPageHeaderProps {
   className?: string;
   titleClassName?: string;
   subtitleClassName?: string;
+  maxLength?: number;
 }
 
 /**
@@ -81,14 +84,15 @@ export function DetailPageHeader({
   className = '',
   titleClassName = '',
   subtitleClassName = '',
+  maxLength,
 }: DetailPageHeaderProps) {
   const visibleActions = actions.filter(action => action.show !== false);
 
   return (
     <div className={cn('mb-6', className)}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="w-full">
-          <h1 className={cn('text-3xl font-bold text-white mb-1', titleClassName)}>
+        <div className="w-full min-w-0">
+          <h1 className={cn('text-3xl font-bold text-white mb-1 break-words', titleClassName)}>
             {isEditing && onTitleChange ? (
               <Input
                 value={editTitle || title}
@@ -96,9 +100,10 @@ export function DetailPageHeader({
                   onTitleChange(e.target.value)
                 }
                 className="text-3xl font-bold text-white bg-white/5 border-white/10"
+                maxLength={maxLength}
               />
             ) : (
-              title
+              <span className="block">{title}</span>
             )}
           </h1>
           {subtitle && (
@@ -127,11 +132,22 @@ export function DetailPageHeader({
         <div className="flex gap-2">
           {isEditing && editActions ? (
             <>
-              <Button variant="glass" onClick={editActions.onCancel} className="cursor-pointer" disabled={editActions.saving}>
+              <Button 
+                variant="glass" 
+                onClick={editActions.onCancel} 
+                className="cursor-pointer" 
+                disabled={editActions.saving}
+                data-analytics-button={`${title} - Cancel Edit`}
+              >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <ButtonPrimary onClick={editActions.onSave} className="cursor-pointer" disabled={editActions.saving}>
+              <ButtonPrimary 
+                onClick={editActions.onSave} 
+                className="cursor-pointer" 
+                disabled={editActions.saving}
+                buttonName={`${title} - Save Edit`}
+              >
                 {editActions.saving ? (
                   <>
                     <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -155,6 +171,7 @@ export function DetailPageHeader({
                     key={index}
                     onClick={action.onClick}
                     className="cursor-pointer"
+                    buttonName={action.buttonName || action.label}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {action.label}
@@ -168,6 +185,7 @@ export function DetailPageHeader({
                   variant="glass"
                   onClick={action.onClick}
                   className="cursor-pointer"
+                  data-analytics-button={action.buttonName || action.label}
                 >
                   <Icon className="w-4 h-4 mr-2" />
                   {action.label}

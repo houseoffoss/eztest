@@ -16,6 +16,7 @@ Comprehensive documentation for all EZTest features.
 | **Data Migration & Bulk Import** | ✅ Complete | [View Docs](./data-migration/README.md) |
 | **File Attachments** | ✅ Complete | [View Docs](./attachments/README.md) |
 | **Email Notifications** | ✅ Complete | [View Docs](./email/README.md) |
+| **Firebase Analytics** | ✅ Complete | [View Docs](./analytics/README.md) |
 | **Dashboard & Analytics** | 🚧 In Progress | Coming Soon |
 | **Requirements Traceability** | 📋 Planned | Coming Soon |
 
@@ -189,6 +190,28 @@ Email notifications for various events and actions.
 - [SMTP Configuration](./email/README.md#smtp-configuration)
 - [Email Types](./email/README.md#email-types)
 - [Troubleshooting](./email/README.md#troubleshooting)
+
+---
+
+### 📊 [Firebase Analytics](./analytics/README.md)
+
+User interaction tracking and application analytics.
+
+**Capabilities:**
+- Automatic page view tracking
+- Button click tracking
+- Custom event tracking
+- User session identification
+- Privacy-compliant (no PII)
+- Debug mode for development
+
+**Note:** Dialog and form tracking have been removed for privacy and performance.
+
+**Quick Links:**
+- [Configuration](./analytics/README.md#configuration)
+- [What Is Tracked](./analytics/README.md#what-is-tracked)
+- [Privacy & Compliance](./analytics/README.md#privacy--compliance)
+- [Troubleshooting](./analytics/README.md#troubleshooting)
 
 ---
 

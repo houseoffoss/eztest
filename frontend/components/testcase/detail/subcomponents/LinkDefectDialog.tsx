@@ -66,11 +66,16 @@ export function LinkDefectDialog({
           }));
         setDefects(availableDefects);
         
-        if (availableDefects.length === 0) {
-          setError('No available defects to link. All defects are already linked to this test case.');
-        }
+        // Don't set error for empty results - these are informational, not errors
+        // The UI will handle empty state gracefully
+        setError(null);
       } else {
         setError('Invalid response format from server');
+        setAlert({
+          type: 'error',
+          title: 'Error Loading Defects',
+          message: 'Invalid response format from server',
+        });
       }
     } catch (error) {
       console.error('Error fetching defects:', error);
@@ -110,7 +115,7 @@ export function LinkDefectDialog({
       : loading 
         ? 'Loading available defects...' 
         : defectOptions.length === 0
-          ? 'No available defects to link. All defects are already linked to this test case.'
+          ? 'No defects available in this project. Create defects first before linking them to test cases.'
           : 'Link a defect to this test case to track related issues.',
     fields,
     submitLabel: 'Link Defect',
@@ -118,7 +123,7 @@ export function LinkDefectDialog({
     triggerOpen: open,
     onOpenChange,
     onSubmit: async (formData) => {
-      // Prevent submission if no defects available or if loading/error
+      // Prevent submission if loading, has error, or no defects available
       if (loading || error || defectOptions.length === 0) {
         throw new Error('Cannot link defect: No available defects or error occurred');
       }

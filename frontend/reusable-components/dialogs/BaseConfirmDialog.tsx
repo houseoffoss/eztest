@@ -17,6 +17,10 @@ export interface BaseConfirmDialogConfig {
   onSubmit: () => Promise<void>;
   onSuccess?: () => void;
   destructive?: boolean; // Changes button color to red
+  /** Button name for analytics tracking (defaults to title) */
+  dialogName?: string;
+  submitButtonName?: string;
+  cancelButtonName?: string;
 }
 
 export const BaseConfirmDialog = ({
@@ -30,7 +34,11 @@ export const BaseConfirmDialog = ({
   onSubmit,
   onSuccess,
   destructive = false,
+  dialogName,
+  submitButtonName,
+  cancelButtonName,
 }: BaseConfirmDialogConfig) => {
+  const dialogTrackingName = dialogName || title;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -82,6 +90,7 @@ export const BaseConfirmDialog = ({
               variant="glass"
               onClick={() => handleOpenChange(false)}
               disabled={loading}
+              data-analytics-button={cancelButtonName || `${dialogTrackingName} - Cancel`}
             >
               {cancelLabel}
             </Button>
@@ -91,6 +100,7 @@ export const BaseConfirmDialog = ({
                 onClick={handleSubmit}
                 disabled={loading}
                 className="cursor-pointer"
+                buttonName={submitButtonName || `${dialogTrackingName} - ${submitLabel}`}
               >
                 {loading ? `${submitLabel}...` : submitLabel}
               </ButtonDestructive>
@@ -101,6 +111,7 @@ export const BaseConfirmDialog = ({
                 onClick={handleSubmit}
                 disabled={loading}
                 className="cursor-pointer"
+                data-analytics-button={submitButtonName || `${dialogTrackingName} - ${submitLabel}`}
               >
                 {loading ? `${submitLabel}...` : submitLabel}
               </Button>

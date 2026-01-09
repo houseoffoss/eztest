@@ -78,6 +78,7 @@ export function TestCaseHeader({
       isEditing={isEditing}
       editTitle={formData.title}
       onTitleChange={(title) => onFormChange({ ...formData, title })}
+      maxLength={200}
       badges={[
         { 
           label: 'Priority', 
@@ -93,8 +94,21 @@ export function TestCaseHeader({
         },
       ]}
       actions={[
-        { label: 'Edit', icon: Edit, onClick: onEdit, show: canUpdate },
-        { label: 'Delete', icon: Trash2, onClick: onDelete, variant: 'destructive', show: canDelete },
+        { 
+          label: 'Edit', 
+          icon: Edit, 
+          onClick: onEdit, 
+          show: canUpdate,
+          buttonName: 'TestCase Detail - Edit',
+        },
+        { 
+          label: 'Delete', 
+          icon: Trash2, 
+          onClick: onDelete, 
+          variant: 'destructive', 
+          show: canDelete,
+          buttonName: 'TestCase Detail - Delete',
+        },
       ]}
       editActions={{
         onSave,

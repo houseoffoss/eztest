@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Send } from 'lucide-react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { Avatar, AvatarImage, AvatarFallback } from '@/frontend/reusable-elements/avatars/Avatar';
 import { TextareaWithAttachments, Attachment } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { uploadFileToS3 } from '@/lib/s3';
 
@@ -98,7 +97,10 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    // Allow submission if either text or attachments exist
+    const hasText = newComment.trim().length > 0;
+    const hasAttachments = commentAttachments.length > 0;
+    if (!hasText && !hasAttachments) return;
 
     setSubmitting(true);
     try {
@@ -134,11 +136,12 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
         }
       }
 
-      // Create the comment
+      // Create the comment (allow empty content if attachments exist)
+      const commentContent = newComment.trim() || '';
       const response = await fetch(`/api/projects/${projectId}/defects/${defectId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment.trim() }),
+        body: JSON.stringify({ content: commentContent }),
       });
 
       if (!response.ok) throw new Error('Failed to add comment');
@@ -236,14 +239,19 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                   key={comment.id}
                   className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} group`}
                 >
-                  <Avatar className="w-10 h-10 flex-shrink-0 ring-2 ring-white/10">
+                  <div className="w-10 h-10 flex-shrink-0 ring-2 ring-white/10 rounded-full overflow-hidden">
                     {comment.user.avatar ? (
-                      <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                    ) : null}
-                    <AvatarFallback className="text-sm font-semibold">
-                      {comment.user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                      <img 
+                        src={comment.user.avatar} 
+                        alt={comment.user.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-sm">
+                        {comment.user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                   <div className={`flex-1 ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col max-w-[75%]`}>
                     <div className={`flex items-center gap-2 mb-1.5 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
                       <span className={`text-sm font-semibold ${
@@ -262,11 +270,13 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                           : 'bg-gray-800/80 backdrop-blur-sm text-gray-100 border border-gray-700/50'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                        {comment.content}
-                      </p>
+                      {comment.content && comment.content.trim() && (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                          {comment.content}
+                        </p>
+                      )}
                       {comment.attachments && comment.attachments.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                        <div className={`space-y-2 ${comment.content && comment.content.trim() ? 'mt-3 pt-3 border-t border-white/10' : ''}`}>
                           {comment.attachments.map(att => (
                             <CommentAttachmentItem key={att.id} attachment={att} />
                           ))}
@@ -299,7 +309,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             <div className="flex justify-end">
               <ButtonPrimary
                 type="submit"
-                disabled={!newComment.trim() || submitting}
+                disabled={(!newComment.trim() && commentAttachments.length === 0) || submitting}
                 size="sm"
                 className="min-w-[120px]"
               >

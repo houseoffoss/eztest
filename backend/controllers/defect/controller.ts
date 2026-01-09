@@ -344,14 +344,15 @@ export class DefectController {
       throw new ValidationException('Defect not found');
     }
 
-    // Validate comment content
+    // Validate comment content - allow empty content (attachments can be added separately)
     if (!body || typeof body !== 'object' || !('content' in body)) {
       throw new ValidationException('Comment content is required');
     }
 
     const { content } = body as { content: string };
-    if (!content || typeof content !== 'string' || content.trim() === '') {
-      throw new ValidationException('Comment content cannot be empty');
+    // Allow empty content - comments can be file-only, text-only, or both
+    if (content === undefined || content === null || typeof content !== 'string') {
+      throw new ValidationException('Comment content must be a string');
     }
 
     const userId = req.userInfo?.id;
@@ -361,7 +362,7 @@ export class DefectController {
 
     const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
-    // Add comment and send notification emails
+    // Add comment and send notification emails (content can be empty string)
     const comment = await defectService.addDefectCommentWithEmail(
       defectId,
       userId,
