@@ -119,25 +119,19 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleCompleteTestRun = async () => {
     try {
       setActionLoading(true);
-      console.log('Starting complete test run...');
       const response = await fetch(`/api/testruns/${testRunId}/complete`, {
         method: 'POST',
       });
 
       const data = await response.json();
-      console.log('Complete test run response:', data);
-      console.log('Email available status:', data.data?.emailAvailable);
 
       if (data.data) {
-        console.log('Test run completed, updating test run state...');
         setTestRun(data.data);
         
         // Only show send report dialog if email is available
         if (data.data.emailAvailable === true) {
-          console.log('[TEST RUN] Email available - showing send report dialog');
           setSendReportDialogOpen(true);
         } else {
-          console.log('[TEST RUN] Email not available (value:', data.data.emailAvailable, ') - skipping send report dialog');
           // Ensure dialog is closed
           setSendReportDialogOpen(false);
         }
@@ -149,25 +143,21 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       alert('Failed to complete test run');
     } finally {
       setActionLoading(false);
-      console.log('Complete test run finished');
     }
   };
 
   const handleSendReportYes = async () => {
-    console.log('Calling send-report API...');
     const response = await fetch(`/api/testruns/${testRunId}/send-report`, {
       method: 'POST',
     });
 
     const data = await response.json();
-    console.log('Send report response:', data);
 
     // Refresh test run data regardless of success/failure (non-blocking)
     await fetchTestRun();
 
     // If SMTP is disabled, don't show any notification
     if (data.data?.smtpDisabled) {
-      console.log('[TEST RUN] SMTP disabled - no email notification shown');
       return;
     }
 
@@ -182,8 +172,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       });
       return;
     }
-    
-    console.log('Report sent successfully, showing message and refreshing...');
     
     // Emails were sent successfully - check if there are warnings (invalid emails or failed sends)
     const hasInvalidEmails = data.data.message?.includes('Invalid email addresses skipped:');
@@ -297,7 +285,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testCaseId,
           status: 'SKIPPED',
         };
-        console.log('Sending payload:', payload);
         
         const response = await fetch(`/api/testruns/${testRunId}/results`, {
           method: 'POST',
@@ -322,8 +309,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         return response.json();
       });
 
-      const results = await Promise.all(promises);
-      console.log('Test cases added successfully:', results);
+      await Promise.all(promises);
 
       setAddCasesDialogOpen(false);
       setSelectedCaseIds([]);
@@ -462,7 +448,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           try {
             const data = await response.json();
             errorMessage = data.message || data.error || errorMessage;
-          } catch (parseError) {
+          } catch {
             const text = await response.text();
             if (text) errorMessage = text;
           }
@@ -472,8 +458,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         return response.json();
       });
 
-      const results = await Promise.all(promises);
-      console.log('Test cases from suites added successfully:', results);
+      await Promise.all(promises);
 
       setAddSuitesDialogOpen(false);
       setSelectedSuiteIds([]);

@@ -78,6 +78,39 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     }
   }, [testCase, testCaseId]);
 
+  // Sync first step's expectedResult attachments when entering edit mode
+  // This ensures attachments added during creation are preserved when editing
+  useEffect(() => {
+    if (isEditing && steps.length > 0 && steps[0]?.id && expectedResultAttachments.length > 0) {
+      const firstStepId = steps[0].id;
+      const firstStep = steps[0];
+      
+      // Only sync if the first step has expectedResult text and no step-level attachments yet
+      if (firstStep.expectedResult) {
+        setStepAttachments(prev => {
+          const currentStepAtts = prev[firstStepId];
+          // Only sync if step attachments don't exist or expectedResult is empty
+          if (!currentStepAtts || !currentStepAtts.expectedResult || currentStepAtts.expectedResult.length === 0) {
+            const updated = { ...prev };
+            if (!updated[firstStepId]) {
+              updated[firstStepId] = { action: [], expectedResult: [] };
+            }
+            // Only set if not already present to avoid overwriting existing attachments
+            if (!updated[firstStepId].expectedResult || updated[firstStepId].expectedResult.length === 0) {
+              updated[firstStepId] = {
+                ...updated[firstStepId],
+                expectedResult: [...expectedResultAttachments]
+              };
+              return updated;
+            }
+          }
+          return prev;
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
+
   // Check permissions
   const canUpdateTestCase = hasPermissionCheck('testcases:update');
   const canDeleteTestCase = hasPermissionCheck('testcases:delete');
@@ -140,18 +173,11 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
             }
             const attachmentsData = await attachmentsResponse.json();
             if (attachmentsData.data && Array.isArray(attachmentsData.data)) {
-              console.log('Fetched attachments:', attachmentsData.data);
-              
               // Filter attachments by fieldName
               const descAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'description');
               const expResultAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'expectedResult');
               const preCondAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'preconditions');
               const postCondAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'postconditions');
-              
-              console.log('Description attachments:', descAttachments);
-              console.log('Expected result attachments:', expResultAttachments);
-              console.log('Preconditions attachments:', preCondAttachments);
-              console.log('Postconditions attachments:', postCondAttachments);
               
               setDescriptionAttachments(descAttachments);
               setExpectedResultAttachments(expResultAttachments);
@@ -171,12 +197,10 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
                         if (stepAttachmentsResponse.ok) {
                           const stepAttachmentsData = await stepAttachmentsResponse.json();
                           const stepAttachmentsList = stepAttachmentsData.data || [];
-                          console.log(`[TestCaseDetail] Step ${step.id} attachments from API:`, stepAttachmentsList.length, 'attachments');
                           
                           // Group by fieldName
                           const actionAtts = stepAttachmentsList.filter((att: Attachment) => att.fieldName === 'action');
                           const expectedResultAtts = stepAttachmentsList.filter((att: Attachment) => att.fieldName === 'expectedResult');
-                          console.log(`[TestCaseDetail] Step ${step.id} - action: ${actionAtts.length}, expectedResult: ${expectedResultAtts.length}`);
                           
                           stepAtts[step.id] = {
                             action: actionAtts,
@@ -199,6 +223,30 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
                     }
                   })
                 );
+              }
+              
+              // If there's a first step with expectedResult text and test case level has expectedResult attachments,
+              // associate those attachments with the first step if it doesn't already have step-level attachments.
+              // This handles the case where expectedResult attachments were added during test case creation.
+              if (apiSteps.length > 0 && apiSteps[0] && apiSteps[0].stepNumber === 1 && expResultAttachments.length > 0) {
+                const firstStep = apiSteps[0];
+                const firstStepId = firstStep.id;
+                
+                // Only apply if the first step has expectedResult text (matches test case expectedResult or is a temp step)
+                if (firstStepId && firstStep.expectedResult) {
+                  // Initialize step attachments if not already present
+                  if (!stepAtts[firstStepId]) {
+                    stepAtts[firstStepId] = {
+                      action: [],
+                      expectedResult: []
+                    };
+                  }
+                  // If the first step has no expectedResult attachments but test case level has them,
+                  // use the test case level attachments
+                  if (!stepAtts[firstStepId].expectedResult || stepAtts[firstStepId].expectedResult.length === 0) {
+                    stepAtts[firstStepId].expectedResult = [...expResultAttachments];
+                  }
+                }
               }
               
               setStepAttachments(stepAtts);
@@ -318,7 +366,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         // Associate uploaded attachments with the test case
         if (uploadedAttachments.length > 0) {
           try {
-            console.log('Linking attachments:', uploadedAttachments);
             await fetch(`/api/testcases/${testCaseId}/attachments`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -331,76 +378,184 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         }
 
         // Update steps and get the mapping of temp IDs to real IDs
-        const updatedStepAttachmentsMap = await updateSteps();
+        const { attachmentsMap: updatedStepAttachmentsMap, updatedSteps } = await updateSteps();
+        
+        // After updating steps, ensure expectedResult attachments are linked to first step
+        // This handles existing test cases that have expectedResult attachments at test case level
+        // but not linked to the first step yet (follows same pattern as expectedResult text)
+        const existingExpectedResultAttachments = expectedResultAttachments.filter(att => !att.id.startsWith('pending-'));
+        const newlyUploadedExpectedResultAttachments = uploadedAttachments.filter(att => att.fieldName === 'expectedResult');
+        
+        if ((existingExpectedResultAttachments.length > 0 || newlyUploadedExpectedResultAttachments.length > 0) && 
+            updatedSteps.length > 0 && updatedSteps[0]?.id) {
+          const firstStep = updatedSteps[0];
+          const firstStepId = firstStep.id;
+          
+          if (firstStepId && !firstStepId.startsWith('temp-')) {
+            // Check if first step already has expectedResult attachments
+            const firstStepHasExpectedResultAtts = updatedStepAttachmentsMap[firstStepId]?.expectedResult?.length > 0;
+            
+            // If first step has expectedResult text, merge test case level attachments with step-level ones
+            if (firstStep.expectedResult) {
+              try {
+                // Fetch existing step attachments to merge with test case level ones
+                let existingStepAttachments: Attachment[] = [];
+                try {
+                  const stepAttResponse = await fetch(`/api/teststeps/${firstStepId}/attachments`);
+                  if (stepAttResponse.ok) {
+                    const stepAttData = await stepAttResponse.json();
+                    existingStepAttachments = stepAttData.data || [];
+                    // Filter for expectedResult attachments
+                    const existingStepExpectedResultAtts = existingStepAttachments.filter((att: Attachment) => att.fieldName === 'expectedResult');
+                    
+                    // Merge with test case level attachments, avoiding duplicates
+                    const existingIds = new Set(existingStepExpectedResultAtts.map((att: Attachment) => att.id));
+                    const testCaseLevelAttsToAdd = existingExpectedResultAttachments.filter(att => !existingIds.has(att.id));
+                    
+                    // Combine all expectedResult attachments for linking
+                    const allExpectedResultAttachments = [
+                      ...existingStepExpectedResultAtts,
+                      ...testCaseLevelAttsToAdd,
+                      ...newlyUploadedExpectedResultAttachments
+                    ];
+                    
+                    const attachmentsToLink = allExpectedResultAttachments.map(att => ({ 
+                      id: att.id, 
+                      fieldName: 'expectedResult' as const 
+                    }));
+                    
+                    if (attachmentsToLink.length > 0) {
+                      await fetch(`/api/teststeps/${firstStepId}/attachments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ attachments: attachmentsToLink }),
+                      });
+                    }
+                  }
+                } catch (fetchError) {
+                  console.error(`Error fetching existing step attachments for ${firstStepId}:`, fetchError);
+                  // Fallback: just link test case level attachments
+                  const attachmentsToLink = [
+                    ...existingExpectedResultAttachments.map(att => ({ id: att.id, fieldName: 'expectedResult' as const })),
+                    ...newlyUploadedExpectedResultAttachments.map(att => ({ id: att.id, fieldName: 'expectedResult' as const })),
+                  ];
+                  
+                  if (attachmentsToLink.length > 0) {
+                    await fetch(`/api/teststeps/${firstStepId}/attachments`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ attachments: attachmentsToLink }),
+                    });
+                  }
+                }
+              } catch (error) {
+                console.warn('Failed to link expectedResult attachments to first step:', error);
+                // Non-critical - attachments are still at test case level and will be displayed via frontend logic
+              }
+            }
+          }
+        }
         
         // Associate step attachments using the updated mapping
         for (const stepId in updatedStepAttachmentsMap) {
+          // Skip temporary step IDs - they don't exist in database yet
+          if (stepId.startsWith('temp-')) {
+            continue;
+          }
+          
           const actionAttachments = updatedStepAttachmentsMap[stepId]?.action || [];
           const expectedResultAttachments = updatedStepAttachmentsMap[stepId]?.expectedResult || [];
           const allStepAttachments = [...actionAttachments, ...expectedResultAttachments];
           
-          console.log(`[handleSave] Step ${stepId} has ${allStepAttachments.length} total attachments in state`);
+          // Fetch existing attachments from database to ensure we don't lose any
+          let existingDbAttachments: Attachment[] = [];
+          try {
+            const existingResponse = await fetch(`/api/teststeps/${stepId}/attachments`);
+            if (existingResponse.ok) {
+              const existingData = await existingResponse.json();
+              existingDbAttachments = existingData.data || [];
+            }
+          } catch (error) {
+            console.error(`Error fetching existing attachments for step ${stepId}:`, error);
+          }
           
-          if (allStepAttachments.length > 0) {
-            // Separate pending attachments (need upload) from existing attachments (already in DB)
-            const pendingAttachments = allStepAttachments.filter(att => att.id.startsWith('pending-'));
-            const existingAttachments = allStepAttachments.filter(att => !att.id.startsWith('pending-'));
-            
-            console.log(`[handleSave] Step ${stepId}: ${pendingAttachments.length} pending, ${existingAttachments.length} existing`);
-            
-            if (pendingAttachments.length > 0) {
-              console.log(`Uploading ${pendingAttachments.length} pending attachments for step ${stepId}`);
-              // Upload pending attachments first
-              const uploadedAttachments = await Promise.all(
-                pendingAttachments.map(async (att) => {
-                  try {
-                    // @ts-expect-error - Access the File object
-                    const file = att._pendingFile;
-                    if (file) {
-                      const result = await uploadFileToS3({
-                        file,
-                        fieldName: att.fieldName || 'action',
-                        entityType: 'teststep',
-                        projectId: testCase?.project?.id,
-                        onProgress: () => {}, // Silent upload
-                      });
-                      if (result.success && result.attachment) {
-                        return {
-                          id: result.attachment.id,
-                          s3Key: result.attachment.filename,
-                          fileName: file.name,
-                          mimeType: file.type,
-                          fieldName: att.fieldName || 'action'
-                        };
-                      }
-                    }
-                  } catch (error) {
-                    console.error('Error uploading attachment:', error);
-                    return null;
-                  }
-                  return null;
-                })
-              );
-              
-              const validUploadedAttachments = uploadedAttachments.filter(att => att !== null);
-              
-              if (validUploadedAttachments.length > 0) {
+          // Separate pending attachments (need upload) from existing attachments (already in DB)
+          const pendingAttachments = allStepAttachments.filter(att => att.id.startsWith('pending-'));
+          const existingStateAttachments = allStepAttachments.filter(att => !att.id.startsWith('pending-'));
+          
+          // Merge existing DB attachments with state attachments, avoiding duplicates
+          const existingAttachmentIds = new Set(existingStateAttachments.map(att => att.id));
+          const additionalDbAttachments = existingDbAttachments.filter(att => !existingAttachmentIds.has(att.id));
+          const allExistingAttachments = [...existingStateAttachments, ...additionalDbAttachments];
+          
+          if (pendingAttachments.length > 0) {
+            // Upload pending attachments first
+            const uploadedAttachments = await Promise.all(
+              pendingAttachments.map(async (att) => {
                 try {
-                  console.log(`[handleSave] Linking ${validUploadedAttachments.length} new attachments to step ${stepId}`);
-                  await fetch(`/api/teststeps/${stepId}/attachments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ attachments: validUploadedAttachments }),
-                  });
+                  // @ts-expect-error - Access the File object
+                  const file = att._pendingFile;
+                  if (file) {
+                    const result = await uploadFileToS3({
+                      file,
+                      fieldName: att.fieldName || 'action',
+                      entityType: 'teststep',
+                      projectId: testCase?.project?.id,
+                      onProgress: () => {}, // Silent upload
+                    });
+                    if (result.success && result.attachment) {
+                      return {
+                        id: result.attachment.id,
+                        s3Key: result.attachment.filename,
+                        fileName: file.name,
+                        mimeType: file.type,
+                        fieldName: att.fieldName || 'action'
+                      };
+                    }
+                  }
                 } catch (error) {
-                  console.error(`Error associating uploaded attachments for step ${stepId}:`, error);
+                  console.error('Error uploading attachment:', error);
+                  return null;
                 }
+                return null;
+              })
+            );
+            
+            const validUploadedAttachments = uploadedAttachments.filter(att => att !== null);
+            
+            // Combine existing and newly uploaded attachments
+            const allAttachmentsToLink = [
+              ...allExistingAttachments.map(att => ({ id: att.id, fieldName: att.fieldName || 'action' })),
+              ...validUploadedAttachments.map(att => ({ id: att.id, fieldName: att.fieldName || 'action' }))
+            ];
+            
+            if (allAttachmentsToLink.length > 0) {
+              try {
+                await fetch(`/api/teststeps/${stepId}/attachments`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ attachments: allAttachmentsToLink }),
+                });
+              } catch (error) {
+                console.error(`Error associating attachments for step ${stepId}:`, error);
               }
             }
+          } else if (allExistingAttachments.length > 0) {
+            // No new attachments, but ensure existing ones are properly linked
+            const attachmentsToLink = allExistingAttachments.map(att => ({ 
+              id: att.id, 
+              fieldName: att.fieldName || 'action' 
+            }));
             
-            // Existing attachments are already linked to the step in the database
-            // They will be reloaded when fetchTestCase() is called
-            console.log(`Step ${stepId}: ${existingAttachments.length} existing attachments preserved in database`);
+            try {
+              await fetch(`/api/teststeps/${stepId}/attachments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ attachments: attachmentsToLink }),
+              });
+            } catch (error) {
+              console.error(`Error ensuring existing attachments for step ${stepId}:`, error);
+            }
           }
         }
         
@@ -444,7 +599,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     }
   };
 
-  const updateSteps = async () => {
+  const updateSteps = async (): Promise<{ attachmentsMap: Record<string, Record<string, Attachment[]>>; updatedSteps: TestStep[] }> => {
     try {
       // Clean steps data - only send necessary fields to prevent backend issues.
       // Also drop any steps where both action and expectedResult are empty,
@@ -491,15 +646,15 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         setStepAttachments(updatedStepAttachments);
         // Update steps with real IDs
         setSteps(data.data);
-        // Return the updated attachments map for immediate use
-        return updatedStepAttachments;
+        // Return both the updated attachments map and updated steps for immediate use
+        return { attachmentsMap: updatedStepAttachments, updatedSteps: data.data };
       } else {
         console.error('Failed to update steps:', data.error);
-        return stepAttachments;
+        return { attachmentsMap: stepAttachments, updatedSteps: steps };
       }
     } catch (error) {
       console.error('Error updating steps:', error);
-      return stepAttachments;
+      return { attachmentsMap: stepAttachments, updatedSteps: steps };
     }
   };
 
@@ -697,7 +852,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               projectId={testCase?.project?.id}
               stepAttachments={stepAttachments}
               onStepAttachmentsChange={(stepId, field, attachments) => {
-                console.log('[TestCaseDetail] Step attachment change:', { stepId, field, attachmentCount: attachments.length });
                 setStepAttachments(prev => {
                   const updated = {
                     ...prev,
@@ -706,7 +860,6 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
                       [field]: attachments
                     }
                   };
-                  console.log('[TestCaseDetail] Updated stepAttachments:', updated);
                   return updated;
                 });
               }}

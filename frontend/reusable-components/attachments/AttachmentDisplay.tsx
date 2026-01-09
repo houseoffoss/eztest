@@ -54,8 +54,6 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
       for (const attachment of attachments) {
         if (attachment.mimeType.startsWith('image/')) {
           try {
-            console.log(`[AttachmentDisplay] Fetching URL for attachment:`, attachment);
-            console.log(`[AttachmentDisplay] Attachment entityType:`, attachment.entityType);
             // Use different endpoint based on entity type
             let endpoint: string;
             if (attachment.entityType === 'defect') {
@@ -65,19 +63,15 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
             } else {
               endpoint = `/api/attachments/${attachment.id}`;
             }
-            console.log(`[AttachmentDisplay] Using endpoint:`, endpoint);
             
             const response = await fetch(endpoint);
-            console.log(`[AttachmentDisplay] Response status for ${attachment.id}:`, response.status);
             
             if (response.ok) {
               const result = await response.json();
-              console.log(`[AttachmentDisplay] Response data for ${attachment.id}:`, result);
               
               // API returns { data: { url, ... } }
               if (result.data?.url) {
                 urls[attachment.id] = result.data.url;
-                console.log(`[AttachmentDisplay] Set image URL for ${attachment.id}:`, result.data.url);
               } else {
                 console.warn(`[AttachmentDisplay] No URL in response for ${attachment.id}`, result);
               }
@@ -90,7 +84,6 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
           }
         }
       }
-      console.log('[AttachmentDisplay] Final imageUrls:', urls);
       setImageUrls(urls);
       imageUrlsRef.current = urls;
     };
@@ -224,7 +217,7 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
   };
 
   return (
-    <div className="relative grid grid-cols-3 gap-2">
+    <div className="relative flex flex-wrap gap-1">
       {attachments.map((attachment) => {
         const isImage = attachment.mimeType.startsWith('image/');
         

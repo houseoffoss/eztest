@@ -108,8 +108,6 @@ export async function uploadFileToS3({
         try {
           // Upload directly to S3 via presigned URL
           // Note: Don't set Content-Type header here as it's already in the presigned URL
-          console.log(`Uploading chunk ${partNumber}/${totalParts} (${chunk.size} bytes) to S3...`);
-          
           const uploadResponse = await fetch(url, {
             method: 'PUT',
             body: chunk,
@@ -120,8 +118,6 @@ export async function uploadFileToS3({
             console.error(`S3 upload error (status ${uploadResponse.status}):`, errorText);
             throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorText}`);
           }
-          
-          console.log(`Chunk ${partNumber} uploaded successfully`);
 
           // Get ETag from response headers
           const etag = uploadResponse.headers.get('ETag');
@@ -236,8 +232,6 @@ export async function abortUpload(uploadId: string, s3Key: string): Promise<void
       const errorText = await response.text().catch(() => 'Unknown error');
       console.error(`Failed to abort upload (status ${response.status}):`, errorText);
       // Don't throw - abort is best-effort cleanup
-    } else {
-      console.log(`Successfully aborted upload: ${uploadId}`);
     }
   } catch (error) {
     console.error('Failed to abort upload (network error):', error);
@@ -249,7 +243,6 @@ export async function abortUpload(uploadId: string, s3Key: string): Promise<void
  * Gets a presigned URL for downloading/previewing a file
  */
 export async function getFileUrl(attachmentId: string, entityType?: string): Promise<{ url: string; isPreviewable?: boolean }> {
-  console.log('Fetching file URL for attachment:', attachmentId, 'entityType:', entityType);
   let endpoint: string;
   if (entityType === 'defect') {
     endpoint = `/api/defect-attachments/${attachmentId}`;
@@ -267,7 +260,6 @@ export async function getFileUrl(attachmentId: string, entityType?: string): Pro
   }
   
   const responseData = await response.json();
-  console.log('Received file URL:', responseData);
   
   // Handle both response formats: direct {url, isPreviewable} or nested {data: {url, isPreviewable}}
   const data = responseData.data || responseData;
@@ -279,9 +271,7 @@ export async function getFileUrl(attachmentId: string, entityType?: string): Pro
  */
 export async function downloadFile(attachmentId: string, entityType?: string): Promise<void> {
   try {
-    console.log('Downloading file:', attachmentId);
     const { url } = await getFileUrl(attachmentId, entityType);
-    console.log('Opening URL in new tab:', url);
     window.open(url, '_blank');
   } catch (error) {
     console.error('File access error:', error);

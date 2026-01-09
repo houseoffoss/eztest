@@ -198,87 +198,111 @@ async function main() {
     console.log('✅ Demo project created:', demoProject.name);
 
     // Create demo test suites
-    const authSuite = await prisma.testSuite.create({
+    // Test suites are groups of modules that can be used for test runs
+    // Suite names are test types (Functional, Non-functional, Smoke, Regression, etc.)
+    const functionalSuite = await prisma.testSuite.create({
       data: {
-        name: 'Authentication',
-        description: 'Test cases for user authentication and authorization',
+        name: 'Functional',
+        description: 'Functional testing suite grouping Authentication, User Interface, API Integration, and Data Management modules. Contains test cases for core functionality including login, logout, UI components, API endpoints, and data operations.',
         projectId: demoProject.id,
         order: 1,
       },
     });
-    console.log('   ✅ Test Suite: Authentication');
+    console.log('   ✅ Test Suite: Functional (groups Authentication, UI, API Integration, and Data Management modules)');
 
-    const uiSuite = await prisma.testSuite.create({
+    const smokeSuite = await prisma.testSuite.create({
       data: {
-        name: 'User Interface',
-        description: 'UI/UX testing and validation',
+        name: 'Smoke',
+        description: 'Smoke testing suite for quick validation of critical functionality. Groups test cases from Authentication and User Interface modules.',
         projectId: demoProject.id,
         order: 2,
       },
     });
-    console.log('   ✅ Test Suite: User Interface');
+    console.log('   ✅ Test Suite: Smoke (groups Authentication and UI modules)');
 
-    const apiSuite = await prisma.testSuite.create({
+    const regressionSuite = await prisma.testSuite.create({
       data: {
-        name: 'API Testing',
-        description: 'Backend API endpoint testing',
+        name: 'Regression',
+        description: 'Regression testing suite covering all modules to ensure existing functionality works after changes. Groups Authentication, User Interface, API Integration, Data Management, and Security modules.',
         projectId: demoProject.id,
         order: 3,
       },
     });
-    console.log('   ✅ Test Suite: API Testing');
+    console.log('   ✅ Test Suite: Regression (groups all modules)');
 
-    // Create demo modules
-    const authModule = await prisma.module.create({
+    const nonFunctionalSuite = await prisma.testSuite.create({
       data: {
-        name: 'Authentication Module',
-        description: 'All authentication-related test cases including login, logout, password reset, and session management',
-        projectId: demoProject.id,
-        order: 1,
-      },
-    });
-    console.log('   ✅ Module: Authentication Module');
-
-    const uiModule = await prisma.module.create({
-      data: {
-        name: 'User Interface Module',
-        description: 'UI/UX testing module covering dashboards, forms, navigation, and responsive design',
-        projectId: demoProject.id,
-        order: 2,
-      },
-    });
-    console.log('   ✅ Module: User Interface Module');
-
-    const apiModule = await prisma.module.create({
-      data: {
-        name: 'API Module',
-        description: 'Backend API testing module for REST endpoints, authentication, and data validation',
-        projectId: demoProject.id,
-        order: 3,
-      },
-    });
-    console.log('   ✅ Module: API Module');
-
-    const securityModule = await prisma.module.create({
-      data: {
-        name: 'Security Module',
-        description: 'Security testing including RBAC, XSS prevention, and data protection',
+        name: 'Non-functional',
+        description: 'Non-functional testing suite focusing on security, performance, and reliability. Groups Security and API modules.',
         projectId: demoProject.id,
         order: 4,
       },
     });
-    console.log('   ✅ Module: Security Module');
+    console.log('   ✅ Test Suite: Non-functional (groups Security and API modules)');
+
+    // Create demo modules
+    // Modules are feature/component-based organization units
+    // Suites (Functional, Smoke, Regression, Non-functional) group modules for test runs
+    const authModule = await prisma.module.create({
+      data: {
+        name: 'Authentication',
+        description: 'Authentication and authorization features including login, logout, password management, and session handling',
+        projectId: demoProject.id,
+        order: 1,
+      },
+    });
+    console.log('   ✅ Module: Authentication');
+
+    const uiModule = await prisma.module.create({
+      data: {
+        name: 'User Interface',
+        description: 'User interface components including dashboards, forms, navigation, responsive design, and user interactions',
+        projectId: demoProject.id,
+        order: 2,
+      },
+    });
+    console.log('   ✅ Module: User Interface');
+
+    const apiModule = await prisma.module.create({
+      data: {
+        name: 'API Integration',
+        description: 'REST API endpoints for authentication, projects, data retrieval, and error handling',
+        projectId: demoProject.id,
+        order: 3,
+      },
+    });
+    console.log('   ✅ Module: API Integration');
+
+    const securityModule = await prisma.module.create({
+      data: {
+        name: 'Security',
+        description: 'Security features including role-based access control, input validation, XSS prevention, and data encryption',
+        projectId: demoProject.id,
+        order: 4,
+      },
+    });
+    console.log('   ✅ Module: Security');
+
+    const dataModule = await prisma.module.create({
+      data: {
+        name: 'Data Management',
+        description: 'Data operations including CRUD operations, data validation, filtering, and search functionality',
+        projectId: demoProject.id,
+        order: 5,
+      },
+    });
+    console.log('   ✅ Module: Data Management');
 
     // Create demo test cases for Authentication suite
     let testCaseCounter = 1;
     const loginTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'User Login with Valid Credentials',
         description: 'Verify that users can successfully log in with valid email and password',
         expectedResult: 'User is successfully authenticated and dashboard is displayed',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'CRITICAL',
         status: 'ACTIVE',
@@ -291,12 +315,12 @@ async function main() {
 
     const logoutTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'User Logout',
         description: 'Verify that users can successfully log out',
         expectedResult: 'User session is terminated and redirected to login page',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
@@ -309,12 +333,12 @@ async function main() {
 
     const passwordResetTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Password Reset Flow',
         description: 'Verify that users can reset their password via email',
         expectedResult: 'Reset email is sent and user can set new password successfully',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
@@ -327,12 +351,12 @@ async function main() {
 
     const sessionManagementTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Session Timeout Handling',
         description: 'Verify that inactive sessions timeout correctly after configured period',
         expectedResult: 'User is automatically logged out after session timeout and redirected to login',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
@@ -347,12 +371,12 @@ async function main() {
     // Create demo test cases for UI suite
     const dashboardTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Dashboard Layout Validation',
         description: 'Verify that dashboard displays all required widgets and information',
         expectedResult: 'All dashboard widgets are visible and properly formatted',
         projectId: demoProject.id,
-        suiteId: uiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: uiModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
@@ -365,12 +389,12 @@ async function main() {
 
     const navigationTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Navigation Menu Functionality',
         description: 'Verify that all navigation menu items work correctly',
         expectedResult: 'All menu items navigate to their respective pages without errors',
         projectId: demoProject.id,
-        suiteId: uiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: uiModule.id,
         priority: 'LOW',
         status: 'ACTIVE',
@@ -383,12 +407,12 @@ async function main() {
 
     const responsiveDesignTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Responsive Design - Mobile View',
         description: 'Verify that application displays correctly on mobile devices',
         expectedResult: 'All UI elements are properly sized and accessible on mobile screens',
         projectId: demoProject.id,
-        suiteId: uiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: uiModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
@@ -401,12 +425,12 @@ async function main() {
 
     const formValidationTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Form Input Validation',
         description: 'Verify that form fields validate input correctly and display appropriate error messages',
         expectedResult: 'Invalid inputs are rejected with clear error messages',
         projectId: demoProject.id,
-        suiteId: uiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: uiModule.id,
         priority: 'HIGH',
         status: 'ACTIVE',
@@ -421,12 +445,12 @@ async function main() {
     // Create demo test cases for API suite
     const apiAuthTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'API Authentication Endpoint',
         description: 'Verify that /api/auth/login endpoint returns correct response',
         expectedResult: 'HTTP 200 response with valid JWT token in response body',
         projectId: demoProject.id,
-        suiteId: apiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: apiModule.id,
         priority: 'CRITICAL',
         status: 'ACTIVE',
@@ -439,12 +463,12 @@ async function main() {
 
     const apiProjectsTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'API Projects List Endpoint',
         description: 'Verify that /api/projects endpoint returns user projects',
         expectedResult: 'HTTP 200 response with projects array containing user projects',
         projectId: demoProject.id,
-        suiteId: apiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: apiModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
@@ -457,12 +481,12 @@ async function main() {
 
     const apiErrorHandlingTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'API Error Handling',
         description: 'Verify that API endpoints return appropriate error codes and messages',
         expectedResult: 'API returns correct HTTP status codes and error messages for various error scenarios',
         projectId: demoProject.id,
-        suiteId: apiSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: apiModule.id,
         priority: 'MEDIUM',
         status: 'ACTIVE',
@@ -474,11 +498,10 @@ async function main() {
     });
     console.log('   ✅ Test Cases: API Testing (3 cases)');
 
-    // Add some test cases for security module (not assigned to any suite yet)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // Add some test cases for security module (assigned to Security Suite)
     const rbacTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Role-Based Access Control Validation',
         description: 'Verify that users can only access resources permitted by their role',
         expectedResult: 'Users are restricted to accessing only permitted resources based on their role',
@@ -493,10 +516,9 @@ async function main() {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const xssPreventionTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'XSS Attack Prevention',
         description: 'Verify that application properly sanitizes user input to prevent XSS attacks',
         expectedResult: 'User input is sanitized and XSS payloads are neutralized',
@@ -511,10 +533,9 @@ async function main() {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataEncryptionTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Sensitive Data Encryption',
         description: 'Verify that sensitive data is encrypted both in transit and at rest',
         expectedResult: 'All sensitive data is properly encrypted using industry-standard algorithms',
@@ -528,17 +549,17 @@ async function main() {
         createdById: adminUser.id,
       },
     });
-    console.log('   ✅ Test Cases: Security Module (3 cases - not assigned to suite)');
+    console.log('   ✅ Test Cases: Security Module (3 cases - assigned to Security Suite)');
 
     // Add a few more test cases with different statuses for variety
     const deprecatedTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Legacy Login Method (Deprecated)',
         description: 'Old login method using username instead of email. This test case is deprecated.',
         expectedResult: 'N/A - Deprecated',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'LOW',
         status: 'DEPRECATED',
@@ -551,12 +572,12 @@ async function main() {
 
     const draftTestCase = await prisma.testCase.create({
       data: {
-        tcId: `tc${testCaseCounter++}`,
+        tcId: `TC-${testCaseCounter++}`,
         title: 'Two-Factor Authentication',
         description: 'Test case for 2FA implementation (work in progress)',
         expectedResult: 'User can enable and use 2FA for login',
         projectId: demoProject.id,
-        suiteId: authSuite.id,
+        suiteId: functionalSuite.id,
         moduleId: authModule.id,
         priority: 'HIGH',
         status: 'DRAFT',
@@ -567,6 +588,76 @@ async function main() {
       },
     });
     console.log('   ✅ Additional test cases: 1 DEPRECATED, 1 DRAFT');
+
+    // Add test cases for Data Management module
+    const dataCreateTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `TC-${testCaseCounter++}`,
+        title: 'Create New Record',
+        description: 'Verify that users can create new records with valid data',
+        expectedResult: 'New record is created successfully and displayed in the list',
+        projectId: demoProject.id,
+        moduleId: dataModule.id,
+        priority: 'HIGH',
+        status: 'ACTIVE',
+        estimatedTime: 8,
+        preconditions: 'User is logged in and has create permissions',
+        postconditions: 'New record is saved and visible in the system',
+        createdById: testers[0].id,
+      },
+    });
+
+    const dataUpdateTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `TC-${testCaseCounter++}`,
+        title: 'Update Existing Record',
+        description: 'Verify that users can update existing records',
+        expectedResult: 'Record is updated successfully with new data',
+        projectId: demoProject.id,
+        moduleId: dataModule.id,
+        priority: 'HIGH',
+        status: 'ACTIVE',
+        estimatedTime: 6,
+        preconditions: 'Record exists in the system',
+        postconditions: 'Record reflects the updated information',
+        createdById: testers[0].id,
+      },
+    });
+
+    const dataDeleteTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `TC-${testCaseCounter++}`,
+        title: 'Delete Record',
+        description: 'Verify that users can delete records with confirmation',
+        expectedResult: 'Record is deleted after confirmation and removed from the list',
+        projectId: demoProject.id,
+        moduleId: dataModule.id,
+        priority: 'MEDIUM',
+        status: 'ACTIVE',
+        estimatedTime: 5,
+        preconditions: 'Record exists in the system',
+        postconditions: 'Record is permanently deleted from the system',
+        createdById: testers[1].id,
+      },
+    });
+
+    const dataSearchTestCase = await prisma.testCase.create({
+      data: {
+        tcId: `TC-${testCaseCounter++}`,
+        title: 'Search and Filter Functionality',
+        description: 'Verify that search and filter features work correctly',
+        expectedResult: 'Search returns relevant results and filters apply correctly',
+        projectId: demoProject.id,
+        moduleId: dataModule.id,
+        priority: 'MEDIUM',
+        status: 'ACTIVE',
+        estimatedTime: 10,
+        preconditions: 'Multiple records exist in the system',
+        postconditions: 'Search and filter results match the criteria',
+        createdById: testers[1].id,
+      },
+    });
+    console.log('   ✅ Test Cases: Data Management (4 cases)');
 
     // Create demo test run (assigned to project manager)
     const testRun = await prisma.testRun.create({
@@ -679,33 +770,68 @@ async function main() {
       ],
     });
     // Link test cases to suites using many-to-many relationship
-    console.log('\n🔗 Linking test cases to suites...');
+    // This establishes which modules each suite groups (suites group modules via test cases)
+    // Suites are test types (Functional, Smoke, Regression, Non-functional) that group modules
+    console.log('\n🔗 Linking test cases to suites (suites group modules)...');
     await prisma.testCaseSuite.createMany({
       data: [
-        { testCaseId: loginTestCase.id, testSuiteId: authSuite.id },
-        { testCaseId: logoutTestCase.id, testSuiteId: authSuite.id },
-        { testCaseId: passwordResetTestCase.id, testSuiteId: authSuite.id },
-        { testCaseId: sessionManagementTestCase.id, testSuiteId: authSuite.id },
-        { testCaseId: dashboardTestCase.id, testSuiteId: uiSuite.id },
-        { testCaseId: navigationTestCase.id, testSuiteId: uiSuite.id },
-        { testCaseId: responsiveDesignTestCase.id, testSuiteId: uiSuite.id },
-        { testCaseId: formValidationTestCase.id, testSuiteId: uiSuite.id },
-        { testCaseId: apiAuthTestCase.id, testSuiteId: apiSuite.id },
-        { testCaseId: apiProjectsTestCase.id, testSuiteId: apiSuite.id },
-        { testCaseId: apiErrorHandlingTestCase.id, testSuiteId: apiSuite.id },
+        // Functional Suite - groups Authentication, UI, and API modules
+        { testCaseId: loginTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: logoutTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: passwordResetTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: sessionManagementTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: deprecatedTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: draftTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: dashboardTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: navigationTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: responsiveDesignTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: formValidationTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: apiAuthTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: apiProjectsTestCase.id, testSuiteId: functionalSuite.id },
+        { testCaseId: apiErrorHandlingTestCase.id, testSuiteId: functionalSuite.id },
+        // Smoke Suite - groups critical Authentication and UI test cases
+        { testCaseId: loginTestCase.id, testSuiteId: smokeSuite.id },
+        { testCaseId: logoutTestCase.id, testSuiteId: smokeSuite.id },
+        { testCaseId: dashboardTestCase.id, testSuiteId: smokeSuite.id },
+        // Regression Suite - groups all modules for comprehensive testing
+        { testCaseId: loginTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: logoutTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: passwordResetTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: sessionManagementTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: deprecatedTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dashboardTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: navigationTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: responsiveDesignTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: formValidationTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: apiAuthTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: apiProjectsTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: apiErrorHandlingTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dataCreateTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dataUpdateTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dataDeleteTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dataSearchTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: rbacTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: xssPreventionTestCase.id, testSuiteId: regressionSuite.id },
+        { testCaseId: dataEncryptionTestCase.id, testSuiteId: regressionSuite.id },
+        // Non-functional Suite - groups Security and API modules
+        { testCaseId: rbacTestCase.id, testSuiteId: nonFunctionalSuite.id },
+        { testCaseId: xssPreventionTestCase.id, testSuiteId: nonFunctionalSuite.id },
+        { testCaseId: dataEncryptionTestCase.id, testSuiteId: nonFunctionalSuite.id },
+        { testCaseId: apiAuthTestCase.id, testSuiteId: nonFunctionalSuite.id },
+        { testCaseId: apiErrorHandlingTestCase.id, testSuiteId: nonFunctionalSuite.id },
       ],
     });
-    console.log('   ✅ Linked 11 test cases to suites');
+    console.log('   ✅ Linked test cases to suites (Functional, Smoke, Regression, Non-functional)');
 
     // Link test run to suites
+    // Test runs use suites, and suites group modules (which contain test cases)
     await prisma.testRunSuite.createMany({
       data: [
-        { testRunId: testRun.id, testSuiteId: authSuite.id },
-        { testRunId: testRun.id, testSuiteId: uiSuite.id },
-        { testRunId: testRun.id, testSuiteId: apiSuite.id },
+        { testRunId: testRun.id, testSuiteId: functionalSuite.id }, // Functional testing suite
+        { testRunId: testRun.id, testSuiteId: regressionSuite.id }, // Regression testing suite
       ],
     });
-    console.log('   ✅ Linked test run to 3 suites');
+    console.log('   ✅ Linked test run to Functional and Regression suites');
 
     // Add test steps for all test cases
     console.log('\n📋 Adding test steps...');
@@ -945,9 +1071,10 @@ async function main() {
       },
     });
 
+    // Link test run 2 to suites (suites group modules for test runs)
     await prisma.testRunSuite.createMany({
       data: [
-        { testRunId: testRun2.id, testSuiteId: authSuite.id },
+        { testRunId: testRun2.id, testSuiteId: smokeSuite.id }, // Smoke testing suite
       ],
     });
 
@@ -985,11 +1112,11 @@ async function main() {
       },
     });
 
+    // Link test run 3 to suites (suites group modules for test runs)
     await prisma.testRunSuite.createMany({
       data: [
-        { testRunId: testRun3.id, testSuiteId: authSuite.id },
-        { testRunId: testRun3.id, testSuiteId: uiSuite.id },
-        { testRunId: testRun3.id, testSuiteId: apiSuite.id },
+        { testRunId: testRun3.id, testSuiteId: regressionSuite.id }, // Regression testing suite
+        { testRunId: testRun3.id, testSuiteId: nonFunctionalSuite.id }, // Non-functional testing suite
       ],
     });
 

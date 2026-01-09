@@ -99,28 +99,23 @@ function TextareaWithAttachments({
             if (file) {
               const objectUrl = URL.createObjectURL(file);
               urls[attachment.id] = objectUrl;
-              console.log(`Created object URL for pending attachment ${attachment.id}:`, objectUrl);
             } else {
               console.warn(`No file found for pending attachment ${attachment.id}`);
             }
           } else {
             // For uploaded attachments, fetch from server
             try {
-              console.log(`[TextareaWithAttachments] Fetching URL for attachment ${attachment.id}`);
               // Use different endpoint based on entity type
               const endpoint = attachment.entityType === 'defect' 
                 ? `/api/defect-attachments/${attachment.id}`
                 : `/api/attachments/${attachment.id}`;
-              console.log(`[TextareaWithAttachments] Using endpoint:`, endpoint);
               
               const response = await fetch(endpoint);
               if (response.ok) {
                 const result = await response.json();
-                console.log(`[TextareaWithAttachments] Response for ${attachment.id}:`, result);
                 // API returns { data: { url, ... } }
                 if (result.data?.url) {
                   urls[attachment.id] = result.data.url;
-                  console.log(`[TextareaWithAttachments] Set image URL for ${attachment.id}:`, result.data.url);
                 } else {
                   console.warn(`[TextareaWithAttachments] No URL in response for ${attachment.id}`, result);
                 }
@@ -232,7 +227,6 @@ function TextareaWithAttachments({
         // @ts-expect-error - Add file object for later upload
         _pendingFile: file,
       };
-      console.log('Created pending attachment:', pendingAttachment.id, 'File:', file);
       onAttachmentsChange?.([...attachments, pendingAttachment]);
     }
     
