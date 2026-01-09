@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '../buttons/Button';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +26,6 @@ export function Pagination({
   showItemsPerPage = true,
   className,
 }: PaginationProps) {
-  const [isItemsPerPageOpen, setIsItemsPerPageOpen] = useState(false);
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -90,44 +88,17 @@ export function Pagination({
         {showItemsPerPage && onItemsPerPageChange && (
           <div className="flex items-center gap-2">
             <span>Show</span>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsItemsPerPageOpen(!isItemsPerPageOpen)}
-                className="px-3 py-1.5 rounded border border-white/10 bg-[#1a2332] text-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer hover:bg-[#1f2937] transition-colors flex items-center gap-1.5 min-w-[70px] justify-between"
-                style={{ cursor: 'pointer' }}
-              >
-                <span>{itemsPerPage}</span>
-                <ChevronDown className={cn("w-4 h-4 transition-transform", isItemsPerPageOpen && "rotate-180")} />
-              </button>
-              {isItemsPerPageOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-10" 
-                    onClick={() => setIsItemsPerPageOpen(false)}
-                  />
-                  <div className="absolute top-full left-0 mt-1 z-20 rounded border border-white/10 bg-[#1a2332] shadow-lg min-w-[70px] overflow-hidden">
-                    {itemsPerPageOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          onItemsPerPageChange(option);
-                          setIsItemsPerPageOpen(false);
-                        }}
-                        className={cn(
-                          "w-full px-3 py-1.5 text-left text-sm text-white/90 hover:bg-[#1f2937] transition-colors cursor-pointer",
-                          itemsPerPage === option && "bg-blue-500/20 text-blue-400"
-                        )}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+              className="px-3 py-1.5 rounded border border-white/10 bg-[#1a2332] text-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer hover:bg-[#1f2937] transition-colors"
+            >
+              {itemsPerPageOptions.map((option) => (
+                <option key={option} value={option} className="bg-[#1a2332] text-white">
+                  {option}
+                </option>
+              ))}
+            </select>
             <span>per page</span>
           </div>
         )}

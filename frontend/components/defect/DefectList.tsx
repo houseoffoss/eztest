@@ -505,8 +505,8 @@ export default function DefectList({ projectId }: DefectListProps) {
             )}
           </div>
 
-          {/* Statistics Chart */}
-          <DefectStatistics projectId={projectId} refreshTrigger={defects.length} />
+          {/* Statistics Chart - Commented out */}
+          {/* <DefectStatistics projectId={projectId} refreshTrigger={defects.length} /> */}
 
           {/* Filters */}
           {mounted && (
