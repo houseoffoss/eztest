@@ -372,11 +372,6 @@ A: If your administrator has configured email (SMTP), you'll receive emails for 
 | Track defects | Project → Defects |
 | Manage team | Project → Members |
 
-### Keyboard Shortcuts
-
-- **Ctrl/Cmd + K** - Quick search (if available)
-- **Esc** - Close dialogs
-- **Enter** - Submit forms
 
 ---
 
