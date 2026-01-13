@@ -1,0 +1,5 @@
+com\eztest\sdk\core\EZTestConfigTest.class
+com\eztest\sdk\models\TestResultStatusTest.class
+com\eztest\sdk\utils\UuidUtilsTest.class
+com\eztest\sdk\utils\TimeUtilsTest.class
+com\eztest\sdk\ExampleTest.class

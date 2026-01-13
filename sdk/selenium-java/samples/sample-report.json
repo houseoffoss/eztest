@@ -1,0 +1,40 @@
+{
+  "report_meta": {
+    "project_name": "Web Application Automation",
+    "generated_at": "2026-01-12T21:36:55 IST",
+    "report_source": "ExtentSparkReporter",
+    "environment": {
+      "os": "Windows 11",
+      "java_version": "21",
+      "browser": "Chrome",
+      "environment_url": "https://staging.houseoffoss.com"
+    },
+    "user_config": {
+      "triggered_by": "Jenkins_User",
+      "build_id": "v1.0.234",
+      "execution_profile": "Regression"
+    }
+  },
+  "summary": {
+    "total_tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "total_duration_ms": 71924,
+    "start_time": "2026-01-12T21:35:43 IST",
+    "end_time": "2026-01-12T21:36:55 IST"
+  },
+  "results": [
+    {
+      "test_id": "TC09",
+      "test_name": "TC09_NavigationCheck",
+      "class_name": "testcases.TC09_HouseofFoss_Nav_Check",
+      "status": "PASS",
+      "start_time": "2026-01-12T21:35:54 IST",
+      "end_time": "2026-01-12T21:36:54 IST",
+      "duration_ms": 60645,
+      "tags": ["Smoke", "Navigation"]
+    }
+  ]
+}
+
