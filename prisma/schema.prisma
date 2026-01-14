@@ -46,6 +46,7 @@ model User {
   defectComments  DefectComment[]
   defectAttachments DefectAttachment[]
   commentAttachments CommentAttachment[]
+  apiKeys        ApiKey[]
 
   @@index([email])
   @@index([roleId])
@@ -102,6 +103,7 @@ model Project {
   requirements Requirement[]
   modules     Module[]
   defects     Defect[]
+  apiKeys     ApiKey[]
 
   @@index([key])
   @@index([createdById])
@@ -530,4 +532,31 @@ model TestCaseDefect {
   @@unique([testCaseId, defectId])
   @@index([testCaseId])
   @@index([defectId])
+}
+
+// ====================================
+// API Key Management
+// ====================================
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?  // Optional: if null, key has access to all user's projects
+  name        String   // User-friendly name for the key
+  keyHash     String   @unique // Hashed API key (bcrypt)
+  keyPrefix   String   // First 8 characters of the key for identification (e.g., "ez_abc123")
+  lastUsedAt  DateTime? // Last time the key was used
+  expiresAt   DateTime? // Optional expiration date
+  isActive    Boolean  @default(true) // Soft delete flag
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([keyHash])
+  @@index([isActive])
+  @@index([expiresAt])
 }

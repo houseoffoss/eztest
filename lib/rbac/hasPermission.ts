@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { getSessionUser } from '@/lib/auth/getSessionUser';
+import { authenticateRequest } from '@/lib/auth/apiKeyAuth';
 import { baseInterceptor, BaseApiMethod } from '@/backend/utils/baseInterceptor';
 import { CustomRequest, ScopeInfo, UserInfo } from '@/backend/utils/interceptor';
 
@@ -90,15 +91,19 @@ export function hasPermission(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   return baseInterceptor<CustomRequest>(async (request: NextRequest, context) => {
-    // Get authenticated user
-    const user = await getSessionUser();
+    // Authenticate using either API key or session
+    const authenticatedUser = await authenticateRequest(request);
     
-    if (!user) {
+    if (!authenticatedUser) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    // Convert authenticated user to UserWithRole format for permission checking
+    // The authenticatedUser already has the correct structure from Prisma
+    const user = authenticatedUser as unknown as UserWithRole;
 
     // Check permission using module:action format
     const permissionName = `${module}:${action}`;
@@ -112,7 +117,10 @@ export function hasPermission(
     }
 
     // Determine scope based on user role
-    const scope: 'all' | 'project' = user.role.name === 'ADMIN' ? 'all' : 'project';
+    // If API key is scoped to a project, limit scope to that project
+    const scope: 'all' | 'project' = authenticatedUser.role.name === 'ADMIN' && !authenticatedUser.projectId 
+      ? 'all' 
+      : 'project';
 
     // Attach user info and scope to request
     const customRequest = request as CustomRequest;
@@ -127,6 +135,11 @@ export function hasPermission(
       access: hasAccess,
       scope_name: scope
     } as ScopeInfo;
+
+    // If API key is scoped to a project, add it to the request context
+    if (authenticatedUser.projectId) {
+      (customRequest as any).apiKeyProjectId = authenticatedUser.projectId;
+    }
 
     // Call the actual API method with enhanced request
     return apiMethod(customRequest, context);

@@ -11,6 +11,7 @@ import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { ApiKeysManagement } from '@/frontend/components/apikeys/ApiKeysManagement';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);
@@ -333,6 +334,19 @@ export default function UserProfileSettings() {
                   </ButtonPrimary>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* API Keys Management */}
+          <Card variant="glass">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                API Keys
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ApiKeysManagement />
             </CardContent>
           </Card>
         </div>

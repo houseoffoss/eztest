@@ -47,3 +47,6 @@ next-env.d.ts
 
 # uploads
 /uploads
+
+# Maven build output
+sdk/**/target/

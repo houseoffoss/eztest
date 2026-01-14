@@ -1,0 +1,27 @@
+{
+  "testRunName": "CI/CD Pipeline - Build #123",
+  "environment": "Staging",
+  "description": "Automated regression tests from Jenkins",
+  "results": [
+    {
+      "testCaseId": "TC-1",
+      "status": "PASSED",
+      "duration": 120,
+      "comment": "Test executed successfully"
+    },
+    {
+      "testCaseId": "TC-2",
+      "status": "FAILED",
+      "duration": 95,
+      "comment": "Test failed due to timeout",
+      "errorMessage": "Timeout waiting for login button",
+      "stackTrace": "java.lang.TimeoutException: Element not found\n  at org.openqa.selenium.support.ui.WebDriverWait.until(WebDriverWait.java:95)"
+    },
+    {
+      "testCaseId": "TC-3",
+      "status": "SKIPPED",
+      "duration": 0,
+      "comment": "Test was skipped due to missing test data"
+    }
+  ]
+}

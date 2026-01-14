@@ -22,6 +22,16 @@ export default withAuth(
           return true;
         }
 
+        // API routes handle their own authentication (session or API key)
+        // Let them through so they can check API keys
+        // SECURITY: Each API route MUST use hasPermission() wrapper which enforces:
+        //   1. Authentication (API key OR session) - returns 401 if missing
+        //   2. Authorization (permissions check) - returns 403 if insufficient
+        // This pattern is necessary because middleware can't validate API keys from headers
+        if (pathname.startsWith('/api/')) {
+          return true;
+        }
+
         // Settings routes require authentication
         if (pathname.startsWith('/settings/')) {
           return !!token;
