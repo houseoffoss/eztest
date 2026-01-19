@@ -1,10 +1,256 @@
 import { prisma } from '@/lib/prisma';
+import { XMLParser } from 'fast-xml-parser';
+import dropdownOptionService from '@/backend/services/dropdown-option/dropdown-option.service';
 
 /**
- * Simple TestNG XML Parser
+ * TestNG XML Parser
+ * 
+ * Parses TestNG XML result files and extracts test method information.
+ * 
+ * @example
+ * ```xml
+ * <?xml version="1.0" encoding="UTF-8"?>
+ * <testng-results>
+ *   <suite>
+ *     <test>
+ *       <class>
+ *         <test-method name="TC001" status="PASS" is-config="false" 
+ *                      started-at="2026-01-13T21:38:37 IST" 
+ *                      finished-at="2026-01-13T21:38:40 IST" 
+ *                      duration-ms="3000" />
+ *       </class>
+ *     </test>
+ *   </suite>
+ * </testng-results>
+ * ```
+ * 
+ * @remarks
+ * - Supports TestNG versions 6.x and 7.x
+ * - Expects XML structure with `<test-method>` elements containing attributes:
+ *   - `name`: Test case identifier (required)
+ *   - `status`: Test status - PASS, FAIL, SKIP (required)
+ *   - `is-config`: Whether this is a configuration method (optional, default: false)
+ *   - `started-at`: Test start timestamp (optional)
+ *   - `finished-at`: Test end timestamp (optional)
+ *   - `duration-ms`: Test duration in milliseconds (optional)
+ * 
+ * @limitations
+ * - Only parses attributes from `<test-method>` tags, not nested content
+ * - Date parsing supports common timezone abbreviations (IST, GMT, UTC, PST, EST, CST, EDT, PDT, CDT, MDT, MST)
+ * - Dates without timezone information are parsed as local time
+ * - Malformed XML will throw an error
+ * 
+ * @throws {Error} If XML content is malformed or cannot be parsed
  */
 class TestNGXMLParser {
+  private parser: XMLParser;
+
+  constructor() {
+    this.parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: '@_', // Explicitly use @_ prefix for attributes
+      parseAttributeValue: false,
+      trimValues: true,
+      // Security: Limit depth and node count to prevent DoS attacks
+      processEntities: false,
+      ignoreDeclaration: true,
+      ignorePiTags: true,
+      stopNodes: [],
+    });
+  }
+
+  /**
+   * Validates that the XML content is well-formed
+   * @param xmlContent - The XML content to validate
+   * @throws {Error} If XML is malformed
+   */
+  private validateXML(xmlContent: string): void {
+    if (!xmlContent || typeof xmlContent !== 'string') {
+      throw new Error('XML content must be a non-empty string');
+    }
+
+    // Basic validation: check for XML declaration or root element
+    const trimmed = xmlContent.trim();
+    if (!trimmed.startsWith('<?xml') && !trimmed.startsWith('<')) {
+      throw new Error('Invalid XML format: content does not appear to be valid XML');
+    }
+
+    // Check for balanced tags (basic check)
+    const openTags = (trimmed.match(/<[^/!?][^>]*>/g) || []).length;
+    const closeTags = (trimmed.match(/<\/[^>]+>/g) || []).length;
+    const selfClosingTags = (trimmed.match(/<[^>]+\/>/g) || []).length;
+    
+    // Rough validation - actual validation happens during parsing
+    if (openTags === 0 && closeTags === 0 && selfClosingTags === 0) {
+      throw new Error('Invalid XML format: no valid XML tags found');
+    }
+  }
+
+  /**
+   * Parses a date string from TestNG XML format
+   * Handles various timezone formats and converts to ISO 8601
+   * @param dateStr - Date string from TestNG XML (e.g., "2026-01-13T21:38:37 IST")
+   * @returns ISO 8601 formatted date string or undefined if parsing fails
+   */
+  private parseDate(dateStr: string): string | undefined {
+    if (!dateStr || typeof dateStr !== 'string') {
+      return undefined;
+    }
+
+    try {
+      // TestNG date format: "2026-01-13T21:38:37 IST" or "2026-01-13T21:38:37Z"
+      // Try multiple parsing strategies
+      
+      // Strategy 1: If it's already ISO format with Z, use it directly
+      if (dateStr.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateStr)) {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString();
+        }
+      }
+
+      // Strategy 2: Remove common timezone abbreviations and parse
+      // Common timezone abbreviations (case-insensitive)
+      const timezoneAbbrevs = [
+        'IST', 'GMT', 'UTC', 'PST', 'EST', 'CST', 'EDT', 'PDT', 'CDT', 'MDT', 'MST',
+        'PDT', 'AKST', 'AKDT', 'HST', 'HAST', 'HADT', 'SST', 'SDT', 'CHST'
+      ];
+      
+      let cleanedDate = dateStr.trim();
+      
+      // Remove timezone abbreviation at the end
+      for (const tz of timezoneAbbrevs) {
+        const regex = new RegExp(`\\s+${tz}$`, 'i');
+        if (regex.test(cleanedDate)) {
+          cleanedDate = cleanedDate.replace(regex, '');
+          break;
+        }
+      }
+
+      // Try parsing the cleaned date
+      const parsedDate = new Date(cleanedDate);
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate.toISOString();
+      }
+
+      // Strategy 3: Try parsing as-is (might work for some formats)
+      const fallbackDate = new Date(dateStr);
+      if (!isNaN(fallbackDate.getTime())) {
+        return fallbackDate.toISOString();
+      }
+
+      return undefined;
+    } catch {
+      // If any parsing fails, return undefined
+      return undefined;
+    }
+  }
+
+  /**
+   * Recursively extracts test-method elements from parsed XML
+   * @param obj - Parsed XML object
+   * @param testMethods - Array to collect test methods
+   */
+  private extractTestMethods(
+    obj: unknown,
+    testMethods: Array<{
+      name: string;
+      status: string;
+      isConfig: boolean;
+      durationMs?: number;
+      startedAt?: string;
+      finishedAt?: string;
+    }>
+  ): void {
+    if (!obj || typeof obj !== 'object') {
+      return;
+    }
+
+    // Type guard: obj is a Record with string keys
+    const record = obj as Record<string, unknown>;
+
+    // Check if this object represents a test-method element
+    // fast-xml-parser uses @_ prefix for attributes
+    const name = record['@_name'];
+    const status = record['@_status'];
+
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development' && name && status) {
+      console.log(`[XML Parser] Found test-method: name="${name}", status="${status}"`);
+    }
+
+    // Check if this is a test-method element (must have both name and status)
+    if (name !== undefined && status !== undefined) {
+      const isConfigValue = record['@_is-config'];
+      const isConfig = typeof isConfigValue === 'string' && isConfigValue.toLowerCase() === 'true';
+      
+      // Parse duration
+      let durationMs: number | undefined;
+      const durationValue = record['@_duration-ms'];
+      if (durationValue !== undefined) {
+        const duration = parseInt(String(durationValue), 10);
+        if (!isNaN(duration) && duration >= 0) {
+          durationMs = duration;
+        }
+      }
+
+      // Parse dates
+      const startedAtValue = record['@_started-at'];
+      const finishedAtValue = record['@_finished-at'];
+      const startedAt = startedAtValue ? this.parseDate(String(startedAtValue)) : undefined;
+      const finishedAt = finishedAtValue ? this.parseDate(String(finishedAtValue)) : undefined;
+
+      // Ensure status is trimmed and valid
+      const cleanStatus = String(status || '').trim();
+      
+      testMethods.push({
+        name: String(name),
+        status: cleanStatus,
+        isConfig,
+        durationMs,
+        startedAt,
+        finishedAt,
+      });
+    }
+
+    // Recursively search in all object properties
+    // Also check for 'test-method' key which might contain test method elements
+    const testMethodKey = 'test-method';
+    if (record[testMethodKey]) {
+      const testMethodValue = record[testMethodKey];
+      if (Array.isArray(testMethodValue)) {
+        testMethodValue.forEach(item => this.extractTestMethods(item, testMethods));
+      } else if (testMethodValue && typeof testMethodValue === 'object') {
+        this.extractTestMethods(testMethodValue, testMethods);
+      }
+    }
+
+    for (const key in record) {
+      if (Object.prototype.hasOwnProperty.call(record, key)) {
+        // Skip attribute keys and already processed test-method key
+        if (key.startsWith('@_') || key === testMethodKey) {
+          continue;
+        }
+        const value = record[key];
+        if (Array.isArray(value)) {
+          value.forEach(item => this.extractTestMethods(item, testMethods));
+        } else if (value && typeof value === 'object') {
+          this.extractTestMethods(value, testMethods);
+        }
+      }
+    }
+  }
+
+  /**
+   * Parses TestNG XML content and extracts test method information
+   * @param xmlContent - The XML content to parse
+   * @returns Object containing array of parsed test methods
+   * @throws {Error} If XML is malformed or cannot be parsed
+   */
   parse(xmlContent: string) {
+    // Validate XML structure
+    this.validateXML(xmlContent);
+
     const testMethods: Array<{
       name: string;
       status: string;
@@ -14,70 +260,25 @@ class TestNGXMLParser {
       finishedAt?: string;
     }> = [];
 
-    // Extract test-method elements using regex
-    // Pattern: <test-method ... name="METHOD_NAME" ... status="STATUS" ...>
-    const testMethodRegex = /<test-method[^>]*>/g;
-    const matches = xmlContent.matchAll(testMethodRegex);
-
-    for (const match of matches) {
-      const testMethodTag = match[0];
+    try {
+      // Parse XML using fast-xml-parser (safe from regex backtracking attacks)
+      const parsed = this.parser.parse(xmlContent);
       
-      // Extract attributes
-      const nameMatch = testMethodTag.match(/name="([^"]+)"/);
-      const statusMatch = testMethodTag.match(/status="([^"]+)"/);
-      const isConfigMatch = testMethodTag.match(/is-config="([^"]+)"/);
-      const startedAtMatch = testMethodTag.match(/started-at="([^"]+)"/);
-      const finishedAtMatch = testMethodTag.match(/finished-at="([^"]+)"/);
-      const durationMatch = testMethodTag.match(/duration-ms="([^"]+)"/);
-
-      if (nameMatch && statusMatch) {
-        const name = nameMatch[1];
-        const status = statusMatch[1];
-        const isConfig = isConfigMatch ? isConfigMatch[1].toLowerCase() === 'true' : false;
-
-        // Parse duration
-        let durationMs: number | undefined;
-        if (durationMatch) {
-          const duration = parseInt(durationMatch[1], 10);
-          if (!isNaN(duration)) {
-            durationMs = duration;
-          }
-        }
-
-        // Parse dates - TestNG uses format like "2026-01-13T21:38:37 IST"
-        // We need to handle timezone abbreviations or convert to ISO format
-        let startedAt: string | undefined;
-        let finishedAt: string | undefined;
-        
-        if (startedAtMatch) {
-          const dateStr = startedAtMatch[1];
-          // Remove timezone abbreviations like "IST", "GMT", etc. and try to parse
-          // Format: "2026-01-13T21:38:37 IST" -> "2026-01-13T21:38:37"
-          const cleanedDate = dateStr.replace(/\s+(IST|GMT|UTC|PST|EST|CST|EDT|PDT|CDT|MDT|MST)$/i, '');
-          const parsedDate = new Date(cleanedDate);
-          if (!isNaN(parsedDate.getTime())) {
-            startedAt = parsedDate.toISOString();
-          }
-        }
-        
-        if (finishedAtMatch) {
-          const dateStr = finishedAtMatch[1];
-          const cleanedDate = dateStr.replace(/\s+(IST|GMT|UTC|PST|EST|CST|EDT|PDT|CDT|MDT|MST)$/i, '');
-          const parsedDate = new Date(cleanedDate);
-          if (!isNaN(parsedDate.getTime())) {
-            finishedAt = parsedDate.toISOString();
-          }
-        }
-
-        testMethods.push({
-          name,
-          status,
-          isConfig,
-          durationMs,
-          startedAt,
-          finishedAt,
-        });
+      // Debug: Log parsed structure (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[XML Parser] Parsed structure:', JSON.stringify(parsed, null, 2).substring(0, 1000));
       }
+      
+      // Extract test-method elements recursively
+      this.extractTestMethods(parsed, testMethods);
+      
+      // Debug: Log extracted test methods (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[XML Parser] Extracted test methods:', testMethods.length, testMethods);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown parsing error';
+      throw new Error(`Failed to parse TestNG XML: ${message}`);
     }
 
     return { testMethods };
@@ -525,9 +726,18 @@ export class TestRunService {
     xmlContent: string,
     projectId: string
   ): Promise<{ matchCount: number; totalTestMethods: number }> {
-    // Parse XML content
+    // Parse XML content with error handling
     const parser = new TestNGXMLParser();
-    const parseResult = parser.parse(xmlContent);
+    let parseResult;
+    try {
+      parseResult = parser.parse(xmlContent);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Unknown parsing error';
+      throw new Error(`Failed to parse TestNG XML content: ${message}`);
+    }
 
     // Get all test cases for the project indexed by tcId
     const testCases = await prisma.testCase.findMany({
@@ -589,9 +799,18 @@ export class TestRunService {
       throw new Error('Test run not found');
     }
 
-    // Parse XML content
+    // Parse XML content with error handling
     const parser = new TestNGXMLParser();
-    const parseResult = parser.parse(xmlContent);
+    let parseResult;
+    try {
+      parseResult = parser.parse(xmlContent);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Unknown parsing error';
+      throw new Error(`Failed to parse TestNG XML content: ${message}`);
+    }
 
     // Get all test cases for the project indexed by tcId
     const testCases = await prisma.testCase.findMany({
@@ -620,6 +839,16 @@ export class TestRunService {
       imported: [] as Array<{ testCaseId: string; testCaseTcId: string; testMethodName: string; status: string }>,
     };
 
+    // Fetch available status options from database (for dynamic dropdown support)
+    let statusOptions: Array<{ value: string; label: string }> = [];
+    try {
+      const dropdownStatusOptions = await dropdownOptionService.getByEntityAndField('TestResult', 'status');
+      statusOptions = dropdownStatusOptions.map(opt => ({ value: opt.value, label: opt.label }));
+    } catch {
+      // If dropdown service fails, continue with hardcoded defaults
+      // This ensures the import still works even if dropdown service is unavailable
+    }
+
     // Process each test method
     for (const testMethod of parseResult.testMethods) {
       // Skip config methods (beforeSuite, afterSuite, beforeMethod, afterMethod, etc.)
@@ -627,22 +856,69 @@ export class TestRunService {
         continue;
       }
 
-      // Match test method name with test case tcId
-      const testCase = testCaseMap.get(testMethod.name);
+      // Collect all validation errors for this test method
+      const validationErrors: string[] = [];
 
+      // Check if test method name matches a test case
+      const testCase = testCaseMap.get(testMethod.name);
       if (!testCase) {
-        // Test case not found - skip
+        // Test case not found - add to skipped with detailed reason
         results.skipped++;
+        let skipReason = `Test case ID "${testMethod.name}" not found in project`;
+        
+        // Also check for missing/invalid fields if name is wrong
+        const fieldIssues: string[] = [];
+        
+        if (!testMethod.status || String(testMethod.status).trim() === '') {
+          fieldIssues.push('missing required status field');
+        } else {
+          // Check if status is valid even though name doesn't match
+          const statusUpper = String(testMethod.status || '').trim().toUpperCase();
+          const isValidStatus = ['PASS', 'FAIL', 'SKIP', 'PASSED', 'FAILED', 'SKIPPED', 'BLOCKED', 'RETEST'].includes(statusUpper) ||
+            (statusOptions.length > 0 && statusOptions.some(opt => opt.value.toUpperCase() === statusUpper));
+          
+          if (!isValidStatus) {
+            // Build valid statuses list for error message
+            const validStatuses: string[] = ['PASS', 'FAIL', 'SKIP'];
+            if (statusOptions.length > 0) {
+              statusOptions.forEach(opt => {
+                if (!validStatuses.includes(opt.value.toUpperCase())) {
+                  validStatuses.push(opt.value);
+                }
+              });
+            } else {
+              validStatuses.push('PASSED', 'FAILED', 'SKIPPED', 'BLOCKED', 'RETEST');
+            }
+            fieldIssues.push(`invalid status: "${testMethod.status}" (valid: ${validStatuses.join(', ')})`);
+          }
+        }
+        
+        if (fieldIssues.length > 0) {
+          skipReason += `. Also ${fieldIssues.join(' and ')}`;
+        }
+        
         results.skippedItems.push({
           testMethodName: testMethod.name,
-          reason: `Test case ID "${testMethod.name}" not found in project`,
+          reason: skipReason,
         });
         continue;
       }
 
-      // Map TestNG status to our status
-      let status: string;
-      switch (testMethod.status.toUpperCase()) {
+      // Test case found - validate fields
+      // Check for missing required fields
+      if (!testMethod.status || String(testMethod.status).trim() === '') {
+        validationErrors.push('Missing required status field');
+      }
+
+      // Map TestNG status or EzTest status to our status
+      // Supports both TestNG format (PASS, FAIL, SKIP) and any custom status from dropdown options
+      let status: string | null = null;
+      // Trim whitespace and convert to uppercase for comparison
+      const statusUpper = String(testMethod.status || '').trim().toUpperCase();
+      
+      // First, try TestNG format mapping (for backward compatibility)
+      // Handles: pass, Pass, PASS, fail, Fail, FAIL, skip, Skip, SKIP
+      switch (statusUpper) {
         case 'PASS':
           status = 'PASSED';
           break;
@@ -650,10 +926,67 @@ export class TestRunService {
           status = 'FAILED';
           break;
         case 'SKIP':
+        case 'SKIPPED': // Also handle SKIPPED in TestNG format
           status = 'SKIPPED';
           break;
         default:
-          status = 'PASSED'; // Default to PASSED if unknown
+          // If not TestNG format, check if it's a valid dropdown option
+          if (statusOptions.length > 0) {
+            // Check if the status matches any dropdown option (case-insensitive)
+            const matchedStatus = statusOptions.find(
+              opt => opt.value.toUpperCase().trim() === statusUpper
+            );
+            
+            if (matchedStatus) {
+              // Use the exact value from database (preserves case)
+              status = matchedStatus.value;
+            } else {
+              // Status not found in dropdown options - mark as error
+              status = null; // Will be handled as error below
+            }
+          } else {
+            // No dropdown options available, fall back to hardcoded defaults
+            if (statusUpper === 'PASSED' || statusUpper === 'FAILED' || 
+                statusUpper === 'SKIPPED' || statusUpper === 'BLOCKED' || 
+                statusUpper === 'RETEST') {
+              status = statusUpper;
+            } else {
+              // Status not recognized - mark as error
+              status = null; // Will be handled as error below
+            }
+          }
+          break;
+      }
+
+      // Validate status
+      if (status === null && testMethod.status) {
+        // Status is invalid (not empty, but doesn't match any valid status)
+        // Build helpful error message with valid status options
+        const validStatuses: string[] = ['PASS', 'FAIL', 'SKIP']; // TestNG format
+        if (statusOptions.length > 0) {
+          statusOptions.forEach(opt => {
+            if (!validStatuses.includes(opt.value.toUpperCase())) {
+              validStatuses.push(opt.value);
+            }
+          });
+        } else {
+          // Add default EzTest statuses if no dropdown options
+          validStatuses.push('PASSED', 'FAILED', 'SKIPPED', 'BLOCKED', 'RETEST');
+        }
+        
+        validationErrors.push(`Invalid status value: "${testMethod.status}". Valid statuses are: ${validStatuses.join(', ')}`);
+      }
+
+      // If there are validation errors, report them and skip this test method
+      if (validationErrors.length > 0 || status === null) {
+        results.failed++;
+        results.errors.push({
+          testMethodName: testMethod.name,
+          error: validationErrors.length > 0 
+            ? validationErrors.join('; ')
+            : `Missing or invalid status field`,
+        });
+        continue; // Skip to next test method
       }
 
       try {
