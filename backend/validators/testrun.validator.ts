@@ -12,6 +12,7 @@ export const createTestRunSchema = z.object({
   description: z.string().optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
+  status: z.string().optional(),
   testCaseIds: z.array(z.string().min(1)).optional(),
   testSuiteIds: z.array(z.string().min(1)).optional(),
 });

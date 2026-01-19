@@ -15,6 +15,7 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface TestCase {
   id: string;
+  tcId?: string;
   name?: string;
   title?: string;
   description?: string;

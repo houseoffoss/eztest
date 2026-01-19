@@ -45,12 +45,17 @@ export const ItemCard = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {badges && <div className="flex items-center gap-2 mb-1">{badges}</div>}
-            <CardTitle className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1 text-white">
-              {title}
-            </CardTitle>
-            <CardDescription className={descriptionClassName || "line-clamp-1 text-sm text-white/60 min-h-5"}>
-              {description || ''}
-            </CardDescription>
+            <div className="overflow-hidden">
+              <CardTitle 
+                className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2 break-words text-white"
+                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+              >
+                {title}
+              </CardTitle>
+              <CardDescription className={descriptionClassName || "line-clamp-1 text-sm text-white/60 min-h-5"}>
+                {description || ''}
+              </CardDescription>
+            </div>
           </div>
           {header}
         </div>

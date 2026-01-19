@@ -68,6 +68,14 @@ export function TestCasesListCard({
 
   const columns: ColumnDef<ResultRow>[] = [
     {
+      key: 'tcId',
+      label: 'Test Case ID',
+      className: 'min-w-[80px]',
+      render: (_, row: ResultRow) => (
+        <p className="text-xs font-mono text-white/70 truncate">{row.testCase.tcId || '-'}</p>
+      ),
+    },
+    {
       key: 'testCase',
       label: 'Test Case',
       className: 'min-w-0 max-w-xs whitespace-normal',

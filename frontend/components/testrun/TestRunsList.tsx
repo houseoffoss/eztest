@@ -6,7 +6,7 @@ import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimar
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Plus, Upload } from 'lucide-react';
+import { Plus, Upload, FileCode } from 'lucide-react';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
@@ -16,6 +16,7 @@ import { TestRunCard } from './subcomponents/TestRunCard';
 import { TestRunsEmptyState } from './subcomponents/TestRunsEmptyState';
 import { CreateTestRunDialog } from './subcomponents/CreateTestRunDialog';
 import { DeleteTestRunDialog } from './subcomponents/DeleteTestRunDialog';
+import { UploadTestNGXMLDialog } from './subcomponents/UploadTestNGXMLDialog';
 import { TestRun, Project, TestRunFormData, TestRunFilters } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
@@ -35,6 +36,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [uploadXMLDialogOpen, setUploadXMLDialogOpen] = useState(false);
   const [selectedTestRun, setSelectedTestRun] = useState<TestRun | null>(null);
 
   const [filters, setFilters] = useState<TestRunFilters>({
@@ -188,15 +190,26 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         actions={
           <div className="flex gap-2">
             {canReadTestRun && (
-              <ButtonSecondary 
-                onClick={() => setExportDialogOpen(true)} 
-                className="cursor-pointer"
-                title="Export test runs"
-                buttonName="Test Runs List - Export"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Export
-              </ButtonSecondary>
+              <>
+                <ButtonSecondary 
+                  onClick={() => setUploadXMLDialogOpen(true)} 
+                  className="cursor-pointer"
+                  title="Upload TestNG XML results"
+                  buttonName="Test Runs List - Upload XML"
+                >
+                  <FileCode className="w-4 h-4 mr-2" />
+                  Upload XML
+                </ButtonSecondary>
+                <ButtonSecondary 
+                  onClick={() => setExportDialogOpen(true)} 
+                  className="cursor-pointer"
+                  title="Export test runs"
+                  buttonName="Test Runs List - Export"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Export
+                </ButtonSecondary>
+              </>
             )}
             {canCreateTestRun && (
               <ButtonPrimary
@@ -303,6 +316,16 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
             },
           }}
           itemName="test runs"
+        />
+
+        {/* Upload XML Dialog */}
+        <UploadTestNGXMLDialog
+          open={uploadXMLDialogOpen}
+          onOpenChange={setUploadXMLDialogOpen}
+          projectId={projectId}
+          onImportComplete={() => {
+            fetchTestRuns();
+          }}
         />
       </div>
     </>

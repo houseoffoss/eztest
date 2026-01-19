@@ -84,6 +84,7 @@ export class TestRunController {
       description: validatedData.description,
       assignedToId,
       environment: validatedData.environment,
+      status: validatedData.status,
       testCaseIds: validatedData.testCaseIds,
       createdById: userId,
     });
@@ -183,6 +184,51 @@ export class TestRunController {
     );
 
     return { data: result, statusCode: 201 };
+  }
+
+  /**
+   * Check XML for matching test cases before import
+   */
+  async checkXMLMatches(
+    xmlContent: string,
+    projectId: string
+  ) {
+    const result = await testRunService.checkXMLTestCasesMatch(
+      xmlContent,
+      projectId
+    );
+
+    return {
+      data: result,
+      statusCode: 200,
+    };
+  }
+
+  /**
+   * Upload and parse TestNG XML results
+   */
+  async uploadTestNGXML(
+    xmlContent: string,
+    testRunId: string,
+    userId: string
+  ) {
+    // Get test run to get projectId
+    const testRun = await testRunService.getTestRunById(testRunId);
+    if (!testRun) {
+      throw new ValidationException(TestRunMessages.TestRunNotFound);
+    }
+
+    const result = await testRunService.parseTestNGXMLAndImportResults(
+      xmlContent,
+      testRunId,
+      testRun.projectId,
+      userId
+    );
+
+    return {
+      data: result,
+      statusCode: 200,
+    };
   }
 
   /**
