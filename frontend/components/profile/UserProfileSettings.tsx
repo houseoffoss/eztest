@@ -10,7 +10,10 @@ import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
+import { ApiKeysManagement } from '@/frontend/components/apikeys/ApiKeysManagement';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
+import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);
@@ -32,6 +35,7 @@ export default function UserProfileSettings() {
   useEffect(() => {
     fetchProfile();
   }, []);
+
 
   const fetchProfile = async () => {
     try {
@@ -142,6 +146,7 @@ export default function UserProfileSettings() {
       setSaving(false);
     }
   };
+
 
   if (loading) {
     return <Loader fullScreen text="Loading profile..." />;
@@ -335,6 +340,19 @@ export default function UserProfileSettings() {
               </form>
             </CardContent>
           </Card>
+
+          {/* API Keys */}
+          <Card variant="glass">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                API Keys
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ApiKeysManagement />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Footer */}
@@ -350,6 +368,7 @@ export default function UserProfileSettings() {
 
       {/* Alerts */}
       {alert && <FloatingAlert alert={alert} onClose={() => setAlert(null)} />}
+
     </>
   );
 }

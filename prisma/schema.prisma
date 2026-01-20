@@ -41,6 +41,7 @@ model User {
   comments      Comment[]
   createdProjects Project[] @relation("CreatedBy")
   passwordResetTokens PasswordResetToken[]
+  apiKeys        ApiKey[]
   assignedDefects Defect[] @relation("DefectAssignedTo")
   createdDefects  Defect[] @relation("DefectCreatedBy")
   defectComments  DefectComment[]
@@ -65,6 +66,31 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([token])
+  @@index([expiresAt])
+}
+
+// API Keys for programmatic access
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?  // Optional: if null, key has access to all user's projects
+  name        String   // User-friendly name for the key
+  keyHash     String   @unique // Hashed API key (bcrypt)
+  keyPrefix   String   // First 11 characters of the key for identification (e.g., "ez_abc12345")
+  lastUsedAt  DateTime? // Last time the key was used
+  expiresAt   DateTime? // Optional expiration date
+  isActive    Boolean  @default(true) // Soft delete flag
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([keyHash])
+  @@index([keyPrefix])
+  @@index([isActive])
   @@index([expiresAt])
 }
 
@@ -102,6 +128,7 @@ model Project {
   requirements Requirement[]
   modules     Module[]
   defects     Defect[]
+  apiKeys     ApiKey[]
 
   @@index([key])
   @@index([createdById])

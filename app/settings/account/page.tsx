@@ -13,6 +13,7 @@ import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { SettingsSidebar } from '@/app/components/layout/SettingsSidebar';
+import { Key, Copy, Trash2, Eye, EyeOff, Plus } from 'lucide-react';
 
 interface AccountStatus {
   isMarkedForDeletion: boolean;
@@ -24,6 +25,15 @@ interface UserInfo {
   name: string;
   email: string;
   role: string;
+}
+
+interface ApiToken {
+  id: string;
+  name: string;
+  tokenPrefix: string;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
 }
 
 export default function AccountSettingsPage() {
@@ -47,6 +57,14 @@ export default function AccountSettingsPage() {
     confirmPassword: '',
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [apiTokens, setApiTokens] = useState<ApiToken[]>([]);
+  const [loadingTokens, setLoadingTokens] = useState(false);
+  const [showNewTokenDialog, setShowNewTokenDialog] = useState(false);
+  const [newTokenName, setNewTokenName] = useState('');
+  const [newTokenExpiresInDays, setNewTokenExpiresInDays] = useState<number | undefined>(undefined);
+  const [creatingToken, setCreatingToken] = useState(false);
+  const [newToken, setNewToken] = useState<string | null>(null);
+  const [showToken, setShowToken] = useState(false);
 
   // Fetch user info and account status
   useEffect(() => {
@@ -77,7 +95,87 @@ export default function AccountSettingsPage() {
     };
 
     fetchData();
+    fetchApiTokens();
   }, []);
+
+  const fetchApiTokens = async () => {
+    setLoadingTokens(true);
+    try {
+      const response = await fetch('/api/users/api-tokens');
+      if (response.ok) {
+        const data = await response.json();
+        setApiTokens(data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching API tokens:', err);
+    } finally {
+      setLoadingTokens(false);
+    }
+  };
+
+  const handleCreateToken = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setCreatingToken(true);
+
+    try {
+      const response = await fetch('/api/users/api-tokens', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newTokenName,
+          expiresInDays: newTokenExpiresInDays || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create API token');
+      }
+
+      const data = await response.json();
+      setNewToken(data.token);
+      setNewTokenName('');
+      setNewTokenExpiresInDays(undefined);
+      setShowNewTokenDialog(false);
+      await fetchApiTokens();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error creating API token');
+    } finally {
+      setCreatingToken(false);
+    }
+  };
+
+  const handleRevokeToken = async (tokenId: string) => {
+    if (!confirm('Are you sure you want to revoke this API token? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/api-tokens/${tokenId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to revoke API token');
+      }
+
+      setSuccess('API token revoked successfully');
+      await fetchApiTokens();
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error revoking API token');
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setSuccess('Token copied to clipboard');
+    setTimeout(() => setSuccess(null), 2000);
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,6 +311,87 @@ export default function AccountSettingsPage() {
             <AlertDescription className="text-green-300">{success}</AlertDescription>
           </Alert>
         )}
+
+        {/* API Tokens Section */}
+        <GlassPanel className="mb-6" contentClassName="p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Key className="w-6 h-6" />
+                API Tokens
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Manage API tokens for programmatic access to EZTest
+              </p>
+            </div>
+            <ButtonPrimary
+              onClick={() => {
+                setShowNewTokenDialog(true);
+                setNewToken(null);
+                setShowToken(false);
+              }}
+              className="rounded-[10px]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Token
+            </ButtonPrimary>
+          </div>
+
+          {loadingTokens ? (
+            <p className="text-muted-foreground text-sm">Loading tokens...</p>
+          ) : apiTokens.length === 0 ? (
+            <div className="rounded-lg p-4 border border-primary/30 bg-primary/5">
+              <p className="text-muted-foreground text-sm">
+                No API tokens created yet. Create one to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {apiTokens.map((token) => (
+                <div
+                  key={token.id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-primary/30 bg-primary/5"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-foreground">{token.name}</h3>
+                      {token.expiresAt && new Date(token.expiresAt) < new Date() && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400">
+                          Expired
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      {token.tokenPrefix}...
+                    </p>
+                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                      <span>
+                        Created: {new Date(token.createdAt).toLocaleDateString()}
+                      </span>
+                      {token.lastUsedAt && (
+                        <span>
+                          Last used: {new Date(token.lastUsedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                      {token.expiresAt && (
+                        <span>
+                          Expires: {new Date(token.expiresAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <ButtonDestructive
+                    onClick={() => handleRevokeToken(token.id)}
+                    className="rounded-[10px]"
+                    variant="ghost"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </ButtonDestructive>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassPanel>
 
         {/* Change Password Section */}
         <GlassPanel className="mb-6" contentClassName="p-8">
@@ -445,6 +624,138 @@ export default function AccountSettingsPage() {
               </ButtonDestructive>
             </div>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create API Token Dialog */}
+      <Dialog open={showNewTokenDialog} onOpenChange={setShowNewTokenDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create API Token</DialogTitle>
+            <DialogDescription>
+              {newToken
+                ? 'Copy your token now. You won\'t be able to see it again!'
+                : 'Create a new API token for programmatic access to EZTest'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {newToken ? (
+            <div className="space-y-4">
+              <div className="rounded-lg p-4 border border-yellow-500/40 bg-yellow-500/10">
+                <p className="text-sm text-yellow-200 mb-2 font-medium">
+                  ⚠️ Important: Copy this token now
+                </p>
+                <p className="text-xs text-yellow-200/90">
+                  This is the only time you'll be able to see the full token. Make sure to store it securely.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Your API Token</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type={showToken ? 'text' : 'password'}
+                    value={newToken}
+                    readOnly
+                    variant="glass"
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    variant="glass"
+                    className="rounded-[10px] cursor-pointer"
+                  >
+                    {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => copyToClipboard(newToken)}
+                    variant="glass"
+                    className="rounded-[10px] cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <ButtonPrimary
+                  onClick={() => {
+                    setShowNewTokenDialog(false);
+                    setNewToken(null);
+                    setShowToken(false);
+                  }}
+                  className="flex-1 rounded-[10px]"
+                >
+                  Done
+                </ButtonPrimary>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleCreateToken} className="space-y-4">
+              <div>
+                <Label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Token Name
+                </Label>
+                <Input
+                  variant="glass"
+                  value={newTokenName}
+                  onChange={(e) => setNewTokenName(e.target.value)}
+                  required
+                  placeholder="e.g., CI/CD Pipeline, Local Development"
+                  maxLength={100}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Give your token a descriptive name to identify its purpose
+                </p>
+              </div>
+
+              <div>
+                <Label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Expiration (Optional)
+                </Label>
+                <Input
+                  type="number"
+                  variant="glass"
+                  value={newTokenExpiresInDays || ''}
+                  onChange={(e) =>
+                    setNewTokenExpiresInDays(
+                      e.target.value ? parseInt(e.target.value, 10) : undefined
+                    )
+                  }
+                  placeholder="Days (leave empty for no expiration)"
+                  min={1}
+                  max={3650}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Token will expire after this many days (max 3650 days / 10 years)
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <ButtonPrimary
+                  type="submit"
+                  disabled={creatingToken || !newTokenName.trim()}
+                  className="flex-1 rounded-[10px]"
+                >
+                  {creatingToken ? 'Creating...' : 'Create Token'}
+                </ButtonPrimary>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setShowNewTokenDialog(false);
+                    setNewTokenName('');
+                    setNewTokenExpiresInDays(undefined);
+                  }}
+                  variant="glass"
+                  className="flex-1 rounded-[10px] cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
       </div>

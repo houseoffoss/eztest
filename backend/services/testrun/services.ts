@@ -3,6 +3,16 @@ import { XMLParser } from 'fast-xml-parser';
 import dropdownOptionService from '@/backend/services/dropdown-option/dropdown-option.service';
 
 /**
+ * Normalize test case identifier by converting underscores to hyphens
+ * This allows matching "TC_1" with "TC-1" and vice versa
+ * @param identifier Test case identifier (e.g., "TC_1" or "TC-1")
+ * @returns Normalized identifier with underscores replaced by hyphens (e.g., "TC-1")
+ */
+function normalizeTestCaseId(identifier: string): string {
+  return identifier.replace(/_/g, '-');
+}
+
+/**
  * TestNG XML Parser
  * 
  * Parses TestNG XML result files and extracts test method information.
@@ -752,9 +762,15 @@ export class TestRunService {
     });
 
     // Create a map of tcId -> testCase
+    // Support both original format and normalized format (underscore <-> hyphen)
     const testCaseMap = new Map<string, typeof testCases[0]>();
     testCases.forEach((tc) => {
       testCaseMap.set(tc.tcId, tc);
+      // Also add normalized version to support underscore/hyphen matching
+      const normalizedId = normalizeTestCaseId(tc.tcId);
+      if (normalizedId !== tc.tcId) {
+        testCaseMap.set(normalizedId, tc);
+      }
     });
 
     let matchCount = 0;
@@ -769,8 +785,9 @@ export class TestRunService {
 
       totalTestMethods++;
       
-      // Check if test case exists
-      if (testCaseMap.has(testMethod.name)) {
+      // Check if test case exists (try both original and normalized name)
+      const normalizedMethodName = normalizeTestCaseId(testMethod.name);
+      if (testCaseMap.has(testMethod.name) || testCaseMap.has(normalizedMethodName)) {
         matchCount++;
       }
     }
@@ -825,9 +842,15 @@ export class TestRunService {
     });
 
     // Create a map of tcId -> testCase
+    // Support both original format and normalized format (underscore <-> hyphen)
     const testCaseMap = new Map<string, typeof testCases[0]>();
     testCases.forEach((tc) => {
       testCaseMap.set(tc.tcId, tc);
+      // Also add normalized version to support underscore/hyphen matching
+      const normalizedId = normalizeTestCaseId(tc.tcId);
+      if (normalizedId !== tc.tcId) {
+        testCaseMap.set(normalizedId, tc);
+      }
     });
 
     const results = {
@@ -859,8 +882,9 @@ export class TestRunService {
       // Collect all validation errors for this test method
       const validationErrors: string[] = [];
 
-      // Check if test method name matches a test case
-      const testCase = testCaseMap.get(testMethod.name);
+      // Check if test method name matches a test case (try both original and normalized name)
+      const normalizedMethodName = normalizeTestCaseId(testMethod.name);
+      const testCase = testCaseMap.get(testMethod.name) || testCaseMap.get(normalizedMethodName);
       if (!testCase) {
         // Test case not found - add to skipped with detailed reason
         results.skipped++;
