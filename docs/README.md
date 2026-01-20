@@ -93,6 +93,10 @@ docs/
 │   ├── monitoring.md           # Monitoring & logging
 │   └── troubleshooting.md      # Troubleshooting guide
 │
+├── integrations/               # Automation tool integrations
+│   ├── README.md               # Integrations overview
+│   └── testng-maven-integration.md  # TestNG/Maven integration
+│
 └── contributing/               # Contribution guides
     ├── README.md               # Contribution overview
     ├── development-setup.md    # Dev environment setup
@@ -218,6 +222,10 @@ Join the community and contribute:
 - [Deployment Guides](./operations/deployment/README.md)
 - [Configuration](./getting-started/configuration.md)
 - [Monitoring](./operations/monitoring.md)
+
+### For Automation
+- [Integrations Overview](./integrations/README.md)
+- [TestNG/Maven Integration](./integrations/testng-maven-integration.md)
 
 ---
 

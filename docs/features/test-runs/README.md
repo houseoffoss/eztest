@@ -268,6 +268,8 @@ Send reports to stakeholders:
 
 EzTest supports importing test execution results from TestNG XML report files. This allows you to:
 
+> **🔗 Automation Integration:** For automatic uploads from Maven/TestNG projects, see the [TestNG Maven Integration Guide](../../integrations/testng-maven-integration.md).
+
 - Import automated test results from CI/CD pipelines
 - Bulk import test execution data
 - Automatically match test methods with test cases
