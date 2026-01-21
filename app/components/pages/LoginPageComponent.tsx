@@ -13,7 +13,6 @@ import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-co
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 const navItems = [
-  { label: 'Features', href: '/#features' },
   { label: 'Why Choose?', href: '/#why-choose' },
 ];
 

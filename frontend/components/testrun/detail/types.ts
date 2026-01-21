@@ -4,6 +4,7 @@ export interface TestResult {
   testCaseId: string;
   testCase: TestCase;
   comment?: string;
+  duration?: number;
   executedAt?: string;
   executedBy?: {
     name: string;

@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TestTube2, Play, FileText, Folder, Bug } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { TestTube2, Play, FileText, Folder, Bug, LogOut } from 'lucide-react';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs, type BreadcrumbItem } from '@/frontend/reusable-components/layout/Breadcrumbs';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ClickableStatCard } from '@/frontend/reusable-components/cards/ClickableStatCard';
 import { NotFoundState } from '@/frontend/reusable-components/errors/NotFoundState';
+import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { ProjectHeader } from './subcomponents/ProjectHeader';
 import { ProjectDetail as ProjectDetailType } from './types';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 type Project = ProjectDetailType;
 
@@ -19,8 +24,10 @@ interface ProjectDetailProps {
 
 export default function ProjectDetail({ projectId }: ProjectDetailProps) {
   const router = useRouter();
+  const { status } = useSession();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchProject();
@@ -52,6 +59,22 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
     }
   };
 
+  const handleSignOut = async () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
+    // Clear project context from session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      // Clear any other project-related session data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    await signOut({ callbackUrl: '/auth/login', redirect: true });
+  };
+
   if (loading) {
     return <Loader fullScreen text="Loading project..." />;
   }
@@ -70,11 +93,43 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
 
   return (
     <>
-      <TopBar 
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          { label: project.name, href: `/projects/${projectId}` }
-        ]}
+      {/* Navbar */}
+      <Navbar 
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project.name }
+            ]}
+          />
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <ButtonDestructive 
+              type="button" 
+              size="default" 
+              className="px-5 cursor-pointer flex-shrink-0 flex items-center gap-2"
+              onClick={() => setSignOutDialogOpen(true)}
+              buttonName="Project Detail - Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </ButtonDestructive>
+          </div>
+        }
+      />
+
+      <BaseConfirmDialog
+        title="Sign Out"
+        description="Are you sure you want to sign out? You will need to log in again to access your account."
+        submitLabel="Sign Out"
+        cancelLabel="Cancel"
+        triggerOpen={signOutDialogOpen}
+        onOpenChange={setSignOutDialogOpen}
+        onSubmit={handleSignOut}
+        destructive={true}
       />
       
       {/* Page Header */}

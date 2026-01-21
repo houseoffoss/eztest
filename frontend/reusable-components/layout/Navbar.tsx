@@ -37,24 +37,30 @@ export function Navbar({
   return (
     <header className={cn("sticky top-4 z-50", className)} {...props}>
       <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 w-full">
           {/* Left side: Brand + Breadcrumbs */}
-          <div className="flex items-center gap-3">
-            <Link href={brandHref} className="shrink-0">
-              <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
-                {brandLabel}
-              </span>
-            </Link>
-            {breadcrumbs && (
-              <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
-                {breadcrumbs}
-              </div>
-            )}
-          </div>
+          {brandLabel || breadcrumbs ? (
+            <div className="flex items-center gap-3">
+              {brandLabel && (
+                <Link href={brandHref} className="shrink-0">
+                  <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                    {brandLabel}
+                  </span>
+                </Link>
+              )}
+              {breadcrumbs && (
+                <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                  {breadcrumbs}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Right side: Nav + actions */}
           {(items && items.length > 0) || actions ? (
-            <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl p-1 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+            <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl p-1 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5 ml-auto">
               {items && items.length > 0 ? (
                 <nav className="hidden md:flex items-center gap-1">
                   {items.map((it) => {
@@ -80,7 +86,7 @@ export function Navbar({
               ) : null}
 
               {actions ? (
-                <div className="hidden sm:flex items-center gap-1 pl-1">
+                <div className="hidden sm:flex items-center gap-2 pl-1">
                   {actions}
                 </div>
               ) : null}

@@ -2,18 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { HeroSection } from './subcomponents/HeroSection';
-import { FeaturesGrid } from './subcomponents/FeaturesGrid';
 import { StatsSection } from './subcomponents/StatsSection';
 import { PhilosophySection } from './subcomponents/PhilosophySection';
 
 const navItems = [
-  { label: 'Features', href: '#features' },
   { label: 'Why Choose?', href: '#why-choose' },
 ];
 
@@ -78,9 +75,6 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <HeroSection />
-        <div id="features" className="scroll-mt-24">
-          <FeaturesGrid />
-        </div>
         <div id="why-choose" className="scroll-mt-24">
           <StatsSection />
         </div>

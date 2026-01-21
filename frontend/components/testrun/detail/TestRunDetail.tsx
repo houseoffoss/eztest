@@ -621,6 +621,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testRunStatus={testRun.status}
           canUpdate={canUpdateTestRun}
           canCreate={canCreateTestRun}
+          projectId={testRun.project?.id || ''}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);
