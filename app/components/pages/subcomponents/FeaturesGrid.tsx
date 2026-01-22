@@ -10,33 +10,28 @@ interface Feature {
 const features: Feature[] = [
   {
     image: '/icons/Single system for cases.png',
-    title: 'Single System for Cases, Runs & Defects',
-    description: 'Manage test cases, test runs, and defects in one unified platform. Eliminate spreadsheets and scattered tools.',
+    title: 'Unified Traceability',
+    description: 'Link test cases to defects, test runs, and modules for complete end-to-end traceability across your testing lifecycle.',
   },
   {
     image: '/icons/Data migration.png',
-    title: 'Data Migration & Bulk Import',
-    description: 'Import test cases, test runs, and defects from spreadsheets or CSV files. Migrate from other tools quickly and with minimal effort.',
+    title: 'Defect Management',
+    description: 'Track bugs with severity, priority, status, and file attachments. Link defects directly to test cases.',
   },
   {
     image: '/icons/End to end tarceability.png',
-    title: 'End-to-End Traceability',
-    description: 'Track relationships between test cases, test runs, and defects. See the complete picture of what\'s tested, what failed, and what\'s fixed.',
+    title: 'Built-in Migration Support',
+    description: 'Import test cases and defects in bulk using CSV or Excel files. Auto-create modules and test suites during import.',
   },
   {
     image: '/icons/Manual and automation testing.png',
-    title: 'Manual + Automation Testing',
-    description: 'Plan and track manual tests alongside automated suites in one open-source platform. Unified reporting for all stakeholders.',
+    title: 'Fully Customizable',
+    description: 'Open-source and self-hosted platform. Full source code access allows complete customization to fit your team\'s needs.',
   },
   {
     image: '/icons/Comments and collaboration.png',
-    title: 'Comments & Collaboration',
-    description: 'Add comments and discussions on defects and test artifacts. Collaborate with your team in context with threaded conversations.',
-  },
-  {
-    image: '/icons/Email notification.png',
-    title: 'Email Notifications',
-    description: 'Get automated notifications for test runs, defect assignments, and status changes so your team can react quickly to issues.',
+    title: 'AuthN + AuthZ',
+    description: 'Secure authentication with email/password, JWT sessions, and role-based access control with 27 granular permissions.',
   },
 ];
 
@@ -45,15 +40,16 @@ export const FeaturesGrid = () => {
     <Card variant="glass" className="mb-24">
       <CardContent className="py-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white">Powerful Features</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Why Choose EZTest? 🤔</h2>
+          <p className="text-base text-white/60">Powerful features that make test management simple</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-wrap gap-6 justify-center">
           {features.map((feature) => {
             return (
               <Card
                 key={feature.title}
                 variant="glass"
-                className="border-l-4 border-l-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all group"
+                className="border-l-4 border-l-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all group w-full md:w-[calc(33.333%-1rem)]"
               >
                 <CardContent className="py-6 px-5">
                   <div className="flex flex-col items-center text-center">

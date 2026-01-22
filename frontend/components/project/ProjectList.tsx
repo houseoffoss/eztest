@@ -1,10 +1,8 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { useSession } from 'next-auth/react';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { InfoBanner } from '@/frontend/reusable-components/alerts/InfoBanner';
@@ -16,9 +14,6 @@ import { DeleteProjectDialog } from './subcomponents/DeleteProjectDialog';
 import { EmptyProjectsState } from './subcomponents/EmptyProjectsState';
 import { Project } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
-import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
-import { LogOut } from 'lucide-react';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export default function ProjectList() {
   const router = useRouter();
@@ -31,7 +26,30 @@ export default function ProjectList() {
   const [triggerCreateDialog, setTriggerCreateDialog] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [hasSelectedProject, setHasSelectedProject] = useState(false);
-  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
+
+  // Compute permissions early for hooks
+  const canCreateProject = hasPermissionCheck('projects:create');
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canCreateProject) {
+      actions.push({
+        type: 'action' as const,
+        label: '+ New Project',
+        onClick: () => setTriggerCreateDialog(true),
+        variant: 'primary' as const,
+        buttonName: 'Project List - New Project',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateProject]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -118,22 +136,6 @@ export default function ProjectList() {
     }
   };
 
-  const handleSignOut = async () => {
-    // Clear all persisted form data before signing out
-    clearAllPersistedForms();
-    // Clear project context from session storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('lastProjectId');
-      // Clear any other project-related session data
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('defects-filters-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    }
-    await signOut({ callbackUrl: '/auth/login', redirect: true });
-  };
-
   if (status === 'loading' || loading || permissionsLoading) {
     return <Loader fullScreen text="Loading projects..." />;
   }
@@ -141,9 +143,6 @@ export default function ProjectList() {
   if (status === 'unauthenticated') {
     return null; // Will be redirected by useEffect
   }
-
-  // Check if user can create projects
-  const canCreateProject = hasPermissionCheck('projects:create');
 
   return (
     <>
@@ -155,43 +154,10 @@ export default function ProjectList() {
         brandLabel={null}
         items={[]}
         breadcrumbs={null}
-        actions={
-          <div className="flex items-center gap-2">
-            {canCreateProject && (
-              <ButtonPrimary 
-                onClick={() => setTriggerCreateDialog(true)} 
-                className="cursor-pointer"
-                buttonName="Project List - New Project"
-              >
-                + New Project
-              </ButtonPrimary>
-            )}
-            <ButtonDestructive 
-              type="button" 
-              size="default" 
-              className="px-5 cursor-pointer flex-shrink-0 flex items-center gap-2"
-              onClick={() => setSignOutDialogOpen(true)}
-              buttonName="Project List - Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </ButtonDestructive>
-          </div>
-        }
+        actions={navbarActions}
       />
 
-      <BaseConfirmDialog
-        title="Sign Out"
-        description="Are you sure you want to sign out? You will need to log in again to access your account."
-        submitLabel="Sign Out"
-        cancelLabel="Cancel"
-        triggerOpen={signOutDialogOpen}
-        onOpenChange={setSignOutDialogOpen}
-        onSubmit={handleSignOut}
-        destructive={true}
-      />
-      
-      {/* Page Header */}
+      {/* Delete Dialog */}
       <div className="max-w-7xl mx-auto px-8 py-6 pt-12">
           <div className="flex items-center justify-between mb-6">
             <div>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useState, useEffect, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import EditDropdownOptionsModal from './EditDropdownOptionsModal';
@@ -17,6 +18,15 @@ export default function DropdownOptionsManagement() {
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<DropdownOption[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
 
   useEffect(() => {
     fetchDropdownOptions();
@@ -63,11 +73,23 @@ export default function DropdownOptionsManagement() {
 
   return (
     <div className="flex-1">
-      {/* Top Bar */}
-      <TopBar breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Dropdown Options' }]} />
+      {/* Navbar */}
+      <Navbar 
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Admin', href: '/admin' }, 
+              { label: 'Dropdown Options', href: '/admin/dropdown-options' }
+            ]}
+          />
+        }
+        actions={navbarActions}
+      />
 
       {/* Content */}
-      <div className="px-8 pt-4 pb-8">
+      <div className="px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <PageHeaderWithBadge
             title="Dropdown Options Management"

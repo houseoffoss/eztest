@@ -1,12 +1,10 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
-import { Plus, FolderPlus, Import, Upload, LogOut, ChevronDown } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { Plus, FolderPlus, Import, Upload, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import {
   DropdownMenu,
@@ -19,7 +17,6 @@ import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderW
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { TestCase, Project, Module } from './types';
 import { TestCaseTable } from './subcomponents/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
@@ -30,7 +27,6 @@ import { EmptyTestCaseState } from './subcomponents/EmptyTestCaseState';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface TestCaseListProps {
   projectId: string;
@@ -51,7 +47,6 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
-  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -252,30 +247,77 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setDeleteDialogOpen(true);
   };
 
-  const handleSignOut = async () => {
-    // Clear all persisted form data before signing out
-    clearAllPersistedForms();
-    // Clear project context from session storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('lastProjectId');
-      // Clear any other project-related session data
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('defects-filters-')) {
-          sessionStorage.removeItem(key);
-        }
+  // Check permissions before early returns
+  const canCreateTestCase = hasPermissionCheck('testcases:create');
+  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
+  const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canCreateTestCase) {
+      actions.push({
+        type: 'custom' as const,
+        custom: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
+                Add
+                <ChevronDown className="w-4 h-4" />
+              </ButtonSecondary>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setCreateModuleDialogOpen(true)}>
+                <FolderPlus className="w-4 h-4" />
+                New Module
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4" />
+                New Test Case
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
       });
     }
-    await signOut({ callbackUrl: '/auth/login', redirect: true });
-  };
+
+    if (canCreateTestCase && canImport) {
+      actions.push({
+        type: 'custom' as const,
+        custom: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
+                Migration
+                <ChevronDown className="w-4 h-4" />
+              </ButtonSecondary>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                <Import className="w-4 h-4" />
+                Import Test Cases
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                <Upload className="w-4 h-4" />
+                Export Test Cases
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateTestCase, canImport]);
 
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading test cases..." />;
   }
-
-  // Check permissions
-  const canCreateTestCase = hasPermissionCheck('testcases:create');
-  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
-  const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
 
   return (
     <>
@@ -295,78 +337,9 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             ]}
           />
         }
-        actions={
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            {/* Add Dropdown */}
-            {canCreateTestCase && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                    Add
-                    <ChevronDown className="w-4 h-4" />
-                  </ButtonSecondary>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => setCreateModuleDialogOpen(true)}>
-                    <FolderPlus className="w-4 h-4" />
-                    New Module
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCreateDialogOpen(true)}>
-                    <Plus className="w-4 h-4" />
-                    New Test Case
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-
-            {/* Migration Dropdown (Import/Export) */}
-            {canCreateTestCase && canImport && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                    Migration
-                    <ChevronDown className="w-4 h-4" />
-                  </ButtonSecondary>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
-                    <Import className="w-4 h-4" />
-                    Import Test Cases
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
-                    <Upload className="w-4 h-4" />
-                    Export Test Cases
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-
-            {/* Sign Out Button */}
-            <ButtonDestructive 
-              type="button" 
-              size="default" 
-              className="px-5 cursor-pointer flex-shrink-0 flex items-center gap-2"
-              onClick={() => setSignOutDialogOpen(true)}
-              buttonName="Test Case List - Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </ButtonDestructive>
-          </div>
-        }
+        actions={navbarActions}
       />
 
-      <BaseConfirmDialog
-        title="Sign Out"
-        description="Are you sure you want to sign out? You will need to log in again to access your account."
-        submitLabel="Sign Out"
-        cancelLabel="Cancel"
-        triggerOpen={signOutDialogOpen}
-        onOpenChange={setSignOutDialogOpen}
-        onSubmit={handleSignOut}
-        destructive={true}
-      />
-      
       <div className="px-4 sm:px-6 lg:px-8 pt-8 w-full min-w-0 overflow-hidden">
         {/* Header and Filters Section */}
         <HeaderWithFilters

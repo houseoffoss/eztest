@@ -7,8 +7,8 @@ import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSeco
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { HeroSection } from './subcomponents/HeroSection';
-import { StatsSection } from './subcomponents/StatsSection';
 import { PhilosophySection } from './subcomponents/PhilosophySection';
+import { FeaturesGrid } from './subcomponents/FeaturesGrid';
 
 const navItems = [
   { label: 'Why Choose?', href: '#why-choose' },
@@ -76,7 +76,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <HeroSection />
         <div id="why-choose" className="scroll-mt-24">
-          <StatsSection />
+          <FeaturesGrid />
         </div>
         <PhilosophySection />
       </div>

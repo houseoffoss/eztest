@@ -105,6 +105,7 @@ export default function ProjectDetail({ projectId }: ProjectDetailProps) {
             ]}
           />
         }
+        hideNavbarContainer={true}
         actions={
           <div className="flex items-center gap-2">
             <ButtonDestructive 

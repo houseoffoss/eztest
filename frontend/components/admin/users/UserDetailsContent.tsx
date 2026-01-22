@@ -1,15 +1,14 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { formatDateTime } from '@/lib/date-utils';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
-import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
+import { Mail, Calendar, Briefcase } from 'lucide-react';
 
 interface UserRole {
   id: string;
@@ -41,8 +40,18 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
+
   useEffect(() => {
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchUser = async () => {
@@ -70,21 +79,6 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   if (!user) {
     return null;
   }
-  const handleSignOut = () => {
-    // Clear all persisted form data before signing out
-    clearAllPersistedForms();
-    // Clear project context from session storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('lastProjectId');
-      // Clear any other project-related session data
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('defects-filters-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    }
-    // Let the form submit naturally to /api/auth/signout
-  };
 
   const getRoleBadgeColor = (roleName: string) => {
     switch (roleName) {
@@ -102,27 +96,22 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   };
 
   return (
-    <>
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs 
-              items={[
-                { label: 'Admin', href: '/admin' },
-                { label: 'Users', href: '/admin/users' },
-                { label: user.name },
-              ]}
-            />
-            <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
-              <ButtonDestructive type="submit" size="default" className="px-5">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </ButtonDestructive>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div className="flex-1">
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Admin', href: '/admin' },
+              { label: 'Users', href: '/admin/users' },
+              { label: user.name, href: `/admin/users/${user.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
+      />
 
       <div className="max-w-4xl mx-auto px-8 py-10">
         {/* Profile Header Card */}
@@ -246,6 +235,6 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
           </div>
         </DetailCard>
       </div>
-    </>
+    </div>
   );
 }

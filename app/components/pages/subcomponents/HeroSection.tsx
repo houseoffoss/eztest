@@ -18,7 +18,7 @@ export const HeroSection = () => {
         <br />
         <span className="text-primary">in One Place</span>
       </h1>
-      <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+      <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
         Open Source alternative to Testiny, Testrail, TestLink, Testmo
       </p>
       <div className="flex gap-4 justify-center flex-wrap">

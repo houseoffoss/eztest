@@ -7,7 +7,7 @@ import crypto from 'crypto';
 // Allowed MIME types (security whitelist)
 const ALLOWED_MIME_TYPES = [
   // Images
-  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/avif',
   // Documents
   'application/pdf',
   'application/msword',

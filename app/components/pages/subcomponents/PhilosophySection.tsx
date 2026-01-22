@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
 
 export const PhilosophySection = () => {
   return (
-    <Card variant="glass" className="mb-12">
+    <Card variant="glass" className="mb-0">
       <CardContent className="py-12">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Our Philosophy</h2>
@@ -15,7 +15,7 @@ export const PhilosophySection = () => {
               WHY NOT use AI coding agent to build a modern, useful test management tool?
             </p>
             <p className="text-white/80">
-              The goal is not to reinvent the wheel, it's to break the cycle of mediocre, overpriced software
+              The goal is not to reinvent the wheel, it&apos;s to break the cycle of mediocre, overpriced software
             </p>
           </div>
         </div>
