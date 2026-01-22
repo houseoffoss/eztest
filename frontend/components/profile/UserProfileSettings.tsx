@@ -6,14 +6,14 @@ import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
+import { Lock, Mail, Phone, MapPin, User, Save, Key, LogOut } from 'lucide-react';
 import { ApiKeysManagement } from '@/frontend/components/apikeys/ApiKeysManagement';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,22 @@ export default function UserProfileSettings() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  const handleSignOut = () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
+    // Clear project context from session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      // Clear any other project-related session data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    // Let the form submit naturally to /api/auth/signout
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -154,9 +170,22 @@ export default function UserProfileSettings() {
 
   return (
     <>
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[{ label: 'Account Settings' }]}
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        hideNavbarContainer={true}
+        actions={
+          <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
+            <ButtonDestructive type="submit" size="default" className="px-5">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </ButtonDestructive>
+          </form>
+        }
       />
 
       {/* Content */}

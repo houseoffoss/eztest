@@ -9,12 +9,14 @@ import { TestResult, TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useRouter } from 'next/navigation';
 
 interface TestCasesListCardProps {
   results: TestResult[];
   testRunStatus: string;
   canUpdate?: boolean;
   canCreate?: boolean;
+  projectId: string;
   onAddTestCases: () => void;
   onAddTestSuites: () => void;
   onExecuteTestCase: (testCase: TestCase) => void;
@@ -36,12 +38,14 @@ export function TestCasesListCard({
   testRunStatus,
   canUpdate = true,
   canCreate = true,
+  projectId,
   onAddTestCases,
   onAddTestSuites,
   onExecuteTestCase,
   onCreateDefect,
   getResultIcon,
 }: TestCasesListCardProps) {
+  const router = useRouter();
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
   const { hasPermission: hasPermissionCheck } = usePermissions();
@@ -257,6 +261,7 @@ export function TestCasesListCard({
           columns={columns}
           data={tableData}
           rowClassName="cursor-pointer hover:bg-white/5"
+          onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
           emptyMessage="No test cases in this run"
         />
       )}

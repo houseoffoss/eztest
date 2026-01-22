@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, LogOut } from 'lucide-react';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { NotFoundState } from '@/frontend/reusable-components/errors/NotFoundState';
@@ -14,6 +16,7 @@ import { Project, ProjectMember } from './types';
 import { MembersCard } from './subcomponents/MembersCard';
 import { CreateAddMemberDialog } from './subcomponents/AddMemberDialog';
 import { RemoveMemberDialog } from './subcomponents/RemoveMemberDialog';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface ProjectMembersProps {
   projectId: string;
@@ -32,6 +35,18 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
   // Check if user is admin or project manager
   const isAdminOrManager = session?.user?.roleName === 'ADMIN' || session?.user?.roleName === 'PROJECT_MANAGER';
+
+  const handleSignOut = () => {
+    clearAllPersistedForms();
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     fetchProjectAndMembers();
@@ -152,30 +167,44 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
   return (
     <>
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          { label: project.name, href: `/projects/${projectId}` },
-          { label: 'Members' },
-        ]}
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project.name, href: `/projects/${projectId}` },
+              { label: 'Members' },
+            ]}
+          />
+        }
         actions={
-          isAdminOrManager ? (
-            <ActionButtonGroup
-              buttons={[
-                {
-                  label: 'Add Member',
-                  icon: Plus,
-                  onClick: () => setAddDialogOpen(true),
-                  variant: 'primary',
-                },
-              ]}
-            />
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {isAdminOrManager && (
+              <ActionButtonGroup
+                buttons={[
+                  {
+                    label: 'Add Member',
+                    icon: Plus,
+                    onClick: () => setAddDialogOpen(true),
+                    variant: 'primary',
+                  },
+                ]}
+              />
+            )}
+            <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
+              <ButtonDestructive type="submit" size="default" className="px-5">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </ButtonDestructive>
+            </form>
+          </div>
         }
       />
       
-      <div className="px-8 pt-4 pb-8">
+      <div className="px-8 pt-8 pb-8">
         <div className="max-w-6xl mx-auto">
           <PageHeaderWithBadge
             badge={project.key}

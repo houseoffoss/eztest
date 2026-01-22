@@ -1,17 +1,17 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
 import { formatDateTime } from '@/lib/date-utils';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/frontend/reusable-elements/dialogs/Dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/frontend/reusable-elements/selects/Select';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Plus, Trash2, Mail, Shield, Eye, Users } from 'lucide-react';
 
@@ -33,7 +33,6 @@ interface ProjectMembersProps {
 }
 
 export default function ProjectMembers({ projectId }: ProjectMembersProps) {
-  const router = useRouter();
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -46,10 +45,45 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
   });
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+  const [project, setProject] = useState<{ name: string; id: string } | null>(null);
+
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'action' as const,
+        label: 'Add Member',
+        icon: Plus,
+        onClick: () => setAddDialogOpen(true),
+        variant: 'primary' as const,
+        buttonName: 'Project Members - Add Member',
+      },
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
 
   useEffect(() => {
     fetchMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (projectId) {
+        try {
+          const response = await fetch(`/api/projects/${projectId}`);
+          const data = await response.json();
+          if (data.data) {
+            setProject(data.data);
+          }
+        } catch (error) {
+          console.error('Error fetching project:', error);
+        }
+      }
+    };
+    fetchProject();
   }, [projectId]);
 
   const fetchMembers = async () => {
@@ -142,21 +176,34 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         default:
           return <Users className="w-3 h-3" />;
       }
-    };  if (loading) {
+    };  
+
+  if (loading) {
     return <Loader fullScreen text="Loading members..." />;
   }
 
   return (
     <>
-      {/* Add Member Button */}
-      <div className="flex items-center justify-end mb-6">
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
+              { label: 'Members', href: `/projects/${projectId}/members` },
+            ]}
+          />
+        }
+        actions={navbarActions}
+      />
+
+      {/* Main Content */}
+      <div className="px-4 sm:px-6 lg:px-8 pt-8">
+        {/* Add Member Dialog */}
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-          <DialogTrigger asChild>
-            <ButtonPrimary size="default">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Member
-            </ButtonPrimary>
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Project Member</DialogTitle>
@@ -192,10 +239,9 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
 
-      {/* Members List */}
-      <Card variant="glass">
+        {/* Members List */}
+        <Card variant="glass">
         <CardHeader>
           <CardTitle className="text-white">Team Members ({members.length})</CardTitle>
           <CardDescription className="text-white/70">
@@ -302,6 +348,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </>
   );
 }

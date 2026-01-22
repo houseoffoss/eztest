@@ -1,8 +1,9 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
@@ -60,6 +61,15 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [newStepActionAttachments, setNewStepActionAttachments] = useState<Attachment[]>([]);
   const [newStepExpectedResultAttachments, setNewStepExpectedResultAttachments] = useState<Attachment[]>([]);
   const [saving, setSaving] = useState(false);
+
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
 
   useEffect(() => {
     fetchTestCase();
@@ -759,23 +769,30 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          {
-            label: testCase.project.name,
-            href: `/projects/${testCase.project.id}`,
-          },
-          {
-            label: 'Test Cases',
-            href: `/projects/${testCase.project.id}/testcases`,
-          },
-          { label: testCase.title },
-        ]}
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              {
+                label: testCase.project.name,
+                href: `/projects/${testCase.project.id}`,
+              },
+              {
+                label: 'Test Cases',
+                href: `/projects/${testCase.project.id}/testcases`,
+              },
+              { label: testCase.title, href: `/projects/${testCase.project.id}/testcases/${testCase.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="p-4 md:p-6 lg:p-8 pt-8">
         <TestCaseHeader
           testCase={testCase}
           isEditing={isEditing}

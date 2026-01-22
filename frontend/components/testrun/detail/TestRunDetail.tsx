@@ -1,5 +1,7 @@
-﻿import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+﻿import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
@@ -22,6 +24,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface TestRunDetailProps {
   testRunId: string;
@@ -64,6 +67,33 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       expiryMs: 30 * 60 * 1000, // 30 minutes
     }
   );
+
+  // Check permissions for navbar
+  const canUpdateTestRun = hasPermissionCheck('testruns:update');
+  const canCreateTestRun = hasPermissionCheck('testruns:create');
+  const canReadTestRun = hasPermissionCheck('testruns:read');
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canReadTestRun) {
+      actions.push({
+        type: 'action' as const,
+        label: 'Export Report',
+        icon: Upload,
+        onClick: () => setExportDialogOpen(true),
+        variant: 'secondary' as const,
+        buttonName: 'Test Run Detail - Export Report',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canReadTestRun]);
 
   useEffect(() => {
     fetchTestRun();
@@ -566,41 +596,32 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     );
   }
 
-  const canUpdateTestRun = hasPermissionCheck('testruns:update');
-  const canCreateTestRun = hasPermissionCheck('testruns:create');
-  const canReadTestRun = hasPermissionCheck('testruns:read');
-
   return (
     <div className="flex-1">
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          {
-            label: testRun.project?.name || 'Project',
-            href: `/projects/${testRun.project?.id}`,
-          },
-          {
-            label: 'Test Runs',
-            href: `/projects/${testRun.project?.id}/testruns`,
-          },
-          { label: testRun.name },
-        ]}
-        actions={
-          canReadTestRun && (
-            <ButtonSecondary 
-              onClick={() => setExportDialogOpen(true)} 
-              className="cursor-pointer"
-              title="Export detailed report"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Export Report
-            </ButtonSecondary>
-          )
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              {
+                label: testRun.project?.name || 'Project',
+                href: `/projects/${testRun.project?.id}`,
+              },
+              {
+                label: 'Test Runs',
+                href: `/projects/${testRun.project?.id}/testruns`,
+              },
+              { label: testRun.name, href: `/projects/${testRun.project?.id}/testruns/${testRun.id}` },
+            ]}
+          />
         }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="p-4 md:p-6 lg:p-8 pt-8 space-y-6">
         <TestRunHeader
           testRun={testRun}
           actionLoading={actionLoading}
@@ -621,6 +642,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testRunStatus={testRun.status}
           canUpdate={canUpdateTestRun}
           canCreate={canCreateTestRun}
+          projectId={testRun.project?.id || ''}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);

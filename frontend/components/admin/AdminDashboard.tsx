@@ -1,7 +1,8 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
@@ -10,17 +11,24 @@ import { Users, Settings } from 'lucide-react';
 export default function AdminDashboard() {
   const router = useRouter();
 
+  const navbarActions = useMemo(() => [
+    {
+      type: 'signout' as const,
+      showConfirmation: true,
+    },
+  ], []);
+
   return (
     <div className="flex-1">
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Admin' },
-        ]}
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        actions={navbarActions}
       />
 
       {/* Content */}
-      <div className="px-8 pt-4 pb-8">
+      <div className="px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <PageHeaderWithBadge
             title="Admin Dashboard"
