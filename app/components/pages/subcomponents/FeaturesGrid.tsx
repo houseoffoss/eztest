@@ -37,8 +37,8 @@ const features: Feature[] = [
 
 export const FeaturesGrid = () => {
   return (
-    <Card variant="glass" className="mb-24">
-      <CardContent className="py-12">
+    <div className="mb-24">
+      <div className="py-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Why Choose EZTest?</h2>
           <p className="text-base text-white/60">Powerful features that make test management simple</p>
@@ -80,8 +80,8 @@ export const FeaturesGrid = () => {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
