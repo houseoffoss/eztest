@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { 
@@ -115,86 +114,6 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     }
   };
 
-  const columns: ColumnDef<TestResult>[] = [
-    {
-      key: 'status',
-      label: 'Status',
-      render: (value: unknown, row: TestResult) => {
-        const status = value as string;
-        const badgeProps = getDynamicBadgeProps(status, statusOptions);
-        return (
-          <div className="flex items-center gap-2">
-            {getStatusIcon(status)}
-            <Badge
-              variant="outline"
-              className={`text-xs ${badgeProps.className}`}
-              style={badgeProps.style}
-            >
-              {status}
-            </Badge>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'testRun',
-      label: 'Test Run',
-      className: 'min-w-0 max-w-[150px]',
-      render: (_, row: TestResult) => (
-        <div className="min-w-0 max-w-[150px] overflow-hidden">
-          <p className="text-sm text-white/90 font-medium truncate block">{row.testRun.name}</p>
-          {row.testRun.environment && (() => {
-            const badgeProps = getDynamicBadgeProps(row.testRun.environment, environmentOptions);
-            const environmentLabel = environmentOptions.find(opt => opt.value === row.testRun.environment)?.label || row.testRun.environment.toUpperCase();
-            return (
-              <Badge
-                variant="outline"
-                className={`text-xs mt-1 ${badgeProps.className}`}
-                style={badgeProps.style}
-              >
-                {environmentLabel}
-              </Badge>
-            );
-          })()}
-        </div>
-      ),
-    },
-    {
-      key: 'executedBy',
-      label: 'Executed By',
-      render: (_, row: TestResult) => (
-        <div className="flex items-center gap-1 text-xs text-white/70 min-w-0">
-          <User className="w-3 h-3 flex-shrink-0" />
-          <span className="truncate">{row.executedBy.name}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'executedAt',
-      label: 'Date',
-      render: (_, row: TestResult) => (
-        <div className="flex items-center gap-1 text-xs text-white/70">
-          <Calendar className="w-3 h-3" />
-          <span>{formatDateTime(row.executedAt)}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'duration',
-      label: 'Duration',
-      render: (value: unknown, row: TestResult) => {
-        const duration = value as number | undefined;
-        return (
-          <div className="flex items-center gap-1 text-xs text-white/70">
-            <Clock className="w-3 h-3" />
-            <span>{formatDuration(duration) || '-'}</span>
-          </div>
-        );
-      },
-      align: 'right',
-    },
-  ];
-
   return (
     <DetailCard title="Execution History" contentClassName="">
       {loading ? (
@@ -212,12 +131,76 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
           </p>
         </div>
       ) : (
-        <div className="w-full min-w-0 overflow-hidden">
-          <DataTable
-            columns={columns}
-            data={history}
-            emptyMessage="No execution history"
-          />
+        <div className="space-y-0">
+          {/* Header Row */}
+          <div
+            className="grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10 rounded-t-md"
+            style={{ gridTemplateColumns: '80px 180px 140px 180px 80px' }}
+          >
+            <div>Status</div>
+            <div>Test Run</div>
+            <div>Executed By</div>
+            <div>Date</div>
+            <div className="text-right">Duration</div>
+          </div>
+
+          {/* Data Rows */}
+          {history.map((row, rowIndex) => (
+            <div
+              key={row.id}
+              className={`grid gap-3 px-3 py-2.5 transition-colors items-center text-sm rounded-sm hover:bg-accent/20 ${
+                rowIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
+              } ${
+                rowIndex === history.length - 1 ? 'rounded-b-md' : ''
+              }`}
+              style={{ gridTemplateColumns: '80px 180px 140px 180px 80px' }}
+            >
+              <div className="flex items-center gap-2">
+                {getStatusIcon(row.status)}
+                <Badge
+                  variant="outline"
+                  className={`text-xs ${(() => {
+                    const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
+                    return badgeProps.className;
+                  })()}`}
+                  style={(() => {
+                    const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
+                    return badgeProps.style;
+                  })()}
+                >
+                  {row.status}
+                </Badge>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm text-white/90 font-medium truncate block">{row.testRun.name}</p>
+                {row.testRun.environment && (() => {
+                  const badgeProps = getDynamicBadgeProps(row.testRun.environment, environmentOptions);
+                  const environmentLabel = environmentOptions.find(opt => opt.value === row.testRun.environment)?.label || row.testRun.environment.toUpperCase();
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={`text-xs mt-1 ${badgeProps.className}`}
+                      style={badgeProps.style}
+                    >
+                      {environmentLabel}
+                    </Badge>
+                  );
+                })()}
+              </div>
+              <div className="flex items-center gap-1 text-xs text-white/70 min-w-0">
+                <User className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{row.executedBy.name}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-white/70">
+                <Calendar className="w-3 h-3" />
+                <span>{formatDateTime(row.executedAt)}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-white/70 justify-self-end">
+                <Clock className="w-3 h-3" />
+                <span>{formatDuration(row.duration) || '-'}</span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </DetailCard>
