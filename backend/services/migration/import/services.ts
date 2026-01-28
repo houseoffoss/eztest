@@ -617,21 +617,21 @@ export class ImportService {
           ? flowId.toString().trim()
           : null;
 
-        // Layer (convert to uppercase: "Smoke" -> "SMOKE")
-        let layerValue: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null = null;
+        // Layer (convert to uppercase: "Smoke" -> "SMOKE", unknown values default to "UNKNOWN")
+        let layerValue: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' = 'UNKNOWN';
         if (layer && typeof layer === 'string' && layer.toString().trim()) {
           const layerUpper = layer.toString().trim().toUpperCase();
           if (layerUpper === 'SMOKE' || layerUpper === 'CORE' || layerUpper === 'EXTENDED' || layerUpper === 'UNKNOWN') {
             layerValue = layerUpper as 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN';
           } else {
-            // Try to map common variations
+            // Try to map common variations, default to UNKNOWN if not found
             const layerMap: Record<string, 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN'> = {
               'SMOKE': 'SMOKE',
               'CORE': 'CORE',
               'EXTENDED': 'EXTENDED',
               'UNKNOWN': 'UNKNOWN',
             };
-            layerValue = layerMap[layerUpper] || null;
+            layerValue = layerMap[layerUpper] || 'UNKNOWN';
           }
         }
 
@@ -699,18 +699,22 @@ export class ImportService {
         }
 
         // Platforms (環境) - array: "iOS / Android / Web" -> ["IOS", "ANDROID", "WEB"]
+        // Supports: "/", ",", "、", and whitespace separators
+        // Removes duplicates automatically
         const platformsValue: ('IOS' | 'ANDROID' | 'WEB')[] = [];
+        const platformsSet = new Set<'IOS' | 'ANDROID' | 'WEB'>();
+        
         if (platforms && typeof platforms === 'string' && platforms.toString().trim()) {
           const platformsStr = platforms.toString().trim();
-          // Split by "/" or "," or space
-          const platformList = platformsStr.split(/[\/,、]/).map(p => p.trim().toUpperCase()).filter(p => p);
+          // Split by "/", ",", "、", or whitespace (space, tab, newline)
+          const platformList = platformsStr.split(/[\/,、\s]+/).map(p => p.trim().toUpperCase()).filter(p => p);
           for (const platform of platformList) {
-            if (platform === 'IOS' || platform === 'IPHONE' || platform === 'IPAD' || platform === 'IOS') {
-              platformsValue.push('IOS');
-            } else if (platform === 'ANDROID' || platform === 'ANDROID') {
-              platformsValue.push('ANDROID');
-            } else if (platform === 'WEB' || platform === 'WEB') {
-              platformsValue.push('WEB');
+            if (platform === 'IOS' || platform === 'IPHONE' || platform === 'IPAD') {
+              platformsSet.add('IOS');
+            } else if (platform === 'ANDROID') {
+              platformsSet.add('ANDROID');
+            } else if (platform === 'WEB') {
+              platformsSet.add('WEB');
             }
           }
         } else if (Array.isArray(platforms)) {
@@ -718,14 +722,17 @@ export class ImportService {
           for (const platform of platforms) {
             const platformStr = String(platform).trim().toUpperCase();
             if (platformStr === 'IOS' || platformStr === 'IPHONE' || platformStr === 'IPAD') {
-              platformsValue.push('IOS');
+              platformsSet.add('IOS');
             } else if (platformStr === 'ANDROID') {
-              platformsValue.push('ANDROID');
+              platformsSet.add('ANDROID');
             } else if (platformStr === 'WEB') {
-              platformsValue.push('WEB');
+              platformsSet.add('WEB');
             }
           }
         }
+        
+        // Convert Set to Array (automatically removes duplicates)
+        platformsValue.push(...Array.from(platformsSet));
 
         // Determine the expected result value to use for the test case
         // If there are no test steps, use the parsed expected result (singleExpectedResult) or original value

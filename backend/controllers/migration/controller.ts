@@ -79,7 +79,7 @@ export class MigrationController {
   getTestCaseImportTemplate() {
     const template = {
       columns: [
-        { name: 'Test Case Title', required: false, description: 'Short, clear description of the test case. If not provided, "操作手順" (Operation) or "Assertion-ID" will be used as title.' },
+        { name: 'Test Case Title', required: false, description: 'Short, clear description of the test case. If not provided, "操作手順" (Operation) or "Assertion-ID" will be used as title. At least one of "Test Case Title", "操作手順", or "Assertion-ID" is required.' },
         { name: 'Module / Feature', required: false, description: 'Application area (Login, Payments, IoT Device, etc.). Will be created if not exists' },
         { name: 'Priority', required: false, description: 'Priority level: High / Medium / Low' },
         { name: 'Preconditions', required: false, description: 'Conditions required before test execution' },
@@ -97,14 +97,14 @@ export class MigrationController {
         { name: 'Assertion-ID', required: false, description: 'Assertion-ID: Assertion identifier (e.g., AST-RTC-SM-001-01)' },
         { name: 'RTC-ID', required: false, description: 'RTC-ID: RTC identifier (e.g., RTC-SM-001)' },
         { name: 'Flow-ID', required: false, description: 'Flow-ID: Flow identifier (e.g., SM-001)' },
-        { name: 'Layer', required: false, description: 'Layer: Test layer - Smoke / Core / Extended / Unknown (will be converted to uppercase: SMOKE, CORE, EXTENDED, UNKNOWN)' },
+        { name: 'Layer', required: false, description: 'Layer: Test layer - Smoke / Core / Extended / Unknown (will be converted to uppercase: SMOKE, CORE, EXTENDED, UNKNOWN). Unknown or invalid values will default to UNKNOWN.' },
         { name: '対象（API/画面）', required: false, description: '対象: Target type - API endpoint (e.g., "POST /signup/sms") or 画面 (screen/flow). API endpoints starting with HTTP methods (POST/GET/PUT/DELETE/PATCH) will be converted to "API". Values containing "画面" or "フロー" will be converted to "SCREEN". Can also use "API" or "SCREEN" directly.' },
         { name: '操作手順', required: false, description: '操作手順: Operation procedure / Test steps description' },
         { name: '期待値', required: false, description: '期待値: Expected value / Expected result (different from Expected Result column which is for test steps)' },
         { name: '根拠（ドキュメント）', required: false, description: '根拠: Evidence / Documentation reference (e.g., docs/20_backend_services/phone_auth_implementation_spec.md)' },
         { name: '備考', required: false, description: '備考: Notes / Additional remarks' },
         { name: '自動化', required: false, description: '自動化: Automation status - true / false / yes / no / 自動化 (will be converted to boolean)' },
-        { name: '環境（iOS / Android / Web）', required: false, description: '環境: Platforms - iOS / Android / Web (can specify multiple separated by "/" or ","). Will be converted to array: ["IOS", "ANDROID", "WEB"]' },
+        { name: '環境（iOS / Android / Web）', required: false, description: '環境: Platforms - iOS / Android / Web (can specify multiple separated by "/", ",", "、", or whitespace. Duplicates are automatically removed). Will be converted to array: ["IOS", "ANDROID", "WEB"]' },
       ],
       example: {
         'Test Case Title': 'Verify user authentication with valid credentials',
