@@ -387,7 +387,7 @@ export default function DefectList({ projectId }: DefectListProps) {
   const handleConfirmBulkDelete = async () => {
     try {
       const deletePromises = Array.from(selectedDefects).map((id) =>
-        fetch(`/api/defects/${id}`, { method: 'DELETE' })
+        fetch(`/api/projects/${projectId}/defects/${id}`, { method: 'DELETE' })
       );
 
       await Promise.all(deletePromises);
@@ -415,7 +415,7 @@ export default function DefectList({ projectId }: DefectListProps) {
     if (!defectToDelete) return;
 
     try {
-      const response = await fetch(`/api/defects/${defectToDelete.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/projects/${projectId}/defects/${defectToDelete.id}`, { method: 'DELETE' });
       
       if (response.ok) {
         setAlert({

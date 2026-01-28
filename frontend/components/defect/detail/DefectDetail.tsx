@@ -218,7 +218,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         // Link uploaded attachments to the defect
         if (uploadedAttachments.length > 0) {
           try {
-            await fetch(`/api/defects/${defectId}/attachments`, {
+            await fetch(`/api/projects/${projectId}/defects/${defectId}/attachments`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ attachments: uploadedAttachments }),

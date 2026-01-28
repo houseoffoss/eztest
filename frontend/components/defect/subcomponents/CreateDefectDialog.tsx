@@ -216,7 +216,7 @@ export function CreateDefectDialog({
     const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
 
     for (const attachment of pendingAttachments) {
-      // @ts-ignore - Access the pending file object
+      // @ts-expect-error - Access the pending file object
       const file = attachment._pendingFile;
       if (!file) continue;
 
@@ -300,7 +300,7 @@ export function CreateDefectDialog({
       // Link uploaded attachments to the defect
       if (uploadedAttachments.length > 0) {
         try {
-          await fetch(`/api/defects/${createdDefect.id}/attachments`, {
+          await fetch(`/api/projects/${projectId}/defects/${createdDefect.id}/attachments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ attachments: uploadedAttachments }),
