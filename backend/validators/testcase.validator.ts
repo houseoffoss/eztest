@@ -46,6 +46,18 @@ export const createTestCaseSchema = z.object({
   preconditions: z.string().optional(),
   postconditions: z.string().optional(),
   steps: z.array(testStepSchema).optional(),
+  // New fields for enhanced test case management
+  assertionId: z.string().optional().nullable(),
+  rtcId: z.string().optional().nullable(),
+  flowId: z.string().optional().nullable(),
+  layer: z.enum(['SMOKE', 'CORE', 'EXTENDED', 'UNKNOWN']).optional().nullable(),
+  targetType: z.enum(['FUNCTIONAL', 'NON_FUNCTIONAL', 'PERFORMANCE', 'SECURITY', 'USABILITY', 'COMPATIBILITY', 'API', 'SCREEN']).optional().nullable(),
+  operation: z.string().optional().nullable(),
+  expected: z.string().optional().nullable(),
+  evidence: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  isAutomated: z.boolean().optional().default(false),
+  platforms: z.array(z.enum(['IOS', 'ANDROID', 'WEB'])).optional().default([]),
 });
 
 /**
@@ -66,6 +78,18 @@ export const updateTestCaseSchema = z.object({
   postconditions: z.string().optional(),
   moduleId: z.string().optional().nullable(),
   suiteId: z.string().optional().nullable(),
+  // New fields for enhanced test case management
+  assertionId: z.string().optional().nullable(),
+  rtcId: z.string().optional().nullable(),
+  flowId: z.string().optional().nullable(),
+  layer: z.enum(['SMOKE', 'CORE', 'EXTENDED', 'UNKNOWN']).optional().nullable(),
+  targetType: z.enum(['FUNCTIONAL', 'NON_FUNCTIONAL', 'PERFORMANCE', 'SECURITY', 'USABILITY', 'COMPATIBILITY', 'API', 'SCREEN']).optional().nullable(),
+  operation: z.string().optional().nullable(),
+  expected: z.string().optional().nullable(),
+  evidence: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  isAutomated: z.boolean().optional(),
+  platforms: z.array(z.enum(['IOS', 'ANDROID', 'WEB'])).optional(),
 });
 
 /**

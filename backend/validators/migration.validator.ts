@@ -63,6 +63,62 @@ export const TEST_CASE_IMPORT_COLUMNS = {
   'test suites': { normalized: 'testsuite', required: false },
   'testsuite': { normalized: 'testsuite', required: false },
   'test suite': { normalized: 'testsuite', required: false },
+  
+  // New fields for enhanced test case management
+  'Assertion-ID': { normalized: 'assertionId', required: false },
+  'assertion-id': { normalized: 'assertionId', required: false },
+  'assertion id': { normalized: 'assertionId', required: false },
+  'assertionid': { normalized: 'assertionId', required: false },
+  
+  'RTC-ID': { normalized: 'rtcId', required: false },
+  'rtc-id': { normalized: 'rtcId', required: false },
+  'rtc id': { normalized: 'rtcId', required: false },
+  'rtcid': { normalized: 'rtcId', required: false },
+  
+  'Flow-ID': { normalized: 'flowId', required: false },
+  'flow-id': { normalized: 'flowId', required: false },
+  'flow id': { normalized: 'flowId', required: false },
+  'flowid': { normalized: 'flowId', required: false },
+  
+  'Layer': { normalized: 'layer', required: false },
+  'layer': { normalized: 'layer', required: false },
+  
+  '対象': { normalized: 'targetType', required: false },
+  '対象（API/画面）': { normalized: 'targetType', required: false },
+  '対象（api/画面）': { normalized: 'targetType', required: false },
+  '対象（API / 画面）': { normalized: 'targetType', required: false },
+  '対象（api / 画面）': { normalized: 'targetType', required: false },
+  'Target Type': { normalized: 'targetType', required: false },
+  'target type': { normalized: 'targetType', required: false },
+  'targettype': { normalized: 'targetType', required: false },
+  
+  '操作手順': { normalized: 'operation', required: false },
+  'Operation': { normalized: 'operation', required: false },
+  'operation': { normalized: 'operation', required: false },
+  
+  '期待値': { normalized: 'expected', required: false },
+  'Expected': { normalized: 'expected', required: false },
+  'expected': { normalized: 'expected', required: false },
+  
+  '根拠': { normalized: 'evidence', required: false },
+  '根拠（ドキュメント）': { normalized: 'evidence', required: false },
+  'Evidence': { normalized: 'evidence', required: false },
+  'evidence': { normalized: 'evidence', required: false },
+  
+  '備考': { normalized: 'notes', required: false },
+  'Notes': { normalized: 'notes', required: false },
+  'notes': { normalized: 'notes', required: false },
+  
+  '自動化': { normalized: 'isAutomated', required: false },
+  'Automation': { normalized: 'isAutomated', required: false },
+  'automation': { normalized: 'isAutomated', required: false },
+  'isAutomated': { normalized: 'isAutomated', required: false },
+  
+  '環境': { normalized: 'platforms', required: false },
+  '環境（iOS / Android / Web）': { normalized: 'platforms', required: false },
+  '環境（ios / android / web）': { normalized: 'platforms', required: false },
+  'Platforms': { normalized: 'platforms', required: false },
+  'platforms': { normalized: 'platforms', required: false },
 } as const;
 
 /**
@@ -82,16 +138,25 @@ export function validateTestCaseImportColumns(data: ParsedRow[]): string[] {
     availableFields.map((field) => [field.toLowerCase().trim(), field])
   );
 
-  // Check for required field: Title (in any variation)
+  // Check for required field: Title (in any variation), Operation (操作手順), or Assertion-ID
   const titleVariations = ['title', 'test case title', 'testcase title'];
+  const operationVariations = ['operation', '操作手順'];
+  const assertionIdVariations = ['assertion-id', 'assertion id', 'assertionid'];
+  
   const hasTitle = titleVariations.some(variation => 
     availableFieldsLower.has(variation)
   );
+  const hasOperation = operationVariations.some(variation => 
+    availableFieldsLower.has(variation)
+  );
+  const hasAssertionId = assertionIdVariations.some(variation => 
+    availableFieldsLower.has(variation)
+  );
 
-  if (!hasTitle) {
+  if (!hasTitle && !hasOperation && !hasAssertionId) {
     const availableFieldNames = availableFields.join(', ');
     errors.push(
-      `Missing required column: "Test Case Title" or "Title". Available columns: ${availableFieldNames}`
+      `Missing required column: "Test Case Title", "操作手順" (Operation), or "Assertion-ID". At least one of these is required. Available columns: ${availableFieldNames}`
     );
   }
 

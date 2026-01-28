@@ -66,6 +66,37 @@ export class ImportService {
       'test suites': 'testsuite',
       'testsuite': 'testsuite',
       'test suite': 'testsuite',
+      // New test case fields for enhanced test case management
+      'assertion-id': 'assertionId',
+      'assertion id': 'assertionId',
+      'assertionid': 'assertionId',
+      'rtc-id': 'rtcId',
+      'rtc id': 'rtcId',
+      'rtcid': 'rtcId',
+      'flow-id': 'flowId',
+      'flow id': 'flowId',
+      'flowid': 'flowId',
+      'layer': 'layer',
+      '対象': 'targetType',
+      '対象（api/画面）': 'targetType',
+      '対象（api / 画面）': 'targetType',
+      'target type': 'targetType',
+      'targettype': 'targetType',
+      '操作手順': 'operation',
+      'operation': 'operation',
+      '期待値': 'expected',
+      'expected': 'expected',
+      '根拠': 'evidence',
+      '根拠（ドキュメント）': 'evidence',
+      'evidence': 'evidence',
+      '備考': 'notes',
+      'notes': 'notes',
+      '自動化': 'isAutomated',
+      'automation': 'isAutomated',
+      'isautomated': 'isAutomated',
+      '環境': 'platforms',
+      '環境（ios / android / web）': 'platforms',
+      'platforms': 'platforms',
       // Defect columns (for defect import)
       'defect title / summary': 'title',
       'defect title': 'title',
@@ -217,13 +248,30 @@ export class ImportService {
         const testSteps = this.getRowValue(row, 'testSteps');
         const testData = this.getRowValue(row, 'testData');
         const defectId = this.getRowValue(row, 'defectId');
+        // New fields for enhanced test case management
+        const assertionId = this.getRowValue(row, 'assertionId');
+        const rtcId = this.getRowValue(row, 'rtcId');
+        const flowId = this.getRowValue(row, 'flowId');
+        const layer = this.getRowValue(row, 'layer');
+        const targetType = this.getRowValue(row, 'targetType');
+        const operation = this.getRowValue(row, 'operation');
+        const expected = this.getRowValue(row, 'expected');
+        const evidence = this.getRowValue(row, 'evidence');
+        const notes = this.getRowValue(row, 'notes');
+        const isAutomated = this.getRowValue(row, 'isAutomated');
+        const platforms = this.getRowValue(row, 'platforms');
 
-        // Validate required field
-        if (!title || typeof title !== 'string' || title.toString().trim() === '') {
-          throw new Error('Test Case Title is required');
+        // Determine title: use title column if provided, otherwise use operation (操作手順), or assertionId as fallback
+        let testCaseTitle: string;
+        if (title && typeof title === 'string' && title.toString().trim() !== '') {
+          testCaseTitle = title.toString().trim();
+        } else if (operation && typeof operation === 'string' && operation.toString().trim() !== '') {
+          testCaseTitle = operation.toString().trim();
+        } else if (assertionId && typeof assertionId === 'string' && assertionId.toString().trim() !== '') {
+          testCaseTitle = assertionId.toString().trim();
+        } else {
+          throw new Error('Test Case Title is required. Please provide "Test Case Title", "操作手順" (operation), or "Assertion-ID"');
         }
-
-        const testCaseTitle = title.toString().trim();
 
         // Process defect IDs if provided (supports multiple defects: comma or semicolon separated)
         // Store all defect IDs (both existing and pending) for later linking
@@ -557,6 +605,128 @@ export class ImportService {
           ? testData.toString().trim()
           : null;
 
+        // Parse new fields for enhanced test case management
+        // Assertion-ID, RTC-ID, Flow-ID (strings)
+        const assertionIdValue = assertionId && typeof assertionId === 'string' && assertionId.toString().trim()
+          ? assertionId.toString().trim()
+          : null;
+        const rtcIdValue = rtcId && typeof rtcId === 'string' && rtcId.toString().trim()
+          ? rtcId.toString().trim()
+          : null;
+        const flowIdValue = flowId && typeof flowId === 'string' && flowId.toString().trim()
+          ? flowId.toString().trim()
+          : null;
+
+        // Layer (convert to uppercase: "Smoke" -> "SMOKE")
+        let layerValue: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null = null;
+        if (layer && typeof layer === 'string' && layer.toString().trim()) {
+          const layerUpper = layer.toString().trim().toUpperCase();
+          if (layerUpper === 'SMOKE' || layerUpper === 'CORE' || layerUpper === 'EXTENDED' || layerUpper === 'UNKNOWN') {
+            layerValue = layerUpper as 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN';
+          } else {
+            // Try to map common variations
+            const layerMap: Record<string, 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN'> = {
+              'SMOKE': 'SMOKE',
+              'CORE': 'CORE',
+              'EXTENDED': 'EXTENDED',
+              'UNKNOWN': 'UNKNOWN',
+            };
+            layerValue = layerMap[layerUpper] || null;
+          }
+        }
+
+        // Target Type (convert: "API" -> "API", "画面" -> "SCREEN", "API/画面" -> "API" or "SCREEN")
+        let targetTypeValue: 'API' | 'SCREEN' | 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY' | null = null;
+        if (targetType && typeof targetType === 'string' && targetType.toString().trim()) {
+          const targetTypeStr = targetType.toString().trim();
+          const targetTypeUpper = targetTypeStr.toUpperCase();
+          
+          // Check for exact matches first
+          if (targetTypeUpper === 'API' || targetTypeUpper === 'SCREEN' ||
+              targetTypeUpper === 'FUNCTIONAL' || targetTypeUpper === 'NON_FUNCTIONAL' ||
+              targetTypeUpper === 'PERFORMANCE' || targetTypeUpper === 'SECURITY' ||
+              targetTypeUpper === 'USABILITY' || targetTypeUpper === 'COMPATIBILITY') {
+            targetTypeValue = targetTypeUpper as 'API' | 'SCREEN' | 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY';
+          } else if (targetTypeStr.includes('API') || targetTypeStr.includes('画面')) {
+            // Handle "API/画面" or "API / 画面" - default to API if contains API, otherwise SCREEN
+            if (targetTypeStr.includes('API') || targetTypeStr.toUpperCase().includes('API')) {
+              targetTypeValue = 'API';
+            } else if (targetTypeStr.includes('画面') || targetTypeStr.toUpperCase().includes('SCREEN')) {
+              targetTypeValue = 'SCREEN';
+            }
+          } else if (targetTypeStr.startsWith('POST ') || targetTypeStr.startsWith('GET ') || 
+                     targetTypeStr.startsWith('PUT ') || targetTypeStr.startsWith('DELETE ') ||
+                     targetTypeStr.startsWith('PATCH ')) {
+            // If it starts with HTTP method, it's likely an API endpoint
+            targetTypeValue = 'API';
+          } else if (targetTypeStr.includes('画面') || targetTypeStr.includes('フロー')) {
+            // If it contains "画面" or "フロー", it's likely a screen/flow
+            targetTypeValue = 'SCREEN';
+          }
+        }
+
+        // Operation (操作手順)
+        const operationValue = operation && typeof operation === 'string' && operation.toString().trim()
+          ? operation.toString().trim()
+          : null;
+
+        // Expected (期待値) - note: this is different from expectedResult which is for test steps
+        const expectedValue = expected && typeof expected === 'string' && expected.toString().trim()
+          ? expected.toString().trim()
+          : null;
+
+        // Evidence (根拠)
+        const evidenceValue = evidence && typeof evidence === 'string' && evidence.toString().trim()
+          ? evidence.toString().trim()
+          : null;
+
+        // Notes (備考)
+        const notesValue = notes && typeof notes === 'string' && notes.toString().trim()
+          ? notes.toString().trim()
+          : null;
+
+        // Is Automated (自動化) - boolean
+        let isAutomatedValue = false;
+        if (isAutomated !== undefined && isAutomated !== null) {
+          if (typeof isAutomated === 'boolean') {
+            isAutomatedValue = isAutomated;
+          } else if (typeof isAutomated === 'string') {
+            const automatedStr = isAutomated.toString().trim().toLowerCase();
+            isAutomatedValue = automatedStr === 'true' || automatedStr === '1' || automatedStr === 'yes' || automatedStr === '自動化';
+          } else if (typeof isAutomated === 'number') {
+            isAutomatedValue = isAutomated !== 0;
+          }
+        }
+
+        // Platforms (環境) - array: "iOS / Android / Web" -> ["IOS", "ANDROID", "WEB"]
+        const platformsValue: ('IOS' | 'ANDROID' | 'WEB')[] = [];
+        if (platforms && typeof platforms === 'string' && platforms.toString().trim()) {
+          const platformsStr = platforms.toString().trim();
+          // Split by "/" or "," or space
+          const platformList = platformsStr.split(/[\/,、]/).map(p => p.trim().toUpperCase()).filter(p => p);
+          for (const platform of platformList) {
+            if (platform === 'IOS' || platform === 'IPHONE' || platform === 'IPAD' || platform === 'IOS') {
+              platformsValue.push('IOS');
+            } else if (platform === 'ANDROID' || platform === 'ANDROID') {
+              platformsValue.push('ANDROID');
+            } else if (platform === 'WEB' || platform === 'WEB') {
+              platformsValue.push('WEB');
+            }
+          }
+        } else if (Array.isArray(platforms)) {
+          // If already an array
+          for (const platform of platforms) {
+            const platformStr = String(platform).trim().toUpperCase();
+            if (platformStr === 'IOS' || platformStr === 'IPHONE' || platformStr === 'IPAD') {
+              platformsValue.push('IOS');
+            } else if (platformStr === 'ANDROID') {
+              platformsValue.push('ANDROID');
+            } else if (platformStr === 'WEB') {
+              platformsValue.push('WEB');
+            }
+          }
+        }
+
         // Determine the expected result value to use for the test case
         // If there are no test steps, use the parsed expected result (singleExpectedResult) or original value
         // If there are test steps with individual expected results, only set test case level if single value
@@ -617,6 +787,18 @@ export class ImportService {
             moduleId,
             suiteId,
             createdById: userId,
+            // New fields for enhanced test case management
+            assertionId: assertionIdValue,
+            rtcId: rtcIdValue,
+            flowId: flowIdValue,
+            layer: layerValue,
+            targetType: targetTypeValue,
+            operation: operationValue,
+            expected: expectedValue,
+            evidence: evidenceValue,
+            notes: notesValue,
+            isAutomated: isAutomatedValue,
+            platforms: platformsValue.length > 0 ? platformsValue : [],
             steps: testStepsData && testStepsData.length > 0
               ? {
                   create: testStepsData

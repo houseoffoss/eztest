@@ -15,6 +15,30 @@ datasource db {
 // Values are now managed through the DropdownOption table
 // ====================================
 
+enum TestLayer {
+  SMOKE
+  CORE
+  EXTENDED
+  UNKNOWN
+}
+
+enum TargetType {
+  FUNCTIONAL
+  NON_FUNCTIONAL
+  PERFORMANCE
+  SECURITY
+  USABILITY
+  COMPATIBILITY
+  API
+  SCREEN
+}
+
+enum Platform {
+  IOS
+  ANDROID
+  WEB
+}
+
 // ====================================
 // User Management
 // ====================================
@@ -204,6 +228,18 @@ model TestCase {
   postconditions String?
   testData      String?  // Test data/input values for the test case
   pendingDefectIds String?  // Comma-separated defect IDs that don't exist yet (e.g., "DEF-1, DEF-2")
+  // New fields for enhanced test case management
+  assertionId   String?  // Assertion-ID
+  rtcId         String?  // RTC-ID
+  flowId        String?  // Flow-ID
+  layer         TestLayer?  // Layer
+  targetType    TargetType?  // 対象
+  operation     String?  // 操作手順
+  expected      String?  // 期待値
+  evidence      String?  // 根拠
+  notes         String?  // 備考
+  isAutomated   Boolean  @default(false)  // 自動化
+  platforms     Platform[] @default([])  // 環境 (複数環境を保存: IOS / ANDROID / WEB)
   createdById   String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

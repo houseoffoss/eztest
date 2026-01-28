@@ -5,6 +5,7 @@ export { TestCaseCard } from './TestCaseCard';
 export { TestCaseFilters } from './TestCaseFilters';
 export { TestCaseTable } from './TestCaseTable';
 export { SelectTestCasesDialog } from './SelectTestCasesDialog';
+export { PlatformsCheckboxGroup } from './PlatformsCheckboxGroup';
 export { EmptyTestCaseState } from './EmptyTestCaseState';
 export { TestCaseFormBuilder } from './TestCaseFormBuilder';
 export { TestCaseFormField, type FormFieldConfig } from './TestCaseFormField';

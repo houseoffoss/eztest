@@ -20,6 +20,18 @@ interface CreateTestCaseInput {
     action: string;
     expectedResult: string;
   }>;
+  // New fields
+  assertionId?: string | null;
+  rtcId?: string | null;
+  flowId?: string | null;
+  layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
+  targetType?: 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY' | 'API' | 'SCREEN' | null;
+  operation?: string | null;
+  expected?: string | null;
+  evidence?: string | null;
+  notes?: string | null;
+  isAutomated?: boolean;
+  platforms?: ('IOS' | 'ANDROID' | 'WEB')[];
 }
 
 interface UpdateTestCaseInput {
@@ -34,6 +46,18 @@ interface UpdateTestCaseInput {
   postconditions?: string;
   moduleId?: string | null;
   suiteId?: string | null;
+  // New fields
+  assertionId?: string | null;
+  rtcId?: string | null;
+  flowId?: string | null;
+  layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
+  targetType?: 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY' | 'API' | 'SCREEN' | null;
+  operation?: string | null;
+  expected?: string | null;
+  evidence?: string | null;
+  notes?: string | null;
+  isAutomated?: boolean;
+  platforms?: ('IOS' | 'ANDROID' | 'WEB')[];
 }
 
 interface TestCaseFilters {
@@ -558,6 +582,18 @@ export class TestCaseService {
             preconditions: data.preconditions,
             postconditions: data.postconditions,
             createdById: data.createdById,
+            // New fields
+            assertionId: data.assertionId,
+            rtcId: data.rtcId,
+            flowId: data.flowId,
+            layer: data.layer,
+            targetType: data.targetType,
+            operation: data.operation,
+            expected: data.expected,
+            evidence: data.evidence,
+            notes: data.notes,
+            isAutomated: data.isAutomated ?? false,
+            platforms: data.platforms || [],
             steps: data.steps
               ? {
                   create: data.steps.map((step) => ({
@@ -701,6 +737,18 @@ export class TestCaseService {
     if (data.postconditions !== undefined) updateData.postconditions = data.postconditions;
     if (data.suiteId !== undefined) updateData.suiteId = data.suiteId;
     if (data.moduleId !== undefined) updateData.moduleId = data.moduleId;
+    // New fields
+    if (data.assertionId !== undefined) updateData.assertionId = data.assertionId;
+    if (data.rtcId !== undefined) updateData.rtcId = data.rtcId;
+    if (data.flowId !== undefined) updateData.flowId = data.flowId;
+    if (data.layer !== undefined) updateData.layer = data.layer;
+    if (data.targetType !== undefined) updateData.targetType = data.targetType;
+    if (data.operation !== undefined) updateData.operation = data.operation;
+    if (data.expected !== undefined) updateData.expected = data.expected;
+    if (data.evidence !== undefined) updateData.evidence = data.evidence;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.isAutomated !== undefined) updateData.isAutomated = data.isAutomated;
+    if (data.platforms !== undefined) updateData.platforms = data.platforms;
 
     return await prisma.testCase.update({
       where: { id: testCaseId },

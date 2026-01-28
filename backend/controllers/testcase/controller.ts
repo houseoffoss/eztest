@@ -136,6 +136,18 @@ export class TestCaseController {
       postconditions: validatedData.postconditions,
       createdById: req.userInfo.id,
       steps: validatedData.steps,
+      // New fields for enhanced test case management
+      assertionId: validatedData.assertionId ?? undefined,
+      rtcId: validatedData.rtcId ?? undefined,
+      flowId: validatedData.flowId ?? undefined,
+      layer: validatedData.layer ?? undefined,
+      targetType: validatedData.targetType ?? undefined,
+      operation: validatedData.operation ?? undefined,
+      expected: validatedData.expected ?? undefined,
+      evidence: validatedData.evidence ?? undefined,
+      notes: validatedData.notes ?? undefined,
+      isAutomated: validatedData.isAutomated ?? undefined,
+      platforms: validatedData.platforms ?? undefined,
     });
 
     return { data: testCase, statusCode: 201 };
@@ -202,6 +214,18 @@ export class TestCaseController {
           postconditions: validatedData.postconditions,
           suiteId: validatedData.suiteId,
           moduleId: validatedData.moduleId,
+          // New fields for enhanced test case management
+          assertionId: validatedData.assertionId,
+          rtcId: validatedData.rtcId,
+          flowId: validatedData.flowId,
+          layer: validatedData.layer,
+          targetType: validatedData.targetType,
+          operation: validatedData.operation,
+          expected: validatedData.expected,
+          evidence: validatedData.evidence,
+          notes: validatedData.notes,
+          isAutomated: validatedData.isAutomated,
+          platforms: validatedData.platforms,
         }
       );
 

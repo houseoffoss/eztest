@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Clock } from 'lucide-react';
@@ -56,6 +56,8 @@ export function TestCaseDetailsCard({
   onPreconditionAttachmentsChange,
   onPostconditionAttachmentsChange,
 }: TestCaseDetailsCardProps) {
+  // Find module from modules array if moduleId exists
+  const module = testCase.moduleId ? modules.find(m => m.id === testCase.moduleId) : undefined;
   // Fetch dynamic dropdown options
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestCase', 'status');
@@ -258,12 +260,12 @@ export function TestCaseDetailsCard({
         </div>
       ) : (
         <>
-          {testCase.module && (
+          {module && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
                 Module
               </h4>
-              <p className="text-white/90">{testCase.module.name}</p>
+              <p className="text-white/90">{module.name}</p>
             </div>
           )}
 

@@ -103,6 +103,8 @@ export function TestCaseFormField({
   }
 
   if (type === 'select') {
+    const selectValue = value === null || value === undefined ? 'none' : String(value);
+
     return (
       <div className="space-y-2">
         <Label htmlFor={name}>
@@ -110,13 +112,14 @@ export function TestCaseFormField({
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <Select
-          value={value === null || value === undefined ? 'none' : String(value)}
+          value={selectValue}
           onValueChange={(val) => onChange(val === 'none' ? null : val)}
         >
           <SelectTrigger variant={variant} id={name} className={baseInputClass}>
             <SelectValue placeholder={placeholder || `Select ${label}`} />
           </SelectTrigger>
           <SelectContent variant={variant}>
+            <SelectItem value="none">未選択</SelectItem>
             {options?.map((option) => (
               <SelectItem key={option.value} value={String(option.value)}>
                 {option.label}
