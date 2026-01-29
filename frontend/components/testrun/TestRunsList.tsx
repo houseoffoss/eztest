@@ -181,11 +181,6 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const canDeleteTestRun = hasPermissionCheck('testruns:delete');
   const canReadTestRun = hasPermissionCheck('testruns:read');
 
-  // Check if project has any automation test runs
-  const hasAutomationTestRuns = useMemo(() => {
-    return testRuns.some(tr => tr.executionType === 'AUTOMATION');
-  }, [testRuns]);
-
   const navbarActions = useMemo(() => {
     const actions = [];
 
@@ -202,13 +197,11 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               </ButtonSecondary>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              {hasAutomationTestRuns && (
-                // Show automation wizard for automation projects
-                <DropdownMenuItem onClick={() => setAutomationWizardOpen(true)}>
-                  <BookOpen className="w-4 h-4" />
-                  Automation Setup Guide
-                </DropdownMenuItem>
-              )}
+              {/* Always show automation setup guide */}
+              <DropdownMenuItem onClick={() => setAutomationWizardOpen(true)}>
+                <BookOpen className="w-4 h-4" />
+                Automation Setup Guide
+              </DropdownMenuItem>
               {/* Always show import/export options */}
               <DropdownMenuItem onClick={() => setUploadXMLDialogOpen(true)}>
                 <FileCode className="w-4 h-4" />
@@ -241,7 +234,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     });
 
     return actions;
-  }, [canCreateTestRun, canReadTestRun, hasAutomationTestRuns]);
+  }, [canCreateTestRun, canReadTestRun]);
 
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading test runs..." />;
