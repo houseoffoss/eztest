@@ -1,8 +1,10 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { TestTube2, Folder } from 'lucide-react';
@@ -18,6 +20,7 @@ import { ModuleDetailsCard } from './subcomponents/ModuleDetailsCard';
 import { ModuleTestCasesCard } from './subcomponents/ModuleTestCasesCard';
 import { ModuleInfoCard } from './subcomponents/ModuleInfoCard';
 import { ModuleStatisticsCard } from './subcomponents/ModuleStatisticsCard';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface ModuleDetailProps {
   projectId: string;
@@ -46,6 +49,15 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
   });
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
 
   useEffect(() => {
     fetchProject();
@@ -200,7 +212,7 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     if (!selectedTestCase) return;
 
     try {
-      const response = await fetch(`/api/testcases/${selectedTestCase.id}`, {
+      const response = await fetch(`/api/projects/${projectId}/testcases/${selectedTestCase.id}`, {
         method: 'DELETE',
       });
 
@@ -270,16 +282,23 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     <div className="flex-1">
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          { label: project.name, href: `/projects/${projectId}` },
-          { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
-          { label: module.name },
-        ]}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project.name, href: `/projects/${projectId}` },
+              { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
+              { label: module.name, href: `/projects/${projectId}/modules/${module.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="p-4 md:p-6 lg:p-8 pt-8">
         <ModuleHeader
           module={module}
           projectName={project.name}

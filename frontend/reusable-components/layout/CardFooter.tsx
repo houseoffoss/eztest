@@ -24,7 +24,7 @@ export function CardFooter({ items, className }: CardFooterProps) {
   }
 
   return (
-    <div className={cn('flex items-center justify-between', className)}>
+    <div className={cn('flex flex-wrap items-center gap-x-4 gap-y-2', className)}>
       {items.map((item, index) => {
         const Icon = item.icon;
         const displayValue = item.formatDate ? formatDateTime(item.value) : item.value;

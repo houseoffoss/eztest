@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TestTube2, AlertCircle } from 'lucide-react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { LinkTestCaseDialog } from './LinkTestCaseDialog';
 import { Defect } from '../types';
@@ -39,53 +38,6 @@ export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardPr
     failureCount: tc.failureCount || 0,
   }));
 
-  const columns: ColumnDef<TestCaseRow>[] = [
-    {
-      key: 'tcId',
-      label: 'Test Case ID',
-      render: (value: unknown) => (
-        <span className="text-blue-400 font-mono text-sm font-semibold">
-          {value as string}
-        </span>
-      ),
-    },
-    {
-      key: 'title',
-      label: 'Title',
-      className: 'min-w-0 max-w-xs whitespace-normal',
-      render: (value: unknown) => (
-        <div className="min-w-0 max-w-xs overflow-hidden">
-          <span className="text-white/90 text-sm font-medium truncate block">
-            {value as string}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'failureCount',
-      label: 'Failures',
-      render: (value: unknown) => {
-        const count = value as number;
-        if (count === 0) {
-          return (
-            <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500 border-gray-500/20">
-              No failures
-            </Badge>
-          );
-        }
-        return (
-          <div className="flex items-center justify-end gap-1">
-            <AlertCircle className="w-3 h-3 text-red-400" />
-            <Badge variant="outline" className="text-xs bg-red-500/10 text-red-400 border-red-500/20">
-              {count} {count === 1 ? 'failure' : 'failures'}
-            </Badge>
-          </div>
-        );
-      },
-      align: 'right',
-    },
-  ];
-
   return (
     <>
       <DetailCard 
@@ -110,12 +62,48 @@ export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardPr
           </p>
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={tableData}
-          onRowClick={(row) => router.push(`/projects/${defect.projectId}/testcases/${row.testCaseId}`)}
-          emptyMessage="No linked test cases"
-        />
+        <div className="space-y-0">
+          {/* Header Row */}
+          <div
+            className="grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10 rounded-t-md"
+            style={{ gridTemplateColumns: '100px 1fr 150px' }}
+          >
+            <div>Test Case ID</div>
+            <div>Title</div>
+            <div className="text-right">Failures</div>
+          </div>
+
+          {/* Data Rows */}
+          {tableData.map((row, rowIndex) => (
+            <div
+              key={row.id}
+              className={`grid gap-3 px-3 py-2.5 transition-colors items-center text-sm rounded-sm hover:bg-accent/20 cursor-pointer ${
+                rowIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
+              } ${
+                rowIndex === tableData.length - 1 ? 'rounded-b-md' : ''
+              }`}
+              style={{ gridTemplateColumns: '100px 1fr 150px' }}
+              onClick={() => router.push(`/projects/${defect.projectId}/testcases/${row.testCaseId}`)}
+            >
+              <span className="text-blue-400 font-mono text-sm font-semibold">{row.tcId}</span>
+              <span className="text-white/90 truncate">{row.title}</span>
+              <div className="text-right">
+                {row.failureCount === 0 ? (
+                  <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500 border-gray-500/20 justify-self-end">
+                    No failures
+                  </Badge>
+                ) : (
+                  <div className="flex items-center justify-end gap-1">
+                    <AlertCircle className="w-3 h-3 text-red-400" />
+                    <Badge variant="outline" className="text-xs bg-red-500/10 text-red-400 border-red-500/20">
+                      {row.failureCount} {row.failureCount === 1 ? 'failure' : 'failures'}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
       </DetailCard>
 

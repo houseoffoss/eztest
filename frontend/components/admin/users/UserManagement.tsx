@@ -1,23 +1,26 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { MembersList } from '@/frontend/reusable-components/users/MembersList';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { 
   Users, 
-  UserPlus
+  UserPlus,
 } from 'lucide-react';
 import { User, Role, UserFormData, EditUserFormData } from './types';
 import { AddUserDialog } from './subcomponents/AddUserDialog';
 import { EditUserDialog } from './subcomponents/EditUserDialog';
 import { DeleteUserDialog } from './subcomponents/DeleteUserDialog';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -166,30 +169,42 @@ export default function UserManagement() {
     return matchesSearch && matchesRole;
   });
 
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'action' as const,
+        label: 'Add User',
+        icon: UserPlus,
+        onClick: () => setAddDialogOpen(true),
+        variant: 'primary' as const,
+        buttonName: 'User Management - Add User',
+      },
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
+
   return (
     <>
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Users' },
-        ]}
-        actions={
-          <ActionButtonGroup
-            buttons={[
-              {
-                label: 'Add User',
-                icon: UserPlus,
-                onClick: () => setAddDialogOpen(true),
-                variant: 'primary',
-              },
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Admin', href: '/admin' },
+              { label: 'Users', href: '/admin/users' },
             ]}
           />
         }
+        actions={navbarActions}
       />
 
       {/* Page Header and Filters */}
-      <div className="px-8 pt-4">
+      <div className="px-8 pt-8">
         <HeaderWithFilters
           header={
             <PageHeaderWithBadge

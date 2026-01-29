@@ -103,7 +103,7 @@ export function RecordResultDialog({
     try {
       setLoadingDefects(true);
       // Fetch existing defects linked to this test case
-      const existingResponse = await fetch(`/api/testcases/${testCaseId}/defects`);
+      const existingResponse = await fetch(`/api/projects/${projectId}/testcases/${testCaseId}/defects`);
       const existingData = await existingResponse.json();
       
       // Fetch all defects in the project
@@ -147,7 +147,7 @@ export function RecordResultDialog({
       // Link selected defects to test case if any are selected
       if (selectedDefectIds.length > 0) {
         try {
-          await fetch(`/api/testcases/${testCaseId}/defects`, {
+          await fetch(`/api/projects/${projectId}/testcases/${testCaseId}/defects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ defectIds: selectedDefectIds }),

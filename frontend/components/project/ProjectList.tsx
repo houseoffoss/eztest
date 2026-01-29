@@ -1,10 +1,9 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { InfoBanner } from '@/frontend/reusable-components/alerts/InfoBanner';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
@@ -27,6 +26,30 @@ export default function ProjectList() {
   const [triggerCreateDialog, setTriggerCreateDialog] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [hasSelectedProject, setHasSelectedProject] = useState(false);
+
+  // Compute permissions early for hooks
+  const canCreateProject = hasPermissionCheck('projects:create');
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canCreateProject) {
+      actions.push({
+        type: 'action' as const,
+        label: '+ New Project',
+        onClick: () => setTriggerCreateDialog(true),
+        variant: 'primary' as const,
+        buttonName: 'Project List - New Project',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateProject]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -121,33 +144,21 @@ export default function ProjectList() {
     return null; // Will be redirected by useEffect
   }
 
-  // Check if user can create projects
-  const canCreateProject = hasPermissionCheck('projects:create');
-
   return (
     <>
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      <TopBar 
-        breadcrumbs={[
-          { label: 'Projects' }
-        ]}
-        actions={
-          canCreateProject ? (
-            <ButtonPrimary 
-              onClick={() => setTriggerCreateDialog(true)} 
-              className="cursor-pointer"
-              buttonName="Project List - New Project"
-            >
-              + New Project
-            </ButtonPrimary>
-          ) : undefined
-        }
+      {/* Navbar */}
+      <Navbar 
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={null}
+        actions={navbarActions}
       />
-      
-      {/* Page Header */}
-      <div className="max-w-7xl mx-auto px-8 py-6 pt-8">
+
+      {/* Delete Dialog */}
+      <div className="max-w-7xl mx-auto px-8 py-6 pt-12">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>

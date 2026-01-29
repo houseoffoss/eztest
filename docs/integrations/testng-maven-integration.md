@@ -1,10 +1,6 @@
-# EZTest – Automatic TestNG Result Upload (Maven)
+# TestNG XML Results Integration for EZTest
 
-This guide explains how to automatically upload TestNG results to EZTest when running:
-
-```bash
-mvn test
-```
+This utility automates the process of uploading TestNG XML results to the EZTest API. By integrating it into the Maven lifecycle, test results are automatically synchronized with your dashboard every time you run your CI/CD pipeline or local tests.
 
 ## Features
 
@@ -12,6 +8,8 @@ mvn test
 - ✅ **Works on Failure** - Upload works even if tests fail
 - ✅ **No TestNG Listeners Required** - No manual configuration needed
 - ✅ **No Manual Steps** - Fully automated integration
+- ✅ **Secure Configuration** - Environment-based authentication via `.env`
+- ✅ **Binary Upload** - Efficient binary file streaming to API
 
 ---
 
@@ -20,14 +18,14 @@ mvn test
 When you run:
 
 ```bash
-mvn test
+mvn clean verify
 ```
 
 Maven will:
 
 1. Run TestNG tests
-2. Generate `testng-results.xml`
-3. Automatically upload results to EZTest
+2. Generate TestNG XML result files (e.g., `testng-results.xml`)
+3. **Automatically upload results to EZTest** (verify phase triggers upload)
 4. Create a Test Run in EZTest
 5. Update test case results (PASS / FAIL / SKIPPED)
 
@@ -39,9 +37,11 @@ Before starting, make sure you have:
 
 - ✅ **Java 8 or higher**
 - ✅ **Maven 3.6+**
-- ✅ **TestNG-based automation project**
+- ✅ **TestNG-based automation project** (Maven-based)
 - ✅ **An EZTest project** (created in EZTest UI)
-- ✅ **EZTest API Token** (generate from EZTest settings)
+- ✅ **EZTest API Token** (generate from EZTest settings → API Keys)
+- ✅ **Project ID** from your EZTest project
+- ✅ **Environment name** (e.g., QA_Staging, Production, Development)
 
 ---
 
@@ -49,70 +49,30 @@ Before starting, make sure you have:
 
 ### Step 1: Add Required Java Files
 
-You must add exactly **3 Java files** to your project.
+You must add exactly **2 Java files** to your project.
 
 #### 📁 Folder Location (IMPORTANT)
 
 All files must be placed under:
 
 ```
-src/test/java/com/example/utils/
+src/test/java/utils/
 ```
 
-> **Note:** You may change the package name (`com.example.utils`), but it must match everywhere in all three files.
+> **Note:** You may change the package name (e.g., `com.example.utils`, `qa.automation.utils`), but it must match in both Java files and in the `pom.xml` configuration.
 
 ---
 
-#### ✅ File 1: `EnvConfig.java`
+#### ✅ File 1: `EZTestCreateTestRunUploader.java`
 
-**Purpose:** Reads environment variables or `.env` file.
+**Purpose:** Handles API connection, authentication via `.env`, and binary upload of the XML file.
 
-**Location:** `src/test/java/com/example/utils/EnvConfig.java`
+**Location:** `src/test/java/utils/EZTestCreateTestRunUploader.java`
 
 ```java
-package com.example.utils;
+package utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
-
-public final class EnvConfig {
-
-    private static final Dotenv dotenv = Dotenv.configure()
-            .ignoreIfMissing()
-            .load();
-
-    private EnvConfig() {}
-
-    public static String get(String key) {
-        String value = System.getenv(key);
-        if (value != null && !value.isBlank()) {
-            return value;
-        }
-        return dotenv.get(key);
-    }
-
-    public static String require(String key) {
-        String value = get(key);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                "Missing required environment variable: " + key
-            );
-        }
-        return value;
-    }
-}
-```
-
----
-
-#### ✅ File 2: `EZTestCreateTestRunUploader.java`
-
-**Purpose:** Sends TestNG XML results to EZTest API.
-
-**Location:** `src/test/java/com/example/utils/EZTestCreateTestRunUploader.java`
-
-```java
-package com.example.utils;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -121,32 +81,56 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Utility class to upload TestNG XML result files to the EZTest reporting API.
+ * This class handles environment configuration, URL construction, and 
+ * authenticated multipart-style binary uploads.
+ */
 public class EZTestCreateTestRunUploader {
-
     private final String baseUrl;
     private final String token;
+    private final String projectId;
+    private final String environment;
 
-    public EZTestCreateTestRunUploader(String baseUrl, String token) {
-        this.baseUrl = baseUrl.endsWith("/")
-                ? baseUrl.substring(0, baseUrl.length() - 1)
-                : baseUrl;
-        this.token = token;
+    /**
+     * Initializes the uploader by loading required credentials and 
+     * configurations from the project's .env file.
+     * 
+     * @throws IllegalStateException if any required environment variable is missing.
+     */
+    public EZTestCreateTestRunUploader() {
+        // Load .env file from the project root
+        Dotenv dotenv = Dotenv.load();
+        this.baseUrl = normalizeBaseUrl(
+                getRequiredEnv(dotenv, "EZTEST_BASE_URL")
+        );
+        this.token = getRequiredEnv(dotenv, "EZTEST_API_TOKEN");
+        this.projectId = getRequiredEnv(dotenv, "EZTEST_PROJECT_ID");
+        this.environment = getRequiredEnv(dotenv, "EZTEST_ENVIRONMENT");
     }
 
-    public void upload(String projectId, String environment, String xmlPath)
-            throws Exception {
-
+    /**
+     * Reads a TestNG XML file from the local disk and uploads it to the EZTest API.
+     * 
+     * @param xmlPath The relative or absolute path to the XML results file 
+     *                (e.g., "target/surefire-reports/testng-results.xml").
+     * @throws FileNotFoundException If the file at xmlPath does not exist.
+     * @throws Exception For networking errors or non-2xx API responses.
+     */
+    public void upload(String xmlPath) throws Exception {
         Path path = Path.of(xmlPath);
-
+        
+        // Validate file existence before starting connection
         if (!Files.exists(path)) {
             throw new FileNotFoundException(
-                "TestNG results file not found: " + xmlPath
+                    "TestNG results file not found at: " + xmlPath
             );
         }
 
         byte[] xmlBytes = Files.readAllBytes(path);
         String filename = path.getFileName().toString();
 
+        // Construct the API endpoint with encoded query parameters
         String urlStr = baseUrl
                 + "/api/projects/"
                 + URLEncoder.encode(projectId, StandardCharsets.UTF_8)
@@ -154,32 +138,29 @@ public class EZTestCreateTestRunUploader {
                 + "?environment=" + URLEncoder.encode(environment, StandardCharsets.UTF_8)
                 + "&filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8);
 
-        HttpURLConnection conn =
-                (HttpURLConnection) new URL(urlStr).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
 
+        // Configure Request Headers
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/xml");
-
-        if (token != null && !token.isBlank()) {
-            conn.setRequestProperty("Authorization", "Bearer " + token);
-        }
-
+        conn.setRequestProperty("Authorization", "Bearer " + token);
         conn.setDoOutput(true);
-        // Send XML
 
+        // Stream the XML file content to the request body
         try (OutputStream os = conn.getOutputStream()) {
             os.write(xmlBytes);
         }
 
         int status = conn.getResponseCode();
         System.out.println("EZTest upload status: " + status);
-        // SUCCESS
+
+        // Handle Success
         if (status >= 200 && status < 300) {
             System.out.println("✅ EZTest results uploaded successfully");
             return;
         }
-        // FAILURE — read error body
 
+        // Handle Failure: Attempt to read the error message from the server
         String errorBody = "";
         try (InputStream err = conn.getErrorStream()) {
             if (err != null) {
@@ -189,48 +170,68 @@ public class EZTestCreateTestRunUploader {
 
         System.err.println("❌ EZTest upload failed");
         if (!errorBody.isBlank()) {
-            System.err.println(errorBody);
+            System.err.println("Response body from server: " + errorBody);
         }
 
         throw new RuntimeException(
-            "EZTest upload failed with HTTP status " + status
+                "EZTest upload failed with HTTP status " + status
         );
+    }
+
+    // ----------------- Private Helpers -----------------
+
+    /**
+     * Validates and retrieves a variable from the .env file.
+     */
+    private static String getRequiredEnv(Dotenv dotenv, String key) {
+        String value = dotenv.get(key);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(
+                    "Configuration Error: Missing required environment variable '" + key 
+                    + "' in .env file."
+            );
+        }
+        return value;
+    }
+
+    /**
+     * Removes trailing slashes from the base URL to prevent double-slash errors 
+     * in path construction.
+     */
+    private static String normalizeBaseUrl(String url) {
+        return url.endsWith("/")
+                ? url.substring(0, url.length() - 1)
+                : url;
     }
 }
 ```
 
 ---
 
-#### ✅ File 3: `EZTestUploadMain.java`
+#### ✅ File 2: `EZTestCreateTestRunUploaderMain.java`
 
-**Purpose:** Entry point Maven runs after tests finish.
+**Purpose:** Main class used by Maven exec-plugin to trigger the upload process.
 
-**Location:** `src/test/java/com/example/utils/EZTestUploadMain.java`
+**Location:** `src/test/java/utils/EZTestCreateTestRunUploaderMain.java`
 
 ```java
-package com.example.utils;
+package utils;
 
-public class EZTestUploadMain {
-
+/**
+ * Main class used by Maven exec-plugin to trigger the upload process.
+ */
+public class EZTestCreateTestRunUploaderMain {
     public static void main(String[] args) {
-        try {
-            EZTestCreateTestRunUploader uploader =
-                new EZTestCreateTestRunUploader(
-                    EnvConfig.require("EZTEST_BASE_URL"),
-                    // Prefer EZTEST_API_KEY, fall back to legacy EZTEST_API_TOKEN
-                    EnvConfig.require("EZTEST_API_KEY")
-                );
-
-            uploader.upload(
-                EnvConfig.require("EZTEST_PROJECT_ID"),
-                EnvConfig.require("EZTEST_ENVIRONMENT"),
-                "target/surefire-reports/testng-results.xml"
-            );
-
-        } catch (Exception e) {
-            System.err.println("❌ Failed to upload results to EZTest");
-            e.printStackTrace();
+        if (args.length < 1) {
+            System.err.println("Usage: java EZTestCreateTestRunUploaderMain <path_to_xml>");
             System.exit(1);
+        }
+
+        try {
+            new EZTestCreateTestRunUploader().upload(args[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1); // Ensure Maven build fails if upload fails
         }
     }
 }
@@ -265,10 +266,10 @@ Create a file named `.env` in your project root (or set OS/CI environment variab
 **`.env` file:**
 
 ```env
-EZTEST_BASE_URL=https://your-eztest-domain.com
-EZTEST_API_KEY=your_api_key_here
-EZTEST_PROJECT_ID=your_project_id
-EZTEST_ENVIRONMENT=STAGING
+EZTEST_BASE_URL=https://api.eztest.io
+EZTEST_API_TOKEN=your_secret_api_token
+EZTEST_PROJECT_ID=your_project_unique_id
+EZTEST_ENVIRONMENT=QA_Staging
 ```
 
 #### ⚠️ Important Rules
@@ -277,16 +278,20 @@ EZTEST_ENVIRONMENT=STAGING
 - ❌ **Do NOT use quotes** around values
 - ❌ **No trailing spaces** in values
 - ✅ **Use HTTPS** for production environments
+- ✅ **Keep `.env` in `.gitignore`** - Do not commit secrets to version control
 
 **Example:**
 
 ```env
 # ✅ Correct
 EZTEST_BASE_URL=https://eztest.example.com
+EZTEST_API_TOKEN=abc123token456
+EZTEST_PROJECT_ID=proj_12345
 
 # ❌ Incorrect
 EZTEST_BASE_URL=https://eztest.example.com/api
 EZTEST_BASE_URL="https://eztest.example.com"
+EZTEST_API_TOKEN = "abc123token456"
 ```
 
 ---
@@ -300,47 +305,61 @@ Add or update the following plugins in your `pom.xml`.
 **Purpose:** Runs TestNG and generates XML reports.
 
 ```xml
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-surefire-plugin</artifactId>
-  <version>3.2.5</version>
-  <configuration>
-    <suiteXmlFiles>
-      <suiteXmlFile>testng.xml</suiteXmlFile>
-    </suiteXmlFiles>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.2.5</version>
+      <configuration>
+        <suiteXmlFiles>
+          <suiteXmlFile>testng.xml</suiteXmlFile>
+        </suiteXmlFiles>
 
-    <!-- Allow upload even if tests fail -->
-    <testFailureIgnore>true</testFailureIgnore>
-  </configuration>
-</plugin>
+        <!-- Allow upload even if tests fail -->
+        <testFailureIgnore>true</testFailureIgnore>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
 ```
 
 #### ✅ Exec Maven Plugin
 
-**Purpose:** Automatically uploads results after tests complete.
+**Purpose:** Automatically uploads results after tests complete via the verify phase.
 
 ```xml
-<plugin>
-  <groupId>org.codehaus.mojo</groupId>
-  <artifactId>exec-maven-plugin</artifactId>
-  <version>3.1.0</version>
-  <executions>
-    <execution>
-      <id>upload-eztest-results</id>
-      <phase>test</phase>
-      <goals>
-        <goal>java</goal>
-      </goals>
-      <configuration>
-        <classpathScope>test</classpathScope>
-        <mainClass>com.example.utils.EZTestUploadMain</mainClass>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>3.1.0</version>
+      <executions>
+        <execution>
+          <id>upload-eztest-results</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>java</goal>
+          </goals>
+          <configuration>
+            <classpathScope>test</classpathScope>
+            <mainClass>utils.EZTestCreateTestRunUploaderMain</mainClass>
+            <arguments>
+              <argument>target/failsafe-reports/testng-results.xml</argument>
+            </arguments>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 ```
 
-> **Note:** If you changed the package name, update `<mainClass>` accordingly (e.g., `com.yourcompany.utils.EZTestUploadMain`).
+> **Note:** 
+> - If you changed the package name, update `<mainClass>` accordingly (e.g., `com.example.utils.EZTestCreateTestRunUploaderMain`)
+> - The `<phase>verify</phase>` ensures upload happens after all tests complete (even if some fail)
+> - Update the XML path in `<argument>` if your TestNG reports are in a different location
 
 ---
 
@@ -382,7 +401,7 @@ public void loginTest() {
 **Example Mapping:**
 
 | TestNG Method Name | EZTest Test Case ID |
-|-------------------|---------------------|
+|---|---|
 | `TC_1()` | `TC-1` |
 | `TC_LOGIN_001()` | `TC-LOGIN-001` |
 | `TC_USER_REGISTRATION()` | `TC-USER-REGISTRATION` |
@@ -391,20 +410,36 @@ public void loginTest() {
 
 ## How to Run Tests
 
-Simply run:
+### Using Maven Verify (RECOMMENDED)
+
+```bash
+mvn clean verify
+```
+
+This command will:
+
+1. ✅ Clean previous builds
+2. ✅ Run all tests
+3. ✅ Generate TestNG XML reports
+4. ✅ **Automatically upload results to EZTest** (verify phase)
+5. ✅ Complete the build
+
+### Using Maven Test (ALSO UPLOADS)
 
 ```bash
 mvn test
 ```
 
+This also triggers the upload after tests complete.
+
 ### What Happens Automatically
 
-1. ✅ Tests execute
-2. ✅ TestNG generates `testng-results.xml`
-3. ✅ Results are uploaded to EZTest
-4. ✅ Test Run is created in EZTest
-5. ✅ Test case results are updated
-6. ✅ Build completes
+1. ✅ Tests execute using TestNG
+2. ✅ TestNG generates XML reports (e.g., `testng-results.xml`)
+3. ✅ Results are automatically uploaded to EZTest
+4. ✅ Test Run is created in EZTest with execution details
+5. ✅ Test case results are updated (PASS/FAIL/SKIPPED)
+6. ✅ Build completes (upload happens even if tests fail)
 
 ---
 
@@ -540,14 +575,14 @@ EZTest expects TestNG XML format with the following structure:
 Each `<test-method>` element **must** have:
 
 | Attribute | Required | Description | Example |
-|-----------|----------|-------------|---------|
+|---|---|---|---|
 | `name` | ✅ Yes | Test case ID (must match test case `tcId` in EZTest) | `"TC001"` |
 | `status` | ✅ Yes | Test result: `PASS`, `FAIL`, or `SKIP` | `"PASS"` |
 
 ### Optional Attributes
 
 | Attribute | Required | Description | Example |
-|-----------|----------|-------------|---------|
+|---|---|---|---|
 | `is-config` | No | Whether this is a configuration method. Default: `"false"` | `"false"` |
 | `started-at` | No | Test start timestamp | `"2026-01-13T21:38:37 IST"` |
 | `finished-at` | No | Test end timestamp | `"2026-01-13T21:38:40 IST"` |
@@ -590,7 +625,7 @@ For complete XML format documentation, see [Test Runs - XML Upload](../features/
 TestNG status values are mapped to EZTest statuses:
 
 | TestNG Status | EZTest Status | Description |
-|---------------|---------------|-------------|
+|---|---|---|
 | `PASS` | `PASSED` | Test executed successfully |
 | `FAIL` | `FAILED` | Test failed |
 | `SKIP` | `SKIPPED` | Test was skipped |
@@ -602,7 +637,7 @@ TestNG status values are mapped to EZTest statuses:
 
 Before running tests, verify:
 
-- ✅ Added 3 Java files (`EnvConfig.java`, `EZTestCreateTestRunUploader.java`, `EZTestUploadMain.java`)
+- ✅ Added 2 Java files (`EZTestCreateTestRunUploader.java`, `EZTestCreateTestRunUploaderMain.java`)
 - ✅ Updated `pom.xml` with required plugins
 - ✅ Added `dotenv-java` dependency
 - ✅ Created `.env` file with all required variables
@@ -626,12 +661,11 @@ ls -la target/surefire-reports/testng-results.xml
 
 ### Verify Environment Variables
 
-Test that environment variables are loaded:
+Test that environment variables are loaded by adding debug output:
 
 ```bash
-# Add this to EZTestUploadMain.java temporarily
-System.out.println("Base URL: " + EnvConfig.get("EZTEST_BASE_URL"));
-System.out.println("Project ID: " + EnvConfig.get("EZTEST_PROJECT_ID"));
+# Verify .env file is in the project root
+cat .env
 ```
 
 ### Test API Connection
@@ -667,5 +701,4 @@ If you encounter issues:
 
 ---
 
-**Last Updated:** 2026-01-13
-
+**Last Updated:** 2026-01-23

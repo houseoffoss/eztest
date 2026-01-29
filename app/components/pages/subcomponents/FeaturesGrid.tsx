@@ -9,51 +9,47 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    image: '/icons/project-support.svg',
-    title: 'Multi-Project Support',
-    description: 'Manage multiple projects with role-based access control. Keep everything organized in one place.',
+    image: '/icons/End to end tarceability.png',
+    title: 'Unified Traceability',
+    description: 'Link test cases to defects, test runs, and modules for complete end-to-end traceability across your testing lifecycle.',
   },
   {
-    image: '/icons/002-hierarchy.svg',
-    title: 'Hierarchical Tests',
-    description: 'Organize tests in hierarchical suites. Create detailed test cases with steps and expected results.',
-  },
-  {
-    image: '/icons/defect.svg',
+    image: '/icons/bug.svg',
     title: 'Defect Management',
-    description: 'Run tests and track results in real-time. Monitor progress with comprehensive dashboards.',
+    description: 'Track bugs with severity, priority, status, and file attachments. Link defects directly to test cases.',
   },
   {
-    image: '/icons/traceability.svg',
-    title: 'Traceability',
-    description: 'Link test cases to requirements. Ensure complete coverage and maintain audit trails.',
+    image: '/icons/Data migration.png',
+    title: 'Built-in Migration Support',
+    description: 'Import test cases and defects in bulk using CSV or Excel files. Auto-create modules and test suites during import.',
   },
   {
-    image: '/icons/collaboration.svg',
-    title: 'Collaboration',
-    description: 'Add comments, attach files, and collaborate with your team. Everything in context.',
+    image: '/icons/Manual and automation testing.png',
+    title: 'Fully Customizable',
+    description: 'Open-source and self-hosted platform. Full source code access allows complete customization to fit your team\'s needs.',
   },
   {
-    image: '/icons/lightweight.svg',
-    title: 'Lightweight',
-    description: 'Runs efficiently on minimal hardware. 1 core, 2GB RAM is all you need to get started.',
+    image: '/icons/shield-check.svg',
+    title: 'AuthN + AuthZ',
+    description: 'Secure authentication with email/password, JWT sessions, and role-based access control with 27 granular permissions.',
   },
 ];
 
 export const FeaturesGrid = () => {
   return (
-    <Card variant="glass" className="mb-24">
-      <CardContent className="py-12">
+    <div className="mb-24">
+      <div className="py-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white">Powerful Features</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Why Choose EZTest?</h2>
+          <p className="text-base text-white/60">Powerful features that make test management simple</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-wrap gap-6 justify-center">
           {features.map((feature) => {
             return (
               <Card
                 key={feature.title}
                 variant="glass"
-                className="border-l-4 border-l-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all group"
+                className="border-l-4 border-l-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all group w-full md:w-[calc(33.333%-1rem)]"
               >
                 <CardContent className="py-6 px-5">
                   <div className="flex flex-col items-center text-center">
@@ -62,8 +58,8 @@ export const FeaturesGrid = () => {
                       <Image
                         src={feature.image}
                         alt={feature.title}
-                        width={56}
-                        height={56}
+                        width={feature.title === 'Defect Management' || feature.title === 'AuthN + AuthZ' ? 40 : 56}
+                        height={feature.title === 'Defect Management' || feature.title === 'AuthN + AuthZ' ? 40 : 56}
                         className="object-contain"
                         priority
                       />
@@ -84,7 +80,8 @@ export const FeaturesGrid = () => {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
+

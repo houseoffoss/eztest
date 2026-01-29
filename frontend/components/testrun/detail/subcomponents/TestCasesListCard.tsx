@@ -1,24 +1,34 @@
 ﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
-import { AlertCircle, Plus } from 'lucide-react';
+import { AlertCircle, Plus, Bug, ListChecks, ChevronDown } from 'lucide-react';
 import { TestResult, TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 
 interface TestCasesListCardProps {
   results: TestResult[];
   testRunStatus: string;
   canUpdate?: boolean;
   canCreate?: boolean;
+  projectId: string;
   onAddTestCases: () => void;
   onAddTestSuites: () => void;
   onExecuteTestCase: (testCase: TestCase) => void;
   onCreateDefect?: (testCaseId: string) => void;
+  forceShowDefectActions?: boolean;
   getResultIcon: (status?: string) => React.JSX.Element;
 }
 
@@ -36,12 +46,15 @@ export function TestCasesListCard({
   testRunStatus,
   canUpdate = true,
   canCreate = true,
+  projectId,
   onAddTestCases,
   onAddTestSuites,
   onExecuteTestCase,
   onCreateDefect,
+  forceShowDefectActions = false,
   getResultIcon,
 }: TestCasesListCardProps) {
+  const router = useRouter();
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
   const { hasPermission: hasPermissionCheck } = usePermissions();
@@ -156,9 +169,9 @@ export function TestCasesListCard({
       label: 'Actions',
       render: (_, row: ResultRow) => (
         <div className="flex items-center gap-2 justify-end">
-          {testRunStatus === 'IN_PROGRESS' && (
+          {(testRunStatus === 'IN_PROGRESS' || forceShowDefectActions) && (
             <>
-              {canUpdate && (
+              {testRunStatus === 'IN_PROGRESS' && canUpdate && (
                 <Button
                   variant="glass"
                   size="sm"
@@ -169,14 +182,47 @@ export function TestCasesListCard({
                   {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
                 </Button>
               )}
-              {row.status === 'FAILED' && onCreateDefect && canCreateDefect && (
-                <ButtonPrimary
-                  size="sm"
-                  onClick={() => onCreateDefect(row.testCase.id)}
-                  buttonName={`Test Cases List Card - Create Defect (${row.testCase.title || row.testCase.id})`}
-                >
-                  Create Defect
-                </ButtonPrimary>
+              {row.status === 'FAILED' && canCreateDefect && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => {
+                      // Prevent row click (which navigates to test case detail)
+                      e.stopPropagation();
+                    }}
+                  >
+                    <ButtonSecondary
+                      size="sm"
+                      className="flex items-center gap-2"
+                      buttonName={`Test Cases List Card - Defect Actions (${row.testCase.title || row.testCase.id})`}
+                    >
+                      Defect
+                      <ChevronDown className="w-3 h-3" />
+                    </ButtonSecondary>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    {onCreateDefect && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCreateDefect(row.testCase.id);
+                        }}
+                      >
+                        <Bug className="w-4 h-4 mr-2" />
+                        Create Defect
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onExecuteTestCase(row.testCase);
+                      }}
+                    >
+                      <ListChecks className="w-4 h-4 mr-2" />
+                      Choose Defect
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </>
           )}
@@ -256,7 +302,8 @@ export function TestCasesListCard({
         <DataTable
           columns={columns}
           data={tableData}
-          rowClassName="cursor-pointer hover:bg-white/5"
+          rowClassName="cursor-pointer hover:bg-accent/20"
+          onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
           emptyMessage="No test cases in this run"
         />
       )}

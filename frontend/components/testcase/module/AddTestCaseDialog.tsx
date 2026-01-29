@@ -80,7 +80,7 @@ export function AddTestCaseDialog({
       // Get test case data to find tcId for each test case
       const testCasesData = await Promise.all(
         Array.from(selectedTestCases).map(async testCaseId => {
-          const response = await fetch(`/api/testcases/${testCaseId}`, {
+          const response = await fetch(`/api/projects/${projectId}/testcases/${testCaseId}`, {
             cache: 'no-store'
           });
           const data = await response.json();

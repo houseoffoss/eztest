@@ -2,6 +2,7 @@ export interface TestRun {
   id: string;
   name: string;
   description?: string;
+  executionType?: 'MANUAL' | 'AUTOMATION' | string;
   status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   environment?: string;
   assignedTo?: {

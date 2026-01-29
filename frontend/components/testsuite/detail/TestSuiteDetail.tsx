@@ -1,6 +1,7 @@
 ﻿import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { TestSuiteHeader } from './subcomponents/TestSuiteHeader';
@@ -45,6 +46,20 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     description: '',
   });
 
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
+
+  // Check permissions
+  const canUpdateSuite = hasPermissionCheck('testsuites:update');
+  const canDeleteSuite = hasPermissionCheck('testsuites:delete');
+  const canManageTestCases = canUpdateSuite; // Can add/remove test cases if can update suite
+
   useEffect(() => {
     fetchTestSuite();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,7 +77,20 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   const fetchTestSuite = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/testsuites/${suiteId}`);
+      // Extract projectId from URL path or use from testSuite data
+      let projectId = testSuite?.projectId;
+      if (!projectId && typeof window !== 'undefined') {
+        // Extract projectId from URL path: /projects/[id]/testsuites/[suiteId]
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const url = projectId 
+        ? `/api/projects/${projectId}/testsuites/${suiteId}`
+        : `/api/testsuites/${suiteId}`;
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         setAlert({
@@ -95,7 +123,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`/api/testsuites/${suiteId}`, {
+      const response = await fetch(`/api/projects/${testSuite?.projectId}/testsuites/${suiteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -141,7 +169,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   };
 
   const handleDeleteTestSuite = async () => {
-    const response = await fetch(`/api/testsuites/${suiteId}`, {
+    const response = await fetch(`/api/projects/${testSuite?.projectId}/testsuites/${suiteId}`, {
       method: 'DELETE',
     });
 
@@ -163,7 +191,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     setLoadingAvailableModules(true);
     try {
       // Use optimized endpoint that fetches everything in one call
-      const response = await fetch(`/api/testsuites/${suiteId}/available-testcases`);
+      const response = await fetch(`/api/projects/${testSuite?.projectId}/testsuites/${suiteId}/available-testcases`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -200,7 +228,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
 
     try {
       for (const testCaseId of selectedTestCaseIds) {
-        const response = await fetch(`/api/testcases/${testCaseId}`, {
+        const response = await fetch(`/api/projects/${testSuite?.projectId}/testcases/${testCaseId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -277,7 +305,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       testCaseIdsToAdd.push(...individualTestCaseIds);
 
       // Add all test cases to the suite using the new many-to-many endpoint
-      const response = await fetch(`/api/testsuites/${suiteId}/testcases`, {
+      const response = await fetch(`/api/projects/${testSuite?.projectId}/testsuites/${suiteId}/testcases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -328,7 +356,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     if (!testCaseToDelete) return;
 
     try {
-      const response = await fetch(`/api/testsuites/${suiteId}/testcases`, {
+      const response = await fetch(`/api/projects/${testSuite?.projectId}/testsuites/${suiteId}/testcases`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -371,11 +399,6 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
     return <Loader fullScreen text="Loading test suite..." />;
   }
 
-  // Check permissions
-  const canUpdateSuite = hasPermissionCheck('testsuites:update');
-  const canDeleteSuite = hasPermissionCheck('testsuites:delete');
-  const canManageTestCases = canUpdateSuite; // Can add/remove test cases if can update suite
-
   if (!testSuite) {
     return (
       <div className="min-h-screen p-4 md:p-6 lg:p-8">
@@ -391,23 +414,30 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          {
-            label: testSuite.project.name,
-            href: `/projects/${testSuite.project.id}`,
-          },
-          {
-            label: 'Test Suites',
-            href: `/projects/${testSuite.project.id}/testsuites`,
-          },
-          { label: testSuite.name },
-        ]}
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              {
+                label: testSuite.project.name,
+                href: `/projects/${testSuite.project.id}`,
+              },
+              {
+                label: 'Test Suites',
+                href: `/projects/${testSuite.project.id}/testsuites`,
+              },
+              { label: testSuite.name, href: `/projects/${testSuite.project.id}/testsuites/${testSuite.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="p-4 md:p-6 lg:p-8 pt-8">
         <TestSuiteHeader
           testSuite={testSuite}
           isEditing={isEditing}

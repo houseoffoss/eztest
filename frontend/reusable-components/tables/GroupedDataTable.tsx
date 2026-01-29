@@ -184,7 +184,9 @@ export function GroupedDataTable<T = Record<string, unknown>>({
     return (
       <div
         key={index}
-        className={`grid gap-3 px-3 py-1.5 rounded hover:bg-white/5 border-b border-white/10 hover:border-blue-500/30 cursor-pointer transition-colors items-center text-sm ${rowClassName}`}
+        className={`grid gap-3 px-3 py-1.5 cursor-pointer transition-colors items-center text-sm rounded-sm hover:bg-accent/20 ${
+          index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
+        } ${rowClassName}`}
         style={{ gridTemplateColumns: getGridColumns() }}
         onClick={() => onRowClick?.(row)}
       >
@@ -220,7 +222,7 @@ export function GroupedDataTable<T = Record<string, unknown>>({
   };
 
   // Render group header
-  const renderGroupHeader = (groupId: string, groupName: string, count: number) => {
+  const renderGroupHeader = (groupId: string, groupName: string, count: number, groupIndex: number = 0) => {
     const isExpanded = expandedGroups.has(groupId);
     const displayCount = count;
 
@@ -229,7 +231,9 @@ export function GroupedDataTable<T = Record<string, unknown>>({
     }
 
     return (
-      <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 border-b border-white/10 rounded transition-colors overflow-hidden">
+      <div className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/20 rounded transition-colors overflow-hidden ${
+        groupIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
+      }`}>
         <button
           onClick={() => toggleGroup(groupId)}
           className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0 overflow-hidden"
@@ -274,20 +278,20 @@ export function GroupedDataTable<T = Record<string, unknown>>({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-0">
       {renderHeader()}
 
       {groupedData ? (
         // Grouped view
-        Object.entries(groupedData).map(([groupId, { items, name, count }]) => {
+        Object.entries(groupedData).map(([groupId, { items, name, count }], groupIndex) => {
           const isExpanded = expandedGroups.has(groupId);
           const displayCount = count !== undefined ? count : items.length;
 
           return (
-            <div key={groupId} className="space-y-1">
-              {renderGroupHeader(groupId, name, displayCount)}
+            <div key={groupId} className="space-y-0">
+              {renderGroupHeader(groupId, name, displayCount, groupIndex)}
               {isExpanded && items.length > 0 && (
-                <div className="space-y-0.5">
+                <div className="space-y-0">
                   {items.map((row, index) => renderRow(row, index))}
                 </div>
               )}

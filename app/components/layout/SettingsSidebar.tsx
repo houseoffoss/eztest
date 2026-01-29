@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { User, Lock } from 'lucide-react';
+import { SignOutButton } from '@/frontend/reusable-components/layout/SignOutButton';
 
 export interface SettingsSidebarItem {
   label: string;
@@ -32,8 +33,8 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn('w-48 bg-white/[0.02] border-r border-white/10 flex-shrink-0', className)}>
-      <nav className="space-y-1 p-4">
+    <div className={cn('w-48 bg-white/[0.02] border-r border-white/10 flex-shrink-0 flex flex-col', className)}>
+      <nav className="space-y-1 p-4 flex-1">
         {SETTINGS_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -57,6 +58,15 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
           );
         })}
       </nav>
+      
+      {/* Sign Out Button at Bottom */}
+      <div className="p-4 border-t border-white/10">
+        <SignOutButton 
+          size="sm" 
+          className="w-full px-4 flex items-center justify-center gap-2"
+          showConfirmation={true}
+        />
+      </div>
     </div>
   );
 }

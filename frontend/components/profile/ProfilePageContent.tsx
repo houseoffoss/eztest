@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import {
   ProfileInformation,
   NotificationPreferences,
@@ -52,13 +51,6 @@ export default function ProfilePageContent() {
 
   return (
     <>
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Account Settings' }
-        ]}
-      />
-
       <div className="max-w-7xl mx-auto px-8 py-10">
         <div className="space-y-6">
           <ProfileInformation

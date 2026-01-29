@@ -14,13 +14,12 @@ export const HeroSection = () => {
       </Badge>
 
       <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
-        Test Management,
+        Manage Automation & Manual Tests
         <br />
-        <span className="text-primary">Made Simple</span>
+        <span className="text-primary">in One Place</span>
       </h1>
-      <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-        Lightweight, powerful test management platform that runs on minimal hardware.
-        Perfect for teams who want control without complexity.
+      <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+        Open Source alternative to Testiny, Testrail, TestLink, Testmo
       </p>
       <div className="flex gap-4 justify-center flex-wrap">
         <Link href="/auth/register">

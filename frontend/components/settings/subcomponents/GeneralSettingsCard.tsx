@@ -16,6 +16,7 @@ interface GeneralSettingsCardProps {
   onFormChange: (data: ProjectFormData) => void;
   onSave: (e: React.FormEvent) => void;
   onCancel: () => void;
+  canUpdate?: boolean;
 }
 
 export function GeneralSettingsCard({
@@ -25,6 +26,7 @@ export function GeneralSettingsCard({
   onFormChange,
   onSave,
   onCancel,
+  canUpdate = true,
 }: GeneralSettingsCardProps) {
   return (
     <DetailCard
@@ -83,7 +85,7 @@ export function GeneralSettingsCard({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <ButtonPrimary type="submit" disabled={saving}>
+            <ButtonPrimary type="submit" disabled={saving || !canUpdate}>
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Saving...' : 'Save Changes'}
             </ButtonPrimary>

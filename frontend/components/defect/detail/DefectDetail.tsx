@@ -1,8 +1,9 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import {
   FloatingAlert,
   type FloatingAlertMessage,
@@ -54,6 +55,15 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
 
   // Attachment states
   const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
+
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
 
   useEffect(() => {
     fetchDefect();
@@ -208,7 +218,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
         // Link uploaded attachments to the defect
         if (uploadedAttachments.length > 0) {
           try {
-            await fetch(`/api/defects/${defectId}/attachments`, {
+            await fetch(`/api/projects/${projectId}/defects/${defectId}/attachments`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ attachments: uploadedAttachments }),
@@ -327,23 +337,30 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          {
-            label: defect.project.name,
-            href: `/projects/${defect.project.id}`,
-          },
-          {
-            label: 'Defects',
-            href: `/projects/${defect.project.id}/defects`,
-          },
-          { label: defect.title },
-        ]}
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              {
+                label: defect.project.name,
+                href: `/projects/${defect.project.id}`,
+              },
+              {
+                label: 'Defects',
+                href: `/projects/${defect.project.id}/defects`,
+              },
+              { label: defect.title, href: `/projects/${defect.project.id}/defects/${defect.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="p-4 md:p-6 lg:p-8 pt-8">
         <DefectHeader
           defect={defect}
           isEditing={isEditing}

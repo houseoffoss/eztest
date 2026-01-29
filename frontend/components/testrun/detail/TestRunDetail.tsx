@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from 'react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+﻿import { useEffect, useState, useMemo } from 'react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { TestRunHeader } from './subcomponents/TestRunHeader';
@@ -21,7 +22,6 @@ import { TestRun, TestCase, ResultFormData, TestRunStats, TestSuite } from './ty
 import { usePermissions } from '@/hooks/usePermissions';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
-import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 
 interface TestRunDetailProps {
   testRunId: string;
@@ -65,6 +65,45 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
   );
 
+  // Check permissions for navbar
+  const canUpdateTestRun = hasPermissionCheck('testruns:update');
+  const canCreateTestRun = hasPermissionCheck('testruns:create');
+  hasPermissionCheck('testruns:read');
+
+  const executionTypeLabel = useMemo(() => {
+    const type = (testRun?.executionType || 'MANUAL').toString().toUpperCase();
+    return type === 'AUTOMATION' ? 'AUTOMATION' : 'MANUAL';
+  }, [testRun?.executionType]);
+
+  // For automation runs, allow defect actions even after completion
+  const showAutomationDefectActions = useMemo(() => {
+    const type = (testRun?.executionType || 'MANUAL').toString().toUpperCase();
+    return type === 'AUTOMATION' && testRun?.status === 'COMPLETED';
+  }, [testRun?.executionType, testRun?.status]);
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    // Only show export button to users who can update (not read-only viewers)
+    if (canUpdateTestRun) {
+      actions.push({
+        type: 'action' as const,
+        label: 'Export Report',
+        icon: Upload,
+        onClick: () => setExportDialogOpen(true),
+        variant: 'secondary' as const,
+        buttonName: 'Test Run Detail - Export Report',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canUpdateTestRun]);
+
   useEffect(() => {
     fetchTestRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,7 +118,20 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const fetchTestRun = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/testruns/${testRunId}`);
+      // Extract projectId from URL path or use from testRun data
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        // Extract projectId from URL path: /projects/[id]/testruns/[testrunId]
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const url = projectId 
+        ? `/api/projects/${projectId}/testruns/${testRunId}`
+        : `/api/testruns/${testRunId}`;
+      const response = await fetch(url);
       const data = await response.json();
       if (data.data) {
         setTestRun(data.data);
@@ -97,7 +149,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleStartTestRun = async () => {
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/testruns/${testRunId}/start`, {
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/start`, {
         method: 'POST',
       });
 
@@ -119,7 +179,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const handleCompleteTestRun = async () => {
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/testruns/${testRunId}/complete`, {
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/complete`, {
         method: 'POST',
       });
 
@@ -147,7 +215,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   };
 
   const handleSendReportYes = async () => {
-    const response = await fetch(`/api/testruns/${testRunId}/send-report`, {
+    let projectId = testRun?.project?.id;
+    if (!projectId && typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/');
+      const projectIndex = pathSegments.indexOf('projects');
+      if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+        projectId = pathSegments[projectIndex + 1];
+      }
+    }
+    const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/send-report`, {
       method: 'POST',
     });
 
@@ -219,7 +295,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
 
     try {
-      const response = await fetch(`/api/testruns/${testRunId}/results`, {
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/results`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -250,7 +334,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
     try {
       // Fetch latest test run data to get current results
-      const testRunResponse = await fetch(`/api/testruns/${testRunId}`);
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const testRunResponse = await fetch(`/api/projects/${projectId}/testruns/${testRunId}`);
       const testRunData = await testRunResponse.json();
       const currentTestRun = testRunData.data || testRun;
 
@@ -280,13 +372,21 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     setAddingTestCases(true);
     try {
       console.log('Adding test cases:', selectedCaseIds);
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
       const promises = selectedCaseIds.map(async (testCaseId) => {
         const payload = {
           testCaseId,
           status: 'SKIPPED',
         };
         
-        const response = await fetch(`/api/testruns/${testRunId}/results`, {
+        const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/results`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -331,7 +431,15 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     setLoadingSuites(true);
     try {
       // Fetch latest test run data to get current results
-      const testRunResponse = await fetch(`/api/testruns/${testRunId}`);
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
+      const testRunResponse = await fetch(`/api/projects/${projectId}/testruns/${testRunId}`);
       const testRunData = await testRunResponse.json();
       const currentTestRun = testRunData.data || testRun;
 
@@ -433,8 +541,16 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       }
 
       // Add all test cases from selected suites
+      let projectId = testRun?.project?.id;
+      if (!projectId && typeof window !== 'undefined') {
+        const pathSegments = window.location.pathname.split('/');
+        const projectIndex = pathSegments.indexOf('projects');
+        if (projectIndex !== -1 && projectIndex + 1 < pathSegments.length) {
+          projectId = pathSegments[projectIndex + 1];
+        }
+      }
       const promises = testCaseIds.map(async (testCaseId) => {
-        const response = await fetch(`/api/testruns/${testRunId}/results`, {
+        const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/results`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -566,43 +682,35 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     );
   }
 
-  const canUpdateTestRun = hasPermissionCheck('testruns:update');
-  const canCreateTestRun = hasPermissionCheck('testruns:create');
-  const canReadTestRun = hasPermissionCheck('testruns:read');
-
   return (
     <div className="flex-1">
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          {
-            label: testRun.project?.name || 'Project',
-            href: `/projects/${testRun.project?.id}`,
-          },
-          {
-            label: 'Test Runs',
-            href: `/projects/${testRun.project?.id}/testruns`,
-          },
-          { label: testRun.name },
-        ]}
-        actions={
-          canReadTestRun && (
-            <ButtonSecondary 
-              onClick={() => setExportDialogOpen(true)} 
-              className="cursor-pointer"
-              title="Export detailed report"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Export Report
-            </ButtonSecondary>
-          )
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              {
+                label: testRun.project?.name || 'Project',
+                href: `/projects/${testRun.project?.id}`,
+              },
+              {
+                label: 'Test Runs',
+                href: `/projects/${testRun.project?.id}/testruns`,
+              },
+              { label: testRun.name, href: `/projects/${testRun.project?.id}/testruns/${testRun.id}` },
+            ]}
+          />
         }
+        actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="p-4 md:p-6 lg:p-8 pt-8 space-y-6">
         <TestRunHeader
           testRun={testRun}
+          executionTypeLabel={executionTypeLabel}
           actionLoading={actionLoading}
           canUpdate={canUpdateTestRun}
           onStartTestRun={handleStartTestRun}
@@ -621,6 +729,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           testRunStatus={testRun.status}
           canUpdate={canUpdateTestRun}
           canCreate={canCreateTestRun}
+          projectId={testRun.project?.id || ''}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);
@@ -631,6 +740,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           }}
           onExecuteTestCase={handleOpenResultDialog}
           onCreateDefect={handleCreateDefect}
+          forceShowDefectActions={showAutomationDefectActions}
           getResultIcon={getResultIcon}
         />
 
@@ -726,7 +836,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             description="Choose a format to export the detailed test run report with test cases and defects."
             exportOptions={{
               projectId: testRun.project?.id || '',
-              endpoint: `/api/testruns/${testRunId}/export`,
+              endpoint: `/api/projects/${testRun.project?.id}/testruns/${testRunId}/export`,
               filters: {},
             }}
             itemName="test run report"

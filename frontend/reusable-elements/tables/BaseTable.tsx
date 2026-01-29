@@ -12,7 +12,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <table
       data-slot="table"
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm border-collapse", className)}
       {...props}
     />
   )
@@ -23,7 +23,7 @@ function TableContainer({ className, variant = "default", ...props }: TableConta
     <div
       data-slot="table-container"
       className={cn(
-        "relative w-full overflow-x-auto rounded-2xl",
+        "relative w-full overflow-x-auto rounded-lg",
         variant === "glass" && "border border-white/10 bg-white/5 backdrop-blur-xl",
         className
       )}
@@ -71,8 +71,12 @@ function TableRow({ className, variant = "default", ...props }: TableRowProps) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-all cursor-pointer",
-        variant === "glass" ? "hover:bg-accent/20 data-[state=selected]:bg-accent/30" : "hover:bg-accent/15 data-[state=selected]:bg-accent/25",
+        "transition-all cursor-pointer hover:bg-accent/20",
+        "nth-child(odd):bg-transparent nth-child(odd):border-0",
+        "nth-child(even):bg-white/[0.04] nth-child(even):border-b nth-child(even):border-r nth-child(even):border-l nth-child(even):border-white/10",
+        "[&:first-child]:rounded-t-md",
+        "[&:last-child]:rounded-b-md",
+        variant === "glass" ? "data-[state=selected]:bg-accent/30" : "data-[state=selected]:bg-accent/25",
         className
       )}
       {...props}
@@ -86,6 +90,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
       data-slot="table-head"
       className={cn(
         "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "border-b border-r border-l border-white/10",
         className
       )}
       {...props}

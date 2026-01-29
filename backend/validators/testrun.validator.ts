@@ -10,6 +10,7 @@ export const createTestRunSchema = z.object({
     .max(255, 'Name must not exceed 255 characters')
     .trim(),
   description: z.string().optional(),
+  executionType: z.enum(['MANUAL', 'AUTOMATION']).optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
   status: z.string().optional(),
@@ -28,6 +29,7 @@ export const updateTestRunSchema = z.object({
     .trim()
     .optional(),
   description: z.string().optional(),
+  executionType: z.enum(['MANUAL', 'AUTOMATION']).optional(),
   status: z.string().optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
