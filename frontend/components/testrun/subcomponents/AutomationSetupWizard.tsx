@@ -669,7 +669,7 @@ public void loginTest() {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[800px] flex flex-col p-0 overflow-hidden max-h-[90vh]">
+      <DialogContent className="sm:max-w-[800px] flex flex-col p-0 overflow-hidden max-h-[90vh] min-h-[600px] h-[85vh]">
         <div className="flex-shrink-0 border-b border-white/10 bg-[#0f172a] px-6 py-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
