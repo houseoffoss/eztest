@@ -225,7 +225,7 @@ export function TestRunCard({
       content={content}
       footer={footer}
       onClick={onCardClick}
-      borderColor="accent"
+      borderColor="primary"
     />
   );
 }

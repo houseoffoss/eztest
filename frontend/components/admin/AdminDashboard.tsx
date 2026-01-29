@@ -51,7 +51,7 @@ export default function AdminDashboard() {
                   Manage user accounts and assign application-level roles
                 </p>
               }
-              borderColor="accent"
+              borderColor="primary"
               onClick={() => router.push('/admin/users')}
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
                   Configure dropdown options for priorities, statuses, and more
                 </p>
               }
-              borderColor="accent"
+              borderColor="primary"
               onClick={() => router.push('/admin/dropdown-options')}
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
