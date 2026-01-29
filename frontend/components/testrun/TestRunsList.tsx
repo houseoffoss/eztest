@@ -2,9 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
@@ -19,7 +17,8 @@ import { TestRunsEmptyState } from './subcomponents/TestRunsEmptyState';
 import { CreateTestRunDialog } from './subcomponents/CreateTestRunDialog';
 import { DeleteTestRunDialog } from './subcomponents/DeleteTestRunDialog';
 import { UploadTestNGXMLDialog } from './subcomponents/UploadTestNGXMLDialog';
-import { TestRun, Project, TestRunFormData, TestRunFilters } from './types';
+import { AutomationSetupWizard } from './subcomponents/AutomationSetupWizard';
+import { TestRun, Project, TestRunFilters } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
 import {
@@ -28,8 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
-import { ChevronDown } from 'lucide-react';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
+import { ChevronDown, BookOpen } from 'lucide-react';
 
 interface TestRunsListProps {
   projectId: string;
@@ -47,6 +45,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [uploadXMLDialogOpen, setUploadXMLDialogOpen] = useState(false);
+  const [automationWizardOpen, setAutomationWizardOpen] = useState(false);
   const [selectedTestRun, setSelectedTestRun] = useState<TestRun | null>(null);
 
   const [filters, setFilters] = useState<TestRunFilters>({
@@ -182,6 +181,11 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const canDeleteTestRun = hasPermissionCheck('testruns:delete');
   const canReadTestRun = hasPermissionCheck('testruns:read');
 
+  // Check if project has any automation test runs
+  const hasAutomationTestRuns = useMemo(() => {
+    return testRuns.some(tr => tr.executionType === 'AUTOMATION');
+  }, [testRuns]);
+
   const navbarActions = useMemo(() => {
     const actions = [];
 
@@ -193,11 +197,19 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                Import / Export
+                Manual / Automation
                 <ChevronDown className="w-4 h-4" />
               </ButtonSecondary>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+              {hasAutomationTestRuns && (
+                // Show automation wizard for automation projects
+                <DropdownMenuItem onClick={() => setAutomationWizardOpen(true)}>
+                  <BookOpen className="w-4 h-4" />
+                  Automation Setup Guide
+                </DropdownMenuItem>
+              )}
+              {/* Always show import/export options */}
               <DropdownMenuItem onClick={() => setUploadXMLDialogOpen(true)}>
                 <FileCode className="w-4 h-4" />
                 Upload TestNG XML
@@ -229,7 +241,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     });
 
     return actions;
-  }, [canCreateTestRun, canReadTestRun]);
+  }, [canCreateTestRun, canReadTestRun, hasAutomationTestRuns]);
 
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading test runs..." />;
@@ -357,6 +369,14 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           onImportComplete={() => {
             fetchTestRuns();
           }}
+        />
+
+        {/* Automation Setup Wizard */}
+        <AutomationSetupWizard
+          open={automationWizardOpen}
+          onOpenChange={setAutomationWizardOpen}
+          projectId={projectId}
+          projectKey={project?.key}
         />
       </div>
     </>

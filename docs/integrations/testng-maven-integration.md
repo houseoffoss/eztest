@@ -113,7 +113,7 @@ public class EZTestCreateTestRunUploader {
      * Reads a TestNG XML file from the local disk and uploads it to the EZTest API.
      * 
      * @param xmlPath The relative or absolute path to the XML results file 
-     *                (e.g., "target/surefire-reports/testng-results.xml").
+     *                (e.g., "target/failsafe-reports/testng-results.xml").
      * @throws FileNotFoundException If the file at xmlPath does not exist.
      * @throws Exception For networking errors or non-2xx API responses.
      */
@@ -217,22 +217,18 @@ public class EZTestCreateTestRunUploader {
 ```java
 package utils;
 
-/**
- * Main class used by Maven exec-plugin to trigger the upload process.
- */
 public class EZTestCreateTestRunUploaderMain {
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Usage: java EZTestCreateTestRunUploaderMain <path_to_xml>");
-            System.exit(1);
+    public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
+            throw new IllegalArgumentException(
+                "Missing path to testng-results.xml"
+            );
         }
 
-        try {
-            new EZTestCreateTestRunUploader().upload(args[0]);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1); // Ensure Maven build fails if upload fails
-        }
+        String xmlPath = args[0];
+
+        new EZTestCreateTestRunUploader()
+                .upload(xmlPath);
     }
 }
 ```
@@ -250,9 +246,8 @@ Add the following dependency to your `pom.xml`:
     <!-- Dotenv for .env file support -->
     <dependency>
         <groupId>io.github.cdimascio</groupId>
-        <artifactId>dotenv-java</artifactId>
-        <version>3.0.0</version>
-        <scope>test</scope>
+        <artifactId>java-dotenv</artifactId>
+        <version>5.2.2</version>
     </dependency>
 </dependencies>
 ```
@@ -300,25 +295,32 @@ EZTEST_API_TOKEN = "abc123token456"
 
 Add or update the following plugins in your `pom.xml`.
 
-#### ✅ Maven Surefire Plugin
+#### ✅ Maven Failsafe Plugin
 
-**Purpose:** Runs TestNG and generates XML reports.
+**Purpose:** Runs TestNG properly and generates XML reports.
 
 ```xml
 <build>
   <plugins>
+    <!-- ✅ 1. FAILSAFE: Run TestNG properly -->
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-plugin</artifactId>
+      <artifactId>maven-failsafe-plugin</artifactId>
       <version>3.2.5</version>
       <configuration>
         <suiteXmlFiles>
           <suiteXmlFile>testng.xml</suiteXmlFile>
         </suiteXmlFiles>
-
-        <!-- Allow upload even if tests fail -->
         <testFailureIgnore>true</testFailureIgnore>
       </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>integration-test</goal>
+            <goal>verify</goal>
+          </goals>
+        </execution>
+      </executions>
     </plugin>
   </plugins>
 </build>
@@ -464,7 +466,7 @@ This also triggers the upload after tests complete.
 
 **Error:**
 ```
-TestNG results file not found: target/surefire-reports/testng-results.xml
+TestNG results file not found: target/failsafe-reports/testng-results.xml
 ```
 
 **Reason:**
@@ -473,8 +475,8 @@ TestNG results file not found: target/surefire-reports/testng-results.xml
 - TestNG not configured properly
 
 **Fix:**
-1. Ensure `mvn test` ran successfully
-2. Check `target/surefire-reports/testng-results.xml` exists
+1. Ensure `mvn clean verify` ran successfully
+2. Check `target/failsafe-reports/testng-results.xml` exists
 3. Verify TestNG is configured in `pom.xml`
 4. Check `testng.xml` file exists and is valid
 
@@ -639,7 +641,7 @@ Before running tests, verify:
 
 - ✅ Added 2 Java files (`EZTestCreateTestRunUploader.java`, `EZTestCreateTestRunUploaderMain.java`)
 - ✅ Updated `pom.xml` with required plugins
-- ✅ Added `dotenv-java` dependency
+- ✅ Added `java-dotenv` dependency
 - ✅ Created `.env` file with all required variables
 - ✅ Verified test case IDs in EZTest match TestNG method names
 - ✅ Used `TC_1` naming format (with underscore)
@@ -655,8 +657,8 @@ Before running tests, verify:
 Verify the XML file is generated at the expected location:
 
 ```bash
-# After running mvn test, check:
-ls -la target/surefire-reports/testng-results.xml
+# After running mvn clean verify, check:
+ls -la target/failsafe-reports/testng-results.xml
 ```
 
 ### Verify Environment Variables
@@ -677,7 +679,7 @@ curl -X POST \
   "https://your-eztest-domain.com/api/projects/YOUR_PROJECT_ID/testruns/import-xml?environment=STAGING&filename=test.xml" \
   -H "Authorization: Bearer YOUR_API_TOKEN" \
   -H "Content-Type: application/xml" \
-  --data-binary "@target/surefire-reports/testng-results.xml"
+  --data-binary "@target/failsafe-reports/testng-results.xml"
 ```
 
 ---
