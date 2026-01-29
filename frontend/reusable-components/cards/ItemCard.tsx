@@ -32,6 +32,10 @@ export const ItemCard = ({
   className = '',
   borderColor = 'primary',
 }: ItemCardProps) => {
+  const gradientStyle = borderColor === 'accent'
+    ? 'conic-gradient(from 45deg, rgba(139, 92, 246, 0.2) 0deg, rgba(139, 92, 246, 0.8) 90deg, rgba(139, 92, 246, 0.2) 180deg, rgba(139, 92, 246, 0.8) 270deg, rgba(139, 92, 246, 0.2) 360deg)'
+    : 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)';
+
   return (
     <div
       className={`
@@ -40,29 +44,19 @@ export const ItemCard = ({
         transition-all 
         cursor-pointer 
         group 
+        p-[1px]
         ${className}
       `}
       onClick={onClick}
+      style={{
+        background: gradientStyle,
+      }}
     >
-      {/* Gradient border using pseudo-element with mask to show only border */}
-      <div
-        className="absolute inset-0 rounded-3xl pointer-events-none"
-        style={{
-          background: borderColor === 'accent'
-            ? 'conic-gradient(from 45deg, rgba(139, 92, 246, 0.2) 0deg, rgba(139, 92, 246, 0.8) 90deg, rgba(139, 92, 246, 0.2) 180deg, rgba(139, 92, 246, 0.8) 270deg, rgba(139, 92, 246, 0.2) 360deg)'
-            : 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
-          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          WebkitMaskComposite: 'xor',
-          mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          maskComposite: 'exclude',
-          padding: '1px',
-        }}
-      />
-      {/* Transparent inner container */}
-      <div className="relative rounded-3xl bg-transparent h-full m-[1px]">
+      {/* Inner container with page background color to block gradient */}
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
         <Card
           variant="glass"
-          className="!border-0 !rounded-3xl !bg-transparent before:!bg-none hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"
+          className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"
         >
         <CardHeader className="pb-1 pt-2.5 px-3.5">
           <div className="flex items-start justify-between gap-2">
