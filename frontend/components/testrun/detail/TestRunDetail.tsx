@@ -72,7 +72,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const executionTypeLabel = useMemo(() => {
     const type = (testRun?.executionType || 'MANUAL').toString().toUpperCase();
-    return type === 'AUTOMATION' ? 'Automation' : 'Manual';
+    return type === 'AUTOMATION' ? 'AUTOMATION' : 'MANUAL';
   }, [testRun?.executionType]);
 
   // For automation runs, allow defect actions even after completion

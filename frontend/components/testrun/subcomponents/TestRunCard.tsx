@@ -94,8 +94,8 @@ export function TestRunCard({
 
   const executionTypeLabel =
     (testRun.executionType || 'MANUAL').toString().toUpperCase() === 'AUTOMATION'
-      ? 'Automation'
-      : 'Manual';
+      ? 'AUTOMATION'
+      : 'MANUAL';
   
   const executionType = (testRun.executionType || 'MANUAL').toString().toUpperCase();
   const executionTypeBadgeClassName = executionType === 'AUTOMATION'
@@ -225,7 +225,7 @@ export function TestRunCard({
       content={content}
       footer={footer}
       onClick={onCardClick}
-      borderColor="accent"
+      borderColor="primary"
     />
   );
 }
