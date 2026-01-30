@@ -56,20 +56,40 @@ import {
 } from "@/frontend/reusable-elements/tables/BaseTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/frontend/reusable-elements/tabs/Tabs";
 import { Textarea } from "@/frontend/reusable-elements/textareas/Textarea";
+import { TextareaWithAttachments } from "@/frontend/reusable-elements/textareas/TextareaWithAttachments";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/frontend/reusable-elements/tooltips/Tooltip";
 import { GlassPanel } from "@/frontend/reusable-components/layout/GlassPanel";
 import { PageHeader } from "@/frontend/reusable-components/layout/PageHeader";
 import { StatCard } from "@/frontend/reusable-components/cards/StatCard";
+import { ItemCard } from "@/frontend/reusable-components/cards/ItemCard";
 import { StatusBadge } from "@/frontend/reusable-components/badges/StatusBadge";
 import { PriorityBadge } from "@/frontend/reusable-components/badges/PriorityBadge";
 import { ProgressBar } from "@/frontend/reusable-components/badges/ProgressBar";
+import { ProgressBarWithLabel } from "@/frontend/reusable-components/data/ProgressBarWithLabel";
+import { CompactStatsGrid } from "@/frontend/reusable-components/data/CompactStatsGrid";
+import { StatsGrid } from "@/frontend/reusable-components/data/StatsGrid";
 import { FilterBar } from "@/frontend/reusable-components/inputs/FilterBar";
 import { Assignee } from "@/frontend/reusable-elements/avatars/Assignee";
 import { EmptyState } from "@/frontend/reusable-components/empty-states/EmptyState";
 import { ConfirmDialog } from "@/frontend/reusable-components/dialogs/ConfirmDialog";
+import { BaseDialog } from "@/frontend/reusable-components/dialogs/BaseDialog";
+import { ActionMenu } from "@/frontend/reusable-components/menus/ActionMenu";
+import { DataTable } from "@/frontend/reusable-components/tables/DataTable";
+import { GroupedDataTable } from "@/frontend/reusable-components/tables/GroupedDataTable";
+import { ButtonDestructive } from "@/frontend/reusable-elements/buttons/ButtonDestructive";
 import { Section } from "@/frontend/reusable-components/layout/Section";
 import { DetailCard } from "@/frontend/reusable-components/cards/DetailCard";
 import { GlassFooter } from "@/frontend/reusable-components/layout/GlassFooter";
+import { Trash2, Edit, Eye, TestTube2, Play, FileText, Bug } from "lucide-react";
+
+interface TableRow {
+  id?: string;
+  title: string;
+  status?: string;
+  priority?: string;
+  assignee?: string;
+  module?: string;
+}
 
 export default function UIShowcasePage() {
   useEffect(() => {
@@ -264,6 +284,21 @@ export default function UIShowcasePage() {
               </div>
             </GlassPanel>
 
+            <GlassPanel heading="ProgressBarWithLabel" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Progress bar with label and badge-like styling support</p>
+              <ProgressBarWithLabel
+                label="Pass Rate"
+                value={67}
+                fillClassName="bg-green-400/30 border border-green-400/30"
+              />
+              <ProgressBarWithLabel
+                label="Test Coverage"
+                value={85}
+                gradientFrom="from-blue-400"
+                gradientTo="to-blue-300"
+              />
+            </GlassPanel>
+
             <GlassPanel heading="Stat cards" contentClassName="grid gap-4">
               <StatCard label="Pass rate" value="96%" delta="+1.2%" trend="up" helpText="week over week" />
               <StatCard label="Total tests" value="1,248" delta="+24" trend="up" helpText="this month" />
@@ -293,12 +328,226 @@ export default function UIShowcasePage() {
               </DetailCard>
             </GlassPanel>
 
+            <GlassPanel heading="TextareaWithAttachments" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Textarea component with file attachment support</p>
+              <TextareaWithAttachments
+                variant="glass"
+                fieldName="description"
+                value="Sample description text"
+                onChange={() => {}}
+                placeholder="Enter description with attachments..."
+                rows={4}
+                maxLength={500}
+                showCharCount={true}
+                attachments={[]}
+                onAttachmentsChange={() => {}}
+                entityType="testcase"
+                showAttachments={true}
+              />
+            </GlassPanel>
+
+            <GlassPanel heading="BaseDialog" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Reusable dialog component with form fields support. Note: This is a controlled component - trigger it programmatically.</p>
+              <BaseDialog
+                title="Create Test Case"
+                description="Fill in the details below"
+                fields={[
+                  { name: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Enter title' },
+                  { name: 'description', label: 'Description', type: 'textarea', rows: 3, placeholder: 'Enter description' },
+                  { name: 'priority', label: 'Priority', type: 'select', options: [
+                    { value: 'low', label: 'Low' },
+                    { value: 'medium', label: 'Medium' },
+                    { value: 'high', label: 'High' }
+                  ]}
+                ]}
+                onSubmit={async () => ({})}
+                triggerOpen={false}
+              />
+            </GlassPanel>
+
+            <GlassPanel heading="ItemCard with ActionMenu" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Card component for displaying items with badges, header actions (ActionMenu), and footer</p>
+              <ItemCard
+                title="Test Run Example"
+                description="This is an example test run card with badges, stats, and action menu"
+                badges={
+                  <>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">COMPLETED</Badge>
+                    <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">AUTOMATION</Badge>
+                  </>
+                }
+                header={
+                  <ActionMenu
+                    items={[
+                      {
+                        label: 'View Details',
+                        icon: Eye,
+                        onClick: () => {},
+                        buttonName: 'View Details',
+                      },
+                      {
+                        label: 'Edit',
+                        icon: Edit,
+                        onClick: () => {},
+                        buttonName: 'Edit',
+                      },
+                      {
+                        label: 'Delete',
+                        icon: Trash2,
+                        onClick: () => {},
+                        variant: 'destructive',
+                        buttonName: 'Delete',
+                      },
+                    ]}
+                    align="end"
+                    iconSize="w-3.5 h-3.5"
+                  />
+                }
+                content={
+                  <>
+                    <ProgressBarWithLabel
+                      label="Pass Rate"
+                      value={75}
+                      fillClassName="bg-green-400/30 border border-green-400/30"
+                    />
+                    <CompactStatsGrid
+                      stats={[
+                        { value: 10, label: 'Total', show: true },
+                        { value: 7, label: 'Passed', valueClassName: 'text-green-500', show: true },
+                        { value: 2, label: 'Failed', valueClassName: 'text-red-500', show: true },
+                        { value: 1, label: 'Blocked', valueClassName: 'text-orange-500', show: true },
+                      ]}
+                      columns={4}
+                      gap="md"
+                    />
+                  </>
+                }
+              />
+            </GlassPanel>
+
+            <GlassPanel heading="ActionMenu & ButtonDestructive" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Action menu with delete option and destructive button</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <ActionMenu
+                    items={[
+                      { label: 'View', icon: Eye, onClick: () => {}, buttonName: 'View' },
+                      { label: 'Edit', icon: Edit, onClick: () => {}, buttonName: 'Edit' },
+                      { label: 'Delete', icon: Trash2, onClick: () => {}, variant: 'destructive', buttonName: 'Delete' },
+                    ]}
+                    align="end"
+                  />
+                  <span className="text-sm text-white/60">ActionMenu with delete option</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <ButtonDestructive size="sm">Delete Item</ButtonDestructive>
+                  <ButtonDestructive size="icon" variant="ghost">
+                    <Trash2 className="w-4 h-4" />
+                  </ButtonDestructive>
+                  <span className="text-sm text-white/60">ButtonDestructive variants</span>
+                </div>
+              </div>
+            </GlassPanel>
+
+            <GlassPanel heading="CompactStatsGrid & StatsGrid" contentClassName="space-y-4">
+              <p className="text-sm text-white/70">Grid components for displaying statistics</p>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-white/60 mb-2">CompactStatsGrid</p>
+                  <CompactStatsGrid
+                    stats={[
+                      { value: 25, label: 'Total', show: true },
+                      { value: 18, label: 'Passed', valueClassName: 'text-green-500', show: true },
+                      { value: 5, label: 'Failed', valueClassName: 'text-red-500', show: true },
+                      { value: 2, label: 'Blocked', valueClassName: 'text-orange-500', show: true },
+                    ]}
+                    columns={4}
+                    gap="md"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-white/60 mb-2">StatsGrid (with icons)</p>
+                  <StatsGrid
+                    stats={[
+                      { value: 150, label: 'Test Cases', icon: TestTube2, iconColor: 'text-primary' },
+                      { value: 45, label: 'Test Runs', icon: Play, iconColor: 'text-accent' },
+                      { value: 12, label: 'Test Suites', icon: FileText, iconColor: 'text-purple-400' },
+                      { value: 8, label: 'Defects', icon: Bug, iconColor: 'text-red-400' },
+                    ]}
+                    columns={4}
+                    gap="sm"
+                  />
+                </div>
+              </div>
+            </GlassPanel>
+
             <GlassPanel heading="Empty state & dialog" contentClassName="space-y-4">
               <EmptyState title="No test runs" description="Create your first run to start tracking results." />
               <ConfirmDialog description="This will start a new test run.">
                 <ButtonPrimary>Open confirm</ButtonPrimary>
               </ConfirmDialog>
             </GlassPanel>
+
+            <div className="md:col-span-2">
+              <GlassPanel heading="DataTable Component" contentClassName="space-y-3">
+                <p className="text-sm text-white/70 mb-4">Reusable DataTable component for displaying tabular data</p>
+                <DataTable<TableRow>
+                  columns={[
+                    { key: 'title', label: 'Title' },
+                    { key: 'status', label: 'Status', render: (val, row: TableRow) => <StatusBadge status={(row.status || 'passed') as 'passed' | 'failed' | 'running' | 'queued'}>{row.status || 'Passed'}</StatusBadge> },
+                    { key: 'priority', label: 'Priority', render: (val, row: TableRow) => <PriorityBadge priority={(row.priority || 'high') as 'low' | 'medium' | 'high' | 'critical'} /> },
+                    { key: 'assignee', label: 'Assignee' },
+                  ]}
+                  data={[
+                    { title: 'User Authentication', status: 'passed', priority: 'high', assignee: 'Jane Doe' },
+                    { title: 'Payment Gateway', status: 'running', priority: 'critical', assignee: 'John Smith' },
+                    { title: 'API Integration', status: 'failed', priority: 'medium', assignee: 'Alex Lee' },
+                  ]}
+                  onRowClick={(row) => console.log('Row clicked:', row)}
+                  emptyMessage="No data available"
+                />
+              </GlassPanel>
+            </div>
+
+            <div className="md:col-span-2">
+              <GlassPanel heading="GroupedDataTable Component" contentClassName="space-y-3">
+                <p className="text-sm text-white/70 mb-4">DataTable with grouping support (e.g., by module) and action menu</p>
+                <GroupedDataTable<TableRow>
+                  data={[
+                    { id: '1', title: 'Test Case 1', module: 'Module A', status: 'passed' },
+                    { id: '2', title: 'Test Case 2', module: 'Module A', status: 'failed' },
+                    { id: '3', title: 'Test Case 3', module: 'Module B', status: 'passed' },
+                  ]}
+                  columns={[
+                    { key: 'title', label: 'Title', render: (row: TableRow) => row.title },
+                    { key: 'status', label: 'Status', render: (row: TableRow) => <StatusBadge status={(row.status || 'passed') as 'passed' | 'failed' | 'running' | 'queued'}>{row.status || 'Passed'}</StatusBadge> },
+                  ]}
+                  grouped={true}
+                  groupConfig={{
+                    getGroupId: (row: TableRow) => row.module || 'ungrouped',
+                    getGroupName: (groupId: string) => `Module: ${groupId}`,
+                    getGroupCount: (groupId: string) => {
+                      const data: TableRow[] = [
+                        { id: '1', title: 'Test Case 1', module: 'Module A', status: 'passed' },
+                        { id: '2', title: 'Test Case 2', module: 'Module A', status: 'failed' },
+                        { id: '3', title: 'Test Case 3', module: 'Module B', status: 'passed' },
+                      ];
+                      return data.filter((r: TableRow) => (r.module || 'ungrouped') === groupId).length;
+                    },
+                  }}
+                  actions={{
+                    items: [
+                      { label: 'View', icon: Eye, onClick: () => {}, buttonName: 'View' },
+                      { label: 'Delete', icon: Trash2, onClick: () => {}, variant: 'destructive', buttonName: 'Delete' },
+                    ],
+                    align: 'end',
+                    iconSize: 'w-3 h-3',
+                  }}
+                  onRowClick={(row) => console.log('Row clicked:', row)}
+                  emptyMessage="No data available"
+                />
+              </GlassPanel>
+            </div>
           </div>
         </Section>
 
