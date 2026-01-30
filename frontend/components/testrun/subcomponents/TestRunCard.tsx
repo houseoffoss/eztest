@@ -156,8 +156,7 @@ export function TestRunCard({
         <ProgressBarWithLabel
           label="Pass Rate"
           value={passRate}
-          gradientFrom="from-green-500"
-          gradientTo="to-green-400"
+          fillClassName="bg-green-400/30 border border-green-400/30"
         />
       )}
 
