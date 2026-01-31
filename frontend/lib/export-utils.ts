@@ -14,6 +14,7 @@ export interface ExportOptions {
  * Export data to CSV or Excel file
  */
 export async function exportData(options: ExportOptions): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { projectId, endpoint, format, filename, filters = {} } = options;
 
   try {
@@ -21,7 +22,7 @@ export async function exportData(options: ExportOptions): Promise<void> {
     const params = new URLSearchParams({
       format,
       ...Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== undefined && value !== 'all')
+        Object.entries(filters).filter(([, value]) => value !== undefined && value !== 'all')
       ),
     });
 

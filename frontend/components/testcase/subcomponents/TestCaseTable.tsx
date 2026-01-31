@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import {
@@ -63,6 +63,7 @@ export function TestCaseTable({
   const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -162,6 +163,48 @@ export function TestCaseTable({
       },
     },
     {
+      key: 'flowId',
+      label: 'FLOW-ID',
+      width: '80px',
+      render: (row) => (
+        <span className="text-xs text-white/70 truncate">{row.flowId || '-'}</span>
+      ),
+    },
+    {
+      key: 'layer',
+      label: 'LAYER',
+      width: '80px',
+      render: (row) => (
+        row.layer ? (
+          <Badge
+            variant="outline"
+            className="w-fit text-xs px-2 py-0.5 bg-purple-500/10 text-purple-400 border-purple-500/20"
+          >
+            {row.layer}
+          </Badge>
+        ) : (
+          <span className="text-xs text-white/40">-</span>
+        )
+      ),
+    },
+    {
+      key: 'targetType',
+      label: '対象',
+      width: '80px',
+      render: (row) => (
+        row.targetType ? (
+          <Badge
+            variant="outline"
+            className="w-fit text-xs px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+          >
+            {row.targetType}
+          </Badge>
+        ) : (
+          <span className="text-xs text-white/40">-</span>
+        )
+      ),
+    },
+    {
       key: 'owner',
       label: 'OWNER',
       width: '140px',
@@ -249,7 +292,7 @@ export function TestCaseTable({
       grouped={groupedByModule}
       groupConfig={groupConfig}
       actions={actions}
-      gridTemplateColumns="70px 1fr 100px 90px 140px 70px 40px"
+      gridTemplateColumns="70px 1fr 100px 90px 80px 80px 80px 120px 60px 40px"
       emptyMessage="No test cases available"
     />
   );

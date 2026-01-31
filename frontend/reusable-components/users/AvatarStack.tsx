@@ -60,6 +60,7 @@ export function AvatarStack({
           title={avatar.name}
         >
           {avatar.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatar.avatar}
               alt={avatar.name}

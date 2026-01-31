@@ -430,6 +430,7 @@ function TextareaWithAttachments({
                 <div className="relative h-64 bg-black/20 flex items-center justify-center">
                   {isImage ? (
                     imageUrls[attachment.id] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={imageUrls[attachment.id]}
                         alt={attachment.originalName}

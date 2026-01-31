@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface DropdownOption {
   id: string;
@@ -33,7 +33,7 @@ export function useDropdownOptions(entity: string, field: string): UseDropdownOp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchOptions = async () => {
+  const fetchOptions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -63,13 +63,13 @@ export function useDropdownOptions(entity: string, field: string): UseDropdownOp
     } finally {
       setLoading(false);
     }
-  };
+  }, [entity, field]);
 
   useEffect(() => {
     if (entity && field) {
       fetchOptions();
     }
-  }, [entity, field]);
+  }, [entity, field, fetchOptions]);
 
   return {
     options,

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -400,6 +400,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           
           if (firstStepId && !firstStepId.startsWith('temp-')) {
             // Check if first step already has expectedResult attachments
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const firstStepHasExpectedResultAtts = updatedStepAttachmentsMap[firstStepId]?.expectedResult?.length > 0;
             
             // If first step has expectedResult text, merge test case level attachments with step-level ones

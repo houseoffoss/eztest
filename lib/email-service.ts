@@ -493,6 +493,7 @@ This is an automated notification from EZTest.
 export async function sendDefectUpdateEmail(
   data: DefectUpdateEmailData
 ): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const changeDescription = data.changes
     .map(c => `${c.field} changed from ${c.oldValue} to ${c.newValue}`)
     .join(', ');

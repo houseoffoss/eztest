@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
@@ -41,11 +41,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUser();
-  }, [userId]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const response = await fetch(`/api/users/${userId}`);
       const data = await response.json();
@@ -61,7 +57,11 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, router]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   if (loading) {
     return <Loader fullScreen text="Loading user details..." />;

@@ -5,7 +5,6 @@ import {
   updateTestRunSchema, 
   addTestResultSchema 
 } from '@/backend/validators/testrun.validator';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
 import { TestRunMessages } from '@/backend/constants/static_messages';
 
@@ -35,7 +34,8 @@ export class TestRunController {
    */
   async getTestRunById(
     testRunId: string,
-    userId: string
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _userId: string
   ) {
     const testRun = await testRunService.getTestRunById(testRunId);
 

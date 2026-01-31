@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
@@ -20,7 +20,7 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
     if (open && user) {
       setKey((prev) => prev + 1);
     }
-  }, [open, user?.id]);
+  }, [open, user]);
 
   const fields: BaseDialogField[] = [
     {

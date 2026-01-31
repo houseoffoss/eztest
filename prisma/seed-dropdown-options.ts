@@ -77,6 +77,16 @@ export async function seedDropdownOptions() {
     { entity: 'Defect', field: 'environment', value: 'Staging', label: 'STAGING', order: 2 },
     { entity: 'Defect', field: 'environment', value: 'QA', label: 'QA', order: 3 },
     { entity: 'Defect', field: 'environment', value: 'Development', label: 'DEVELOPMENT', order: 4 },
+
+    // TestType options for TestCase (テスト種別)
+    { entity: 'TestCase', field: 'testType', value: 'NORMAL', label: '正常系', order: 1 },
+    { entity: 'TestCase', field: 'testType', value: 'ABNORMAL', label: '異常系', order: 2 },
+    { entity: 'TestCase', field: 'testType', value: 'NON_FUNCTIONAL', label: '非機能', order: 3 },
+    { entity: 'TestCase', field: 'testType', value: 'REGRESSION', label: '回帰', order: 4 },
+    { entity: 'TestCase', field: 'testType', value: 'DATA_INTEGRITY', label: 'データ整合性確認', order: 5 },
+    { entity: 'TestCase', field: 'testType', value: 'STATE_TRANSITION', label: '状態遷移確認', order: 6 },
+    { entity: 'TestCase', field: 'testType', value: 'OPERATIONAL', label: '運用確認', order: 7 },
+    { entity: 'TestCase', field: 'testType', value: 'FAILURE', label: '障害時確認', order: 8 },
   ];
 
   console.log('  📝 Upserting dropdown options...');

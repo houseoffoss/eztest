@@ -1,9 +1,7 @@
 export type TestLayer = 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN';
 export type TargetType = 'API' | 'SCREEN' | 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY';
 export type Platform = 'IOS' | 'ANDROID' | 'WEB';
-
-/** 自動化ステータス */
-export type AutomationStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+export type TestType = 'NORMAL' | 'ABNORMAL' | 'NON_FUNCTIONAL' | 'REGRESSION' | 'DATA_INTEGRITY' | 'STATE_TRANSITION' | 'OPERATIONAL' | 'FAILURE';
 
 export interface TestCase {
   id: string;
@@ -27,15 +25,12 @@ export interface TestCase {
 
   layer?: TestLayer;
   targetType?: TargetType;
+  testType?: TestType;
 
-  operation?: string;
-  expected?: string;
   evidence?: string;
   notes?: string;
 
-  /** 🔽 変更点 */
-  automationStatus?: AutomationStatus;
-
+  isAutomated?: boolean;
   platforms?: Platform[];
 
   createdBy: {
@@ -74,15 +69,12 @@ export interface TestCaseFormData {
 
   layer?: TestLayer | string;
   targetType?: TargetType | string;
+  testType?: TestType | string;
 
-  operation?: string;
-  expected?: string;
   evidence?: string;
   notes?: string;
 
-  /** 🔽 変更点 */
-  automationStatus?: AutomationStatus | string;
-
+  isAutomated?: boolean;
   platforms?: Platform[];
 }
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Card, CardContent, CardHeader } from '@/frontend/reusable-elements/cards/Card';
@@ -20,6 +20,7 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
   const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
@@ -35,6 +36,7 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':

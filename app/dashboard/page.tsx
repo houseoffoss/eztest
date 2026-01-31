@@ -1,7 +1,6 @@
-﻿import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
 import { GlassPanel } from '@/frontend/reusable-components/layout/GlassPanel';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';

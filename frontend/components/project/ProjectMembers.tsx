@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/fro
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/frontend/reusable-elements/selects/Select';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Plus, Trash2, Mail, Shield, Eye, Users } from 'lucide-react';
 
@@ -33,6 +32,7 @@ interface ProjectMembersProps {
 }
 
 export default function ProjectMembers({ projectId }: ProjectMembersProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);

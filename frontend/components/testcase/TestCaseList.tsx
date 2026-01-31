@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -32,6 +32,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   const [project, setProject] = useState<Project | null>(null);
   const [testCases, setTestCases] = useState<TestCase[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);

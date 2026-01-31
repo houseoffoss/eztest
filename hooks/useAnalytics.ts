@@ -21,6 +21,7 @@ import {
  * Creates a consistent hash that doesn't expose the actual email
  * Uses SHA-256 for secure hashing
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function hashEmail(email: string): Promise<string> {
   if (typeof window === 'undefined') {
     // Server-side: use Node.js crypto

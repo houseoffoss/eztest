@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -77,6 +77,7 @@ export function UserCard({
       <div className="flex items-center gap-4 flex-1">
         <Avatar className="w-12 h-12">
           {user.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-lg">

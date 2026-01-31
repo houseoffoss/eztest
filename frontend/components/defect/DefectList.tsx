@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -18,7 +18,6 @@ import { EmptyDefectState } from './subcomponents/EmptyDefectState';
 import { CreateDefectDialog } from './subcomponents/CreateDefectDialog';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
-import { DefectStatistics } from './subcomponents/DefectStatistics';
 
 interface Project {
   id: string;
@@ -391,6 +390,7 @@ export default function DefectList({ projectId }: DefectListProps) {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBulkStatusChange = () => {
     // This would open a dialog to select new status
     setAlert({
@@ -401,6 +401,7 @@ export default function DefectList({ projectId }: DefectListProps) {
     setTimeout(() => setAlert(null), 3000);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBulkAssign = () => {
     // This would open a dialog to select assignee
     setAlert({

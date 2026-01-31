@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -12,8 +12,6 @@ import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-co
 import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
 import { ApiKeysManagement } from '@/frontend/components/apikeys/ApiKeysManagement';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);

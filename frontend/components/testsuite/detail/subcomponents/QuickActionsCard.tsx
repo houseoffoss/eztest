@@ -1,4 +1,4 @@
-﻿import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { Plus, TestTube2, Folder } from 'lucide-react';
 
@@ -13,6 +13,7 @@ interface QuickActionsCardProps {
 
 export function QuickActionsCard({
   onCreateTestCase,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onAddTestCase,
   onAddExistingTestCases,
   onViewAllTestCases,

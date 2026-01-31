@@ -29,6 +29,7 @@ export function FileExportDialog({
   title,
   description,
   exportOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   itemName,
 }: FileExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | null>(null);

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DetailPageHeader } from '@/frontend/reusable-components/layout/DetailPageHeader';
 import { Edit, Trash2, RotateCcw } from 'lucide-react';
@@ -39,6 +39,7 @@ export function DefectHeader({
   const { options: priorityOptions } = useDropdownOptions('Defect', 'priority');
   const { options: statusOptions } = useDropdownOptions('Defect', 'status');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
@@ -54,6 +55,7 @@ export function DefectHeader({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
@@ -69,6 +71,7 @@ export function DefectHeader({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'NEW':

@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import { ActionMenu } from '@/frontend/reusable-components/menus/ActionMenu';
 import { ProgressBarWithLabel } from '@/frontend/reusable-components/data/ProgressBarWithLabel';
@@ -27,6 +27,7 @@ export function TestRunCard({
   const { options: statusOptions } = useDropdownOptions('TestRun', 'status');
   const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PLANNED':

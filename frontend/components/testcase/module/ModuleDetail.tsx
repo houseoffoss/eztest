@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
@@ -47,28 +47,12 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
-  useEffect(() => {
-    fetchProject();
-    fetchModule();
-    fetchTestCases();
-  }, [projectId, moduleId]);
-
-  useEffect(() => {
-    if (module) {
-      document.title = `${module.name} - Module | EZTest`;
-      setFormData({
-        name: module.name,
-        description: module.description || '',
-      });
-    }
-  }, [module]);
-
   const canCreateTestCase = hasPermissionCheck('testcases:create');
   const canUpdateModule = hasPermissionCheck('testcases:update');
   const canDeleteModule = hasPermissionCheck('testcases:delete');
   const canDeleteTestCase = hasPermissionCheck('testcases:delete');
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}`);
       const data = await response.json();
@@ -78,9 +62,9 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     } catch (error) {
       console.error('Error fetching project:', error);
     }
-  };
+  }, [projectId]);
 
-  const fetchModule = async () => {
+  const fetchModule = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}/modules/${moduleId}`);
       const data = await response.json();
@@ -102,9 +86,9 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         message: 'Failed to load module',
       });
     }
-  };
+  }, [projectId, moduleId, router]);
 
-  const fetchTestCases = async () => {
+  const fetchTestCases = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/projects/${projectId}/testcases`, {
@@ -120,7 +104,23 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, moduleId]);
+
+  useEffect(() => {
+    fetchProject();
+    fetchModule();
+    fetchTestCases();
+  }, [fetchProject, fetchModule, fetchTestCases]);
+
+  useEffect(() => {
+    if (module) {
+      document.title = `${module.name} - Module | EZTest`;
+      setFormData({
+        name: module.name,
+        description: module.description || '',
+      });
+    }
+  }, [module]);
 
   const handleSave = async () => {
     if (!module) return;

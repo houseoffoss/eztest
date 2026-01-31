@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { CustomRequest } from '@/backend/utils/interceptor';
 
 interface CreateTestCaseInput {
   projectId: string;
@@ -26,8 +25,7 @@ interface CreateTestCaseInput {
   flowId?: string | null;
   layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
   targetType?: 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY' | 'API' | 'SCREEN' | null;
-  operation?: string | null;
-  expected?: string | null;
+  testType?: string | null;
   evidence?: string | null;
   notes?: string | null;
   isAutomated?: boolean;
@@ -52,8 +50,7 @@ interface UpdateTestCaseInput {
   flowId?: string | null;
   layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
   targetType?: 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'PERFORMANCE' | 'SECURITY' | 'USABILITY' | 'COMPATIBILITY' | 'API' | 'SCREEN' | null;
-  operation?: string | null;
-  expected?: string | null;
+  testType?: string | null;
   evidence?: string | null;
   notes?: string | null;
   isAutomated?: boolean;
@@ -588,8 +585,7 @@ export class TestCaseService {
             flowId: data.flowId,
             layer: data.layer,
             targetType: data.targetType,
-            operation: data.operation,
-            expected: data.expected,
+            testType: data.testType,
             evidence: data.evidence,
             notes: data.notes,
             isAutomated: data.isAutomated ?? false,
@@ -743,8 +739,7 @@ export class TestCaseService {
     if (data.flowId !== undefined) updateData.flowId = data.flowId;
     if (data.layer !== undefined) updateData.layer = data.layer;
     if (data.targetType !== undefined) updateData.targetType = data.targetType;
-    if (data.operation !== undefined) updateData.operation = data.operation;
-    if (data.expected !== undefined) updateData.expected = data.expected;
+    if (data.testType !== undefined) updateData.testType = data.testType;
     if (data.evidence !== undefined) updateData.evidence = data.evidence;
     if (data.notes !== undefined) updateData.notes = data.notes;
     if (data.isAutomated !== undefined) updateData.isAutomated = data.isAutomated;
@@ -898,11 +893,6 @@ export class TestCaseService {
     if (!testCase) {
       throw new Error('Test case not found or access denied');
     }
-
-    // Get existing steps
-    const existingSteps = await prisma.testStep.findMany({
-      where: { testCaseId },
-    });
 
     // Update or create steps while preserving IDs for existing steps
     if (steps.length > 0) {

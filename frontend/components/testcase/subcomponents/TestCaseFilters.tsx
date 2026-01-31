@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
@@ -22,8 +22,8 @@ export function TestCaseFilters({
   onStatusChange,
 }: TestCaseFiltersProps) {
   // Fetch dynamic dropdown options
-  const { options: priorityOptionsData, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
-  const { options: statusOptionsData, loading: loadingStatus } = useDropdownOptions('TestCase', 'status');
+  const { options: priorityOptionsData } = useDropdownOptions('TestCase', 'priority');
+  const { options: statusOptionsData } = useDropdownOptions('TestCase', 'status');
 
   // Map to FilterOption format with "All" option
   const priorityOptions: FilterOption[] = [

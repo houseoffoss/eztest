@@ -94,6 +94,17 @@ export class ExportService {
         preconditions: true,
         postconditions: true,
         testData: true,
+        // New fields for enhanced test case management
+        assertionId: true,
+        rtcId: true,
+        flowId: true,
+        layer: true,
+        targetType: true,
+        testType: true,
+        evidence: true,
+        notes: true,
+        isAutomated: true,
+        platforms: true,
         module: {
           select: {
             name: true,
@@ -187,6 +198,40 @@ export class ExportService {
       const linkedDefectIds = defectsByTestCaseId.get(tc.id) || [];
       const defectIds = linkedDefectIds.join(', ');
 
+      // Format platforms array to string (e.g., "IOS / ANDROID / WEB")
+      const platformsFormatted = tc.platforms && tc.platforms.length > 0
+        ? tc.platforms.join(' / ')
+        : '';
+
+      // Format layer to display value
+      const layerFormatted = tc.layer || '';
+
+      // Format targetType to display value (API or 画面)
+      let targetTypeFormatted = '';
+      if (tc.targetType === 'API') {
+        targetTypeFormatted = 'API';
+      } else if (tc.targetType === 'SCREEN') {
+        targetTypeFormatted = '画面';
+      } else if (tc.targetType) {
+        targetTypeFormatted = tc.targetType;
+      }
+
+      // Format testType to Japanese display value
+      const testTypeMap: Record<string, string> = {
+        'NORMAL': '正常系',
+        'ABNORMAL': '異常系',
+        'NON_FUNCTIONAL': '非機能',
+        'REGRESSION': '回帰',
+        'DATA_INTEGRITY': 'データ整合性確認',
+        'STATE_TRANSITION': '状態遷移確認',
+        'OPERATIONAL': '運用確認',
+        'FAILURE': '障害時確認',
+      };
+      const testTypeFormatted = tc.testType ? (testTypeMap[tc.testType] || tc.testType) : '';
+
+      // Format isAutomated to display value
+      const isAutomatedFormatted = tc.isAutomated ? 'true' : '';
+
       return {
         'Test Case ID': tc.tcId,
         'Test Case Title': tc.title,
@@ -198,6 +243,17 @@ export class ExportService {
         'Expected Result': expectedResultFormatted,
         'Status': tc.status,
         'Defect ID': defectIds,
+        // New fields for enhanced test case management
+        'Assertion-ID': tc.assertionId || '',
+        'RTC-ID': tc.rtcId || '',
+        'Flow-ID': tc.flowId || '',
+        'Layer': layerFormatted,
+        '対象（API/画面）': targetTypeFormatted,
+        'テスト種別': testTypeFormatted,
+        '根拠（ドキュメント）': tc.evidence || '',
+        '備考': tc.notes || '',
+        '自動化': isAutomatedFormatted,
+        '環境（iOS / Android / Web）': platformsFormatted,
         // Older fields (for backward compatibility)
         'Description': tc.description || '',
         'Estimated Time (minutes)': tc.estimatedTime || '',

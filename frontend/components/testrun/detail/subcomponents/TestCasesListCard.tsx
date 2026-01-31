@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { formatDateTime } from '@/lib/date-utils';
@@ -49,6 +49,7 @@ export function TestCasesListCard({
   // Check if user can create defects
   const canCreateDefect = hasPermissionCheck('defects:create');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PASSED':

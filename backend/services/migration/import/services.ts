@@ -82,10 +82,6 @@ export class ImportService {
       '対象（api / 画面）': 'targetType',
       'target type': 'targetType',
       'targettype': 'targetType',
-      '操作手順': 'operation',
-      'operation': 'operation',
-      '期待値': 'expected',
-      'expected': 'expected',
       '根拠': 'evidence',
       '根拠（ドキュメント）': 'evidence',
       'evidence': 'evidence',
@@ -97,6 +93,10 @@ export class ImportService {
       '環境': 'platforms',
       '環境（ios / android / web）': 'platforms',
       'platforms': 'platforms',
+      // Test Type (テスト種別)
+      'テスト種別': 'testType',
+      'test type': 'testType',
+      'testtype': 'testType',
       // Defect columns (for defect import)
       'defect title / summary': 'title',
       'defect title': 'title',
@@ -254,23 +254,20 @@ export class ImportService {
         const flowId = this.getRowValue(row, 'flowId');
         const layer = this.getRowValue(row, 'layer');
         const targetType = this.getRowValue(row, 'targetType');
-        const operation = this.getRowValue(row, 'operation');
-        const expected = this.getRowValue(row, 'expected');
         const evidence = this.getRowValue(row, 'evidence');
         const notes = this.getRowValue(row, 'notes');
         const isAutomated = this.getRowValue(row, 'isAutomated');
         const platforms = this.getRowValue(row, 'platforms');
+        const testType = this.getRowValue(row, 'testType');
 
-        // Determine title: use title column if provided, otherwise use operation (操作手順), or assertionId as fallback
+        // Determine title: use title column if provided, otherwise use assertionId as fallback
         let testCaseTitle: string;
         if (title && typeof title === 'string' && title.toString().trim() !== '') {
           testCaseTitle = title.toString().trim();
-        } else if (operation && typeof operation === 'string' && operation.toString().trim() !== '') {
-          testCaseTitle = operation.toString().trim();
         } else if (assertionId && typeof assertionId === 'string' && assertionId.toString().trim() !== '') {
           testCaseTitle = assertionId.toString().trim();
         } else {
-          throw new Error('Test Case Title is required. Please provide "Test Case Title", "操作手順" (operation), or "Assertion-ID"');
+          throw new Error('Test Case Title is required. Please provide "Test Case Title" or "Assertion-ID"');
         }
 
         // Process defect IDs if provided (supports multiple defects: comma or semicolon separated)
@@ -665,16 +662,6 @@ export class ImportService {
           }
         }
 
-        // Operation (操作手順)
-        const operationValue = operation && typeof operation === 'string' && operation.toString().trim()
-          ? operation.toString().trim()
-          : null;
-
-        // Expected (期待値) - note: this is different from expectedResult which is for test steps
-        const expectedValue = expected && typeof expected === 'string' && expected.toString().trim()
-          ? expected.toString().trim()
-          : null;
-
         // Evidence (根拠)
         const evidenceValue = evidence && typeof evidence === 'string' && evidence.toString().trim()
           ? evidence.toString().trim()
@@ -733,6 +720,51 @@ export class ImportService {
         
         // Convert Set to Array (automatically removes duplicates)
         platformsValue.push(...Array.from(platformsSet));
+
+        // Test Type (テスト種別) - convert to standard values
+        // Valid values: NORMAL, ABNORMAL, NON_FUNCTIONAL, REGRESSION, DATA_INTEGRITY, STATE_TRANSITION, OPERATIONAL, FAILURE
+        let testTypeValue: string | null = null;
+        if (testType && typeof testType === 'string' && testType.toString().trim()) {
+          const testTypeStr = testType.toString().trim();
+          const testTypeUpper = testTypeStr.toUpperCase();
+          
+          // Map Japanese labels and variations to standard values
+          const testTypeMap: Record<string, string> = {
+            // English values
+            'NORMAL': 'NORMAL',
+            'ABNORMAL': 'ABNORMAL',
+            'NON_FUNCTIONAL': 'NON_FUNCTIONAL',
+            'NONFUNCTIONAL': 'NON_FUNCTIONAL',
+            'NON-FUNCTIONAL': 'NON_FUNCTIONAL',
+            'REGRESSION': 'REGRESSION',
+            'DATA_INTEGRITY': 'DATA_INTEGRITY',
+            'DATAINTEGRITY': 'DATA_INTEGRITY',
+            'DATA-INTEGRITY': 'DATA_INTEGRITY',
+            'STATE_TRANSITION': 'STATE_TRANSITION',
+            'STATETRANSITION': 'STATE_TRANSITION',
+            'STATE-TRANSITION': 'STATE_TRANSITION',
+            'OPERATIONAL': 'OPERATIONAL',
+            'FAILURE': 'FAILURE',
+            // Japanese labels
+            '正常系': 'NORMAL',
+            '異常系': 'ABNORMAL',
+            '非機能': 'NON_FUNCTIONAL',
+            '回帰': 'REGRESSION',
+            'データ整合性確認': 'DATA_INTEGRITY',
+            '状態遷移確認': 'STATE_TRANSITION',
+            '運用確認': 'OPERATIONAL',
+            '障害時確認': 'FAILURE',
+          };
+          
+          // Try direct match first
+          if (testTypeMap[testTypeUpper]) {
+            testTypeValue = testTypeMap[testTypeUpper];
+          } else if (testTypeMap[testTypeStr]) {
+            // Try original case for Japanese labels
+            testTypeValue = testTypeMap[testTypeStr];
+          }
+          // If no match found, leave as null (don't import invalid values)
+        }
 
         // Determine the expected result value to use for the test case
         // If there are no test steps, use the parsed expected result (singleExpectedResult) or original value
@@ -800,8 +832,7 @@ export class ImportService {
             flowId: flowIdValue,
             layer: layerValue,
             targetType: targetTypeValue,
-            operation: operationValue,
-            expected: expectedValue,
+            testType: testTypeValue,
             evidence: evidenceValue,
             notes: notesValue,
             isAutomated: isAutomatedValue,

@@ -1,6 +1,5 @@
 'use client';
 
-import { ReactNode } from 'react';
 
 export interface UserInfo {
   name: string;
@@ -41,6 +40,7 @@ export function UserInfoSection({
       <div className="flex items-center gap-2">
         <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-sm font-semibold text-white`}>
           {user.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
           ) : (
             user.name.charAt(0).toUpperCase()

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ActionMenu } from '@/frontend/reusable-components/menus/ActionMenu';
 import {
@@ -20,13 +20,17 @@ interface TestSuiteCardProps {
 
 export function TestSuiteCard({
   suite,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isExpanded = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onToggleExpand,
   onView,
   onDelete,
   canDelete = true,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isChild = false,
 }: TestSuiteCardProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasChildren = suite.children && suite.children.length > 0;
   const childrenCount = suite.children?.length || 0;
 

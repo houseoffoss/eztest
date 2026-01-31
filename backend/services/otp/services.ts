@@ -80,6 +80,7 @@ export class OtpService {
 
     // Check if email service is available
     const isAvailable = await isEmailServiceAvailable();
+    console.log(`[OTP] Email service available: ${isAvailable}, ENABLE_SMTP: ${process.env.ENABLE_SMTP}`);
     if (!isAvailable) {
       // When SMTP is disabled, silently skip OTP and return success
       // This allows authentication to proceed without email verification

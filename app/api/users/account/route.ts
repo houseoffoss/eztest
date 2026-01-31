@@ -51,7 +51,7 @@ export async function DELETE(request: NextRequest) {
  * GET /api/users/account
  * Check if user account is marked for deletion
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const sessionUser = await getSessionUser();
   
   if (!checkPermission(sessionUser, 'users:read')) {

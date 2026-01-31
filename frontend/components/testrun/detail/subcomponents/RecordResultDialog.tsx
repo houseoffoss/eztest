@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,6 @@ import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimar
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
-import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import {
   Select,
@@ -69,7 +68,7 @@ export function RecordResultDialog({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch dynamic dropdown options
-  const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
+  const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
 
   // Helper function to get icon for status
   const getStatusIcon = (status: string) => {
@@ -90,16 +89,7 @@ export function RecordResultDialog({
     }
   };
 
-  useEffect(() => {
-    if (open && formData.status === 'FAILED') {
-      fetchDefects();
-    } else {
-      // Reset defect selections when dialog closes or status changes
-      setSelectedDefectIds([]);
-    }
-  }, [open, formData.status, testCaseId, refreshTrigger]);
-
-  const fetchDefects = async () => {
+  const fetchDefects = useCallback(async () => {
     try {
       setLoadingDefects(true);
       // Fetch existing defects linked to this test case
@@ -124,7 +114,16 @@ export function RecordResultDialog({
     } finally {
       setLoadingDefects(false);
     }
-  };
+  }, [testCaseId, projectId]);
+
+  useEffect(() => {
+    if (open && formData.status === 'FAILED') {
+      fetchDefects();
+    } else {
+      // Reset defect selections when dialog closes or status changes
+      setSelectedDefectIds([]);
+    }
+  }, [open, formData.status, testCaseId, refreshTrigger, fetchDefects]);
 
   const handleDefectToggle = (defectId: string) => {
     setSelectedDefectIds((prev) =>

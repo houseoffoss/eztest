@@ -1,7 +1,6 @@
-﻿'use client';
+'use client';
 
 import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Folder, Plus } from 'lucide-react';
 

@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/frontend/reusable-elements/cards/Card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/frontend/reusable-elements/cards/Card';
 import { ReactNode } from 'react';
 
 interface FeatureCardProps {

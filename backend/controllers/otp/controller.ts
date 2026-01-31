@@ -84,9 +84,11 @@ export class OtpController {
       return result;
     } catch (error) {
       console.error('Error in sendOtp controller:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error details:', errorMessage);
       return {
         success: false,
-        message: 'Failed to send OTP. Please try again.',
+        message: `Failed to send OTP. Please try again. (${errorMessage})`,
       };
     }
   }

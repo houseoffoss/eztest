@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { Play, Square } from 'lucide-react';
@@ -31,6 +31,7 @@ export function TestRunHeader({
   const { options: statusOptions } = useDropdownOptions('TestRun', 'status');
   const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PLANNED':

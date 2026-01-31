@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
@@ -241,6 +241,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                 >
                   <div className="w-10 h-10 flex-shrink-0 ring-2 ring-white/10 rounded-full overflow-hidden">
                     {comment.user.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img 
                         src={comment.user.avatar} 
                         alt={comment.user.name} 

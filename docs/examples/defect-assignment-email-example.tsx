@@ -10,12 +10,6 @@
 import { useState } from 'react';
 import { SendEmailDialog } from '@/frontend/reusable-components';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
 interface AssignDefectWithEmailProps {
   defectId: string;
   assigneeId: string;

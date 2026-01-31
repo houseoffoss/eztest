@@ -5,7 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import { getServerSession } from 'next-auth';
 import { prisma } from './prisma';
 import { getEnv } from './env-validation';
-import { BadRequestException, UnauthorizedException } from '@/backend/utils/exceptions';
+import { UnauthorizedException } from '@/backend/utils/exceptions';
 import { BaseApiMethod, baseInterceptor } from '@/backend/utils/baseInterceptor';
 import { CustomRequest } from '@/backend/utils/interceptor';
 
@@ -134,7 +134,9 @@ export async function auth() {
  */
 export function checkPermission(
   apiMethod: BaseApiMethod<CustomRequest>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   module: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   action: string
 ): BaseApiMethod<CustomRequest> {
   return async (request, context) => {

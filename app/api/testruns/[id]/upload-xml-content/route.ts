@@ -26,7 +26,7 @@ export const POST = hasPermission(
     if (contentType.includes('application/xml') || contentType.includes('text/xml')) {
       try {
         xmlContent = await request.text();
-      } catch (error) {
+      } catch {
         return Response.json(
           { error: 'Failed to read XML content from request body' },
           { status: 400 }
@@ -37,7 +37,7 @@ export const POST = hasPermission(
       let body: { xmlContent?: string };
       try {
         body = await request.json();
-      } catch (error) {
+      } catch {
         return Response.json(
           { error: 'Invalid request body. Expected JSON with xmlContent field or raw XML with Content-Type: application/xml' },
           { status: 400 }

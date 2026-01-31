@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { formatDateTime } from '@/lib/date-utils';
@@ -65,6 +65,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PASSED':
@@ -113,7 +114,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     {
       key: 'status',
       label: 'Status',
-      render: (value: unknown, row: TestResult) => {
+      render: (value: unknown) => {
         const status = value as string;
         const badgeProps = getDynamicBadgeProps(status, statusOptions);
         return (
@@ -176,7 +177,7 @@ export function TestCaseHistoryCard({ testCaseId }: TestCaseHistoryCardProps) {
     {
       key: 'duration',
       label: 'Duration',
-      render: (value: unknown, row: TestResult) => {
+      render: (value: unknown) => {
         const duration = value as number | undefined;
         return (
           <div className="flex items-center gap-1 text-xs text-white/70">

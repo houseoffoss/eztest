@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { useEffect, useState } from 'react';
@@ -216,7 +216,7 @@ export function CreateDefectDialog({
     const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
 
     for (const attachment of pendingAttachments) {
-      // @ts-ignore - Access the pending file object
+      // @ts-expect-error - Access the pending file object
       const file = attachment._pendingFile;
       if (!file) continue;
 

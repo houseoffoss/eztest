@@ -234,8 +234,7 @@ model TestCase {
   flowId        String?  // Flow-ID
   layer         TestLayer?  // Layer
   targetType    TargetType?  // 対象
-  operation     String?  // 操作手順
-  expected      String?  // 期待値
+  testType      String?  // テスト種別（正常系、異常系、非機能、回帰、データ整合性確認、状態遷移確認、運用確認、障害時確認）
   evidence      String?  // 根拠
   notes         String?  // 備考
   isAutomated   Boolean  @default(false)  // 自動化

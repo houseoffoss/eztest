@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
@@ -21,6 +21,7 @@ export function ModuleTestCasesCard({
   testCases,
   testCasesCount,
   onCreateClick,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onAddExistingClick,
   onTestCaseClick,
   onDeleteClick,

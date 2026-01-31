@@ -92,14 +92,6 @@ export const TEST_CASE_IMPORT_COLUMNS = {
   'target type': { normalized: 'targetType', required: false },
   'targettype': { normalized: 'targetType', required: false },
   
-  '操作手順': { normalized: 'operation', required: false },
-  'Operation': { normalized: 'operation', required: false },
-  'operation': { normalized: 'operation', required: false },
-  
-  '期待値': { normalized: 'expected', required: false },
-  'Expected': { normalized: 'expected', required: false },
-  'expected': { normalized: 'expected', required: false },
-  
   '根拠': { normalized: 'evidence', required: false },
   '根拠（ドキュメント）': { normalized: 'evidence', required: false },
   'Evidence': { normalized: 'evidence', required: false },
@@ -119,6 +111,13 @@ export const TEST_CASE_IMPORT_COLUMNS = {
   '環境（ios / android / web）': { normalized: 'platforms', required: false },
   'Platforms': { normalized: 'platforms', required: false },
   'platforms': { normalized: 'platforms', required: false },
+  
+  // Test Type (テスト種別)
+  'テスト種別': { normalized: 'testType', required: false },
+  'Test Type': { normalized: 'testType', required: false },
+  'test type': { normalized: 'testType', required: false },
+  'testType': { normalized: 'testType', required: false },
+  'testtype': { normalized: 'testType', required: false },
 } as const;
 
 /**
@@ -138,25 +137,21 @@ export function validateTestCaseImportColumns(data: ParsedRow[]): string[] {
     availableFields.map((field) => [field.toLowerCase().trim(), field])
   );
 
-  // Check for required field: Title (in any variation), Operation (操作手順), or Assertion-ID
+  // Check for required field: Title (in any variation) or Assertion-ID
   const titleVariations = ['title', 'test case title', 'testcase title'];
-  const operationVariations = ['operation', '操作手順'];
   const assertionIdVariations = ['assertion-id', 'assertion id', 'assertionid'];
   
   const hasTitle = titleVariations.some(variation => 
-    availableFieldsLower.has(variation)
-  );
-  const hasOperation = operationVariations.some(variation => 
     availableFieldsLower.has(variation)
   );
   const hasAssertionId = assertionIdVariations.some(variation => 
     availableFieldsLower.has(variation)
   );
 
-  if (!hasTitle && !hasOperation && !hasAssertionId) {
+  if (!hasTitle && !hasAssertionId) {
     const availableFieldNames = availableFields.join(', ');
     errors.push(
-      `Missing required column: "Test Case Title", "操作手順" (Operation), or "Assertion-ID". At least one of these is required. Available columns: ${availableFieldNames}`
+      `Missing required column: "Test Case Title" or "Assertion-ID". At least one of these is required. Available columns: ${availableFieldNames}`
     );
   }
 

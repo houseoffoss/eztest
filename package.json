@@ -22,7 +22,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "export:titles": "tsx scripts/export-testcase-titles.ts",
+    "seed:testcases": "tsx scripts/seed-testcases.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/frontend/reusable-elements/dialogs/Dialog';
@@ -89,7 +89,7 @@ export function AddTestCaseDialog({
       );
 
       // Use the dedicated add-to-module endpoint for each test case
-      const updatePromises = testCasesData.map(({ id, tcId }) =>
+      const updatePromises = testCasesData.map(({ tcId }) =>
         fetch(`/api/projects/${projectId}/testcases/${tcId}/add-to-module`, {
           method: 'POST',
           headers: {
