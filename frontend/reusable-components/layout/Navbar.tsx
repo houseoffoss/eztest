@@ -78,9 +78,20 @@ export function Navbar({
                 </Link>
               )}
               {breadcrumbs && (
-                <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
-                  {breadcrumbs}
-                </div>
+                <>
+                  {React.isValidElement(breadcrumbs) && 
+                   breadcrumbs.type === React.Fragment ? (
+                    // If breadcrumbs is a Fragment, render children separately (for multiple separate items)
+                    <div className="flex items-center gap-2">
+                      {(breadcrumbs.props as { children?: React.ReactNode }).children}
+                    </div>
+                  ) : (
+                    // Single breadcrumb item - wrap in glass panel
+                    <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                      {breadcrumbs}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (
