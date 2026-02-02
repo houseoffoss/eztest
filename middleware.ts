@@ -17,7 +17,8 @@ export default withAuth(
           pathname.startsWith('/api/auth/') ||
           pathname === '/' ||
           pathname === '/ui' ||
-          pathname === '/privacy'
+          pathname === '/privacy' ||
+          pathname === '/houseoffoss'
         ) {
           return true;
         }
