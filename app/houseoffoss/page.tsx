@@ -101,7 +101,7 @@ export default function HouseOfFOSSPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="https://www.houseoffoss.com"
+              href="https://app.houseoffoss.com"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex"
@@ -256,7 +256,7 @@ export default function HouseOfFOSSPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
-                  href="https://www.houseoffoss.com"
+                  href="https://app.houseoffoss.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex"
