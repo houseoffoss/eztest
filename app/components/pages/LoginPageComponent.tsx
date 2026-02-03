@@ -15,6 +15,7 @@ import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
 const navItems = [
+  { label: 'Features', href: '/#features' },
   { label: 'Why Choose?', href: '/#why-choose' },
 ];
 
