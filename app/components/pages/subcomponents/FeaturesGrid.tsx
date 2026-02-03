@@ -28,22 +28,22 @@ const features: Feature[] = [
     highlight: 'Easy data import',
   },
   {
-    image: '/icons/Manual and automation testing.png',
+    image: '/icons/circle-play.svg',
     title: 'Manual & Automation Testing',
     description: 'Support both manual and automated test cases. Track execution results, attach evidence, and maintain comprehensive test history.',
     highlight: 'Unified workflow',
   },
   {
-    image: '/icons/shield-check.svg',
-    title: 'Enterprise Security',
-    description: 'Secure authentication with email/password, JWT sessions, and role-based access control with 27 granular permissions.',
-    highlight: '27 granular permissions',
+    image: '/icons/Manual and automation testing.png',
+    title: 'Fully Customizable',
+    description: 'Open-source and self-hosted platform. Full source code access allows complete customization to fit your team\'s needs.',
+    highlight: 'Complete customization',
   },
   {
-    image: '/icons/collaboration.svg',
-    title: 'Team Collaboration',
-    description: 'Work together seamlessly with comments, assignments, and real-time updates. Keep your team aligned and informed.',
-    highlight: 'Real-time collaboration',
+    image: '/icons/shield-check.svg',
+    title: 'AuthN + AuthZ',
+    description: 'Secure authentication with email/password, JWT sessions, and role-based access control with 27 granular permissions.',
+    highlight: '27 granular permissions',
   },
 ];
 

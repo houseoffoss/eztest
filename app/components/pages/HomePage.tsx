@@ -63,8 +63,14 @@ export default function HomePage() {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1); // Remove #
       if (hash === 'overview' || hash === 'features' || hash === 'why-choose') {
-        setShouldScroll(true); // Mark that we should scroll
-        setActiveTab(hash);
+        // Only scroll if switching to a different tab
+        if (hash !== activeTabRef.current) {
+          setShouldScroll(true); // Mark that we should scroll
+          setActiveTab(hash);
+        } else {
+          // Tab is already active, just scroll to it without changing state
+          setShouldScroll(true);
+        }
         setShouldScrollToTop(false); // Don't scroll to top if we have a hash
       } else if (!hash) {
         // If no hash, default to features and scroll to top
@@ -88,6 +94,13 @@ export default function HomePage() {
             // Immediately switch tab and set scroll flag
             setShouldScroll(true);
             setActiveTab(hash);
+            // Update URL
+            window.history.pushState(null, '', link.hash);
+          } else {
+            // Tab is already active, just scroll to it
+            e.preventDefault();
+            e.stopPropagation();
+            setShouldScroll(true);
             // Update URL
             window.history.pushState(null, '', link.hash);
           }
@@ -147,14 +160,31 @@ export default function HomePage() {
           (tabContent as HTMLElement).offsetHeight > 0;
         
         if (tabContainer && isContentReady) {
-          // Scroll to tab container with offset to show it below the top
-          const yOffset = 150; // Offset to position tab component below the top
-          const y = tabContainer.getBoundingClientRect().top + window.pageYOffset - yOffset;
+          // Get the tab container's position relative to the document
+          const rect = tabContainer.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const absoluteTop = rect.top + scrollTop;
           
-          // Only scroll if we're not already at the right position
-          const currentScroll = window.pageYOffset;
-          if (Math.abs(currentScroll - y) > 50) {
-            window.scrollTo({ top: y, behavior: 'smooth' });
+          // Offset to position tab component below the navbar (accounting for navbar height)
+          const yOffset = 150; // Offset to position tab component below the top
+          
+          // Check if the tab container is already properly positioned in viewport
+          // The container should be visible with at least yOffset pixels from the top of viewport
+          const containerTopInViewport = rect.top;
+          const isAlreadyVisible = containerTopInViewport >= (yOffset - 30) && 
+                                   containerTopInViewport <= (yOffset + 30);
+          
+          if (!isAlreadyVisible) {
+            // Calculate target scroll position
+            let targetY = absoluteTop - yOffset;
+            // Ensure we don't scroll to negative position
+            targetY = Math.max(0, targetY);
+            
+            // Only scroll if we're not already at the right position (with some tolerance)
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            if (Math.abs(currentScroll - targetY) > 50) {
+              window.scrollTo({ top: targetY, behavior: 'smooth' });
+            }
           }
           setShouldScroll(false); // Reset scroll flag
         } else if (retryCount < maxRetries) {
@@ -164,9 +194,14 @@ export default function HomePage() {
         } else {
           // Fallback: try to scroll anyway after max retries
           if (tabContainer) {
+            const rect = tabContainer.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const absoluteTop = rect.top + scrollTop;
             const yOffset = 150;
-            const y = tabContainer.getBoundingClientRect().top + window.pageYOffset - yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
+            let targetY = absoluteTop - yOffset;
+            // Ensure we don't scroll to negative position
+            targetY = Math.max(0, targetY);
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
           }
           setShouldScroll(false);
         }
@@ -275,7 +310,6 @@ export default function HomePage() {
             <TabsContent value="overview" className="mt-12">
               <div id="overview" className="scroll-mt-24 space-y-32">
                 <StatsSection />
-                <PhilosophySection />
               </div>
             </TabsContent>
             
@@ -291,6 +325,11 @@ export default function HomePage() {
               </div>
             </TabsContent>
           </Tabs>
+        </div>
+        
+        {/* Philosophy Section - Below Tabs */}
+        <div className="mt-16">
+          <PhilosophySection />
         </div>
       </div>
 
