@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Card } from '@/frontend/reusable-elements/cards/Card';
 
 interface Feature {
   image: string;
@@ -71,42 +72,47 @@ export const FeaturesGrid = () => {
               style={{ background: gradientStyle }}
             >
               <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
-                <div className="rounded-3xl border-0 bg-transparent overflow-visible flex flex-col h-full py-8 px-6 group-hover:scale-[1.02] transition-transform">
-                  <div className="flex flex-col items-center text-center">
-                    {/* Icon */}
-                    <div className="mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <div className="p-3 rounded-xl bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
-                        <Image
-                          src={feature.image}
-                          alt={feature.title}
-                          width={40}
-                          height={40}
-                          className="object-contain"
-                          priority
-                        />
+                <Card
+                  variant="glass"
+                  className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"
+                >
+                  <div className="rounded-3xl overflow-visible flex flex-col h-full py-8 px-6 group-hover:scale-[1.02] transition-transform">
+                    <div className="flex flex-col items-center text-center">
+                      {/* Icon */}
+                      <div className="mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="p-3 rounded-xl bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
+                          <Image
+                            src={feature.image}
+                            alt={feature.title}
+                            width={40}
+                            height={40}
+                            className="object-contain"
+                            priority
+                          />
+                        </div>
                       </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">
+                        {feature.title}
+                      </h3>
+                      
+                      {/* Highlight */}
+                      {feature.highlight && (
+                        <div className="mb-3">
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                            {feature.highlight}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Description */}
+                      <p className="text-white/70 text-sm leading-relaxed">
+                        {feature.description}
+                      </p>
                     </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">
-                      {feature.title}
-                    </h3>
-                    
-                    {/* Highlight */}
-                    {feature.highlight && (
-                      <div className="mb-3">
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                          {feature.highlight}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Description */}
-                    <p className="text-white/70 text-sm leading-relaxed">
-                      {feature.description}
-                    </p>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           );
