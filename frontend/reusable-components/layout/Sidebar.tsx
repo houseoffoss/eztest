@@ -337,14 +337,28 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
     );
   };
 
+  const gradientStyle = 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)';
+
   return (
-    <aside
+    <div
       className={cn(
-        'fixed left-2 top-2 bottom-2 h-auto bg-white/[0.05] backdrop-blur-2xl border border-white/[0.1] transition-all duration-300 flex flex-col rounded-xl shadow-2xl',
-        isMounted && isCollapsed ? 'w-16 overflow-hidden' : 'w-56 overflow-y-auto custom-scrollbar',
+        'fixed left-2 top-2 bottom-2 h-auto rounded-3xl p-[0.5px] transition-all duration-300',
+        isMounted && isCollapsed ? 'w-16' : 'w-56',
         className
       )}
+      style={{
+        background: gradientStyle,
+      }}
     >
+      <aside
+        className="h-full relative overflow-hidden flex flex-col rounded-3xl"
+        style={{ backgroundColor: '#0a1628' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl border border-white/10 shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
+        <div className={cn(
+          'relative z-10 h-full flex flex-col',
+          isMounted && isCollapsed ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'
+        )}>
       {/* Logo */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-2">
         {!isCollapsed ? (
@@ -464,7 +478,9 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           )}
         </Link>
       </div>
-    </aside>
+        </div>
+      </aside>
+    </div>
   );
 }
 
