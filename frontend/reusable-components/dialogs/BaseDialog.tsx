@@ -429,7 +429,7 @@ export const BaseDialog = <T = unknown,>({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[570px] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[750px] flex flex-col p-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
           <div className="pt-6 pb-6">
             <DialogHeader className="mb-6">

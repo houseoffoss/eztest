@@ -28,6 +28,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   
+  const canUpdateProject = hasPermissionCheck('projects:update');
   const canDeleteProject = hasPermissionCheck('projects:delete');
 
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -197,6 +198,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
           onFormChange={setFormData}
           onSave={handleSave}
           onCancel={handleCancel}
+          canUpdate={canUpdateProject}
         />
 
         <ProjectInfoCard project={project} />

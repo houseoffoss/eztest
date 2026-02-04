@@ -57,7 +57,8 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHomePage = pathname === '/';
   const isPrivacyPage = pathname === '/privacy';
-  const showSidebar = !isAuthPage && !isHomePage && !isPrivacyPage;
+  const isHouseOfFOSSPage = pathname === '/houseoffoss';
+  const showSidebar = !isAuthPage && !isHomePage && !isPrivacyPage && !isHouseOfFOSSPage;
 
   // Check if user is admin
   const isAdmin = session?.user?.roleName === 'ADMIN';

@@ -36,7 +36,7 @@ export function UploadTestNGXMLDialog({
     acceptedFileExtensions: ['xml'],
     checkEndpoint: `/api/projects/${projectId}/testruns/check-xml`,
     createEndpoint: `/api/projects/${projectId}/testruns`,
-    uploadEndpoint: `/api/testruns/[id]/upload-xml`,
+    uploadEndpoint: `/api/projects/${projectId}/testruns/[id]/upload-xml`,
     generateName: generateTestRunName,
     showNamePreview: true,
     namePreviewLabel: 'New Test Run Name',
@@ -49,6 +49,7 @@ export function UploadTestNGXMLDialog({
       description: `Test run created from XML file: ${filename}`,
       status: 'COMPLETED',
       environment: environment,
+      executionType: 'AUTOMATION',
       testCaseIds: [],
     }),
   };

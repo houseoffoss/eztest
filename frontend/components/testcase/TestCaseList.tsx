@@ -1,17 +1,23 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Plus, FolderPlus, Import, Upload } from 'lucide-react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { useEffect, useState, useMemo } from 'react';
+import { Plus, FolderPlus, Import, Upload, ChevronDown } from 'lucide-react';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
-import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
-import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { TestCase, TestSuite, Project, Module } from './types';
+import { TestCase, Project, Module } from './types';
 import { TestCaseTable } from './subcomponents/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
 import { CreateModuleDialog } from './subcomponents/CreateModuleDialog';
@@ -32,7 +38,6 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   const [project, setProject] = useState<Project | null>(null);
   const [testCases, setTestCases] = useState<TestCase[]>([]);
-  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -140,7 +145,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       const response = await fetch(`/api/projects/${projectId}/testsuites`);
       const data = await response.json();
       if (data.data) {
-        setTestSuites(data.data);
+        // Test suites available for module context
       }
     } catch (error) {
       console.error('Error fetching test suites:', error);
@@ -199,7 +204,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     if (!selectedTestCase) return;
 
     try {
-      const response = await fetch(`/api/testcases/${selectedTestCase.id}`, {
+      const response = await fetch(`/api/projects/${projectId}/testcases/${selectedTestCase.id}`, {
         method: 'DELETE',
       });
 
@@ -242,70 +247,100 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setDeleteDialogOpen(true);
   };
 
+  // Check permissions before early returns
+  const canCreateTestCase = hasPermissionCheck('testcases:create');
+  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
+  const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canCreateTestCase) {
+      actions.push({
+        type: 'custom' as const,
+        custom: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
+                Add
+                <ChevronDown className="w-4 h-4" />
+              </ButtonSecondary>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setCreateModuleDialogOpen(true)}>
+                <FolderPlus className="w-4 h-4" />
+                New Module
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4" />
+                New Test Case
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      });
+    }
+
+    if (canCreateTestCase && canImport) {
+      actions.push({
+        type: 'custom' as const,
+        custom: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
+                Migration
+                <ChevronDown className="w-4 h-4" />
+              </ButtonSecondary>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                <Import className="w-4 h-4" />
+                Import Test Cases
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                <Upload className="w-4 h-4" />
+                Export Test Cases
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateTestCase, canImport]);
 
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Loading test cases..." />;
   }
-
-  // Check permissions
-  const canCreateTestCase = hasPermissionCheck('testcases:create');
-  const canDeleteTestCase = hasPermissionCheck('testcases:delete');
-  const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
 
   return (
     <>
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      <TopBar 
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-          { label: 'Test Cases' }
-        ]}
-        actions={
-          canCreateTestCase ? (
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              {canImport && (
-                <>
-                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer flex-shrink-0">
-                    <Import className="w-4 h-4 mr-2" />
-                    Import
-                  </ButtonSecondary>
-                  <ButtonSecondary 
-                    onClick={() => setExportDialogOpen(true)} 
-                    className="cursor-pointer flex-shrink-0"
-                    title="Export test cases"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Export
-                  </ButtonSecondary>
-                </>
-              )}
-              <ActionButtonGroup
-                buttons={[
-                  {
-                    label: 'New Module',
-                    icon: FolderPlus,
-                    onClick: () => setCreateModuleDialogOpen(true),
-                    variant: 'secondary',
-                    buttonName: 'Test Case List - New Module',
-                  },
-                  {
-                    label: 'New Test Case',
-                    icon: Plus,
-                    onClick: () => setCreateDialogOpen(true),
-                    variant: 'primary',
-                    buttonName: 'Test Case List - New Test Case',
-                  },
-                ]}
-              />
-            </div>
-          ) : undefined
+      {/* Navbar */}
+      <Navbar 
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
+              { label: 'Test Cases' }
+            ]}
+          />
         }
+        actions={navbarActions}
       />
-      
-      <div className="px-4 sm:px-6 lg:px-8 pt-4 w-full min-w-0 overflow-hidden">
+
+      <div className="px-4 sm:px-6 lg:px-8 pt-8 w-full min-w-0 overflow-hidden">
         {/* Header and Filters Section */}
         <HeaderWithFilters
           header={

@@ -299,6 +299,7 @@ interface CreateTestRunInput {
   projectId: string;
   name: string;
   description?: string;
+  executionType?: 'MANUAL' | 'AUTOMATION';
   assignedToId?: string;
   environment?: string;
   status?: string;
@@ -310,6 +311,7 @@ interface CreateTestRunInput {
 interface UpdateTestRunInput {
   name?: string;
   description?: string;
+  executionType?: 'MANUAL' | 'AUTOMATION';
   status?: string;
   assignedToId?: string;
   environment?: string;
@@ -468,6 +470,7 @@ export class TestRunService {
         projectId: data.projectId,
         name: data.name,
         description: data.description,
+        executionType: data.executionType || 'MANUAL',
         assignedToId: data.assignedToId || null,
         environment: data.environment,
         status,

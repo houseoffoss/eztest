@@ -92,6 +92,16 @@ export function TestRunCard({
     ? (environmentOptions.find(opt => opt.value === testRun.environment)?.label || testRun.environment.toUpperCase())
     : null;
 
+  const executionTypeLabel =
+    (testRun.executionType || 'MANUAL').toString().toUpperCase() === 'AUTOMATION'
+      ? 'AUTOMATION'
+      : 'MANUAL';
+  
+  const executionType = (testRun.executionType || 'MANUAL').toString().toUpperCase();
+  const executionTypeBadgeClassName = executionType === 'AUTOMATION'
+    ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+    : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+
   const badges = (
     <>
       <Badge 
@@ -100,6 +110,9 @@ export function TestRunCard({
         style={statusBadgeProps.style}
       >
         {statusLabel}
+      </Badge>
+      <Badge variant="outline" className={executionTypeBadgeClassName}>
+        {executionTypeLabel}
       </Badge>
       {testRun.environment && environmentBadgeProps && (
         <Badge
@@ -143,8 +156,7 @@ export function TestRunCard({
         <ProgressBarWithLabel
           label="Pass Rate"
           value={passRate}
-          gradientFrom="from-green-500"
-          gradientTo="to-green-400"
+          fillClassName="bg-green-400/30 border border-green-400/30"
         />
       )}
 
@@ -212,7 +224,7 @@ export function TestRunCard({
       content={content}
       footer={footer}
       onClick={onCardClick}
-      borderColor="accent"
+      borderColor="primary"
     />
   );
 }

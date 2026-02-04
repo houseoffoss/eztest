@@ -265,6 +265,7 @@ model TestRun {
   projectId   String
   name        String
   description String?
+  executionType String @default("MANUAL") // MANUAL | AUTOMATION
   status      String   @default("PLANNED") // Dynamic dropdown value
   assignedToId String?
   environment String?  // Dynamic dropdown value e.g., "Production", "Staging", "QA"
@@ -286,6 +287,7 @@ model TestRun {
   @@index([createdById])
   @@index([status])
   @@index([environment])
+  @@index([executionType])
 }
 
 model TestRunSuite {

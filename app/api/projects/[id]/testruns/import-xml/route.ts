@@ -147,6 +147,7 @@ export const POST = hasPermission(
     }
 
     // Step 4: Create test run (exact same body format as UI)
+    // For this API route, we always treat it as an Automation run
     const createBody = {
       name,
       description: filename 
@@ -155,6 +156,7 @@ export const POST = hasPermission(
       status: 'COMPLETED',
       environment,
       testCaseIds: [],
+      executionType: 'AUTOMATION',
     };
 
     let createResult;

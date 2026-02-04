@@ -5,15 +5,15 @@ import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimar
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/frontend/reusable-elements/cards/Card';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { Lock, Mail, Phone, MapPin, User, Save, Key } from 'lucide-react';
+import { Lock, Mail, Phone, MapPin, User, Save, Key, LogOut } from 'lucide-react';
 import { ApiKeysManagement } from '@/frontend/components/apikeys/ApiKeysManagement';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export default function UserProfileSettings() {
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,22 @@ export default function UserProfileSettings() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  const handleSignOut = () => {
+    // Clear all persisted form data before signing out
+    clearAllPersistedForms();
+    // Clear project context from session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('lastProjectId');
+      // Clear any other project-related session data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defects-filters-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    // Let the form submit naturally to /api/auth/signout
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -154,9 +170,22 @@ export default function UserProfileSettings() {
 
   return (
     <>
-      {/* Top Bar */}
-      <TopBar
-        breadcrumbs={[{ label: 'Account Settings' }]}
+      {/* Alert Messages */}
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        hideNavbarContainer={true}
+        actions={
+          <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
+            <ButtonDestructive type="submit" size="default" className="px-5">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </ButtonDestructive>
+          </form>
+        }
       />
 
       {/* Content */}
@@ -168,15 +197,16 @@ export default function UserProfileSettings() {
 
         <div className="space-y-6">
           {/* Profile Information */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <DetailCard 
+            title={
+              <span className="flex items-center gap-2">
                 <User className="w-5 h-5" />
                 Profile Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSaveProfile} className="space-y-4">
+              </span>
+            }
+            contentClassName="space-y-4"
+          >
+            <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -264,19 +294,19 @@ export default function UserProfileSettings() {
                   </ButtonPrimary>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+          </DetailCard>
 
           {/* Password & Security */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <DetailCard 
+            title={
+              <span className="flex items-center gap-2">
                 <Lock className="w-5 h-5" />
                 Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleChangePassword} className="space-y-4">
+              </span>
+            }
+            contentClassName="space-y-4"
+          >
+            <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword" className="flex items-center gap-2">
                     <Key className="w-4 h-4" />
@@ -338,32 +368,47 @@ export default function UserProfileSettings() {
                   </ButtonPrimary>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+          </DetailCard>
 
           {/* API Keys */}
-          <Card variant="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <DetailCard 
+            title={
+              <span className="flex items-center gap-2">
                 <Lock className="w-5 h-5" />
                 API Keys
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ApiKeysManagement />
-            </CardContent>
-          </Card>
+              </span>
+            }
+          >
+            <ApiKeysManagement />
+          </DetailCard>
         </div>
 
         {/* Footer */}
-        <DetailCard title="About" className="mt-12" contentClassName="p-0">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Belsterns Technologies</p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="text-primary">v0.1.0</span>
-            </div>
+        <div
+          className="rounded-3xl relative transition-all p-[1px] mt-12"
+          style={{
+            background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+          }}
+        >
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+            <Card
+              variant="glass"
+              className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
+            >
+              <CardHeader>
+                <CardTitle>About</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Belsterns Technologies</p>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="text-primary">v0.1.0</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </DetailCard>
+        </div>
       </div>
 
       {/* Alerts */}

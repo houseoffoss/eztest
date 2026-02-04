@@ -70,6 +70,7 @@ export function CreateTestRunDialog({
         name: formData.name,
         description: formData.description || undefined,
         environment: formData.environment,
+        executionType: 'MANUAL',
       }),
     });
 

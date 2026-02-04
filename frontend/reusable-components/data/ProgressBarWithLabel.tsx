@@ -9,6 +9,7 @@ export interface ProgressBarWithLabelProps {
   valueLabel?: string; // Custom label for the value (e.g., "75%")
   className?: string;
   barClassName?: string;
+  fillClassName?: string; // Custom styling for the progress fill
   showValue?: boolean;
   gradientFrom?: string;
   gradientTo?: string;
@@ -20,6 +21,7 @@ export function ProgressBarWithLabel({
   valueLabel,
   className,
   barClassName,
+  fillClassName,
   showValue = true,
   gradientFrom = 'from-green-500',
   gradientTo = 'to-green-400',
@@ -38,7 +40,8 @@ export function ProgressBarWithLabel({
       <div className={cn('w-full bg-white/5 rounded-full h-2', barClassName)}>
         <div
           className={cn(
-            `bg-gradient-to-r ${gradientFrom} ${gradientTo} h-2 rounded-full transition-all`
+            fillClassName || `bg-gradient-to-r ${gradientFrom} ${gradientTo}`,
+            'h-2 rounded-full transition-all'
           )}
           style={{ width: `${clamped}%` }}
         />

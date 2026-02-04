@@ -55,12 +55,19 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
   const priorityLabel = priorityOptions.find(opt => opt.value === testCase.priority)?.label || testCase.priority;
   const statusLabel = statusOptions.find(opt => opt.value === testCase.status)?.label || testCase.status;
 
+  const gradientStyle = 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)';
+
   return (
-    <Card
-      variant="glass"
-      className="cursor-pointer hover:border-blue-500/50 transition-colors"
+    <div
+      className="rounded-3xl relative transition-all cursor-pointer group p-[1px]"
       onClick={onClick}
+      style={{ background: gradientStyle }}
     >
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+        <Card
+          variant="glass"
+          className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"
+        >
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -133,6 +140,8 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
           </div>
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      </div>
+    </div>
   );
 }

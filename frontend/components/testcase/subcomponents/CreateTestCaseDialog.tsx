@@ -261,7 +261,7 @@ export function CreateTestCaseDialog({
     // Associate uploaded attachments with the test case
     if (uploadedAttachments.length > 0) {
       try {
-        const attachmentResponse = await fetch(`/api/testcases/${createdTestCase.id}/attachments`, {
+        const attachmentResponse = await fetch(`/api/projects/${projectId}/testcases/${createdTestCase.id}/attachments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ attachments: uploadedAttachments }),

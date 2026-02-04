@@ -89,7 +89,7 @@ export function LinkTestCaseDialog({
       };
 
       const response = await fetch(
-        `/api/testcases/${formData.testCaseId}/defects`,
+        `/api/projects/${projectId}/testcases/${formData.testCaseId}/defects`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

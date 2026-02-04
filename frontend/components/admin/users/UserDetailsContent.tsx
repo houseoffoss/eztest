@@ -1,15 +1,15 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/frontend/reusable-elements/cards/Card';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { formatDateTime } from '@/lib/date-utils';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
-import { Mail, Calendar, Briefcase, LogOut } from 'lucide-react';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
+import { Mail, Calendar, Briefcase } from 'lucide-react';
 
 interface UserRole {
   id: string;
@@ -41,8 +41,18 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const navbarActions = useMemo(() => {
+    return [
+      {
+        type: 'signout' as const,
+        showConfirmation: true,
+      },
+    ];
+  }, []);
+
   useEffect(() => {
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchUser = async () => {
@@ -70,21 +80,6 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   if (!user) {
     return null;
   }
-  const handleSignOut = () => {
-    // Clear all persisted form data before signing out
-    clearAllPersistedForms();
-    // Clear project context from session storage
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('lastProjectId');
-      // Clear any other project-related session data
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('defects-filters-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    }
-    // Let the form submit naturally to /api/auth/signout
-  };
 
   const getRoleBadgeColor = (roleName: string) => {
     switch (roleName) {
@@ -102,71 +97,79 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   };
 
   return (
-    <>
-      {/* Top Bar */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl border-b border-white/10">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Breadcrumbs 
-              items={[
-                { label: 'Admin', href: '/admin' },
-                { label: 'Users', href: '/admin/users' },
-                { label: user.name },
-              ]}
-            />
-            <form action="/api/auth/signout" method="POST" onSubmit={handleSignOut}>
-              <ButtonDestructive type="submit" size="default" className="px-5">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </ButtonDestructive>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div className="flex-1">
+      {/* Navbar */}
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Admin', href: '/admin' },
+              { label: 'Users', href: '/admin/users' },
+              { label: user.name, href: `/admin/users/${user.id}` },
+            ]}
+          />
+        }
+        actions={navbarActions}
+      />
 
       <div className="max-w-4xl mx-auto px-8 py-10">
         {/* Profile Header Card */}
-        <DetailCard 
-          title="Profile" 
-          description="User account overview"
-          className="mb-8"
-          contentClassName="p-0"
+        <div
+          className="rounded-3xl relative transition-all p-[1px] mb-8"
+          style={{
+            background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+          }}
         >
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-5xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            </div>
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+            <Card
+              variant="glass"
+              className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
+            >
+              <CardHeader>
+                <CardTitle>Profile</CardTitle>
+                <CardDescription>User account overview</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                  {/* Avatar */}
+                  <div className="flex-shrink-0">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-5xl font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  </div>
 
-            {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="mb-4">
-                <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
-                <Badge variant="outline" className={`border ${getRoleBadgeColor(user.role.name)} cursor-default`}>
-                  <Briefcase className="w-3 h-3 mr-1" />
-                  {user.role.name}
-                </Badge>
-              </div>
+                  {/* Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="mb-4">
+                      <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
+                      <Badge variant="outline" className={`border ${getRoleBadgeColor(user.role.name)} cursor-default`}>
+                        <Briefcase className="w-3 h-3 mr-1" />
+                        {user.role.name}
+                      </Badge>
+                    </div>
 
-              <div className="space-y-2 text-sm text-white/70">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{user.email}</span>
+                    <div className="space-y-2 text-sm text-white/70">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        <span>{user.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>Joined {formatDateTime(user.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        <span>{user._count.createdProjects} projects created</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Joined {formatDateTime(user.createdAt)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
-                  <span>{user._count.createdProjects} projects created</span>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </DetailCard>
+        </div>
 
         {/* Details Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -236,16 +239,33 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
         </div>
 
         {/* Footer */}
-        <DetailCard title="About" className="mt-12" contentClassName="p-0">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Admin</p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="hidden sm:inline">User Details</span>
-              <span className="text-primary">v0.1.0</span>
-            </div>
+        <div
+          className="rounded-3xl relative transition-all p-[1px] mt-12"
+          style={{
+            background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+          }}
+        >
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+            <Card
+              variant="glass"
+              className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
+            >
+              <CardHeader>
+                <CardTitle>About</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Admin</p>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="hidden sm:inline">User Details</span>
+                    <span className="text-primary">v0.1.0</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </DetailCard>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -8,6 +8,7 @@ import { CreateApiKeyDialog } from './subcomponents/CreateApiKeyDialog';
 import { DeleteApiKeyDialog } from './subcomponents/DeleteApiKeyDialog';
 import { Key, Copy, Check, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export interface ApiKey {
   id: string;
@@ -31,6 +32,15 @@ interface ApiKeysManagementProps {
 }
 
 export function ApiKeysManagement({ className }: ApiKeysManagementProps) {
+  const { hasPermission: hasPermissionCheck } = usePermissions();
+  // Only users with create/update permissions can create API keys
+  const canCreateApiKey = 
+    hasPermissionCheck('testcases:create') || 
+    hasPermissionCheck('testcases:update') ||
+    hasPermissionCheck('testruns:create') ||
+    hasPermissionCheck('testruns:update') ||
+    hasPermissionCheck('projects:update') ||
+    hasPermissionCheck('projects:create');
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,10 +147,12 @@ export function ApiKeysManagement({ className }: ApiKeysManagementProps) {
           <p className="text-sm text-muted-foreground">
             Manage API keys for SDK authentication. Keys are shown only once when created.
           </p>
-          <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
-            <Key className="w-4 h-4 mr-2" />
-            Create API Key
-          </ButtonPrimary>
+          {canCreateApiKey && (
+            <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
+              <Key className="w-4 h-4 mr-2" />
+              Create API Key
+            </ButtonPrimary>
+          )}
         </div>
 
         {error && (
@@ -201,12 +213,16 @@ export function ApiKeysManagement({ className }: ApiKeysManagementProps) {
             <Key className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No API Keys</h3>
             <p className="text-muted-foreground mb-6">
-              Create your first API key to start using the EZTest SDK
+              {canCreateApiKey 
+                ? 'Create your first API key to start using the EZTest SDK'
+                : 'You do not have permission to create API keys. Contact an admin to get started.'}
             </p>
-            <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
-              <Key className="w-4 h-4 mr-2" />
-              Create API Key
-            </ButtonPrimary>
+            {canCreateApiKey && (
+              <ButtonPrimary onClick={() => setCreateDialogOpen(true)}>
+                <Key className="w-4 h-4 mr-2" />
+                Create API Key
+              </ButtonPrimary>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

@@ -133,7 +133,7 @@ export function LinkDefectDialog({
       };
 
       const response = await fetch(
-        `/api/testcases/${testCaseId}/defects`,
+        `/api/projects/${projectId}/testcases/${testCaseId}/defects`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

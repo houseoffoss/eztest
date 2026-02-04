@@ -1,10 +1,11 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Plus } from 'lucide-react';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
@@ -31,6 +32,30 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
   const [selectedSuite, setSelectedSuite] = useState<TestSuite | null>(null);
   const [expandedSuites, setExpandedSuites] = useState<Set<string>>(new Set());
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+
+  const canCreateTestSuite = hasPermissionCheck('testsuites:create');
+
+  const navbarActions = useMemo(() => {
+    const actions = [];
+    
+    if (canCreateTestSuite) {
+      actions.push({
+        type: 'action' as const,
+        label: 'Create Test Suite',
+        icon: Plus,
+        onClick: () => setCreateDialogOpen(true),
+        variant: 'primary' as const,
+        buttonName: 'Test Suite List - Create Test Suite',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateTestSuite]);
 
   useEffect(() => {
     fetchProject();
@@ -106,7 +131,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
     if (!selectedSuite) return;
 
     try {
-      const response = await fetch(`/api/testsuites/${selectedSuite.id}`, {
+      const response = await fetch(`/api/projects/${projectId}/testsuites/${selectedSuite.id}`, {
         method: 'DELETE',
       });
 
@@ -165,8 +190,6 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
     return <Loader fullScreen text="Loading test suites..." />;
   }
 
-  // Check if user can create, update, or delete test suites
-  const canCreateTestSuite = hasPermissionCheck('testsuites:create');
   const canDeleteTestSuite = hasPermissionCheck('testsuites:delete');
 
   return (
@@ -175,25 +198,19 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
       {project && (
-        <TopBar 
-          breadcrumbs={[
-            { label: 'Projects', href: '/projects' },
-            { label: project.name, href: `/projects/${projectId}` },
-            { label: 'Test Suites' },
-          ]}
-          actions={
-            canCreateTestSuite ? (
-              <ButtonPrimary
-                size="default"
-                onClick={() => setCreateDialogOpen(true)}
-                className="cursor-pointer"
-                buttonName="Test Suite List - Create Test Suite"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create Test Suite
-              </ButtonPrimary>
-            ) : undefined
+        <Navbar
+          brandLabel={null}
+          items={[]}
+          breadcrumbs={
+            <Breadcrumbs 
+              items={[
+                { label: 'Projects', href: '/projects' },
+                { label: project.name, href: `/projects/${projectId}` },
+                { label: 'Test Suites', href: `/projects/${projectId}/testsuites` },
+              ]}
+            />
           }
+          actions={navbarActions}
         />
       )}
 

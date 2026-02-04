@@ -1,10 +1,10 @@
 ﻿'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { useEffect, useState, useMemo } from 'react';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
-import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
+import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Plus, Upload, FileCode } from 'lucide-react';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
@@ -17,9 +17,17 @@ import { TestRunsEmptyState } from './subcomponents/TestRunsEmptyState';
 import { CreateTestRunDialog } from './subcomponents/CreateTestRunDialog';
 import { DeleteTestRunDialog } from './subcomponents/DeleteTestRunDialog';
 import { UploadTestNGXMLDialog } from './subcomponents/UploadTestNGXMLDialog';
-import { TestRun, Project, TestRunFormData, TestRunFilters } from './types';
+import { AutomationSetupWizard } from './subcomponents/AutomationSetupWizard';
+import { TestRun, Project, TestRunFilters } from './types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
+import { ChevronDown, BookOpen } from 'lucide-react';
 
 interface TestRunsListProps {
   projectId: string;
@@ -37,6 +45,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [uploadXMLDialogOpen, setUploadXMLDialogOpen] = useState(false);
+  const [automationWizardOpen, setAutomationWizardOpen] = useState(false);
   const [selectedTestRun, setSelectedTestRun] = useState<TestRun | null>(null);
 
   const [filters, setFilters] = useState<TestRunFilters>({
@@ -133,7 +142,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     if (!selectedTestRun) return;
 
     try {
-      const response = await fetch(`/api/testruns/${selectedTestRun.id}`, {
+      const response = await fetch(`/api/projects/${projectId}/testruns/${selectedTestRun.id}`, {
         method: 'DELETE',
       });
 
@@ -167,65 +176,92 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     }
   };
 
-  if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test runs..." />;
-  }
-
+  // Check permissions before early returns
   const canCreateTestRun = hasPermissionCheck('testruns:create');
   const canDeleteTestRun = hasPermissionCheck('testruns:delete');
   const canReadTestRun = hasPermissionCheck('testruns:read');
 
+  const navbarActions = useMemo(() => {
+    const actions = [];
+
+    // Only show import/export if user can create test runs (has permission to import)
+    if (canReadTestRun && canCreateTestRun) {
+      actions.push({
+        type: 'custom' as const,
+        custom: (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
+                Manual / Automation
+                <ChevronDown className="w-4 h-4" />
+              </ButtonSecondary>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {/* Always show automation setup guide */}
+              <DropdownMenuItem onClick={() => setAutomationWizardOpen(true)}>
+                <BookOpen className="w-4 h-4" />
+                Automation Setup Guide
+              </DropdownMenuItem>
+              {/* Always show import/export options */}
+              <DropdownMenuItem onClick={() => setUploadXMLDialogOpen(true)}>
+                <FileCode className="w-4 h-4" />
+                Upload TestNG XML
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+                <Upload className="w-4 h-4" />
+                Export Test Runs
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+      });
+    }
+
+    if (canCreateTestRun) {
+      actions.push({
+        type: 'action' as const,
+        label: 'New Test Run',
+        icon: Plus,
+        onClick: () => setCreateDialogOpen(true),
+        variant: 'primary' as const,
+        buttonName: 'Test Runs List - New Test Run',
+      });
+    }
+
+    actions.push({
+      type: 'signout' as const,
+      showConfirmation: true,
+    });
+
+    return actions;
+  }, [canCreateTestRun, canReadTestRun]);
+
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="Loading test runs..." />;
+  }
 
   return (
     <>
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      <TopBar
-        breadcrumbs={[
-          { label: 'Projects', href: '/projects' },
-          { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-          { label: 'Test Runs' },
-        ]}
-        actions={
-          <div className="flex gap-2">
-            {canReadTestRun && (
-              <>
-                <ButtonSecondary 
-                  onClick={() => setUploadXMLDialogOpen(true)} 
-                  className="cursor-pointer"
-                  title="Upload TestNG XML results"
-                  buttonName="Test Runs List - Upload XML"
-                >
-                  <FileCode className="w-4 h-4 mr-2" />
-                  Upload XML
-                </ButtonSecondary>
-                <ButtonSecondary 
-                  onClick={() => setExportDialogOpen(true)} 
-                  className="cursor-pointer"
-                  title="Export test runs"
-                  buttonName="Test Runs List - Export"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Export
-                </ButtonSecondary>
-              </>
-            )}
-            {canCreateTestRun && (
-              <ButtonPrimary
-                onClick={() => setCreateDialogOpen(true)}
-                buttonName="Test Runs List - New Test Run"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Test Run
-              </ButtonPrimary>
-            )}
-          </div>
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <Breadcrumbs 
+            items={[
+              { label: 'Projects', href: '/projects' },
+              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
+              { label: 'Test Runs', href: `/projects/${projectId}/testruns` },
+            ]}
+          />
         }
+        actions={navbarActions}
       />
 
       {/* Page Header and Filters */}
-      <div className="px-8 pt-4">
+      <div className="px-8 pt-8">
         <HeaderWithFilters
           header={
             <PageHeaderWithBadge
@@ -326,6 +362,14 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           onImportComplete={() => {
             fetchTestRuns();
           }}
+        />
+
+        {/* Automation Setup Wizard */}
+        <AutomationSetupWizard
+          open={automationWizardOpen}
+          onOpenChange={setAutomationWizardOpen}
+          projectId={projectId}
+          projectKey={project?.key}
         />
       </div>
     </>

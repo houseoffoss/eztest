@@ -15,6 +15,7 @@ interface TestRunHeaderProps {
       id: string;
     };
   };
+  executionTypeLabel?: string;
   actionLoading: boolean;
   canUpdate?: boolean;
   onStartTestRun: () => void;
@@ -23,6 +24,7 @@ interface TestRunHeaderProps {
 
 export function TestRunHeader({
   testRun,
+  executionTypeLabel,
   actionLoading,
   canUpdate = true,
   onStartTestRun,
@@ -57,6 +59,11 @@ export function TestRunHeader({
     ? (environmentOptions.find(opt => opt.value === testRun.environment)?.label || testRun.environment.toUpperCase())
     : null;
 
+  // Determine execution type badge color based on label
+  const executionTypeBadgeClassName = executionTypeLabel === 'Automation'
+    ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+    : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+
   return (
     <DetailCard
       title={testRun.name}
@@ -75,6 +82,14 @@ export function TestRunHeader({
               {statusLabel}
             </Badge>
           </div>
+          {executionTypeLabel && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">Execution:</span>
+              <Badge variant="outline" className={executionTypeBadgeClassName}>
+                {executionTypeLabel}
+              </Badge>
+            </div>
+          )}
           {testRun.environment && environmentBadgeProps && (
             <div className="flex items-center gap-2">
               <span className="text-white/60">Environment:</span>
