@@ -8,6 +8,11 @@ import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 
+const navItems = [
+  { label: 'Features', href: '/#features' },
+  { label: 'Why Choose?', href: '/#why-choose' },
+];
+
 export default function PrivacyPolicyPage() {
   const [stars, setStars] = useState<number | null>(null);
 
@@ -29,7 +34,7 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[#0a1628]">
       <Navbar
-        items={[]}
+        items={navItems}
         breadcrumbs={
           <>
             <a

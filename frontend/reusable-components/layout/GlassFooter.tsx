@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Separator } from "@/frontend/reusable-elements/separators/Separator";
 
 type GlassFooterProps = {
@@ -9,6 +10,21 @@ type GlassFooterProps = {
   description?: React.ReactNode;
   className?: string;
 };
+
+// Smart link that handles navigation to homepage anchors
+function SmartAnchorLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+  const pathname = usePathname();
+  const isHomepage = pathname === "/";
+  
+  // If on homepage, use hash-only link. Otherwise, navigate to homepage with hash.
+  const targetHref = isHomepage ? href : `/${href}`;
+  
+  return (
+    <Link href={targetHref} className={className}>
+      {children}
+    </Link>
+  );
+}
 
 export function GlassFooter({ variant = "full", description, className }: GlassFooterProps) {
   return (
@@ -47,14 +63,14 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
                   <h3 className="font-semibold text-primary">Product</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link href="/#features" className="text-muted-foreground hover:text-primary transition-colors">
+                      <SmartAnchorLink href="#features" className="text-muted-foreground hover:text-primary transition-colors">
                         Features
-                      </Link>
+                      </SmartAnchorLink>
                     </li>
                     <li>
-                      <Link href="/#why-choose" className="text-muted-foreground hover:text-primary transition-colors">
+                      <SmartAnchorLink href="#why-choose" className="text-muted-foreground hover:text-primary transition-colors">
                         Why We Choose?
-                      </Link>
+                      </SmartAnchorLink>
                     </li>
                     {/* <li>
                       <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
