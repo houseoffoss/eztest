@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -13,15 +13,31 @@ import { PhilosophySection } from './subcomponents/PhilosophySection';
 import { FeaturesGrid } from './subcomponents/FeaturesGrid';
 import { StatsSection } from './subcomponents/StatsSection';
 import { useAnalytics } from '@/hooks/useAnalytics';
-// import { ProductShowcaseSection } from './subcomponents/ProductShowcaseSection';
+import { ProductShowcaseSection } from './subcomponents/ProductShowcaseSection';
 
 const navItems = [
+  { label: 'Features', href: '#features' },
   { label: 'Why Choose?', href: '#why-choose' },
 ];
 
 export default function HomePage() {
   const [stars, setStars] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('features');
+  const activeTabRef = useRef(activeTab);
+  const hasInitializedRef = useRef(false);
+  const isUserTabChangeRef = useRef(false);
   const { trackButton } = useAnalytics();
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  // Wrapper for setActiveTab to track user-initiated changes
+  const handleTabChange = (value: string) => {
+    isUserTabChangeRef.current = true;
+    setActiveTab(value);
+  };
 
   useEffect(() => {
     // Fetch GitHub stars count
@@ -38,10 +54,191 @@ export default function HomePage() {
       });
   }, []);
 
+  // Track if scroll should happen (only when coming from navbar, not direct tab clicks)
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const [shouldScrollToTop, setShouldScrollToTop] = useState(false);
+
+  // Handle hash changes to switch tabs (from navbar clicks)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove #
+      if (hash === 'overview' || hash === 'features' || hash === 'why-choose') {
+        // Only scroll if switching to a different tab
+        if (hash !== activeTabRef.current) {
+          setShouldScroll(true); // Mark that we should scroll
+          setActiveTab(hash);
+        } else {
+          // Tab is already active, just scroll to it without changing state
+          setShouldScroll(true);
+        }
+        setShouldScrollToTop(false); // Don't scroll to top if we have a hash
+      } else if (!hash) {
+        // If no hash, default to features and scroll to top
+        setActiveTab('features');
+        setShouldScroll(false); // Don't scroll to tabs
+        setShouldScrollToTop(true); // Scroll to top instead
+      }
+    };
+
+    // Handle clicks on anchor links in navbar
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a[href^="#"]') as HTMLAnchorElement;
+      if (link && link.hash) {
+        const hash = link.hash.slice(1);
+        if (hash === 'overview' || hash === 'features' || hash === 'why-choose') {
+          // Only handle if it's a different tab
+          if (hash !== activeTabRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            // Immediately switch tab and set scroll flag
+            setShouldScroll(true);
+            setActiveTab(hash);
+            // Update URL
+            window.history.pushState(null, '', link.hash);
+          } else {
+            // Tab is already active, just scroll to it
+            e.preventDefault();
+            e.stopPropagation();
+            setShouldScroll(true);
+            // Update URL
+            window.history.pushState(null, '', link.hash);
+          }
+        }
+      }
+    };
+
+    // Check initial hash on mount
+    handleHashChange();
+    
+    // If no hash on initial mount, scroll to top and clear any hash
+    if (!window.location.hash) {
+      setShouldScrollToTop(true);
+      // Clear any hash that might be in the URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    
+    // Mark as initialized after checking initial hash
+    hasInitializedRef.current = true;
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    // Use capture phase to catch clicks early
+    document.addEventListener('click', handleLinkClick, true);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      document.removeEventListener('click', handleLinkClick, true);
+    };
+  }, []);
+
+  // Scroll to top when navigating to home page without hash
+  useEffect(() => {
+    if (shouldScrollToTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setShouldScrollToTop(false);
+    }
+  }, [shouldScrollToTop]);
+
+  // Scroll to section when tab becomes active (only if shouldScroll is true)
+  useEffect(() => {
+    if (shouldScroll && activeTab) {
+      // Wait for tab content to be visible and rendered
+      let retryCount = 0;
+      const maxRetries = 20; // Maximum retries (2 seconds total)
+      
+      const scrollToSection = () => {
+        // Find the tab container (the div containing the Tabs component)
+        const tabContainer = document.querySelector('[data-slot="tabs"]')?.parentElement;
+        
+        // Also check if the tab content is actually visible (Radix UI might hide it initially)
+        const tabContent = document.querySelector(`[data-state="active"][data-slot="tabs-content"]`);
+        const contentElement = document.getElementById(activeTab);
+        
+        // Check if tab content is rendered and visible
+        const isContentReady = tabContent && contentElement && 
+          (tabContent as HTMLElement).offsetHeight > 0;
+        
+        if (tabContainer && isContentReady) {
+          // Get the tab container's position relative to the document
+          const rect = tabContainer.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const absoluteTop = rect.top + scrollTop;
+          
+          // Offset to position tab component below the navbar (accounting for navbar height)
+          const yOffset = 150; // Offset to position tab component below the top
+          
+          // Check if the tab container is already properly positioned in viewport
+          // The container should be visible with at least yOffset pixels from the top of viewport
+          const containerTopInViewport = rect.top;
+          const isAlreadyVisible = containerTopInViewport >= (yOffset - 30) && 
+                                   containerTopInViewport <= (yOffset + 30);
+          
+          if (!isAlreadyVisible) {
+            // Calculate target scroll position
+            let targetY = absoluteTop - yOffset;
+            // Ensure we don't scroll to negative position
+            targetY = Math.max(0, targetY);
+            
+            // Only scroll if we're not already at the right position (with some tolerance)
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            if (Math.abs(currentScroll - targetY) > 50) {
+              window.scrollTo({ top: targetY, behavior: 'smooth' });
+            }
+          }
+          setShouldScroll(false); // Reset scroll flag
+        } else if (retryCount < maxRetries) {
+          // Retry if content not ready yet
+          retryCount++;
+          setTimeout(scrollToSection, 100);
+        } else {
+          // Fallback: try to scroll anyway after max retries
+          if (tabContainer) {
+            const rect = tabContainer.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const absoluteTop = rect.top + scrollTop;
+            const yOffset = 150;
+            let targetY = absoluteTop - yOffset;
+            // Ensure we don't scroll to negative position
+            targetY = Math.max(0, targetY);
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
+          }
+          setShouldScroll(false);
+        }
+      };
+      
+      // Initial delay to ensure tab starts rendering
+      setTimeout(scrollToSection, 300);
+    }
+  }, [activeTab, shouldScroll]);
+
+  // Update hash when tab changes via tab clicks (without scrolling)
+  // Only update hash if user clicked a tab directly, not on initial mount
+  useEffect(() => {
+    // Don't set hash on initial mount if there was no hash
+    if (!hasInitializedRef.current) {
+      return;
+    }
+    
+    // Only update hash if this was a user-initiated tab change
+    if (activeTab && !shouldScroll && isUserTabChangeRef.current) {
+      const currentHash = window.location.hash.slice(1);
+      if (currentHash !== activeTab) {
+        // Update hash when user clicks a tab directly
+        window.history.replaceState(null, '', `#${activeTab}`);
+      }
+      // Reset the flag after handling
+      isUserTabChangeRef.current = false;
+    }
+  }, [activeTab, shouldScroll]);
+
   return (
     <div className="min-h-screen bg-[#0a1628]">
       <Navbar
-        items={navItems}
+        items={navItems.map(item => ({
+          ...item,
+          href: item.href,
+        }))}
         breadcrumbs={
           <>
             <a
@@ -102,18 +299,17 @@ export default function HomePage() {
         <HeroSection />
         
         {/* Tab Navigation */}
-        {/* <div className="mb-16 flex justify-center">
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList variant="glass" className="mx-auto h-12 px-1">
-              <TabsTrigger value="overview" className="px-6 text-base font-medium">Overview</TabsTrigger>
-              <TabsTrigger value="features" className="px-6 text-base font-medium">Features</TabsTrigger>
-              <TabsTrigger value="why-choose" className="px-6 text-base font-medium">Why Choose</TabsTrigger>
+        <div className="mb-16 flex justify-center">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList variant="glass" className="mx-auto h-12 px-1 !rounded-full !border-white/10 !bg-white/5 !backdrop-blur-2xl !shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] !ring-1 !ring-white/5">
+              <TabsTrigger value="overview" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Overview</TabsTrigger>
+              <TabsTrigger value="features" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Features</TabsTrigger>
+              <TabsTrigger value="why-choose" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Why Choose</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="mt-12">
-              <div className="space-y-32">
+              <div id="overview" className="scroll-mt-24 space-y-32">
                 <StatsSection />
-                <PhilosophySection />
               </div>
             </TabsContent>
             
@@ -123,15 +319,18 @@ export default function HomePage() {
               </div>
             </TabsContent>
             
-            <TabsContent value="why-choose" className="mt-12"> */}
+            <TabsContent value="why-choose" className="mt-12">
               <div id="why-choose" className="scroll-mt-24">
                 <FeaturesGrid />
               </div>
-            {/* </TabsContent>
+            </TabsContent>
           </Tabs>
-        </div> */}
-                <PhilosophySection />
-
+        </div>
+        
+        {/* Philosophy Section - Below Tabs */}
+        <div className="mt-16">
+          <PhilosophySection />
+        </div>
       </div>
 
       <GlassFooter />

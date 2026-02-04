@@ -1,26 +1,49 @@
-import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
+import Link from 'next/link';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 
 export const PhilosophySection = () => {
+  const gradientStyle = 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)';
+
   return (
-    <Card variant="glass" className="mb-0">
-      <CardContent className="py-12">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Our Philosophy</h2>
-          <div className="space-y-4 text-white/90 text-lg leading-relaxed">
-            <p>
-              Most Test Management tools are glorified excel sheets but charge $19 per user per month. Why pay $19
-              for a fancy excel sheet when you can get state-of-the-art AI coding agents for the same?
-            </p>
-            <p className="text-primary font-semibold">
-              WHY NOT use AI coding agent to build a modern, useful test management tool?
-            </p>
-            <p className="text-white/80">
-              The goal is not to reinvent the wheel, it&apos;s to break the cycle of mediocre, overpriced software
-            </p>
+    <div className="mb-32">
+      <div className="rounded-3xl relative transition-all p-[1px]" style={{ background: gradientStyle }}>
+        <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+          <div className="rounded-3xl border-0 bg-transparent overflow-visible transition-all flex flex-col h-full py-16 px-8">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Why are you still putting up with
+                <br />
+                <span className="text-primary">legacy test management tools?</span>
+              </h2>
+              
+              <div className="space-y-6 text-white/90 text-lg md:text-xl leading-relaxed">
+                <p>
+                  Most test management tools are glorified spreadsheets but charge $19+ per user per month. Why pay premium prices
+                  for basic functionality when you can have a modern, open-source solution?
+                </p>
+                
+                <p className="text-primary font-semibold text-xl">
+                  Why not use modern tools to build a test management platform that actually works?
+                </p>
+                
+                <p className="text-white/80">
+                  The goal isn&apos;t to reinvent the wheel—it&apos;s to break the cycle of mediocre, overpriced software.
+                  EZTest brings clarity, structure, and flow to your testing workflow with zero tolerance for bloat.
+                </p>
+              </div>
+
+              <div className="pt-8">
+                <Link href="/auth/register">
+                  <ButtonPrimary size="lg" className="cursor-pointer" buttonName="Home Page - Philosophy Section - Get Started">
+                    Get started free
+                  </ButtonPrimary>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

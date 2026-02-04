@@ -38,7 +38,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-[#0a1628]/80 backdrop-blur-sm",
         className
       )}
       {...props}
@@ -64,10 +64,10 @@ function DialogContent({
         className={cn(
           "backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] shadow-2xl duration-200 max-h-[90vh]",
           variant === "confirm"
-            ? "rounded-xl border p-6 sm:max-w-[520px] bg-background/80 text-foreground"
+            ? "rounded-xl border p-6 sm:max-w-[520px] bg-[#0a1628] text-foreground"
             : variant === "glass"
-            ? "rounded-xl border p-6 sm:max-w-lg bg-white/12 text-foreground border-white/25"
-            : "rounded-xl border p-6 sm:max-w-lg bg-background/80",
+            ? "rounded-xl border p-6 sm:max-w-lg bg-[#0a1628] text-foreground border-white/25"
+            : "rounded-xl border p-6 sm:max-w-lg bg-[#0a1628]",
           className
         )}
         {...props}
