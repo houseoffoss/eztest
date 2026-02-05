@@ -17,6 +17,18 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 **License:** AGPL-3.0  
 **Maintainers:** Philip Moses (philip.moses@belsterns.com), Kavin (kavin.p@belsterns.com)
 
+## 🛡️ The Philosophy: Breaking the "SaaS Tax"
+
+Software used to be a tool you owned; today, it’s a subscription you rent. 
+
+Test management tools today are just **glorified, overpriced spreadsheets.** They charge $20 to $40 per user, per month for basic CRUD operations. A price that is no longer defensible in the age of AI Coding Agents.
+
+**EZTest** was born out of that simple realization: **If an AI agent costs $20/month and can build a software in no time, why pay $20/per/month just to rent one?**
+
+The goal isn't to reinvent the wheel. It's to break the cycle of mediocre, overpriced software. 
+
+We use **Claude Code and Cursor** to compress the cost of development to near-zero, and we are passing that "Efficiency Dividend" to the community.
+
 ## 📸 Screenshots
 
 <div align="center">
