@@ -11,21 +11,20 @@ export const HeroSection = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-3xl -z-10"></div>
       <div className="absolute top-20 right-1/4 w-[400px] h-[400px] bg-accent/15 rounded-full blur-3xl -z-10"></div>
 
-      <Badge className="mb-8">
+      <Badge
+        variant="glass"
+        className="mb-8 !rounded-full px-4 py-2 border border-white/15 bg-white/8 backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] text-white/90"
+      >
         <span>✨ Open Source & Self-Hosted</span>
       </Badge>
 
-      <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-[1.1]">
-        Test management for teams
+      <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 tracking-tight leading-[1.05] bg-gradient-to-r from-[#3291FF] to-[#405998] bg-clip-text text-transparent">
+        Open Source test management
         <br />
-        <span className="text-primary">that prefer shipping over configuring</span>
+        for modern QA teams
       </h1>
-      
-      <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto leading-relaxed">
-        EZTest brings structure, flow and clarity to all of your testing with zero tolerance for bloat or baggage.
-      </p>
-      
-      <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto">
+
+      <p className="text-xl md:text-2xl text-white/60 mb-12 max-w-2xl mx-auto">
         Open Source alternative to Testiny, Testrail, TestLink, Testmo
       </p>
 
