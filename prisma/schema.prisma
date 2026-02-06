@@ -129,6 +129,7 @@ model Project {
   modules     Module[]
   defects     Defect[]
   apiKeys     ApiKey[]
+  teamsConfig TeamsChannelConfig[]
 
   @@index([key])
   @@index([createdById])
@@ -559,4 +560,24 @@ model TestCaseDefect {
   @@unique([testCaseId, defectId])
   @@index([testCaseId])
   @@index([defectId])
+}
+
+// ====================================
+// Microsoft Teams Integration
+// ====================================
+
+model TeamsChannelConfig {
+  id           String   @id @default(cuid())
+  teamId       String   // Microsoft Teams Team ID
+  channelId    String   @unique // Microsoft Teams Channel ID
+  projectId    String   // EZTest Project ID that this channel is bound to
+  configuredBy String   // User ID who configured this
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([projectId])
+  @@index([configuredBy])
 }

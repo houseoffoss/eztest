@@ -6,7 +6,7 @@ import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
-import { Users, Settings } from 'lucide-react';
+import { Users, Settings, MessageSquare } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -72,6 +72,25 @@ export default function AdminDashboard() {
               }
               borderColor="primary"
               onClick={() => router.push('/admin/dropdown-options')}
+              className="hover:shadow-xl hover:shadow-primary/10 transition-all"
+            />
+
+            {/* Teams Channels Management */}
+            <ItemCard
+              title="Teams Channels"
+              description="Configure Teams channel to project mappings"
+              badges={
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <MessageSquare className="w-6 h-6 text-green-500" />
+                </div>
+              }
+              content={
+                <p className="text-sm text-white/60">
+                  Manage which Teams channels are connected to EZTest projects
+                </p>
+              }
+              borderColor="primary"
+              onClick={() => router.push('/admin/teams-channels')}
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
           </ResponsiveGrid>
