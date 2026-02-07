@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonGetStarted } from '@/frontend/reusable-elements/buttons/ButtonGetStarted';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 
@@ -30,9 +30,9 @@ export const HeroSection = () => {
 
       <div className="flex gap-4 justify-center flex-wrap mb-16">
         <Link href="/auth/register">
-          <ButtonPrimary size="lg" className="cursor-pointer" buttonName="Home Page - Hero Section - Get Started">
+          <ButtonGetStarted size="lg" className="cursor-pointer" buttonName="Home Page - Hero Section - Get Started">
             Get started free
-          </ButtonPrimary>
+          </ButtonGetStarted>
         </Link>
         <Link href="/auth/login">
           <ButtonSecondary size="lg" className="cursor-pointer" buttonName="Home Page - Hero Section - Sign In">

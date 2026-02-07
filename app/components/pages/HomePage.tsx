@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonGetStarted } from '@/frontend/reusable-elements/buttons/ButtonGetStarted';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
@@ -287,9 +287,9 @@ export default function HomePage() {
               </ButtonSecondary>
             </Link>
             <Link href="/auth/register">
-              <ButtonPrimary className="cursor-pointer" buttonName="Home Page - Navbar - Get Started">
+              <ButtonGetStarted className="cursor-pointer" buttonName="Home Page - Navbar - Get Started">
                 Get started
-              </ButtonPrimary>
+              </ButtonGetStarted>
             </Link>
           </div>
         }

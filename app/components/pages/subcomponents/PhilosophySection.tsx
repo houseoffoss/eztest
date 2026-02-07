@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
+import { ButtonGetStarted } from '@/frontend/reusable-elements/buttons/ButtonGetStarted';
 
 export const PhilosophySection = () => {
   const gradientStyle = 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)';
@@ -34,9 +34,9 @@ export const PhilosophySection = () => {
 
               <div className="pt-8">
                 <Link href="/auth/register">
-                  <ButtonPrimary size="lg" className="cursor-pointer" buttonName="Home Page - Philosophy Section - Get Started">
+                  <ButtonGetStarted size="lg" className="cursor-pointer" buttonName="Home Page - Philosophy Section - Get Started">
                     Get started free
-                  </ButtonPrimary>
+                  </ButtonGetStarted>
                 </Link>
               </div>
             </div>

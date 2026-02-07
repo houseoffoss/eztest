@@ -22,9 +22,18 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
 export function Navbar({
   brandHref = "/",
   brandLabel = (
-    <div className="flex items-center gap-2">
-      <Image src="/favicon.png" alt="EZTest" width={24} height={24} className="w-6 h-6" />
-      <span className="text-lg font-semibold">EZTest</span>
+    <div
+      className="relative inline-block rounded-full p-[1px]"
+      style={{
+        background: "conic-gradient(from 45deg, rgba(255,255,255,0.1) 0deg, rgba(255,255,255,0.4) 90deg, rgba(255,255,255,0.1) 180deg, rgba(255,255,255,0.4) 270deg, rgba(255,255,255,0.1) 360deg)"
+      }}
+    >
+      <div
+        className="relative rounded-full flex items-center justify-center w-10 h-10"
+        style={{ backgroundColor: "#0a1628" }}
+      >
+        <Image src="/favicon.png" alt="EZTest" width={24} height={24} className="w-6 h-6 relative z-10" />
+      </div>
     </div>
   ),
   items,
@@ -72,9 +81,7 @@ export function Navbar({
             <div className="flex items-center gap-3">
               {brandLabel && (
                 <Link href={brandHref} className="shrink-0">
-                  <span className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
-                    {brandLabel}
-                  </span>
+                  {brandLabel}
                 </Link>
               )}
               {breadcrumbs && (
