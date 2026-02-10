@@ -284,8 +284,8 @@
   top: 21%;
   height: 360px;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(145,70,30,0.95) 0%, rgba(145,70,30,0.0) 55%);
-  opacity: 0.9;
+    radial-gradient(ellipse at 50% 0%, rgba(120,50,20,1) 0%, rgba(120,50,20,0.0) 55%);
+  opacity: 0.95;
   filter: blur(180px);
     backdrop-filter: blur(447.9px);
     -webkit-backdrop-filter: blur(447.9px);
