@@ -297,11 +297,14 @@ export default function HomePage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        <div className="space-y-24">
-          <HeroSection />
-          <HowEzTestWorksSection />
-        </div>
+        <HeroSection />
+      </div>
 
+      <div className="pb-20">
+        <HowEzTestWorksSection />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tab Navigation */}
         <div className="mt-24 mb-16 flex justify-center">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
