@@ -9,6 +9,7 @@ import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/frontend/reusable-elements/tabs/Tabs';
 import { HeroSection } from './subcomponents/HeroSection';
+import { HowEzTestWorksSection } from './subcomponents/HowEzTestWorksSection';
 import { PhilosophySection } from './subcomponents/PhilosophySection';
 import { FeaturesGrid } from './subcomponents/FeaturesGrid';
 import { StatsSection } from './subcomponents/StatsSection';
@@ -233,8 +234,9 @@ export default function HomePage() {
   }, [activeTab, shouldScroll]);
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
-      <Navbar
+    <div className="min-h-screen bg-[#050608]">
+      <div className="bg-gradient-to-b from-[#050608] via-black to-[#050608]">
+        <Navbar
         items={navItems.map(item => ({
           ...item,
           href: item.href,
@@ -295,11 +297,19 @@ export default function HomePage() {
         }
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        <HeroSection />
-        
+        {/* Hero wrapper - shares same background as navbar */}
+        <div className="pt-24 pb-20">
+          <HeroSection />
+        </div>
+      </div>
+
+      <div className="pb-20">
+        <HowEzTestWorksSection />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tab Navigation */}
-        <div className="mb-16 flex justify-center">
+        <div className="mt-24 mb-16 flex justify-center">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList variant="glass" className="mx-auto h-12 px-1 !rounded-full !border-white/10 !bg-white/5 !backdrop-blur-2xl !shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] !ring-1 !ring-white/5">
               <TabsTrigger value="overview" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Overview</TabsTrigger>
