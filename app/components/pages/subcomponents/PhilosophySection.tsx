@@ -68,7 +68,7 @@ export const PhilosophySection = () => {
 
         {/* Our Philosophy card - bottom right on larger screens */}
         <div className="mt-12 flex w-full justify-center lg:mt-0 lg:justify-end">
-          <div className="relative z-20 w-full max-w-[540px] rounded-[20.6px] border border-[#BAB8B8]/60 border-b-0 bg-[rgba(13,13,13,0.04)] px-[32px] py-[32px] backdrop-blur-2xl">
+          <div className="relative z-20 w-full max-w-[500px] rounded-[20.6px] border border-[#BAB8B8]/60 border-b-0 bg-[rgba(13,13,13,0.04)] px-[32px] py-[40px] backdrop-blur-2xl">
               <div className="mb-6 flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
                 <span className="h-3 w-3 rounded-full bg-[#FEBC2E]" />
