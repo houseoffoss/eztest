@@ -449,7 +449,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </main>
 
-      <GlassFooter />
+      <GlassFooter hidePrivacyLink={true} />
     </div>
   );
 }

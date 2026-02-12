@@ -3,31 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import styles from "./GlassFooter.module.css";
 
 type GlassFooterProps = {
   variant?: "full" | "simple";
   description?: React.ReactNode;
   className?: string;
+  hidePrivacyLink?: boolean;
 };
 
-// Smart link that handles navigation to homepage anchors
-function SmartAnchorLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
-  const pathname = usePathname();
-  const isHomepage = pathname === "/";
-  
-  // If on homepage, use hash-only link. Otherwise, navigate to homepage with hash.
-  const targetHref = isHomepage ? href : `/${href}`;
-  
-  return (
-    <Link href={targetHref} className={className}>
-      {children}
-    </Link>
-  );
-}
 
-export function GlassFooter({ variant = "full", description, className }: GlassFooterProps) {
+export function GlassFooter({ variant = "full", description, className, hidePrivacyLink = false }: GlassFooterProps) {
   if (variant === "simple") {
     return (
       <footer className={className ? className + " mt-24" : "mt-24"}>
@@ -64,7 +50,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
           left: '0',
           right: '0',
           opacity: 0.6,
-          zIndex: 2,
+          zIndex: 3,
         }}
       />
 
@@ -92,12 +78,15 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
           top: '250px',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at center bottom, rgba(232, 154, 107, 0.35) 0%, rgba(232, 154, 107, 0.22) 40%, rgba(232, 154, 107, 0.12) 70%, transparent 100%)',
+          background: 'radial-gradient(ellipse at center bottom, rgba(217, 127, 76, 0.30) 0%, rgba(217, 127, 76, 0.20) 40%, rgba(217, 127, 76, 0.10) 70%, transparent 100%)',
           backdropFilter: 'blur(1007.2px)',
           borderRadius: '50%',
-          filter: 'blur(120px)',
+          filter: 'blur(100px)',
+          WebkitFilter: 'blur(100px)',
           zIndex: 1,
           overflow: 'visible',
+          WebkitBackdropFilter: 'blur(1007.2px)',
+          mixBlendMode: 'screen',
         }}
       />
 
@@ -126,7 +115,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
             />
           </div>
           <div
-            className="flex items-center justify-center flex-shrink-0 text-white"
+            className="flex items-center justify-center flex-shrink-0"
             style={{
               width: '99px',
               height: '28px',
@@ -135,9 +124,7 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
               fontSize: '18px',
               lineHeight: '28px',
               letterSpacing: '0.2px',
-              background: 'rgba(50, 145, 255, 0.8)',
-              boxShadow: '0px 4.66px 4.66px 0px rgba(0, 0, 0, 0.15)',
-              borderRadius: '2px',
+              color: 'rgba(50, 145, 255, 0.8)',
             }}
           >
             Contact Us
@@ -181,35 +168,40 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
         >
           <div className="flex items-center gap-2 text-white flex-shrink-0">
             <a
-              href="mailto:mailid@eztest.com"
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity text-white"
+              href="mailto:info@belsterns.com"
+              className="flex items-center gap-1 hover:opacity-80 transition-opacity text-white"
               style={{
                 fontFamily: 'Inter, sans-serif',
                 fontSize: '16px',
               }}
             >
-              <span>mailid@eztest.com</span>
-              <ExternalLink className="w-4 h-4" />
+              <span>info@belsterns.com</span>
+              <svg width="24" height="24" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                <path d="M14.8657 10.6945L23.4173 11.4427L22.6692 19.9943" stroke="white" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10.3945 22.3703L23.2871 11.5521" stroke="white" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </a>
           </div>
           <div className="flex flex-wrap items-center gap-6 text-white flex-shrink-0" style={{ fontFamily: 'Inter, sans-serif', fontSize: '16px', marginLeft: 'auto', paddingRight: '40px' }}>
-            <SmartAnchorLink href="#features" className="hover:opacity-80 transition-opacity text-white">
-              Features
-            </SmartAnchorLink>
-            <SmartAnchorLink href="#why-choose" className="hover:opacity-80 transition-opacity text-white">
-              Why We Choose?
-            </SmartAnchorLink>
+            <Link href="https://belsterns.com/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
+              About
+            </Link>
+            <Link href="https://www.houseoffoss.com/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
+              Blog
+            </Link>
             <Link href="https://github.com/houseoffoss/eztest" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
               GitHub
             </Link>
             <Link href="https://github.com/houseoffoss/eztest/issues" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
               Support
             </Link>
-            <Link href="https://belsterns.com/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
-              About
-            </Link>
-            <Link href="https://www.houseoffoss.com/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
-              Blog
+            {!hidePrivacyLink && (
+              <Link href="/privacy" className="hover:opacity-80 transition-opacity text-white">
+                Privacy Policy
+              </Link>
+            )}
+            <Link href="https://github.com/houseoffoss/eztest/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity text-white">
+              License
             </Link>
           </div>
         </div>
@@ -226,27 +218,32 @@ export function GlassFooter({ variant = "full", description, className }: GlassF
           paddingRight: '0',
         }}
       >
-        <h1
-          style={{
-            fontFamily: 'Inter, sans-serif',
-            fontWeight: 800,
-            fontSize: 'clamp(120px, 30vw, 349.77px)',
-            lineHeight: '258px',
-            letterSpacing: '0.2px',
-            textAlign: 'center',
-            textTransform: 'lowercase',
-            background: 'linear-gradient(90deg, #EEEDED 0%, #868686 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            boxShadow: '0px 12.73px 12.73px 0px rgba(0, 0, 0, 0.15)',
-            margin: '0 auto',
-            padding: 0,
-            width: '100%',
-          }}
-        >
+        <h1 className={styles.footerGradientText}>
           eztest
         </h1>
+      </div>
+
+      {/* Copyright Section */}
+      <div 
+        className="relative z-10 w-full"
+        style={{
+          marginTop: '20px',
+          paddingTop: '16px',
+          paddingBottom: '24px',
+          marginLeft: 'clamp(16px, 112px, calc((100% - 1400px) / 2 + 112px))',
+          paddingRight: 'clamp(16px, 112px, calc((100% - 1400px) / 2 + 112px))',
+        }}
+      >
+        <p 
+          className="text-white/60 text-sm"
+          style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '14px',
+            letterSpacing: '0.2px',
+          }}
+        >
+          © {new Date().getFullYear()} Belsterns. All rights reserved.
+        </p>
       </div>
     </footer>
   );

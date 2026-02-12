@@ -1,0 +1,37 @@
+.footerGradientText {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: clamp(120px, 30vw, 349.77px);
+  line-height: 258px;
+  letter-spacing: 0.2px;
+  text-align: center;
+  text-transform: lowercase;
+  
+  /* Cross-browser gradient text support */
+  background: linear-gradient(90deg, #EEEDED 0%, #868686 100%);
+  
+  /* Standard and vendor-prefixed properties for maximum compatibility */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  /* Ensure gradient is applied properly */
+  background-attachment: scroll;
+  color: transparent;
+  
+  /* Shadow effect */
+  box-shadow: 0px 12.73px 12.73px 0px rgba(0, 0, 0, 0.15);
+  
+  /* Layout */
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  
+  /* Fallback for browsers that don't support gradient text */
+  @supports not (-webkit-background-clip: text) {
+    background: linear-gradient(90deg, #EEEDED 0%, #868686 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
