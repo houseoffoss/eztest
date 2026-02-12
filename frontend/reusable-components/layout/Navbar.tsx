@@ -64,7 +64,7 @@ export function Navbar({
   );
 
   return (
-    <header className={cn("fixed top-4 left-0 right-0 z-50", className)} {...props}>
+    <header className={cn("sticky top-4 z-50", className)} {...props}>
       <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
         <div className="flex items-center justify-between gap-3 w-full">
           {/* Left side: Brand + Breadcrumbs */}
