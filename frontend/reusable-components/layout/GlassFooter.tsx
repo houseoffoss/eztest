@@ -35,7 +35,10 @@ export function GlassFooter({ variant = "full", description, className, hidePriv
   }
 
   return (
-    <footer className={`relative overflow-hidden w-full ${className || ""}`} style={{ minHeight: '600px', paddingTop: '80px', paddingBottom: '20px' }}>
+    <footer
+      className={`relative overflow-hidden w-full ${className || ""}`}
+      style={{ minHeight: '560px', paddingTop: '40px', paddingBottom: '20px' }}
+    >
       {/* Dots background image - positioned absolutely */}
       <div 
         className="absolute pointer-events-none"
