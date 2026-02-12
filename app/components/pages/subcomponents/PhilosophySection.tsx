@@ -6,7 +6,7 @@ export const PhilosophySection = () => {
   return (
     <section
       aria-labelledby="philosophy-heading"
-      className="relative mb-32 overflow-hidden bg-black"
+      className="relative mb-16 overflow-hidden bg-black"
     >
       {/* Background image - full width, blending with gradients on top */}
       <div className="pointer-events-none absolute inset-0 z-0">
@@ -39,7 +39,7 @@ export const PhilosophySection = () => {
       />
 
       {/* Content */}
-      <div className="relative z-10 mx-auto flex min-h-[640px] max-w-[1440px] flex-col justify-between px-6 py-16 sm:px-10 lg:px-20 lg:py-24">
+      <div className="relative z-10 mx-auto flex min-h-[520px] max-w-[1440px] flex-col justify-between px-6 py-16 sm:px-10 lg:px-20 lg:py-24">
         {/* Top-left heading + CTA */}
         <div className="max-w-3xl text-left text-white">
           <h2

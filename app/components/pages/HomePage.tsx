@@ -307,11 +307,6 @@ export default function HomePage() {
         <HowEzTestWorksSection />
       </div>
 
-      {/* Philosophy section directly below How EZTest Works - full width */}
-      <div className="mt-10">
-        <PhilosophySection />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tab Navigation */}
         <div className="mt-24 mb-16 flex justify-center">
@@ -341,6 +336,11 @@ export default function HomePage() {
             </TabsContent>
           </Tabs>
         </div>
+      </div>
+
+      {/* Philosophy section positioned below the tabs */}
+      <div className="mt-10">
+        <PhilosophySection />
       </div>
 
       <GlassFooter />
