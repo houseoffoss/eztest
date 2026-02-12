@@ -235,8 +235,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050608]">
-      <div className="bg-gradient-to-b from-[#050608] via-black to-[#050608]">
-        <Navbar
+      <Navbar
         items={navItems.map(item => ({
           ...item,
           href: item.href,
@@ -297,6 +296,7 @@ export default function HomePage() {
         }
       />
 
+      <div className="bg-gradient-to-b from-[#050608] via-black to-[#050608]">
         {/* Hero wrapper - shares same background as navbar */}
         <div className="pt-24 pb-20">
           <HeroSection />
