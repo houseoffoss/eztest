@@ -57,15 +57,17 @@ interface DefectUpdateEmailData {
   defectId: string;
   defectTitle: string;
   defectKey: string;
+  projectId: string;
   projectName: string;
   updatedBy: User;
   changes: {
-    field: 'status' | 'priority';
+    field: 'status' | 'priority' | 'progress';
     oldValue: string;
     newValue: string;
   }[];
   assignedTo?: User;
   createdBy: User;
+  recipients: User[];
   appUrl: string;
 }
 
@@ -714,43 +716,26 @@ export async function sendDefectUpdateEmail(
     .join(', ');
   
   const subject = `🔔 Defect Updated: ${data.defectTitle}`;
-  const defectUrl = `${data.appUrl}/projects/${data.defectId}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
-  // Determine recipients: assignee, creator, and updater
-  // Always send email notification for status/priority changes to all stakeholders
-  const recipients: User[] = [];
-  const recipientIds = new Set<string>();
-
-  // Add assignee
-  if (data.assignedTo) {
-    recipientIds.add(data.assignedTo.id);
-    recipients.push(data.assignedTo);
-  }
-
-  // Add creator (if not already added)
-  if (!recipientIds.has(data.createdBy.id)) {
-    recipientIds.add(data.createdBy.id);
-    recipients.push(data.createdBy);
-  }
-
-  // Add updater (if not already added)
-  if (!recipientIds.has(data.updatedBy.id)) {
-    recipientIds.add(data.updatedBy.id);
-    recipients.push(data.updatedBy);
-  }
-
-  if (recipients.length === 0) {
+  if (data.recipients.length === 0) {
     console.log('[EMAIL] No recipients for defect update email');
     return true;
   }
 
+  // Create email content for each recipient
+  const sendPromises = data.recipients.map(async (recipient) => {
+
   const changesHtml = data.changes.map(change => {
     const getStatusColor = (status: string) => {
       switch (status.toUpperCase()) {
-        case 'OPEN': return 'background-color: #3b82f6; color: white;';
-        case 'IN_PROGRESS': return 'background-color: #f59e0b; color: white;';
-        case 'RESOLVED': return 'background-color: #10b981; color: white;';
+        case 'NEW': return 'background-color: #3b82f6; color: white;';
+        case 'IN_PROGRESS': return 'background-color: #8b5cf6; color: white;';
+        case 'FIXED': return 'background-color: #10b981; color: white;';
+        case 'TESTED': return 'background-color: #f59e0b; color: white;';
         case 'CLOSED': return 'background-color: #6b7280; color: white;';
+        case 'OPEN': return 'background-color: #3b82f6; color: white;';
+        case 'RESOLVED': return 'background-color: #10b981; color: white;';
         case 'REOPENED': return 'background-color: #ef4444; color: white;';
         default: return 'background-color: #9ca3af; color: white;';
       }
@@ -758,6 +743,7 @@ export async function sendDefectUpdateEmail(
 
     const getPriorityColor = (priority: string) => {
       switch (priority.toUpperCase()) {
+        case 'CRITICAL':
         case 'URGENT': return 'background-color: #dc2626; color: white;';
         case 'HIGH': return 'background-color: #ea580c; color: white;';
         case 'MEDIUM': return 'background-color: #ca8a04; color: white;';
@@ -766,8 +752,33 @@ export async function sendDefectUpdateEmail(
       }
     };
 
-    const oldStyle = change.field === 'status' ? getStatusColor(change.oldValue) : getPriorityColor(change.oldValue);
-    const newStyle = change.field === 'status' ? getStatusColor(change.newValue) : getPriorityColor(change.newValue);
+    const getProgressColor = (progress: string) => {
+      // Extract number from "50%" format
+      const progressNum = parseInt(progress.replace('%', '')) || 0;
+      if (progressNum === 0) return 'background-color: #e5e7eb; color: #1f2937;';
+      if (progressNum < 25) return 'background-color: #fee2e2; color: #991b1b;';
+      if (progressNum < 50) return 'background-color: #fef3c7; color: #92400e;';
+      if (progressNum < 75) return 'background-color: #dbeafe; color: #1e40af;';
+      if (progressNum < 100) return 'background-color: #dcfce7; color: #166534;';
+      return 'background-color: #10b981; color: white;';
+    };
+
+    let oldStyle: string;
+    let newStyle: string;
+
+    if (change.field === 'status') {
+      oldStyle = getStatusColor(change.oldValue);
+      newStyle = getStatusColor(change.newValue);
+    } else if (change.field === 'priority') {
+      oldStyle = getPriorityColor(change.oldValue);
+      newStyle = getPriorityColor(change.newValue);
+    } else if (change.field === 'progress') {
+      oldStyle = getProgressColor(change.oldValue);
+      newStyle = getProgressColor(change.newValue);
+    } else {
+      oldStyle = 'background-color: #9ca3af; color: white;';
+      newStyle = 'background-color: #9ca3af; color: white;';
+    }
 
     return `
       <div style="margin: 10px 0;">
@@ -785,7 +796,7 @@ export async function sendDefectUpdateEmail(
     `;
   }).join('');
 
-  const html = `
+    const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -797,8 +808,12 @@ export async function sendDefectUpdateEmail(
           <h2 style="color: #1e40af; font-size: 20px; margin: 0;">🔔 Defect Updated</h2>
         </div>
 
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
+          Hi <strong>${recipient.name}</strong>,
+        </p>
+
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A defect has been updated in project <strong>${data.projectName}</strong>.
+          A defect has been updated in project <strong>${data.projectName}</strong> by <strong>${data.updatedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -831,14 +846,16 @@ export async function sendDefectUpdateEmail(
     </div>
   `;
 
-  const changesText = data.changes
-    .map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`)
-    .join('\n');
+    const changesText = data.changes
+      .map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`)
+      .join('\n');
 
-  const text = `
+    const text = `
 Defect Updated
 
-A defect has been updated in project ${data.projectName}.
+Hi ${recipient.name},
+
+A defect has been updated in project ${data.projectName} by ${data.updatedBy.name}.
 
 Defect: ${data.defectKey}: ${data.defectTitle}
 
@@ -851,21 +868,23 @@ View defect: ${defectUrl}
 
 ---
 This is an automated notification from EZTest.
-  `;
+    `;
 
-  // Send email to all recipients
-  const results = await Promise.all(
-    recipients.map(recipient =>
-      sendEmail({
-        to: recipient.email,
-        subject,
-        html,
-        text,
-      })
-    )
-  );
+    return sendEmail({
+      to: recipient.email,
+      subject,
+      html,
+      text,
+    });
+  });
 
-  return results.every(result => result);
+  try {
+    const results = await Promise.all(sendPromises);
+    return results.every((result) => result === true);
+  } catch (error) {
+    console.error('[EMAIL] Error sending defect update emails:', error);
+    return false;
+  }
 }
 
 /**
