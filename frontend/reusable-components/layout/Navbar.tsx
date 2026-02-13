@@ -17,6 +17,7 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
   actions?: React.ReactNode | ActionButtonConfig[];
   containerClassName?: string;
   hideNavbarContainer?: boolean;
+  variant?: 'app' | 'marketing';
 }
 
 export function Navbar({
@@ -33,6 +34,7 @@ export function Navbar({
   className,
   containerClassName,
   hideNavbarContainer = false,
+  variant = 'app',
   ...props
 }: NavbarProps) {
   const pathname = usePathname();
@@ -63,6 +65,90 @@ export function Navbar({
     actions[0].type === 'signout'
   );
 
+  // Marketing variant (new design with centered nav and gradient border)
+  if (variant === 'marketing') {
+    return (
+      <header className={cn("sticky top-4 z-50", className)} {...props}>
+        <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
+          <div className="flex items-center justify-center gap-3 w-full relative">
+            {/* Left side: Brand */}
+            {brandLabel ? (
+              <div className="flex items-center gap-3 absolute left-0">
+                <Link href={brandHref} className="shrink-0 inline-flex items-center">
+                  {brandLabel}
+                </Link>
+              </div>
+            ) : null}
+
+            {/* Center: Nav items + Breadcrumbs */}
+            {((items && items.length > 0) || breadcrumbs) ? (
+              <div 
+                className="inline-flex items-center rounded-[53px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
+                style={{
+                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.1) 6%, rgba(255, 255, 255, 0.15) 13%, rgba(255, 255, 255, 0.25) 25%, rgba(255, 255, 255, 0.4) 42%, rgba(255, 255, 255, 0.4) 44%, rgba(255, 255, 255, 0.25) 69%, rgba(255, 255, 255, 0.15) 83%, rgba(255, 255, 255, 0.1) 91%, rgba(255, 255, 255, 0.08) 100%)',
+                }}
+              >
+                <div className="inline-flex items-center gap-[10px] rounded-[53px] px-[10px] py-[6px]" style={{ backgroundColor: '#050608' }}>
+                  <nav className="hidden md:flex items-center gap-1">
+                    {items && items.length > 0 ? (
+                      <>
+                        {items.map((it) => {
+                          // Use exact matching to prevent multiple highlights
+                          const active = pathname === it.href;
+                          return (
+                            <Link
+                              key={it.href}
+                              href={it.href}
+                              className={cn(
+                                "px-4 py-2 text-sm rounded-full transition-colors cursor-pointer",
+                                active
+                                  ? "bg-white/12 text-white shadow-inner"
+                                  : "text-white/80 hover:text-white hover:bg-white/8"
+                              )}
+                              aria-current={active ? "page" : undefined}
+                            >
+                              {it.label}
+                            </Link>
+                          );
+                        })}
+                      </>
+                    ) : null}
+                    {breadcrumbs && (
+                      <>
+                        {React.isValidElement(breadcrumbs) && 
+                         breadcrumbs.type === React.Fragment ? (
+                          // If breadcrumbs is a Fragment, render children directly
+                          (breadcrumbs.props as { children?: React.ReactNode }).children
+                        ) : (
+                          // Single breadcrumb item
+                          breadcrumbs
+                        )}
+                      </>
+                    )}
+                  </nav>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Right side: Actions */}
+            {renderedActions ? (
+              hasOnlySignOutButton ? (
+                <div className="absolute right-0">
+                  {renderedActions}
+                </div>
+              ) : (
+                <div className="absolute right-0">
+                  {renderedActions}
+                </div>
+              )
+            ) : null}
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // App variant (old design - default for logged-in pages)
   return (
     <header className={cn("sticky top-4 z-50", className)} {...props}>
       <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
