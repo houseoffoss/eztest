@@ -30,12 +30,12 @@ const capabilities = [
   {
     title: 'Fully Customizable',
     description: 'Open-source and self-hosted platform. Full source code access allows complete customization to fit your team\'s needs.',
-    image: '/screenshots/TestRun_Detail_Page.png',
+    image: '/screenshots/fully_customizable.png',
   },
   {
     title: 'AuthN + AuthZ',
     description: 'Secure authentication with email/password, JWT sessions, and role-based access control with 27 granular permissions.',
-    image: '/screenshots/TestRun_Detail_Page.png',
+    image: '/screenshots/AuthN.png',
   },
 ];
 
