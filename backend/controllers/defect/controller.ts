@@ -88,6 +88,17 @@ export class DefectController {
       createdById: req.userInfo.id,
     });
 
+    // Send email notification to the defect creator
+    emailService
+      .sendDefectCreationEmail({
+        defectId: defect.id,
+        creatorId: req.userInfo.id,
+        appUrl,
+      })
+      .catch((error) => {
+        console.error('Failed to send defect creation email:', error);
+      });
+
     // If defect is assigned to someone, send notification email
     if (validatedData.assignedToId) {
       emailService
@@ -141,7 +152,8 @@ export class DefectController {
     }
 
     // Track changes for email notification
-    const changes: Array<{ field: 'status' | 'priority'; oldValue: string; newValue: string }> = [];
+    // All changes are collected in a single array and sent in ONE email
+    const changes: Array<{ field: 'status' | 'priority' | 'progress'; oldValue: string; newValue: string }> = [];
 
     if (validatedData.status && validatedData.status !== currentDefect.status) {
       changes.push({
@@ -159,10 +171,24 @@ export class DefectController {
       });
     }
 
+    // Track progress changes
+    if (validatedData.progressPercentage !== undefined) {
+      const currentProgress = currentDefect.progressPercentage?.toString() || '0';
+      const newProgress = validatedData.progressPercentage?.toString() || '0';
+      
+      if (newProgress !== currentProgress) {
+        changes.push({
+          field: 'progress',
+          oldValue: `${currentProgress}%`,
+          newValue: `${newProgress}%`,
+        });
+      }
+    }
+
     // Update the defect with all provided fields
     const defect = await defectService.updateDefect(defectId, validatedData);
 
-    // If assignedToId is being changed, send assignment notification email
+    // If assignedToId is being changed, send assignment notification email (separate from update email)
     if (validatedData.assignedToId !== undefined && validatedData.assignedToId !== currentDefect.assignedToId) {
       const assigneeId = validatedData.assignedToId;
       if (assigneeId) {
@@ -177,8 +203,10 @@ export class DefectController {
       }
     }
 
-    // Send email notification if status or priority changed
+    // Send ONE email notification with ALL changes (status, priority, progress) if any changed
+    // This ensures that updating multiple fields in one save sends only ONE email with all changes
     if (changes.length > 0) {
+      console.log(`[DEFECT UPDATE] Sending single email with ${changes.length} change(s):`, changes.map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`).join(', '));
       emailService.sendDefectUpdateEmail({
         defectId,
         updatedByUserId: req.userInfo.id,
@@ -187,6 +215,8 @@ export class DefectController {
       }).catch(error => {
         console.error('Failed to send defect update email:', error);
       });
+    } else {
+      console.log('[DEFECT UPDATE] No changes detected (status, priority, or progress), skipping email');
     }
 
     return {

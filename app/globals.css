@@ -8,6 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -157,6 +158,179 @@
   }
 }
 
+@layer utilities {
+  /* Used by existing button variants; was referenced but not defined */
+  .border-image-source-gradient {
+    border-image-slice: 1;
+    border-image-source: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.06));
+  }
+
+  /* Home page hero visuals */
+  .hero-stars {
+    background-color: #050608;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6), transparent 60%),
+      radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,0.55), transparent 60%),
+      radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.45), transparent 60%),
+      radial-gradient(1px 1px at 60% 55%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.35), transparent 60%),
+      radial-gradient(1px 1px at 92% 78%, rgba(255,255,255,0.4), transparent 60%);
+    box-shadow:
+      inset 0 0 200px rgba(0,0,0,0.55),
+      inset 0 -140px 160px rgba(0,0,0,0.78);
+  }
+
+  .hero-bg {
+    position: relative;
+    background-image:
+      radial-gradient(900px 520px at 50% 18%, rgba(255,255,255,0.08), transparent 62%),
+      linear-gradient(180deg, #050608 0%, #050608 35%, #D97F4C 65%, #050608 100%);
+    opacity: 1;
+  }
+
+  .hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Full hero background: orange glow + grid + black gradient */
+    background-image:
+      radial-gradient(circle at 50% 65%, rgba(217,127,76,0.55) 0%, rgba(217,127,76,0.28) 26%, rgba(217,127,76,0.0) 68%),
+      url("/Grid.png");
+    background-repeat: no-repeat;
+    background-position:
+      center 68%,
+      center 78%;
+    background-size:
+      1600px 900px,
+      min(1600px, 100vw) auto;
+    pointer-events: none;
+    opacity: 0.95;
+    z-index: 0;
+  }
+
+  /* Perspective is required so rotateX looks 3D (Framer Motion animation) */
+  .hero-tilt-perspective {
+    perspective: 1000px;
+    perspective-origin: 50% 60%;
+  }
+
+  /* GPU-accelerated cinematic zoom; no layout shift (transform only) */
+  .hero-zoom-target {
+    --hero-zoom: 0.78;
+    transform: translate3d(0, 0, 0) scale(var(--hero-zoom));
+    transform-origin: 50% 50%;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .hero-horizon-line {
+    height: 1px;
+    background: #D97F4C; /* exact spec */
+    border: 0.85px solid transparent; /* exact spec */
+    border-image-slice: 1;
+    border-image-source: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(217, 127, 76, 0.83) 27.4%
+    ); /* exact spec */
+    opacity: 0.85;
+    filter: drop-shadow(0 0 16px rgba(217,127,76,0.35));
+  }
+
+  .hero-grid-stage {
+    overflow: hidden;
+    background-image: radial-gradient(55% 55% at 50% 0%, rgba(217,127,76,0.28), transparent 70%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.0) 100%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.0) 100%);
+  }
+
+  .hero-perspective-grid {
+    position: absolute;
+    left: -20%;
+    right: -20%;
+    top: -40px;
+    bottom: -520px;
+    transform-origin: 50% 0%;
+    transform: perspective(1100px) rotateX(74deg) translateY(-10px);
+    background-color: rgba(217,127,76,0.028);
+    background-image:
+      repeating-linear-gradient(to right, rgba(217,127,76,0.55) 0, rgba(217,127,76,0.55) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(to top, rgba(217,127,76,0.50) 0, rgba(217,127,76,0.50) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(to right, rgba(217,127,76,0.22) 0, rgba(217,127,76,0.22) 2px, transparent 2px, transparent 240px),
+      repeating-linear-gradient(to top, rgba(217,127,76,0.20) 0, rgba(217,127,76,0.20) 2px, transparent 2px, transparent 240px);
+    background-position: center;
+    opacity: 0.62;
+    mask-image: radial-gradient(85% 60% at 50% 0%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 36%, rgba(0,0,0,0) 78%);
+    -webkit-mask-image: radial-gradient(85% 60% at 50% 0%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 36%, rgba(0,0,0,0) 78%);
+    filter: drop-shadow(0 0 30px rgba(217,127,76,0.25));
+  }
+
+  .hero-window-glow {
+    position: absolute;
+    inset: -140px -60px -160px -60px;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(45% 40% at 50% 72%, rgba(217,127,76,0.42), transparent 70%),
+      radial-gradient(40% 35% at 50% 34%, rgba(255,255,255,0.10), transparent 72%);
+    filter: blur(26px);
+    opacity: 0.9;
+  }
+
+  /* Large blurred orange glow behind hero grid */
+  .hero-grid-glow {
+    position: absolute;
+    inset-inline: 0;
+  top: 21%;
+  height: 360px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120,50,20,1) 0%, rgba(120,50,20,0.0) 55%);
+  opacity: 0.95;
+  filter: blur(180px);
+    backdrop-filter: blur(447.9px);
+    -webkit-backdrop-filter: blur(447.9px);
+    pointer-events: none;
+    /* Sit above the grid background but below the main hero content */
+    z-index: 5;
+  }
+
+  .hero-window {
+    position: relative;
+    z-index: 1;
+    /* Match provided specs for hero image container frame */
+    border-radius: 14.22px;
+    background: rgba(13, 13, 13, 0.1); /* #0D0D0D1A */
+    border: 0.89px solid #BAB8B8;
+    padding: 12px 25px 28px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.85);
+    overflow: hidden;
+  }
+
+  .hero-window-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 9.11px;
+    padding-bottom: 9.11px;
+    padding-left: 25px;
+    padding-right: 25px;
+    border-bottom: none;
+    background: transparent;
+  }
+
+  .hero-window-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.25) inset;
+  }
+
+  .hero-window-content {
+    background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.10));
+  }
+
+}
+
 /* Glass utility class - reusable across the app */
 .glass{
   background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
@@ -263,5 +437,23 @@ select,
 [onclick],
 .cursor-pointer {
   cursor: pointer !important;
+}
+
+/* Animated gradient flow for step connectors */
+@keyframes flowDown {
+  0% {
+    transform: translateY(-50%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+  }
 }
 
