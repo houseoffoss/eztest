@@ -10,6 +10,7 @@ import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/frontend/reusable-elements/tabs/Tabs';
 import { HeroSection } from './subcomponents/HeroSection';
 import { HowEzTestWorksSection } from './subcomponents/HowEzTestWorksSection';
+import { UnifiedTraceabilitySection } from './subcomponents/UnifiedTraceabilitySection';
 import { PhilosophySection } from './subcomponents/PhilosophySection';
 import { FeaturesGrid } from './subcomponents/FeaturesGrid';
 import { StatsSection } from './subcomponents/StatsSection';
@@ -349,6 +350,10 @@ export default function HomePage() {
 
       <div className="pb-20">
         <HowEzTestWorksSection />
+      </div>
+
+      <div className="pb-20">
+        <UnifiedTraceabilitySection />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
