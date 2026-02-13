@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import {
+  sendDefectCreationEmail as sendDefectCreationEmailUtil,
   sendDefectAssignmentEmail as sendDefectAssignmentEmailUtil,
   sendDefectUpdateEmail as sendDefectUpdateEmailUtil,
   sendTestRunReportEmail as sendTestRunReportEmailUtil,
@@ -12,6 +13,12 @@ import {
   isEmailServiceAvailable as checkEmailServiceAvailable,
 } from '@/lib/email-service';
 import { NotFoundException } from '@/backend/utils/exceptions';
+
+interface SendDefectCreationEmailInput {
+  defectId: string;
+  creatorId: string;
+  appUrl: string;
+}
 
 interface SendDefectAssignmentEmailInput {
   defectId: string;
@@ -81,6 +88,121 @@ interface SendUserDeleteEmailInput {
 
 export class EmailService {
   /**
+   * Send defect creation notification email to the creator
+   * Automatically called when a defect is created
+   * Fetches all required data, then sends email
+   */
+  async sendDefectCreationEmail(input: SendDefectCreationEmailInput): Promise<boolean> {
+    const { defectId, creatorId, appUrl } = input;
+
+    console.log('[EMAIL] Attempting to send defect creation email');
+    console.log('[EMAIL] Defect ID:', defectId);
+    console.log('[EMAIL] Creator ID:', creatorId);
+    console.log('[EMAIL] ENABLE_SMTP:', process.env.ENABLE_SMTP);
+
+    // Check if email service is available
+    const isAvailable = await checkEmailServiceAvailable();
+    console.log('[EMAIL] Email service available:', isAvailable);
+    
+    if (!isAvailable) {
+      console.warn('[EMAIL] Email service not available, skipping defect creation email');
+      console.warn('[EMAIL] Check ENABLE_SMTP environment variable and SMTP configuration');
+      return false;
+    }
+
+    try {
+      // Fetch defect with all related data
+      const defect = await prisma.defect.findUnique({
+        where: { id: defectId },
+        include: {
+          project: true,
+          assignedTo: true,
+          createdBy: true,
+        },
+      });
+
+      if (!defect) {
+        throw new NotFoundException('Defect not found');
+      }
+
+      // Verify the creator matches
+      if (defect.createdBy.id !== creatorId) {
+        throw new NotFoundException('Creator mismatch');
+      }
+
+      // Get all admin users
+      const adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' },
+      });
+
+      if (!adminRole) {
+        console.warn('[EMAIL] ADMIN role not found, sending only to creator');
+      }
+
+      // Fetch all admin users (excluding soft-deleted) - get full User objects
+      const adminUsers = adminRole
+        ? await prisma.user.findMany({
+            where: {
+              roleId: adminRole.id,
+              deletedAt: null,
+            },
+          })
+        : [];
+
+      // Collect all recipients: admins + creator (avoid duplicates)
+      const recipientIds = new Set<string>();
+      const recipients: typeof adminUsers = [];
+
+      // Add creator first
+      recipientIds.add(defect.createdBy.id);
+      recipients.push(defect.createdBy);
+
+      // Add all admins (excluding creator if they're an admin)
+      adminUsers.forEach((admin) => {
+        if (!recipientIds.has(admin.id)) {
+          recipientIds.add(admin.id);
+          recipients.push(admin);
+        }
+      });
+
+      console.log('[EMAIL] Sending email to', recipients.length, 'recipient(s):');
+      recipients.forEach((r) => console.log('[EMAIL]   -', r.email));
+
+      // Send email via utility function
+      const emailSent = await sendDefectCreationEmailUtil({
+        creator: defect.createdBy,
+        recipients,
+        defectId: defect.id,
+        defectKey: defect.defectId,
+        defectTitle: defect.title,
+        defectDescription: defect.description || undefined,
+        status: defect.status,
+        severity: defect.severity,
+        priority: defect.priority,
+        projectId: defect.project.id,
+        projectName: defect.project.name,
+        assignedTo: defect.assignedTo || undefined,
+        appUrl,
+      });
+
+      if (emailSent) {
+        console.log('[EMAIL] ✓ Defect creation email sent successfully to', defect.createdBy.email);
+      } else {
+        console.error('[EMAIL] ✗ Failed to send defect creation email to', defect.createdBy.email);
+      }
+
+      return emailSent;
+    } catch (error) {
+      console.error('[EMAIL] ✗ Error sending defect creation email:', error);
+      if (error instanceof Error) {
+        console.error('[EMAIL] Error message:', error.message);
+        console.error('[EMAIL] Error stack:', error.stack);
+      }
+      return false;
+    }
+  }
+
+  /**
    * Send defect assignment notification email
    * Automatically called when a defect is assigned to someone
    * Fetches all required data, then sends email
@@ -134,10 +256,13 @@ export class EmailService {
       const emailSent = await sendDefectAssignmentEmailUtil({
         assignee,
         defectId: defect.id,
+        defectKey: defect.defectId,
         defectTitle: defect.title,
         defectDescription: defect.description || undefined,
+        status: defect.status,
         severity: defect.severity,
         priority: defect.priority,
+        projectId: defect.project.id,
         projectName: defect.project.name,
         assignedBy,
         appUrl,

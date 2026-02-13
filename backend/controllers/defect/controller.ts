@@ -88,6 +88,17 @@ export class DefectController {
       createdById: req.userInfo.id,
     });
 
+    // Send email notification to the defect creator
+    emailService
+      .sendDefectCreationEmail({
+        defectId: defect.id,
+        creatorId: req.userInfo.id,
+        appUrl,
+      })
+      .catch((error) => {
+        console.error('Failed to send defect creation email:', error);
+      });
+
     // If defect is assigned to someone, send notification email
     if (validatedData.assignedToId) {
       emailService
