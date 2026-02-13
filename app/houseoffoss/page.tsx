@@ -146,7 +146,7 @@ export default function HouseOfFOSSPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-semibold text-white mb-2 break-words">{feature.title}</h3>
                         </div>
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0b72ff]/30 via-[#0b72ff]/20 to-[#ff7a18]/30 flex items-center justify-center shrink-0 ring-1 ring-inset ring-white/15 backdrop-blur-sm">
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                       </div>
@@ -236,7 +236,7 @@ export default function HouseOfFOSSPage() {
               { step: '4', title: 'Launch EZTest', description: 'Launch your EZTest application and start managing your test cases immediately.' }
             ].map((item, index) => (
               <div key={index} className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mb-6 text-3xl font-bold text-white">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#0b72ff]/30 via-[#0b72ff]/20 to-[#ff7a18]/30 flex items-center justify-center mb-6 text-3xl font-bold text-white ring-1 ring-inset ring-white/15 backdrop-blur-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                   {item.step}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3 break-words">{item.title}</h3>
