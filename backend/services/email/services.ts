@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import {
+  sendDefectCreationEmail as sendDefectCreationEmailUtil,
   sendDefectAssignmentEmail as sendDefectAssignmentEmailUtil,
   sendDefectUpdateEmail as sendDefectUpdateEmailUtil,
   sendTestRunReportEmail as sendTestRunReportEmailUtil,
@@ -12,6 +13,12 @@ import {
   isEmailServiceAvailable as checkEmailServiceAvailable,
 } from '@/lib/email-service';
 import { NotFoundException } from '@/backend/utils/exceptions';
+
+interface SendDefectCreationEmailInput {
+  defectId: string;
+  creatorId: string;
+  appUrl: string;
+}
 
 interface SendDefectAssignmentEmailInput {
   defectId: string;
@@ -38,7 +45,7 @@ interface SendDefectUpdateEmailInput {
   defectId: string;
   updatedByUserId: string;
   changes: {
-    field: 'status' | 'priority';
+    field: 'status' | 'priority' | 'progress';
     oldValue: string;
     newValue: string;
   }[];
@@ -80,6 +87,151 @@ interface SendUserDeleteEmailInput {
 }
 
 export class EmailService {
+  /**
+   * Send defect creation notification email to the creator
+   * Automatically called when a defect is created
+   * Fetches all required data, then sends email
+   */
+  async sendDefectCreationEmail(input: SendDefectCreationEmailInput): Promise<boolean> {
+    const { defectId, creatorId, appUrl } = input;
+
+    console.log('[EMAIL] Attempting to send defect creation email');
+    console.log('[EMAIL] Defect ID:', defectId);
+    console.log('[EMAIL] Creator ID:', creatorId);
+    console.log('[EMAIL] ENABLE_SMTP:', process.env.ENABLE_SMTP);
+
+    // Check if email service is available
+    const isAvailable = await checkEmailServiceAvailable();
+    console.log('[EMAIL] Email service available:', isAvailable);
+    
+    if (!isAvailable) {
+      console.warn('[EMAIL] Email service not available, skipping defect creation email');
+      console.warn('[EMAIL] Check ENABLE_SMTP environment variable and SMTP configuration');
+      return false;
+    }
+
+    try {
+      // Fetch defect with all related data
+      const defect = await prisma.defect.findUnique({
+        where: { id: defectId },
+        include: {
+          project: true,
+          assignedTo: true,
+          createdBy: true,
+        },
+      });
+
+      if (!defect) {
+        throw new NotFoundException('Defect not found');
+      }
+
+      // Verify the creator matches
+      if (defect.createdBy.id !== creatorId) {
+        throw new NotFoundException('Creator mismatch');
+      }
+
+      // Get ADMIN and PROJECT_MANAGER roles
+      const adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' },
+      });
+
+      const projectManagerRole = await prisma.role.findUnique({
+        where: { name: 'PROJECT_MANAGER' },
+      });
+
+      if (!adminRole) {
+        console.warn('[EMAIL] ADMIN role not found');
+      }
+      if (!projectManagerRole) {
+        console.warn('[EMAIL] PROJECT_MANAGER role not found');
+      }
+
+      // Fetch all admin users (excluding soft-deleted) - get full User objects
+      const adminUsers = adminRole
+        ? await prisma.user.findMany({
+            where: {
+              roleId: adminRole.id,
+              deletedAt: null,
+            },
+          })
+        : [];
+
+      // Fetch project managers who are members of this project
+      const projectManagerUsers = projectManagerRole
+        ? await prisma.user.findMany({
+            where: {
+              roleId: projectManagerRole.id,
+              deletedAt: null,
+              projects: {
+                some: {
+                  projectId: defect.project.id,
+                },
+              },
+            },
+          })
+        : [];
+
+      // Collect all recipients: admins + project managers + creator (avoid duplicates)
+      const recipientIds = new Set<string>();
+      const recipients: typeof adminUsers = [];
+
+      // Add creator first
+      recipientIds.add(defect.createdBy.id);
+      recipients.push(defect.createdBy);
+
+      // Add all admins (excluding creator if they're an admin)
+      adminUsers.forEach((admin) => {
+        if (!recipientIds.has(admin.id)) {
+          recipientIds.add(admin.id);
+          recipients.push(admin);
+        }
+      });
+
+      // Add project managers (excluding if already added)
+      projectManagerUsers.forEach((pm) => {
+        if (!recipientIds.has(pm.id)) {
+          recipientIds.add(pm.id);
+          recipients.push(pm);
+        }
+      });
+
+      console.log('[EMAIL] Sending email to', recipients.length, 'recipient(s):');
+      recipients.forEach((r) => console.log('[EMAIL]   -', r.email));
+
+      // Send email via utility function
+      const emailSent = await sendDefectCreationEmailUtil({
+        creator: defect.createdBy,
+        recipients,
+        defectId: defect.id,
+        defectKey: defect.defectId,
+        defectTitle: defect.title,
+        defectDescription: defect.description || undefined,
+        status: defect.status,
+        severity: defect.severity,
+        priority: defect.priority,
+        projectId: defect.project.id,
+        projectName: defect.project.name,
+        assignedTo: defect.assignedTo || undefined,
+        appUrl,
+      });
+
+      if (emailSent) {
+        console.log('[EMAIL] ✓ Defect creation email sent successfully to', defect.createdBy.email);
+      } else {
+        console.error('[EMAIL] ✗ Failed to send defect creation email to', defect.createdBy.email);
+      }
+
+      return emailSent;
+    } catch (error) {
+      console.error('[EMAIL] ✗ Error sending defect creation email:', error);
+      if (error instanceof Error) {
+        console.error('[EMAIL] Error message:', error.message);
+        console.error('[EMAIL] Error stack:', error.stack);
+      }
+      return false;
+    }
+  }
+
   /**
    * Send defect assignment notification email
    * Automatically called when a defect is assigned to someone
@@ -134,10 +286,13 @@ export class EmailService {
       const emailSent = await sendDefectAssignmentEmailUtil({
         assignee,
         defectId: defect.id,
+        defectKey: defect.defectId,
         defectTitle: defect.title,
         defectDescription: defect.description || undefined,
+        status: defect.status,
         severity: defect.severity,
         priority: defect.priority,
+        projectId: defect.project.id,
         projectName: defect.project.name,
         assignedBy,
         appUrl,
@@ -189,16 +344,91 @@ export class EmailService {
         throw new NotFoundException('User not found');
       }
 
+      // Get ADMIN and PROJECT_MANAGER roles
+      const adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' },
+      });
+
+      const projectManagerRole = await prisma.role.findUnique({
+        where: { name: 'PROJECT_MANAGER' },
+      });
+
+      // Fetch all admin users (excluding soft-deleted)
+      const adminUsers = adminRole
+        ? await prisma.user.findMany({
+            where: {
+              roleId: adminRole.id,
+              deletedAt: null,
+            },
+          })
+        : [];
+
+      // Fetch project managers who are members of this project
+      const projectManagerUsers = projectManagerRole
+        ? await prisma.user.findMany({
+            where: {
+              roleId: projectManagerRole.id,
+              deletedAt: null,
+              projects: {
+                some: {
+                  projectId: defect.project.id,
+                },
+              },
+            },
+          })
+        : [];
+
+      // Collect all recipients: admins + project managers + creator + assignee + updater (avoid duplicates)
+      const recipientIds = new Set<string>();
+      const recipients: typeof adminUsers = [];
+
+      // Add creator first
+      recipientIds.add(defect.createdBy.id);
+      recipients.push(defect.createdBy);
+
+      // Add assignee (if exists)
+      if (defect.assignedTo && !recipientIds.has(defect.assignedTo.id)) {
+        recipientIds.add(defect.assignedTo.id);
+        recipients.push(defect.assignedTo);
+      }
+
+      // Add updater (if not already added)
+      if (!recipientIds.has(updatedBy.id)) {
+        recipientIds.add(updatedBy.id);
+        recipients.push(updatedBy);
+      }
+
+      // Add all admins (excluding if already added)
+      adminUsers.forEach((admin) => {
+        if (!recipientIds.has(admin.id)) {
+          recipientIds.add(admin.id);
+          recipients.push(admin);
+        }
+      });
+
+      // Add project managers (excluding if already added)
+      projectManagerUsers.forEach((pm) => {
+        if (!recipientIds.has(pm.id)) {
+          recipientIds.add(pm.id);
+          recipients.push(pm);
+        }
+      });
+
+      console.log('[EMAIL] Sending defect update email to', recipients.length, 'recipient(s):');
+      recipients.forEach((r) => console.log('[EMAIL]   -', r.email));
+
       // Send email via utility function
       const emailSent = await sendDefectUpdateEmailUtil({
         defectId: defect.id,
         defectTitle: defect.title,
         defectKey: defect.defectId,
+        projectId: defect.project.id,
         projectName: defect.project.name,
         updatedBy,
         changes,
         assignedTo: defect.assignedTo || undefined,
         createdBy: defect.createdBy,
+        recipients,
         appUrl,
       });
 

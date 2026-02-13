@@ -12,10 +12,13 @@ interface EmailOptions {
 interface DefectAssignmentEmailData {
   assignee: User;
   defectId: string;
+  defectKey: string;
   defectTitle: string;
   defectDescription?: string;
+  status: string;
   severity: string;
   priority: string;
+  projectId: string;
   projectName: string;
   assignedBy: User;
   appUrl: string;
@@ -54,15 +57,33 @@ interface DefectUpdateEmailData {
   defectId: string;
   defectTitle: string;
   defectKey: string;
+  projectId: string;
   projectName: string;
   updatedBy: User;
   changes: {
-    field: 'status' | 'priority';
+    field: 'status' | 'priority' | 'progress';
     oldValue: string;
     newValue: string;
   }[];
   assignedTo?: User;
   createdBy: User;
+  recipients: User[];
+  appUrl: string;
+}
+
+interface DefectCreationEmailData {
+  creator: User;
+  recipients: User[];
+  defectId: string;
+  defectKey: string;
+  defectTitle: string;
+  defectDescription?: string;
+  status: string;
+  severity: string;
+  priority: string;
+  projectId: string;
+  projectName: string;
+  assignedTo?: User;
   appUrl: string;
 }
 
@@ -367,21 +388,192 @@ export async function verifyEmailConnection(): Promise<boolean> {
  */
 export async function isEmailServiceAvailable(): Promise<boolean> {
   // Check if SMTP is enabled first
-  if (process.env.ENABLE_SMTP !== 'true') {
-    console.log('[EMAIL] Email service is disabled (ENABLE_SMTP is not set to true)');
+  const enableSmtp = process.env.ENABLE_SMTP;
+  console.log('[EMAIL] Checking email service availability...');
+  console.log('[EMAIL] ENABLE_SMTP value:', enableSmtp, '(type:', typeof enableSmtp, ')');
+  
+  if (enableSmtp !== 'true') {
+    console.log('[EMAIL] Email service is disabled (ENABLE_SMTP is not set to "true")');
+    console.log('[EMAIL] Current value:', enableSmtp);
     return false;
   }
 
+  console.log('[EMAIL] ENABLE_SMTP is true, checking SMTP configuration...');
+  console.log('[EMAIL] SMTP_HOST:', process.env.SMTP_HOST ? 'Set' : 'Missing');
+  console.log('[EMAIL] SMTP_USER:', process.env.SMTP_USER ? 'Set' : 'Missing');
+  console.log('[EMAIL] SMTP_PASS:', process.env.SMTP_PASS ? 'Set' : 'Missing');
+  console.log('[EMAIL] SMTP_FROM:', process.env.SMTP_FROM ? 'Set' : 'Missing');
+  console.log('[EMAIL] SMTP_PORT:', process.env.SMTP_PORT || '587 (default)');
+  console.log('[EMAIL] SMTP_SECURE:', process.env.SMTP_SECURE);
+
   const transporter = getTransporter();
   if (!transporter) {
+    console.error('[EMAIL] Failed to create SMTP transporter');
     return false;
   }
 
   try {
+    console.log('[EMAIL] Verifying SMTP connection...');
     await transporter.verify();
+    console.log('[EMAIL] ✓ SMTP connection verified successfully');
     return true;
   } catch (error) {
-    console.error('Email service verification failed:', error);
+    console.error('[EMAIL] ✗ Email service verification failed');
+    if (error instanceof Error) {
+      console.error('[EMAIL] Error name:', error.name);
+      console.error('[EMAIL] Error message:', error.message);
+    }
+    console.error('[EMAIL] Full error:', error);
+    return false;
+  }
+}
+
+/**
+ * Send defect creation notification email to the creator
+ */
+export async function sendDefectCreationEmail(
+  data: DefectCreationEmailData
+): Promise<boolean> {
+  const subject = `✅ Defect Created: ${data.defectTitle}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
+
+  if (data.recipients.length === 0) {
+    console.log('[EMAIL] No recipients for defect creation email');
+    return true;
+  }
+
+  // Create email content for each recipient
+  const sendPromises = data.recipients.map(async (recipient) => {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+        </div>
+
+        <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+          <h2 style="color: #047857; font-size: 20px; margin: 0;">✅ Defect Successfully Created</h2>
+        </div>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
+          Hi <strong>${recipient.name}</strong>,
+        </p>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+          A new defect has been created in project <strong>${data.projectName}</strong> by <strong>${data.creator.name}</strong>.
+        </p>
+
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectKey}: ${data.defectTitle}</h3>
+          ${data.defectDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">${data.defectDescription}</p>` : ''}
+          
+          <div style="margin: 15px 0; padding: 15px; background-color: white; border-radius: 6px;">
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Status</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.status === 'NEW' ? 'background-color: #3b82f6; color: white;' :
+                data.status === 'IN_PROGRESS' ? 'background-color: #8b5cf6; color: white;' :
+                data.status === 'FIXED' ? 'background-color: #10b981; color: white;' :
+                data.status === 'TESTED' ? 'background-color: #f59e0b; color: white;' :
+                data.status === 'CLOSED' ? 'background-color: #6b7280; color: white;' :
+                'background-color: #9ca3af; color: white;'
+              }">
+                ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
+              </span>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Severity</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.severity === 'CRITICAL' ? 'background-color: #dc2626; color: white;' :
+                data.severity === 'HIGH' ? 'background-color: #ea580c; color: white;' :
+                data.severity === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
+                'background-color: #16a34a; color: white;'
+              }">
+                ${data.severity}
+              </span>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Priority</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.priority === 'CRITICAL' || data.priority === 'URGENT' ? 'background-color: #dc2626; color: white;' :
+                data.priority === 'HIGH' ? 'background-color: #ea580c; color: white;' :
+                data.priority === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
+                'background-color: #6b7280; color: white;'
+              }">
+                ${data.priority}
+              </span>
+            </div>
+
+            ${data.assignedTo ? `
+              <div>
+                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned To</p>
+                <p style="color: #4b5563; font-size: 14px; margin: 0;">
+                  ${data.assignedTo.name} <span style="color: #9ca3af;">(${data.assignedTo.email})</span>
+                </p>
+              </div>
+            ` : `
+              <div>
+                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned To</p>
+                <p style="color: #9ca3af; font-size: 14px; margin: 0; font-style: italic;">Not assigned yet</p>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
+            <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
+              View Defect
+            </a>
+          </div>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+          This is an automated notification from EZTest. Please do not reply to this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+    const text = `
+Defect Successfully Created
+
+Hi ${recipient.name},
+
+A new defect has been created in project ${data.projectName} by ${data.creator.name}.
+
+Defect: ${data.defectKey}: ${data.defectTitle}
+${data.defectDescription ? `Description: ${data.defectDescription}` : ''}
+
+Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
+Severity: ${data.severity}
+Priority: ${data.priority}
+${data.assignedTo ? `Assigned to: ${data.assignedTo.name} (${data.assignedTo.email})` : 'Assigned to: Not assigned yet'}
+
+View defect: ${defectUrl}
+
+---
+This is an automated notification from EZTest.
+    `;
+
+    return sendEmail({
+      to: recipient.email,
+      subject,
+      html,
+      text,
+    });
+  });
+
+  try {
+    const results = await Promise.all(sendPromises);
+    return results.every((result) => result === true);
+  } catch (error) {
+    console.error('[EMAIL] Error sending defect creation emails:', error);
     return false;
   }
 }
@@ -393,7 +585,7 @@ export async function sendDefectAssignmentEmail(
   data: DefectAssignmentEmailData
 ): Promise<boolean> {
   const subject = `🐛 Defect Assigned: ${data.defectTitle}`;
-  const defectUrl = `${data.appUrl}/projects/${data.defectId}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
@@ -412,35 +604,59 @@ export async function sendDefectAssignmentEmail(
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A new defect has been assigned to you in project <strong>${data.projectName}</strong>.
+          A new defect has been assigned to you in project <strong>${data.projectName}</strong> by <strong>${data.assignedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectTitle}</h3>
-          ${data.defectDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 15px 0;">${data.defectDescription}</p>` : ''}
+          <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectKey}: ${data.defectTitle}</h3>
+          ${data.defectDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">${data.defectDescription}</p>` : ''}
           
-          <div style="margin: 15px 0;">
-            <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 8px; ${
-              data.severity === 'CRITICAL' ? 'background-color: #dc2626; color: white;' :
-              data.severity === 'HIGH' ? 'background-color: #ea580c; color: white;' :
-              data.severity === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
-              'background-color: #16a34a; color: white;'
-            }">
-              ${data.severity}
-            </span>
-            <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; ${
-              data.priority === 'URGENT' ? 'background-color: #dc2626; color: white;' :
-              data.priority === 'HIGH' ? 'background-color: #ea580c; color: white;' :
-              data.priority === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
-              'background-color: #6b7280; color: white;'
-            }">
-              ${data.priority}
-            </span>
-          </div>
+          <div style="margin: 15px 0; padding: 15px; background-color: white; border-radius: 6px;">
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Status</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.status === 'NEW' ? 'background-color: #3b82f6; color: white;' :
+                data.status === 'IN_PROGRESS' ? 'background-color: #8b5cf6; color: white;' :
+                data.status === 'FIXED' ? 'background-color: #10b981; color: white;' :
+                data.status === 'TESTED' ? 'background-color: #f59e0b; color: white;' :
+                data.status === 'CLOSED' ? 'background-color: #6b7280; color: white;' :
+                'background-color: #9ca3af; color: white;'
+              }">
+                ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
+              </span>
+            </div>
 
-          <p style="color: #4b5563; font-size: 13px; margin: 15px 0 0 0;">
-            <strong>Assigned by:</strong> ${data.assignedBy.name} (${data.assignedBy.email})
-          </p>
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Severity</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.severity === 'CRITICAL' ? 'background-color: #dc2626; color: white;' :
+                data.severity === 'HIGH' ? 'background-color: #ea580c; color: white;' :
+                data.severity === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
+                'background-color: #16a34a; color: white;'
+              }">
+                ${data.severity}
+              </span>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Priority</p>
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
+                data.priority === 'CRITICAL' || data.priority === 'URGENT' ? 'background-color: #dc2626; color: white;' :
+                data.priority === 'HIGH' ? 'background-color: #ea580c; color: white;' :
+                data.priority === 'MEDIUM' ? 'background-color: #ca8a04; color: white;' :
+                'background-color: #6b7280; color: white;'
+              }">
+                ${data.priority}
+              </span>
+            </div>
+
+            <div>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned By</p>
+              <p style="color: #4b5563; font-size: 14px; margin: 0;">
+                ${data.assignedBy.name} <span style="color: #9ca3af;">(${data.assignedBy.email})</span>
+              </p>
+            </div>
+          </div>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
@@ -465,10 +681,12 @@ New Defect Assignment
 
 Hi ${data.assignee.name},
 
-A new defect has been assigned to you in project ${data.projectName}.
+A new defect has been assigned to you in project ${data.projectName} by ${data.assignedBy.name}.
 
-Defect: ${data.defectTitle}
+Defect: ${data.defectKey}: ${data.defectTitle}
 ${data.defectDescription ? `Description: ${data.defectDescription}` : ''}
+
+Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
 Severity: ${data.severity}
 Priority: ${data.priority}
 Assigned by: ${data.assignedBy.name} (${data.assignedBy.email})
@@ -498,43 +716,26 @@ export async function sendDefectUpdateEmail(
     .join(', ');
   
   const subject = `🔔 Defect Updated: ${data.defectTitle}`;
-  const defectUrl = `${data.appUrl}/projects/${data.defectId}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
-  // Determine recipients: assignee, creator, and updater
-  // Always send email notification for status/priority changes to all stakeholders
-  const recipients: User[] = [];
-  const recipientIds = new Set<string>();
-
-  // Add assignee
-  if (data.assignedTo) {
-    recipientIds.add(data.assignedTo.id);
-    recipients.push(data.assignedTo);
-  }
-
-  // Add creator (if not already added)
-  if (!recipientIds.has(data.createdBy.id)) {
-    recipientIds.add(data.createdBy.id);
-    recipients.push(data.createdBy);
-  }
-
-  // Add updater (if not already added)
-  if (!recipientIds.has(data.updatedBy.id)) {
-    recipientIds.add(data.updatedBy.id);
-    recipients.push(data.updatedBy);
-  }
-
-  if (recipients.length === 0) {
+  if (data.recipients.length === 0) {
     console.log('[EMAIL] No recipients for defect update email');
     return true;
   }
 
+  // Create email content for each recipient
+  const sendPromises = data.recipients.map(async (recipient) => {
+
   const changesHtml = data.changes.map(change => {
     const getStatusColor = (status: string) => {
       switch (status.toUpperCase()) {
-        case 'OPEN': return 'background-color: #3b82f6; color: white;';
-        case 'IN_PROGRESS': return 'background-color: #f59e0b; color: white;';
-        case 'RESOLVED': return 'background-color: #10b981; color: white;';
+        case 'NEW': return 'background-color: #3b82f6; color: white;';
+        case 'IN_PROGRESS': return 'background-color: #8b5cf6; color: white;';
+        case 'FIXED': return 'background-color: #10b981; color: white;';
+        case 'TESTED': return 'background-color: #f59e0b; color: white;';
         case 'CLOSED': return 'background-color: #6b7280; color: white;';
+        case 'OPEN': return 'background-color: #3b82f6; color: white;';
+        case 'RESOLVED': return 'background-color: #10b981; color: white;';
         case 'REOPENED': return 'background-color: #ef4444; color: white;';
         default: return 'background-color: #9ca3af; color: white;';
       }
@@ -542,6 +743,7 @@ export async function sendDefectUpdateEmail(
 
     const getPriorityColor = (priority: string) => {
       switch (priority.toUpperCase()) {
+        case 'CRITICAL':
         case 'URGENT': return 'background-color: #dc2626; color: white;';
         case 'HIGH': return 'background-color: #ea580c; color: white;';
         case 'MEDIUM': return 'background-color: #ca8a04; color: white;';
@@ -550,8 +752,33 @@ export async function sendDefectUpdateEmail(
       }
     };
 
-    const oldStyle = change.field === 'status' ? getStatusColor(change.oldValue) : getPriorityColor(change.oldValue);
-    const newStyle = change.field === 'status' ? getStatusColor(change.newValue) : getPriorityColor(change.newValue);
+    const getProgressColor = (progress: string) => {
+      // Extract number from "50%" format
+      const progressNum = parseInt(progress.replace('%', '')) || 0;
+      if (progressNum === 0) return 'background-color: #e5e7eb; color: #1f2937;';
+      if (progressNum < 25) return 'background-color: #fee2e2; color: #991b1b;';
+      if (progressNum < 50) return 'background-color: #fef3c7; color: #92400e;';
+      if (progressNum < 75) return 'background-color: #dbeafe; color: #1e40af;';
+      if (progressNum < 100) return 'background-color: #dcfce7; color: #166534;';
+      return 'background-color: #10b981; color: white;';
+    };
+
+    let oldStyle: string;
+    let newStyle: string;
+
+    if (change.field === 'status') {
+      oldStyle = getStatusColor(change.oldValue);
+      newStyle = getStatusColor(change.newValue);
+    } else if (change.field === 'priority') {
+      oldStyle = getPriorityColor(change.oldValue);
+      newStyle = getPriorityColor(change.newValue);
+    } else if (change.field === 'progress') {
+      oldStyle = getProgressColor(change.oldValue);
+      newStyle = getProgressColor(change.newValue);
+    } else {
+      oldStyle = 'background-color: #9ca3af; color: white;';
+      newStyle = 'background-color: #9ca3af; color: white;';
+    }
 
     return `
       <div style="margin: 10px 0;">
@@ -569,7 +796,7 @@ export async function sendDefectUpdateEmail(
     `;
   }).join('');
 
-  const html = `
+    const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -581,8 +808,12 @@ export async function sendDefectUpdateEmail(
           <h2 style="color: #1e40af; font-size: 20px; margin: 0;">🔔 Defect Updated</h2>
         </div>
 
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
+          Hi <strong>${recipient.name}</strong>,
+        </p>
+
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A defect has been updated in project <strong>${data.projectName}</strong>.
+          A defect has been updated in project <strong>${data.projectName}</strong> by <strong>${data.updatedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -615,14 +846,16 @@ export async function sendDefectUpdateEmail(
     </div>
   `;
 
-  const changesText = data.changes
-    .map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`)
-    .join('\n');
+    const changesText = data.changes
+      .map(c => `${c.field}: ${c.oldValue} → ${c.newValue}`)
+      .join('\n');
 
-  const text = `
+    const text = `
 Defect Updated
 
-A defect has been updated in project ${data.projectName}.
+Hi ${recipient.name},
+
+A defect has been updated in project ${data.projectName} by ${data.updatedBy.name}.
 
 Defect: ${data.defectKey}: ${data.defectTitle}
 
@@ -635,21 +868,23 @@ View defect: ${defectUrl}
 
 ---
 This is an automated notification from EZTest.
-  `;
+    `;
 
-  // Send email to all recipients
-  const results = await Promise.all(
-    recipients.map(recipient =>
-      sendEmail({
-        to: recipient.email,
-        subject,
-        html,
-        text,
-      })
-    )
-  );
+    return sendEmail({
+      to: recipient.email,
+      subject,
+      html,
+      text,
+    });
+  });
 
-  return results.every(result => result);
+  try {
+    const results = await Promise.all(sendPromises);
+    return results.every((result) => result === true);
+  } catch (error) {
+    console.error('[EMAIL] Error sending defect update emails:', error);
+    return false;
+  }
 }
 
 /**
