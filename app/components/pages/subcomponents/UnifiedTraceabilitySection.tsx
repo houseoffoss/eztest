@@ -95,18 +95,18 @@ export const UnifiedTraceabilitySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden w-full py-20">
+    <section ref={sectionRef} className="relative overflow-hidden w-full py-12 sm:py-16 lg:py-20">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Key capabilities title */}
-          <div className="mb-24">
+          <div className="mb-12 sm:mb-16 lg:mb-24">
           <h3 
-            className="text-3xl sm:text-4xl"
+            className="text-2xl sm:text-3xl lg:text-4xl"
             style={{
               fontFamily: 'Inter, var(--font-inter)',
               fontWeight: 500,
               fontStyle: 'normal',
-              fontSize: '40px',
-              lineHeight: '52px',
+              fontSize: 'clamp(28px, 5vw, 40px)',
+              lineHeight: '1.3',
               letterSpacing: '0%',
               color: '#FFFFFF',
               margin: 0,
@@ -117,16 +117,17 @@ export const UnifiedTraceabilitySection = () => {
           </h3>
           
           <p 
+            className="text-sm sm:text-base"
             style={{
               fontFamily: 'Inter, var(--font-inter)',
               fontWeight: 500,
               fontStyle: 'normal',
-              fontSize: '16px',
+              fontSize: 'clamp(14px, 2vw, 16px)',
               lineHeight: '28px',
               letterSpacing: '0%',
               color: 'rgba(255, 255, 255, 0.7)',
               margin: 0,
-              maxWidth: '463px',
+              maxWidth: '100%',
             }}
           >
             Built to support real QA workflows — from test planning to execution and reporting.
@@ -143,17 +144,20 @@ export const UnifiedTraceabilitySection = () => {
             WebkitOverflowScrolling: 'touch',
           }}
         >
-          <div className="flex gap-8" style={{ width: 'max-content' }}>
+          <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 grid gap-8 lg:grid-cols-2 items-start"
-                style={{ width: '1440px', minWidth: 'min(1440px, 100vw)' }}
+                className="flex-shrink-0 grid gap-6 sm:gap-8 grid-cols-1 lg:grid-cols-2 items-start"
+                style={{ 
+                  width: 'min(100vw - 2rem, 1440px)', 
+                  minWidth: 'min(100vw - 2rem, 320px)',
+                }}
               >
                 {/* LEFT – Text Content */}
-                <div className="flex flex-col relative z-10" style={{ gap: '16px', maxWidth: '600px', width: '100%' }}>
+                <div className="flex flex-col relative z-10 gap-3 sm:gap-4" style={{ maxWidth: '100%', width: '100%' }}>
                   <h2 
-                    className="text-4xl sm:text-5xl md:text-6xl lg:text-[64px]"
+                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px]"
                     style={{
                       fontFamily: 'Inter, var(--font-inter)',
                       fontWeight: 600,
@@ -161,20 +165,23 @@ export const UnifiedTraceabilitySection = () => {
                       letterSpacing: '0%',
                       color: '#FFFFFF',
                       margin: 0,
+                      fontSize: 'clamp(32px, 6vw, 64px)',
                     }}
                   >
                     {capability.title}
                   </h2>
                   
                   <p 
+                    className="text-sm sm:text-base"
                     style={{
                       fontFamily: 'Inter, var(--font-inter)',
                       fontWeight: 500,
-                      fontSize: '16px',
-                      lineHeight: '28px',
+                      fontSize: 'clamp(14px, 2vw, 16px)',
+                      lineHeight: '1.75',
                       letterSpacing: '0%',
                       color: 'rgba(255, 255, 255, 0.7)',
                       margin: 0,
+                      maxWidth: '100%',
                     }}
                   >
                     {capability.description}
@@ -184,7 +191,7 @@ export const UnifiedTraceabilitySection = () => {
                   <div style={{ marginTop: '8px' }}>
                     <Link href="/auth/register">
                       <ButtonPrimary 
-                        className="inline-flex items-center gap-2 cursor-pointer"
+                        className="inline-flex items-center gap-2 cursor-pointer text-sm sm:text-base"
                         buttonName={`Home Page - ${capability.title} - Get Started`}
                       >
                         Get Started
@@ -195,28 +202,28 @@ export const UnifiedTraceabilitySection = () => {
                 </div>
 
                 {/* RIGHT – Dashboard Image */}
-                <div className="relative">
+                <div className="relative w-full">
                   {/* Ambient glow */}
-                  <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-                  <div className="absolute bottom-0 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
+                  <div className="absolute -top-12 -left-12 sm:-top-24 sm:-left-24 w-48 h-48 sm:w-96 sm:h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+                  <div className="absolute bottom-0 -right-20 sm:-right-40 w-48 h-48 sm:w-96 sm:h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
 
                   {/* Glass frame */}
-                  <div className="relative w-full rounded-2xl bg-[#0b1220]/85 backdrop-blur-xl p-4 shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden">
+                  <div className="relative w-full rounded-xl sm:rounded-2xl bg-[#0b1220]/85 backdrop-blur-xl p-2 sm:p-3 lg:p-4 shadow-[0_20px_60px_rgba(0,0,0,0.9)] sm:shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden">
                     {/* Border - gradient thickness from top-left */}
                     <div 
                       className="absolute top-0 left-0 pointer-events-none"
                       style={{
-                        width: '16px',
-                        height: '16px',
+                        width: 'clamp(12px, 2vw, 16px)',
+                        height: 'clamp(12px, 2vw, 16px)',
                         borderTop: '1px solid rgba(255, 255, 255, 0.3)',
                         borderLeft: '1px solid rgba(255, 255, 255, 0.3)',
-                        borderTopLeftRadius: '16px',
+                        borderTopLeftRadius: 'clamp(12px, 2vw, 16px)',
                       }}
                     />
                     <div 
                       className="absolute top-0 right-0 pointer-events-none"
                       style={{
-                        left: '16px',
+                        left: 'clamp(12px, 2vw, 16px)',
                         height: '1px',
                         background: 'linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0))',
                       }}
@@ -224,21 +231,21 @@ export const UnifiedTraceabilitySection = () => {
                     <div 
                       className="absolute left-0 bottom-0 pointer-events-none"
                       style={{
-                        top: '16px',
+                        top: 'clamp(12px, 2vw, 16px)',
                         width: '1px',
                         background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0))',
                       }}
                     />
 
                     {/* macOS window dots */}
-                    <div className="absolute top-4 left-4 flex gap-2 z-20">
-                      <span className="w-3 h-3 rounded-full bg-red-500/90" />
-                      <span className="w-3 h-3 rounded-full bg-yellow-400/90" />
-                      <span className="w-3 h-3 rounded-full bg-green-500/90" />
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex gap-1.5 sm:gap-2 z-20">
+                      <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500/90" />
+                      <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-400/90" />
+                      <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500/90" />
                     </div>
 
                     {/* Screenshot */}
-                    <div className="relative mt-6 rounded-xl overflow-hidden bg-[#050816]">
+                    <div className="relative mt-4 sm:mt-6 rounded-lg sm:rounded-xl overflow-hidden bg-[#050816]">
                       <Image
                         src={capability.image}
                         alt={`EZTest ${capability.title.toLowerCase()} dashboard`}
