@@ -146,8 +146,8 @@ export const UnifiedTraceabilitySection = () => {
         >
           <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
-              index === 0 || index === 1 || index === 2 || index === 3 ? (
-                // FIRST, SECOND, THIRD, AND FOURTH SLIDES - Asymmetric grid layout with real borders
+              index === 0 || index === 1 || index === 2 || index === 3 || index === 4 ? (
+                // FIRST, SECOND, THIRD, FOURTH, AND FIFTH SLIDES - Asymmetric grid layout with real borders
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -157,11 +157,13 @@ export const UnifiedTraceabilitySection = () => {
                     display: 'grid',
                     gridTemplateColumns: index === 0 || index === 3
                       ? 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(200px, 20vw, 280px) clamp(100px, 10vw, 150px)'
-                      : index === 1
+                      : index === 1 || index === 4
                       ? 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)'
                       : 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(150px, 18vw, 260px) clamp(330px, 30vw, 410px) clamp(100px, 10vw, 150px)',
                     gridTemplateRows: index === 2
                       ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(120px, 12vw, 180px) clamp(225px, 23vw, 300px) clamp(35px, 3vw, 45px)'
+                      : index === 4
+                      ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(180px, 17vw, 250px) clamp(120px, 12vw, 160px) clamp(35px, 3vw, 45px)'
                       : 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
                     gap: 0,
                     position: 'relative',
@@ -174,12 +176,15 @@ export const UnifiedTraceabilitySection = () => {
                     Array.from({ length: 5 }, (_, rowIdx) => {
                       // Skip cells in image/title span area
                       // First and fourth slides: row 3-4, col 3-4 (image)
-                      // Second slide: row 3-4, col 2-3 (image)
+                      // Second and fifth slides: row 3-4, col 2-3 (image)
                       // Third slide: row 3-4, col 2-3 (title)
                       const isInImageArea = index === 0 || index === 3
                         ? (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4)
                         : (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 2 && colIdx + 1 <= 3);
                       if (isInImageArea) return null;
+                      
+                      // Add extra height to row 2, columns 4-5 in fifth slide
+                      const isRow2Cols45 = index === 4 && rowIdx === 1 && (colIdx === 3 || colIdx === 4);
                       
                       return (
                         <div
@@ -190,10 +195,25 @@ export const UnifiedTraceabilitySection = () => {
                             borderRight: '1px solid #1c1c1c',
                             borderBottom: '1px solid #1c1c1c',
                             pointerEvents: 'none',
+                            ...(isRow2Cols45 && {
+                              minHeight: '60px',
+                              height: '60px',
+                            }),
                           }}
                         />
                       );
                     })
+                  )}
+
+                  {/* Increased height for row 2, columns 4-5 in fifth slide */}
+                  {index === 4 && (
+                    <div
+                      style={{
+                        gridColumn: '4 / span 2',
+                        gridRow: '2',
+                        minHeight: '60px',
+                      }}
+                    />
                   )}
 
                   {/* Slide Title */}
@@ -310,7 +330,7 @@ export const UnifiedTraceabilitySection = () => {
                             maxHeight: '100%',
                             objectFit: 'contain',
                           }}
-                          priority={index === 0 || index === 1 || index === 2 || index === 3}
+                          priority={index === 0 || index === 1 || index === 2 || index === 3 || index === 4}
                         />
                       </div>
                     </div>
