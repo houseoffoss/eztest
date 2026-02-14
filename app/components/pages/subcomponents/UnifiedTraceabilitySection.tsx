@@ -146,8 +146,8 @@ export const UnifiedTraceabilitySection = () => {
         >
           <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
-              index === 0 || index === 1 || index === 2 || index === 3 || index === 4 ? (
-                // FIRST, SECOND, THIRD, FOURTH, AND FIFTH SLIDES - Asymmetric grid layout with real borders
+              index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5 ? (
+                // FIRST, SECOND, THIRD, FOURTH, FIFTH, AND SIXTH SLIDES - Asymmetric grid layout with real borders
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -159,11 +159,17 @@ export const UnifiedTraceabilitySection = () => {
                       ? 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(200px, 20vw, 280px) clamp(100px, 10vw, 150px)'
                       : index === 1 || index === 4
                       ? 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)'
+                      : index === 5
+                      ? 'clamp(100px, 12vw, 200px) clamp(320px, 30vw, 400px) clamp(120px, 15vw, 200px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)'
+                      : index === 2
+                      ? 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(100px, 12vw, 200px) clamp(330px, 30vw, 410px) clamp(100px, 10vw, 150px)'
                       : 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(150px, 18vw, 260px) clamp(330px, 30vw, 410px) clamp(100px, 10vw, 150px)',
                     gridTemplateRows: index === 2
                       ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(120px, 12vw, 180px) clamp(225px, 23vw, 300px) clamp(35px, 3vw, 45px)'
                       : index === 4
-                      ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(180px, 17vw, 250px) clamp(120px, 12vw, 160px) clamp(35px, 3vw, 45px)'
+                      ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(205px, 19.2vw, 285px) clamp(155px, 14.5vw, 195px) clamp(35px, 3vw, 45px)'
+                      : index === 5
+                      ? 'clamp(90px, 9vw, 130px) clamp(80px, 7vw, 120px) clamp(155px, 15vw, 205px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)'
                       : 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
                     gap: 0,
                     position: 'relative',
@@ -176,7 +182,7 @@ export const UnifiedTraceabilitySection = () => {
                     Array.from({ length: 5 }, (_, rowIdx) => {
                       // Skip cells in image/title span area
                       // First and fourth slides: row 3-4, col 3-4 (image)
-                      // Second and fifth slides: row 3-4, col 2-3 (image)
+                      // Second, fifth, and sixth slides: row 3-4, col 2-3 (image)
                       // Third slide: row 3-4, col 2-3 (title)
                       const isInImageArea = index === 0 || index === 3
                         ? (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4)
@@ -220,8 +226,8 @@ export const UnifiedTraceabilitySection = () => {
                   <h2 
                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px]"
                     style={{
-                      gridColumn: index === 2 ? '2 / span 2' : index === 0 || index === 3 ? '2' : '4',
-                      gridRow: index === 2 ? '3 / span 2' : '3',
+                      gridColumn: index === 2 ? '2 / span 2' : index === 5 ? '2' : index === 0 || index === 3 ? '2' : '4',
+                      gridRow: index === 2 ? '3 / span 2' : index === 5 ? '2' : '3',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -254,8 +260,8 @@ export const UnifiedTraceabilitySection = () => {
                   {/* Description and Button */}
                   <div 
                     style={{
-                      gridColumn: index === 2 ? '4' : index === 0 || index === 3 ? '2' : '4',
-                      gridRow: index === 2 ? '3' : '4',
+                      gridColumn: index === 2 ? '4' : index === 5 ? '4' : index === 0 || index === 3 ? '2' : '4',
+                      gridRow: index === 2 ? '3' : index === 5 ? '3' : '4',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -317,7 +323,7 @@ export const UnifiedTraceabilitySection = () => {
                     }}
                   >
                     {/* Glass frame */}
-                    <div className="relative w-full h-full bg-[#0b1220]/85 p-2 sm:p-3 lg:p-4 shadow-[0_20px_60px_rgba(0,0,0,0.9)] sm:shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden flex items-center justify-center">
+                    <div className="relative w-full h-full bg-[#0b1220]/40 p-2 sm:p-3 lg:p-4 shadow-[0_20px_60px_rgba(0,0,0,0.9)] sm:shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden flex items-center justify-center">
                       {/* Screenshot */}
                       <div className="relative overflow-hidden bg-[#050816] flex items-center justify-center" style={{ maxWidth: '100%', maxHeight: '100%' }}>
                         <Image
@@ -330,7 +336,7 @@ export const UnifiedTraceabilitySection = () => {
                             maxHeight: '100%',
                             objectFit: 'contain',
                           }}
-                          priority={index === 0 || index === 1 || index === 2 || index === 3 || index === 4}
+                          priority={index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5}
                         />
                       </div>
                     </div>
