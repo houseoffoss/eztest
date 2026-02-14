@@ -146,8 +146,8 @@ export const UnifiedTraceabilitySection = () => {
         >
           <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
-              index === 0 || index === 1 ? (
-                // FIRST AND SECOND SLIDES - Asymmetric grid layout with real borders
+              index === 0 || index === 1 || index === 2 ? (
+                // FIRST, SECOND, AND THIRD SLIDES - Asymmetric grid layout with real borders
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -155,10 +155,14 @@ export const UnifiedTraceabilitySection = () => {
                     width: 'min(100vw - 2rem, 1440px)', 
                     minWidth: 'min(100vw - 2rem, 320px)',
                     display: 'grid',
-                    gridTemplateColumns: index === 0 
+                    gridTemplateColumns: index === 0
                       ? 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(200px, 20vw, 280px) clamp(100px, 10vw, 150px)'
-                      : 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)',
-                    gridTemplateRows: 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
+                      : index === 1
+                      ? 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)'
+                      : 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(150px, 18vw, 260px) clamp(330px, 30vw, 410px) clamp(100px, 10vw, 150px)',
+                    gridTemplateRows: index === 2
+                      ? 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(120px, 12vw, 180px) clamp(225px, 23vw, 300px) clamp(35px, 3vw, 45px)'
+                      : 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
                     gap: 0,
                     position: 'relative',
                     borderTop: '1px solid #1c1c1c',
@@ -168,10 +172,11 @@ export const UnifiedTraceabilitySection = () => {
                   {/* Grid cells for borders - create cells for all positions except image area */}
                   {Array.from({ length: 5 }, (_, colIdx) =>
                     Array.from({ length: 5 }, (_, rowIdx) => {
-                      // Skip cells in image span area
-                      // First slide: row 3-4, col 3-4
-                      // Second slide: row 3-4, col 2-3
-                      const isInImageArea = index === 0 
+                      // Skip cells in image/title span area
+                      // First slide: row 3-4, col 3-4 (image)
+                      // Second slide: row 3-4, col 2-3 (image)
+                      // Third slide: row 3-4, col 2-3 (title)
+                      const isInImageArea = index === 0
                         ? (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4)
                         : (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 2 && colIdx + 1 <= 3);
                       if (isInImageArea) return null;
@@ -195,8 +200,8 @@ export const UnifiedTraceabilitySection = () => {
                   <h2 
                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px]"
                     style={{
-                      gridColumn: index === 0 ? '2' : '4',
-                      gridRow: '3',
+                      gridColumn: index === 2 ? '2 / span 2' : index === 0 ? '2' : '4',
+                      gridRow: index === 2 ? '3 / span 2' : '3',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -216,6 +221,11 @@ export const UnifiedTraceabilitySection = () => {
                       wordWrap: 'break-word',
                       overflowWrap: 'break-word',
                       zIndex: 10,
+                      ...(index === 2 && {
+                        border: '1px solid #1c1c1c',
+                        background: 'radial-gradient(70.71% 70.71% at 50% 50%, rgba(47, 48, 49, 0.4) 2.08%, rgba(47, 48, 49, 0) 2.08%)',
+                        boxShadow: '0px 0px 0px 1px #07080A inset, 0px 0px 0px 1px #1B1C1E',
+                      }),
                     }}
                   >
                     {capability.title}
@@ -224,8 +234,8 @@ export const UnifiedTraceabilitySection = () => {
                   {/* Description and Button */}
                   <div 
                     style={{
-                      gridColumn: index === 0 ? '2' : '4',
-                      gridRow: '4',
+                      gridColumn: index === 2 ? '4' : index === 0 ? '2' : '4',
+                      gridRow: index === 2 ? '3' : '4',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -273,8 +283,8 @@ export const UnifiedTraceabilitySection = () => {
                   <div 
                     className="relative"
                     style={{
-                      gridColumn: index === 0 ? '3 / span 2' : '2 / span 2',
-                      gridRow: '3 / span 2',
+                      gridColumn: index === 2 ? '4' : index === 0 ? '3 / span 2' : '2 / span 2',
+                      gridRow: index === 2 ? '4' : '3 / span 2',
                       width: '100%',
                       height: '100%',
                       display: 'flex',
@@ -300,7 +310,7 @@ export const UnifiedTraceabilitySection = () => {
                             maxHeight: '100%',
                             objectFit: 'contain',
                           }}
-                          priority={index === 0 || index === 1}
+                          priority={index === 0 || index === 1 || index === 2}
                         />
                       </div>
                     </div>
