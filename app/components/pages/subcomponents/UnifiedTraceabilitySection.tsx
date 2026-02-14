@@ -146,8 +146,8 @@ export const UnifiedTraceabilitySection = () => {
         >
           <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
-              index === 0 || index === 1 || index === 2 ? (
-                // FIRST, SECOND, AND THIRD SLIDES - Asymmetric grid layout with real borders
+              index === 0 || index === 1 || index === 2 || index === 3 ? (
+                // FIRST, SECOND, THIRD, AND FOURTH SLIDES - Asymmetric grid layout with real borders
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -155,7 +155,7 @@ export const UnifiedTraceabilitySection = () => {
                     width: 'min(100vw - 2rem, 1440px)', 
                     minWidth: 'min(100vw - 2rem, 320px)',
                     display: 'grid',
-                    gridTemplateColumns: index === 0
+                    gridTemplateColumns: index === 0 || index === 3
                       ? 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(200px, 20vw, 280px) clamp(100px, 10vw, 150px)'
                       : index === 1
                       ? 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)'
@@ -173,10 +173,10 @@ export const UnifiedTraceabilitySection = () => {
                   {Array.from({ length: 5 }, (_, colIdx) =>
                     Array.from({ length: 5 }, (_, rowIdx) => {
                       // Skip cells in image/title span area
-                      // First slide: row 3-4, col 3-4 (image)
+                      // First and fourth slides: row 3-4, col 3-4 (image)
                       // Second slide: row 3-4, col 2-3 (image)
                       // Third slide: row 3-4, col 2-3 (title)
-                      const isInImageArea = index === 0
+                      const isInImageArea = index === 0 || index === 3
                         ? (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4)
                         : (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 2 && colIdx + 1 <= 3);
                       if (isInImageArea) return null;
@@ -200,7 +200,7 @@ export const UnifiedTraceabilitySection = () => {
                   <h2 
                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px]"
                     style={{
-                      gridColumn: index === 2 ? '2 / span 2' : index === 0 ? '2' : '4',
+                      gridColumn: index === 2 ? '2 / span 2' : index === 0 || index === 3 ? '2' : '4',
                       gridRow: index === 2 ? '3 / span 2' : '3',
                       display: 'flex',
                       alignItems: 'center',
@@ -234,7 +234,7 @@ export const UnifiedTraceabilitySection = () => {
                   {/* Description and Button */}
                   <div 
                     style={{
-                      gridColumn: index === 2 ? '4' : index === 0 ? '2' : '4',
+                      gridColumn: index === 2 ? '4' : index === 0 || index === 3 ? '2' : '4',
                       gridRow: index === 2 ? '3' : '4',
                       display: 'flex',
                       flexDirection: 'column',
@@ -283,7 +283,7 @@ export const UnifiedTraceabilitySection = () => {
                   <div 
                     className="relative"
                     style={{
-                      gridColumn: index === 2 ? '4' : index === 0 ? '3 / span 2' : '2 / span 2',
+                      gridColumn: index === 2 ? '4' : index === 0 || index === 3 ? '3 / span 2' : '2 / span 2',
                       gridRow: index === 2 ? '4' : '3 / span 2',
                       width: '100%',
                       height: '100%',
@@ -310,7 +310,7 @@ export const UnifiedTraceabilitySection = () => {
                             maxHeight: '100%',
                             objectFit: 'contain',
                           }}
-                          priority={index === 0 || index === 1 || index === 2}
+                          priority={index === 0 || index === 1 || index === 2 || index === 3}
                         />
                       </div>
                     </div>
