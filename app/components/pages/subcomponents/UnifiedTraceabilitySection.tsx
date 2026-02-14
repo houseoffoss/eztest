@@ -173,7 +173,6 @@ export const UnifiedTraceabilitySection = () => {
                       : 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
                     gap: 0,
                     position: 'relative',
-                    borderTop: '1px solid #1c1c1c',
                     borderLeft: '1px solid #1c1c1c',
                   }}
                 >
@@ -192,6 +191,9 @@ export const UnifiedTraceabilitySection = () => {
                       // Add extra height to row 2, columns 4-5 in fifth slide
                       const isRow2Cols45 = index === 4 && rowIdx === 1 && (colIdx === 3 || colIdx === 4);
                       
+                      // Last row (rowIdx === 4) should not have bottom border
+                      const isLastRow = rowIdx === 4;
+                      
                       return (
                         <div
                           key={`cell-${colIdx}-${rowIdx}`}
@@ -199,7 +201,7 @@ export const UnifiedTraceabilitySection = () => {
                             gridColumn: colIdx + 1,
                             gridRow: rowIdx + 1,
                             borderRight: '1px solid #1c1c1c',
-                            borderBottom: '1px solid #1c1c1c',
+                            borderBottom: isLastRow ? 'none' : '1px solid #1c1c1c',
                             pointerEvents: 'none',
                             ...(isRow2Cols45 && {
                               minHeight: '60px',
