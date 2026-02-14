@@ -146,8 +146,8 @@ export const UnifiedTraceabilitySection = () => {
         >
           <div className="flex gap-4 sm:gap-6 lg:gap-8" style={{ width: 'max-content' }}>
             {capabilities.map((capability, index) => (
-              index === 0 ? (
-                // FIRST SLIDE - Asymmetric grid layout with real borders
+              index === 0 || index === 1 ? (
+                // FIRST AND SECOND SLIDES - Asymmetric grid layout with real borders
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -155,7 +155,9 @@ export const UnifiedTraceabilitySection = () => {
                     width: 'min(100vw - 2rem, 1440px)', 
                     minWidth: 'min(100vw - 2rem, 320px)',
                     display: 'grid',
-                    gridTemplateColumns: 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(150px, 16.5vw, 238.43px) 1fr',
+                    gridTemplateColumns: index === 0 
+                      ? 'clamp(150px, 16vw, 260px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(200px, 20vw, 280px) clamp(100px, 10vw, 150px)'
+                      : 'clamp(100px, 12vw, 200px) clamp(230px, 24vw, 320px) clamp(200px, 21.5vw, 309.1895px) clamp(280px, 28vw, 360px) clamp(100px, 10vw, 150px)',
                     gridTemplateRows: 'clamp(90px, 9vw, 130px) clamp(35px, 3vw, 45px) clamp(200px, 19vw, 280px) clamp(145px, 13.5vw, 195px) clamp(35px, 3vw, 45px)',
                     gap: 0,
                     position: 'relative',
@@ -166,8 +168,12 @@ export const UnifiedTraceabilitySection = () => {
                   {/* Grid cells for borders - create cells for all positions except image area */}
                   {Array.from({ length: 5 }, (_, colIdx) =>
                     Array.from({ length: 5 }, (_, rowIdx) => {
-                      // Skip cells in image span area (row 3-4, col 3-4)
-                      const isInImageArea = (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4);
+                      // Skip cells in image span area
+                      // First slide: row 3-4, col 3-4
+                      // Second slide: row 3-4, col 2-3
+                      const isInImageArea = index === 0 
+                        ? (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 3 && colIdx + 1 <= 4)
+                        : (rowIdx + 1 >= 3 && rowIdx + 1 <= 4) && (colIdx + 1 >= 2 && colIdx + 1 <= 3);
                       if (isInImageArea) return null;
                       
                       return (
@@ -185,11 +191,11 @@ export const UnifiedTraceabilitySection = () => {
                     })
                   )}
 
-                  {/* Slide Title - row 3, column 2 */}
+                  {/* Slide Title */}
                   <h2 
                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px]"
                     style={{
-                      gridColumn: '2',
+                      gridColumn: index === 0 ? '2' : '4',
                       gridRow: '3',
                       display: 'flex',
                       alignItems: 'center',
@@ -215,10 +221,10 @@ export const UnifiedTraceabilitySection = () => {
                     {capability.title}
                   </h2>
                   
-                  {/* Description and Button - row 4, column 2 */}
+                  {/* Description and Button */}
                   <div 
                     style={{
-                      gridColumn: '2',
+                      gridColumn: index === 0 ? '2' : '4',
                       gridRow: '4',
                       display: 'flex',
                       flexDirection: 'column',
@@ -263,11 +269,11 @@ export const UnifiedTraceabilitySection = () => {
                     </Link>
                   </div>
 
-                  {/* Image - row 3, column 3, span 2 columns and 2 rows */}
+                  {/* Image */}
                   <div 
                     className="relative"
                     style={{
-                      gridColumn: '3 / span 2',
+                      gridColumn: index === 0 ? '3 / span 2' : '2 / span 2',
                       gridRow: '3 / span 2',
                       width: '100%',
                       height: '100%',
@@ -294,7 +300,7 @@ export const UnifiedTraceabilitySection = () => {
                             maxHeight: '100%',
                             objectFit: 'contain',
                           }}
-                          priority={index === 0}
+                          priority={index === 0 || index === 1}
                         />
                       </div>
                     </div>
