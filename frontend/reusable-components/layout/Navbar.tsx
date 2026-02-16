@@ -88,13 +88,13 @@ export function Navbar({
                   minWidth: items && items.length > 0 ? '550px' : 'auto',
                   height: '52px',
                   borderRadius: '53px',
-                  backgroundColor: 'rgba(51, 51, 51, 0.14)',
+                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
                   paddingTop: '6px',
                   paddingRight: '10px',
                   paddingBottom: '6px',
                   paddingLeft: '10px',
                   gap: '10px',
-                  backdropFilter: 'blur(24px)',
+                  backdropFilter: 'blur(40px)',
                   boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
