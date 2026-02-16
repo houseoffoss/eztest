@@ -101,7 +101,7 @@ export function Navbar({
                 <div
                   className="absolute -inset-[1px] rounded-[53px] pointer-events-none -z-10"
                   style={{
-                    background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+                    background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 110deg, rgba(255, 255, 255, 0.1) 200deg, rgba(255, 255, 255, 0.4) 290deg, rgba(255, 255, 255, 0.1) 360deg)',
                     mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                     maskComposite: 'exclude',
                     WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
