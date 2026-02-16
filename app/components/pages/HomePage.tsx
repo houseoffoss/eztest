@@ -17,9 +17,9 @@ import { StatsSection } from './subcomponents/StatsSection';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { ProductShowcaseSection } from './subcomponents/ProductShowcaseSection';
 
-const navItems = [
-  { label: 'Features', href: '#features' },
-  { label: 'Why Choose?', href: '#why-choose' },
+const navItems: Array<{ label: string; href: string }> = [
+  // { label: 'Features', href: '#features' },
+  // { label: 'Why Choose?', href: '#why-choose' },
 ];
 
 export default function HomePage() {
@@ -240,14 +240,27 @@ export default function HomePage() {
         variant="marketing"
         brandLabel={
           <div 
-            className="flex items-center justify-center rounded-[59.79px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
+            className="flex items-center justify-center rounded-[59.79px] relative transition-all"
             style={{
               width: '52px',
               height: '52px',
-              background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+              backgroundColor: 'rgba(51, 51, 51, 0.14)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
             }}
           >
-            <div className="flex items-center justify-center w-full h-full rounded-[59.79px]" style={{ backgroundColor: '#050608' }}>
+            <div
+              className="absolute -inset-[1px] rounded-[59.79px] pointer-events-none -z-10"
+              style={{
+                background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+                mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                maskComposite: 'exclude',
+                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                padding: '1px',
+              }}
+            />
+            <div className="flex items-center justify-center w-full h-full rounded-[59.79px] relative z-10">
               <svg
                 width="24"
                 height="24"
@@ -356,14 +369,14 @@ export default function HomePage() {
         <UnifiedTraceabilitySection />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> */}
         {/* Tab Navigation */}
-        <div className="mt-24 mb-16 flex justify-center">
+        {/* <div className="mt-24 mb-16 flex justify-center">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList variant="glass" className="mx-auto h-12 px-1 !rounded-full !border-white/10 !bg-white/5 !backdrop-blur-2xl !shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] !ring-1 !ring-white/5">
-              <TabsTrigger value="overview" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Overview</TabsTrigger>
-              <TabsTrigger value="features" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Features</TabsTrigger>
-              <TabsTrigger value="why-choose" className="px-6 text-base font-medium !rounded-full data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Why Choose</TabsTrigger>
+              <TabsTrigger value="overview" className="px-6 text-base font-medium !rounded-full !border !border-white/10 data-[state=active]:!border-white/30 data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Overview</TabsTrigger>
+              <TabsTrigger value="features" className="px-6 text-base font-medium !rounded-full !border !border-white/10 data-[state=active]:!border-white/30 data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Features</TabsTrigger>
+              <TabsTrigger value="why-choose" className="px-6 text-base font-medium !rounded-full !border !border-white/10 data-[state=active]:!border-white/30 data-[state=active]:!bg-white/12 data-[state=active]:!text-white data-[state=active]:!shadow-inner text-white/80 hover:!text-white hover:!bg-white/8">Why Choose</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="mt-12">
@@ -385,7 +398,7 @@ export default function HomePage() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </div> */}
 
       {/* Philosophy section positioned below the tabs */}
       <div className="mt-10">

@@ -83,50 +83,92 @@ export function Navbar({
             {/* Center: Nav items + Breadcrumbs */}
             {((items && items.length > 0) || breadcrumbs) ? (
               <div 
-                className="inline-flex items-center rounded-[53px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
+                className="inline-flex items-center relative"
                 style={{
-                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.1) 6%, rgba(255, 255, 255, 0.15) 13%, rgba(255, 255, 255, 0.25) 25%, rgba(255, 255, 255, 0.4) 42%, rgba(255, 255, 255, 0.4) 44%, rgba(255, 255, 255, 0.25) 69%, rgba(255, 255, 255, 0.15) 83%, rgba(255, 255, 255, 0.1) 91%, rgba(255, 255, 255, 0.08) 100%)',
+                  minWidth: items && items.length > 0 ? '550px' : 'auto',
+                  height: '52px',
+                  borderRadius: '53px',
+                  backgroundColor: 'rgba(51, 51, 51, 0.14)',
+                  paddingTop: '6px',
+                  paddingRight: '10px',
+                  paddingBottom: '6px',
+                  paddingLeft: '10px',
+                  gap: '10px',
+                  backdropFilter: 'blur(24px)',
+                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
-                <div className="inline-flex items-center gap-[10px] rounded-[53px] px-[10px] py-[6px]" style={{ backgroundColor: '#050608' }}>
-                  <nav className="hidden md:flex items-center gap-1">
-                    {items && items.length > 0 ? (
-                      <>
-                        {items.map((it) => {
-                          // Use exact matching to prevent multiple highlights
-                          const active = pathname === it.href;
-                          return (
-                            <Link
-                              key={it.href}
-                              href={it.href}
-                              className={cn(
-                                "px-4 py-2 text-sm rounded-full transition-colors cursor-pointer",
-                                active
-                                  ? "bg-white/12 text-white shadow-inner"
-                                  : "text-white/80 hover:text-white hover:bg-white/8"
-                              )}
-                              aria-current={active ? "page" : undefined}
-                            >
-                              {it.label}
-                            </Link>
-                          );
-                        })}
-                      </>
-                    ) : null}
-                    {breadcrumbs && (
-                      <>
-                        {React.isValidElement(breadcrumbs) && 
-                         breadcrumbs.type === React.Fragment ? (
-                          // If breadcrumbs is a Fragment, render children directly
-                          (breadcrumbs.props as { children?: React.ReactNode }).children
-                        ) : (
-                          // Single breadcrumb item
-                          breadcrumbs
-                        )}
-                      </>
-                    )}
-                  </nav>
-                </div>
+                <div
+                  className="absolute -inset-[1px] rounded-[53px] pointer-events-none -z-10"
+                  style={{
+                    background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1px',
+                  }}
+                />
+                <nav className="hidden md:flex items-center gap-1 relative z-10">
+                  {items && items.length > 0 ? (
+                    <>
+                      {items.map((it) => {
+                        // Use exact matching to prevent multiple highlights
+                        const active = pathname === it.href;
+                        return (
+                          <Link
+                            key={it.href}
+                            href={it.href}
+                            className={cn(
+                              "px-4 py-2 text-sm rounded-full transition-all cursor-pointer",
+                              active
+                                ? "bg-white/12 text-white shadow-inner"
+                                : "text-white/80 hover:text-white"
+                            )}
+                            style={!active ? {
+                              '--hover-bg': 'rgba(255, 255, 255, 0.05)',
+                              '--hover-backdrop': 'blur(10px)',
+                              '--hover-border': '1px solid rgba(255, 255, 255, 0.1)',
+                            } as React.CSSProperties & {
+                              '--hover-bg'?: string;
+                              '--hover-backdrop'?: string;
+                              '--hover-border'?: string;
+                            } : undefined}
+                            onMouseEnter={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                e.currentTarget.style.backdropFilter = 'blur(10px)';
+                                e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = '';
+                                e.currentTarget.style.backdropFilter = '';
+                                e.currentTarget.style.border = '';
+                              }
+                            }}
+                            aria-current={active ? "page" : undefined}
+                          >
+                            {it.label}
+                          </Link>
+                        );
+                      })}
+                    </>
+                  ) : null}
+                  {breadcrumbs && (
+                    <>
+                      {React.isValidElement(breadcrumbs) && 
+                       breadcrumbs.type === React.Fragment ? (
+                        // If breadcrumbs is a Fragment, render children directly
+                        (breadcrumbs.props as { children?: React.ReactNode }).children
+                      ) : (
+                        // Single breadcrumb item
+                        breadcrumbs
+                      )}
+                    </>
+                  )}
+                </nav>
               </div>
             ) : null}
 
