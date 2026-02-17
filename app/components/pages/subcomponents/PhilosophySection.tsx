@@ -46,11 +46,7 @@ export const PhilosophySection = () => {
             id="philosophy-heading"
             className="text-[28px] font-semibold leading-[36px] tracking-[0.01em] text-white sm:text-[32px] sm:leading-[40px] lg:text-[40px] lg:leading-[48px]"
           >
-            Why Are You Still Putting Up With
-            <br />
-            <span className="text-white/80">
-              Legacy Test Management Tools?
-            </span>
+            The goal isn&apos;t to reinvent the wheel it&apos;s to break the cycle of mediocre, overpriced software
           </h2>
 
             <div className="mt-8">
@@ -82,9 +78,7 @@ export const PhilosophySection = () => {
               <div className="space-y-4 text-[18px] leading-[35.26px] tracking-[0.2px] text-white">
                 <p className="bg-transparent">
                   Most test management tools are glorified spreadsheets but
-                  charge $19+ per user per month. Why pay premium prices for
-                  basic functionality when you can have a modern, open-source
-                  solution?
+                  charge a minimum of $19 per user per month. ChatGPT & Claude are cheaper. So we decided to build a Test Management tool from scratch using AI Coding Agents
                 </p>
 
                 <p className="bg-transparent text-[#CBCBCB]">
