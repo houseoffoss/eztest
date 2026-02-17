@@ -233,7 +233,7 @@ export default function HomePage() {
   }, [activeTab, shouldScroll]);
 
   return (
-    <div className="min-h-screen bg-[#050608]">
+    <div className="min-h-screen bg-[#050608] relative">
       <Navbar
         variant="marketing"
         brandLabel={
@@ -500,7 +500,21 @@ export default function HomePage() {
         }
       />
 
-      <div className="bg-gradient-to-b from-[#050608] via-black to-[#050608]">
+      {/* Background dots image covering top area above first section */}
+      <div 
+        className="absolute top-0 left-0 right-0 w-full pointer-events-none"
+        style={{
+          height: '100vh',
+          minHeight: '600px',
+          backgroundImage: 'url(/screenshots/Background_Footer_dots.png)',
+          backgroundRepeat: 'repeat',
+          backgroundSize: 'auto',
+          backgroundPosition: 'top center',
+          zIndex: 0,
+        }}
+      />
+
+      <div className="bg-gradient-to-b from-[#050608] via-black to-[#050608] relative z-10">
         {/* Hero wrapper - shares same background as navbar */}
         <div className="pt-24 pb-20">
           <HeroSection />
