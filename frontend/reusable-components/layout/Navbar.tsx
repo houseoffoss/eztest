@@ -54,10 +54,6 @@ export function Navbar({
   }, [actions, renderActionButtons]);
 
   // Check if we have only a sign-out button
-  // This is true when:
-  // - No navigation items
-  // - Actions is an array with only one item of type 'signout'
-  // OR when hideNavbarContainer prop is explicitly set to true
   const hasOnlySignOutButton = hideNavbarContainer || (
     (!items || items.length === 0) && 
     Array.isArray(actions) && 
@@ -83,37 +79,42 @@ export function Navbar({
             {/* Center: Nav items + Breadcrumbs */}
             {((items && items.length > 0) || breadcrumbs) ? (
               <div 
-                className="inline-flex items-center relative"
+                className="inline-flex items-center relative rounded-[100px] p-[1px]"
                 style={{
                   minWidth: items && items.length > 0 ? '550px' : 'auto',
-                  height: '52px',
-                  borderRadius: '53px',
-                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
-                  paddingTop: '6px',
-                  paddingRight: '10px',
-                  paddingBottom: '6px',
-                  paddingLeft: '10px',
-                  gap: '10px',
-                  backdropFilter: 'blur(40px)',
-                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                  // UPDATED: 
+                  // 1. Extended bright hold to 145deg (Top) and 325deg (Bottom).
+                  //    This pushes the white color very close to the corners before fading.
+                  // 2. Thin corners remain locked at 175deg and 355deg.
+                  background: 'conic-gradient(from 275deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.05) 175deg, rgba(255, 255, 255, 0.4) 180deg, rgba(255, 255, 255, 0.4) 325deg, rgba(255, 255, 255, 0.05) 355deg, rgba(255, 255, 255, 0.4) 360deg)',
                 }}
               >
                 <div
-                  className="absolute -inset-[1px] rounded-[53px] pointer-events-none -z-10"
+                  className="inline-flex items-center relative rounded-[100px] h-full w-full overflow-hidden"
                   style={{
-                    background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 110deg, rgba(255, 255, 255, 0.1) 200deg, rgba(255, 255, 255, 0.4) 290deg, rgba(255, 255, 255, 0.1) 360deg)',
-                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    padding: '1px',
+                    height: '52px',
+                    borderRadius: '100px',
+                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                    paddingTop: '6px',
+                    paddingRight: '10px',
+                    paddingBottom: '6px',
+                    paddingLeft: '10px',
+                    gap: '10px',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                   }}
-                />
+                >
+                  {/* Refraction gradient overlay - transparent at top, glass effect at bottom */}
+                  <div
+                    className="absolute inset-0 pointer-events-none rounded-[100px]"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                    }}
+                  />
                 <nav className="hidden md:flex items-center gap-1 relative z-10">
                   {items && items.length > 0 ? (
                     <>
                       {items.map((it) => {
-                        // Use exact matching to prevent multiple highlights
                         const active = pathname === it.href;
                         return (
                           <Link
@@ -160,15 +161,14 @@ export function Navbar({
                     <>
                       {React.isValidElement(breadcrumbs) && 
                        breadcrumbs.type === React.Fragment ? (
-                        // If breadcrumbs is a Fragment, render children directly
                         (breadcrumbs.props as { children?: React.ReactNode }).children
                       ) : (
-                        // Single breadcrumb item
                         breadcrumbs
                       )}
                     </>
                   )}
                 </nav>
+                </div>
               </div>
             ) : null}
 
@@ -209,12 +209,10 @@ export function Navbar({
                 <>
                   {React.isValidElement(breadcrumbs) && 
                    breadcrumbs.type === React.Fragment ? (
-                    // If breadcrumbs is a Fragment, render children separately (for multiple separate items)
                     <div className="flex items-center gap-2">
                       {(breadcrumbs.props as { children?: React.ReactNode }).children}
                     </div>
                   ) : (
-                    // Single breadcrumb item - wrap in glass panel
                     <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
                       {breadcrumbs}
                     </div>
@@ -237,7 +235,6 @@ export function Navbar({
                 {items && items.length > 0 ? (
                   <nav className="hidden md:flex items-center gap-1">
                     {items.map((it) => {
-                      // Use exact matching to prevent multiple highlights
                       const active = pathname === it.href;
                       return (
                         <Link
@@ -273,4 +270,3 @@ export function Navbar({
 }
 
 export default Navbar;
-
