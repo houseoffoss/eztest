@@ -340,15 +340,7 @@ export default function LoginPageComponent() {
                     zIndex: 0,
                   } as React.CSSProperties}
                 />
-                <span
-                  className="relative z-30 flex items-center gap-2"
-                  style={{
-                    background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent',
-                  }}
-                >
+                <span className="relative z-30 flex items-center gap-2">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: '#5C5C5C' }}>
                     <path
                       fillRule="evenodd"
@@ -356,7 +348,16 @@ export default function LoginPageComponent() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span>GitHub</span>
+                  <span
+                    style={{
+                      background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
+                    GitHub
+                  </span>
                 </span>
                 {stars !== null && (
                   <span className="relative z-30 flex items-center gap-1">
