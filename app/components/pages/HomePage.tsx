@@ -433,51 +433,48 @@ export default function HomePage() {
               }}
             >
               <div 
-                className="inline-flex items-center relative rounded-[100px] p-[1px] group"
+                className="inline-flex items-center relative rounded-[100px]"
                 style={{
-                  background: 'conic-gradient(from 305deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 80deg, rgba(255, 255, 255, 0.05) 125deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.4) 280deg, rgba(255, 255, 255, 0.05) 300deg, rgba(255, 255, 255, 0.4) 357deg)',
+                  height: '52px',
+                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                  paddingTop: '6px',
+                  paddingRight: '10px',
+                  paddingBottom: '6px',
+                  paddingLeft: '10px',
+                  gap: '10px',
+                  backdropFilter: 'blur(40px)',
+                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
                 <div
-                  className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
                   style={{
-                    height: '52px',
-                    borderRadius: '100px',
-                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
-                    paddingTop: '6px',
-                    paddingRight: '10px',
-                    paddingBottom: '6px',
-                    paddingLeft: '10px',
-                    gap: '10px',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                    background: 'conic-gradient(from 305deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 80deg, rgba(255, 255, 255, 0.05) 125deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.4) 280deg, rgba(255, 255, 255, 0.05) 300deg, rgba(255, 255, 255, 0.4) 357deg)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1px',
+                  }}
+                />
+                <span 
+                  className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                  style={{
+                    fontFamily: 'Inter',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '23.33px',
+                    letterSpacing: '0.29px',
+                    textAlign: 'center',
+                    verticalAlign: 'middle',
+                    background: 'linear-gradient(94.37deg, #D97F4C 11.75%, #734328 88.32%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
                   }}
                 >
-                  <div
-                    className="absolute inset-0 pointer-events-none rounded-[100px]"
-                    style={{
-                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
-                    }}
-                  />
-                  <span 
-                    className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '23.33px',
-                      letterSpacing: '0.29px',
-                      textAlign: 'center',
-                      verticalAlign: 'middle',
-                      background: 'linear-gradient(94.37deg, #D97F4C 11.75%, #734328 88.32%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent',
-                    }}
-                  >
-                    Sign in
-                  </span>
-                </div>
+                  Sign in
+                </span>
               </div>
             </Link>
             <Link 
@@ -487,51 +484,48 @@ export default function HomePage() {
               }}
             >
               <div 
-                className="inline-flex items-center relative rounded-[100px] p-[1px] group"
+                className="inline-flex items-center relative rounded-[100px]"
                 style={{
-                  background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                  height: '52px',
+                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                  paddingTop: '6px',
+                  paddingRight: '10px',
+                  paddingBottom: '6px',
+                  paddingLeft: '10px',
+                  gap: '10px',
+                  backdropFilter: 'blur(40px)',
+                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
                 <div
-                  className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
                   style={{
-                    height: '52px',
-                    borderRadius: '100px',
-                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
-                    paddingTop: '6px',
-                    paddingRight: '10px',
-                    paddingBottom: '6px',
-                    paddingLeft: '10px',
-                    gap: '10px',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                    background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1px',
+                  }}
+                />
+                <span 
+                  className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                  style={{
+                    fontFamily: 'Inter',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '21.85px',
+                    letterSpacing: '0.27px',
+                    textAlign: 'center',
+                    verticalAlign: 'middle',
+                    background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
                   }}
                 >
-                  <div
-                    className="absolute inset-0 pointer-events-none rounded-[100px]"
-                    style={{
-                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
-                    }}
-                  />
-                  <span 
-                    className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '21.85px',
-                      letterSpacing: '0.27px',
-                      textAlign: 'center',
-                      verticalAlign: 'middle',
-                      background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent',
-                    }}
-                  >
-                    Get started
-                  </span>
-                </div>
+                  Get started
+                </span>
               </div>
             </Link>
           </div>

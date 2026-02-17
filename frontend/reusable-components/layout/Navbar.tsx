@@ -79,87 +79,74 @@ export function Navbar({
             {/* Center: Nav items + Breadcrumbs */}
             {((items && items.length > 0) || breadcrumbs) ? (
               <div 
-                className="inline-flex items-center relative rounded-[100px] p-[1px]"
+                className="inline-flex items-center relative rounded-[100px]"
                 style={{
                   minWidth: items && items.length > 0 ? '550px' : 'auto',
-                  // UPDATED: 
-                  // 1. Extended bright hold to 145deg (Top) and 325deg (Bottom).
-                  //    This pushes the white color very close to the corners before fading.
-                  // 2. Thin corners remain locked at 175deg and 355deg.
-                  background: 'conic-gradient(from 275deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.05) 175deg, rgba(255, 255, 255, 0.4) 180deg, rgba(255, 255, 255, 0.4) 325deg, rgba(255, 255, 255, 0.05) 355deg, rgba(255, 255, 255, 0.4) 360deg)',
+                  height: '52px',
+                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                  paddingTop: '6px',
+                  paddingRight: '10px',
+                  paddingBottom: '6px',
+                  paddingLeft: '10px',
+                  gap: '10px',
+                  backdropFilter: 'blur(40px)',
+                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
                 <div
-                  className="inline-flex items-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
                   style={{
-                    height: '52px',
-                    borderRadius: '100px',
-                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
-                    paddingTop: '6px',
-                    paddingRight: '10px',
-                    paddingBottom: '6px',
-                    paddingLeft: '10px',
-                    gap: '10px',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                    background: 'conic-gradient(from 275deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.05) 175deg, rgba(255, 255, 255, 0.4) 180deg, rgba(255, 255, 255, 0.4) 325deg, rgba(255, 255, 255, 0.05) 355deg, rgba(255, 255, 255, 0.4) 360deg)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1px',
                   }}
-                >
-                  {/* Refraction gradient overlay - transparent at top, glass effect at bottom */}
-                  <div
-                    className="absolute inset-0 pointer-events-none rounded-[100px]"
-                    style={{
-                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
-                    }}
-                  />
+                />
                 <nav className="hidden md:flex items-center gap-1 relative z-10">
                   {items && items.length > 0 ? (
                     <>
                       {items.map((it) => {
+                        // Use exact matching to prevent multiple highlights
                         const active = pathname === it.href;
                         return (
-                          <div key={it.href} className="relative group">
-                            {!active && (
-                              <div
-                                className="absolute inset-0 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                style={{
-                                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                                  backdropFilter: 'blur(36px) saturate(220%)',
-                                  zIndex: 0,
-                                  WebkitBackdropFilter: 'blur(36px) saturate(220%)',
-                                } as React.CSSProperties}
-                              />
+                          <Link
+                            key={it.href}
+                            href={it.href}
+                            className={cn(
+                              "px-4 py-2 text-sm rounded-full transition-all cursor-pointer",
+                              active
+                                ? "bg-white/12 text-white shadow-inner"
+                                : "text-white/80 hover:text-white"
                             )}
-                            <Link
-                              href={it.href}
-                              className={cn(
-                                "relative z-20 px-4 py-2 rounded-full transition-all cursor-pointer block",
-                                active
-                                  ? "bg-white/12 shadow-inner"
-                                  : ""
-                              )}
-                              style={{
-                                fontFamily: 'Inter',
-                                fontWeight: 500,
-                                fontSize: '14px',
-                                lineHeight: '100%',
-                                letterSpacing: '0.2px',
-                                verticalAlign: 'middle',
-                              }}
-                              aria-current={active ? "page" : undefined}
-                            >
-                              <span
-                                className="relative z-30"
-                                style={{
-                                  background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
-                                  WebkitBackgroundClip: 'text',
-                                  backgroundClip: 'text',
-                                  color: 'transparent',
-                                }}
-                              >
-                                {it.label}
-                              </span>
-                            </Link>
-                          </div>
+                            style={!active ? {
+                              '--hover-bg': 'rgba(255, 255, 255, 0.05)',
+                              '--hover-backdrop': 'blur(10px)',
+                              '--hover-border': '1px solid rgba(255, 255, 255, 0.1)',
+                            } as React.CSSProperties & {
+                              '--hover-bg'?: string;
+                              '--hover-backdrop'?: string;
+                              '--hover-border'?: string;
+                            } : undefined}
+                            onMouseEnter={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                e.currentTarget.style.backdropFilter = 'blur(10px)';
+                                e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = '';
+                                e.currentTarget.style.backdropFilter = '';
+                                e.currentTarget.style.border = '';
+                              }
+                            }}
+                            aria-current={active ? "page" : undefined}
+                          >
+                            {it.label}
+                          </Link>
                         );
                       })}
                     </>
@@ -175,7 +162,6 @@ export function Navbar({
                     </>
                   )}
                 </nav>
-                </div>
               </div>
             ) : null}
 
