@@ -117,46 +117,22 @@ export function Navbar({
                       {items.map((it) => {
                         const active = pathname === it.href;
                         return (
-                          <div
-                            key={it.href}
-                            className="relative group"
-                          >
+                          <div key={it.href} className="relative group">
                             {!active && (
                               <div
-                                className="glassy-overlay absolute inset-0 rounded-full pointer-events-none transition-opacity duration-200 opacity-0 group-hover:opacity-100 overflow-hidden"
+                                className="absolute inset-0 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                 style={{
-                                  background: 'rgba(255, 255, 255, 0.075)',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
                                   backdropFilter: 'blur(36px) saturate(220%)',
-                                  border: '1px solid rgba(255, 255, 255, 0.18)',
-                                  boxShadow:
-                                    '0 8px 20px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06)',
-                                  zIndex: 10,
-                                }}
-                              >
-                                {/* Match navbar "bottom refraction" glass overlay */}
-                                <div
-                                  className="absolute inset-0"
-                                  style={{
-                                    background:
-                                      'linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.11) 100%)',
-                                  }}
-                                />
-                                {/* Extra specular highlight (top sheen) */}
-                                <div
-                                  className="absolute inset-0"
-                                  style={{
-                                    background:
-                                      'linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%)',
-                                    mixBlendMode: 'overlay',
-                                    opacity: 0.7,
-                                  }}
-                                />
-                              </div>
+                                  zIndex: 0,
+                                  WebkitBackdropFilter: 'blur(36px) saturate(220%)',
+                                } as React.CSSProperties}
+                              />
                             )}
                             <Link
                               href={it.href}
                               className={cn(
-                                "relative z-10 px-4 py-2 rounded-full transition-all cursor-pointer block",
+                                "relative z-20 px-4 py-2 rounded-full transition-all cursor-pointer block",
                                 active
                                   ? "bg-white/12 shadow-inner"
                                   : ""
@@ -168,14 +144,20 @@ export function Navbar({
                                 lineHeight: '100%',
                                 letterSpacing: '0.2px',
                                 verticalAlign: 'middle',
-                                background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                                color: 'transparent',
                               }}
                               aria-current={active ? "page" : undefined}
                             >
-                              {it.label}
+                              <span
+                                className="relative z-30"
+                                style={{
+                                  background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  backgroundClip: 'text',
+                                  color: 'transparent',
+                                }}
+                              >
+                                {it.label}
+                              </span>
                             </Link>
                           </div>
                         );
