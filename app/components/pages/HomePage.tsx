@@ -433,7 +433,7 @@ export default function HomePage() {
               }}
             >
               <div 
-                className="inline-flex items-center relative rounded-[100px]"
+                className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
                 style={{
                   height: '52px',
                   backgroundColor: 'rgba(51, 51, 51, 0.10)',
@@ -444,6 +444,16 @@ export default function HomePage() {
                   gap: '10px',
                   backdropFilter: 'blur(40px)',
                   boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+                  e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 <div
@@ -484,7 +494,7 @@ export default function HomePage() {
               }}
             >
               <div 
-                className="inline-flex items-center relative rounded-[100px]"
+                className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
                 style={{
                   height: '52px',
                   backgroundColor: 'rgba(51, 51, 51, 0.10)',
@@ -495,6 +505,16 @@ export default function HomePage() {
                   gap: '10px',
                   backdropFilter: 'blur(40px)',
                   boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+                  e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 <div
