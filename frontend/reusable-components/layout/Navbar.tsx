@@ -117,42 +117,55 @@ export function Navbar({
                       {items.map((it) => {
                         const active = pathname === it.href;
                         return (
-                          <Link
+                          <div
                             key={it.href}
-                            href={it.href}
-                            className={cn(
-                              "px-4 py-2 text-sm rounded-full transition-all cursor-pointer",
-                              active
-                                ? "bg-white/12 text-white shadow-inner"
-                                : "text-white/80 hover:text-white"
-                            )}
-                            style={!active ? {
-                              '--hover-bg': 'rgba(255, 255, 255, 0.05)',
-                              '--hover-backdrop': 'blur(10px)',
-                              '--hover-border': '1px solid rgba(255, 255, 255, 0.1)',
-                            } as React.CSSProperties & {
-                              '--hover-bg'?: string;
-                              '--hover-backdrop'?: string;
-                              '--hover-border'?: string;
-                            } : undefined}
-                            onMouseEnter={(e) => {
-                              if (!active) {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                                e.currentTarget.style.backdropFilter = 'blur(10px)';
-                                e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!active) {
-                                e.currentTarget.style.background = '';
-                                e.currentTarget.style.backdropFilter = '';
-                                e.currentTarget.style.border = '';
-                              }
-                            }}
-                            aria-current={active ? "page" : undefined}
+                            className="relative group"
                           >
-                            {it.label}
-                          </Link>
+                            {!active && (
+                              <div
+                                className="glassy-overlay absolute inset-0 rounded-full pointer-events-none transition-opacity duration-200 opacity-0 group-hover:opacity-100 overflow-hidden"
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.075)',
+                                  backdropFilter: 'blur(36px) saturate(220%)',
+                                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                                  boxShadow:
+                                    '0 8px 20px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06)',
+                                  zIndex: 10,
+                                }}
+                              >
+                                {/* Match navbar "bottom refraction" glass overlay */}
+                                <div
+                                  className="absolute inset-0"
+                                  style={{
+                                    background:
+                                      'linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.11) 100%)',
+                                  }}
+                                />
+                                {/* Extra specular highlight (top sheen) */}
+                                <div
+                                  className="absolute inset-0"
+                                  style={{
+                                    background:
+                                      'linear-gradient(to bottom, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%)',
+                                    mixBlendMode: 'overlay',
+                                    opacity: 0.7,
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <Link
+                              href={it.href}
+                              className={cn(
+                                "relative z-10 px-4 py-2 text-sm rounded-full transition-all cursor-pointer block",
+                                active
+                                  ? "bg-white/12 text-white shadow-inner"
+                                  : "text-white/80 group-hover:text-white"
+                              )}
+                              aria-current={active ? "page" : undefined}
+                            >
+                              {it.label}
+                            </Link>
+                          </div>
                         );
                       })}
                     </>

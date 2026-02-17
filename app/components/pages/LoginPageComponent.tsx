@@ -395,9 +395,53 @@ export default function LoginPageComponent() {
         actions={
           <div className="flex items-center gap-2">
             <Link href="/auth/register">
-              <ButtonSecondary className="cursor-pointer" buttonName="Login Page - Navbar - Sign Up">
-                Sign up
-              </ButtonSecondary>
+              <div 
+                className="inline-flex items-center relative rounded-[100px] p-[1px] group"
+                style={{
+                  background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                }}
+              >
+                <div
+                  className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  style={{
+                    height: '52px',
+                    borderRadius: '100px',
+                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                    paddingTop: '6px',
+                    paddingRight: '10px',
+                    paddingBottom: '6px',
+                    paddingLeft: '10px',
+                    gap: '10px',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 pointer-events-none rounded-[100px]"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                    }}
+                  />
+                  <span 
+                    className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                    style={{
+                      fontFamily: 'Inter',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '21.85px',
+                      letterSpacing: '0.27px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
+                    Sign up
+                  </span>
+                </div>
+              </div>
             </Link>
           </div>
         }

@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
-import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/frontend/reusable-elements/tabs/Tabs';
@@ -390,15 +388,113 @@ export default function HomePage() {
         }
         actions={
           <div className="flex items-center gap-2">
-            <Link href="/auth/login">
-              <ButtonSecondary className="cursor-pointer" buttonName="Home Page - Navbar - Sign In">
-                Sign in
-              </ButtonSecondary>
+            <Link 
+              href="/auth/login"
+              onClick={async () => {
+                await trackButton('Home Page - Navbar - Sign In', { source: 'navbar' });
+              }}
+            >
+              <div 
+                className="inline-flex items-center relative rounded-[100px] p-[1px] group"
+                style={{
+                  background: 'conic-gradient(from 305deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 80deg, rgba(255, 255, 255, 0.05) 125deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.4) 280deg, rgba(255, 255, 255, 0.05) 300deg, rgba(255, 255, 255, 0.4) 357deg)',
+                }}
+              >
+                <div
+                  className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  style={{
+                    height: '52px',
+                    borderRadius: '100px',
+                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                    paddingTop: '6px',
+                    paddingRight: '10px',
+                    paddingBottom: '6px',
+                    paddingLeft: '10px',
+                    gap: '10px',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 pointer-events-none rounded-[100px]"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                    }}
+                  />
+                  <span 
+                    className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                    style={{
+                      fontFamily: 'Inter',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '23.33px',
+                      letterSpacing: '0.29px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      background: 'linear-gradient(94.37deg, #D97F4C 11.75%, #734328 88.32%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
+                    Sign in
+                  </span>
+                </div>
+              </div>
             </Link>
-            <Link href="/auth/register">
-              <ButtonPrimary className="cursor-pointer" buttonName="Home Page - Navbar - Get Started">
-                Get started
-              </ButtonPrimary>
+            <Link 
+              href="/auth/register"
+              onClick={async () => {
+                await trackButton('Home Page - Navbar - Get Started', { source: 'navbar' });
+              }}
+            >
+              <div 
+                className="inline-flex items-center relative rounded-[100px] p-[1px] group"
+                style={{
+                  background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                }}
+              >
+                <div
+                  className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden"
+                  style={{
+                    height: '52px',
+                    borderRadius: '100px',
+                    background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                    paddingTop: '6px',
+                    paddingRight: '10px',
+                    paddingBottom: '6px',
+                    paddingLeft: '10px',
+                    gap: '10px',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 pointer-events-none rounded-[100px]"
+                    style={{
+                      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                    }}
+                  />
+                  <span 
+                    className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                    style={{
+                      fontFamily: 'Inter',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '21.85px',
+                      letterSpacing: '0.27px',
+                      textAlign: 'center',
+                      verticalAlign: 'middle',
+                      background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
+                    Get started
+                  </span>
+                </div>
+              </div>
             </Link>
           </div>
         }

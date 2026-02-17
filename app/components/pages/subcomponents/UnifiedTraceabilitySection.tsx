@@ -296,15 +296,55 @@ export const UnifiedTraceabilitySection = () => {
                       {capability.description}
                     </p>
                     
-                    <Link href="/auth/register">
-                      <ButtonPrimary 
-                        className="inline-flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                        buttonName={`Home Page - ${capability.title} - Get Started`}
-                      >
-                        Get Started
-                        <ArrowRight className="w-4 h-4" />
-                      </ButtonPrimary>
-                    </Link>
+                    <div className="mt-4 flex justify-center">
+                      <Link href="/auth/register">
+                        <div 
+                          className="inline-flex items-center relative rounded-[100px] p-[1px] group cursor-pointer"
+                          style={{
+                            background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                          }}
+                        >
+                          <div
+                            className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden gap-2"
+                            style={{
+                              height: '44px',
+                              borderRadius: '100px',
+                              // Match navbar Get started inner background
+                              background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                              paddingTop: '6px',
+                              paddingRight: '16px',
+                              paddingBottom: '6px',
+                              paddingLeft: '16px',
+                              backdropFilter: 'blur(20px)',
+                              boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                            }}
+                          >
+                            <div
+                              className="absolute inset-0 pointer-events-none rounded-[100px]"
+                              style={{
+                                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                              }}
+                            />
+                            <span 
+                              className="relative z-10 text-sm sm:text-base transition-colors cursor-pointer flex items-center gap-2"
+                              style={{
+                                fontFamily: 'Inter',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                lineHeight: '21.85px',
+                                letterSpacing: '0.27px',
+                                textAlign: 'center',
+                                verticalAlign: 'middle',
+                                color: '#3291FF',
+                              }}
+                            >
+                              Get started
+                              <ArrowRight className="w-4 h-4" />
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Image */}
@@ -388,15 +428,52 @@ export const UnifiedTraceabilitySection = () => {
                     </p>
                     
                     {/* Call to Action */}
-                    <div style={{ marginTop: '8px' }}>
+                    <div className="mt-4 flex justify-center">
                       <Link href="/auth/register">
-                        <ButtonPrimary 
-                          className="inline-flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                          buttonName={`Home Page - ${capability.title} - Get Started`}
+                        <div 
+                          className="inline-flex items-center relative rounded-[100px] p-[1px] group cursor-pointer"
+                          style={{
+                            background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                          }}
                         >
-                          Get Started
-                          <ArrowRight className="w-4 h-4" />
-                        </ButtonPrimary>
+                          <div
+                            className="inline-flex items-center justify-center relative rounded-[100px] h-full w-full overflow-hidden gap-2"
+                            style={{
+                              height: '44px',
+                              borderRadius: '100px',
+                              background: 'linear-gradient(to bottom, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.98) 100%)',
+                              paddingTop: '6px',
+                              paddingRight: '16px',
+                              paddingBottom: '6px',
+                              paddingLeft: '16px',
+                              backdropFilter: 'blur(20px)',
+                              boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                            }}
+                          >
+                            <div
+                              className="absolute inset-0 pointer-events-none rounded-[100px]"
+                              style={{
+                                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 100%)',
+                              }}
+                            />
+                            <span 
+                              className="relative z-10 text-sm sm:text-base transition-colors cursor-pointer flex items-center gap-2"
+                              style={{
+                                fontFamily: 'Inter',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                lineHeight: '21.85px',
+                                letterSpacing: '0.27px',
+                                textAlign: 'center',
+                                verticalAlign: 'middle',
+                                color: '#3291FF',
+                              }}
+                            >
+                              Get started
+                              <ArrowRight className="w-4 h-4" />
+                            </span>
+                          </div>
+                        </div>
                       </Link>
                     </div>
                   </div>
