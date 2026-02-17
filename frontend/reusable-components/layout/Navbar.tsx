@@ -156,11 +156,23 @@ export function Navbar({
                             <Link
                               href={it.href}
                               className={cn(
-                                "relative z-10 px-4 py-2 text-sm rounded-full transition-all cursor-pointer block",
+                                "relative z-10 px-4 py-2 rounded-full transition-all cursor-pointer block",
                                 active
-                                  ? "bg-white/12 text-white shadow-inner"
-                                  : "text-white/80 group-hover:text-white"
+                                  ? "bg-white/12 shadow-inner"
+                                  : ""
                               )}
+                              style={{
+                                fontFamily: 'Inter',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                lineHeight: '100%',
+                                letterSpacing: '0.2px',
+                                verticalAlign: 'middle',
+                                background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                color: 'transparent',
+                              }}
                               aria-current={active ? "page" : undefined}
                             >
                               {it.label}
