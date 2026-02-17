@@ -296,15 +296,65 @@ export const UnifiedTraceabilitySection = () => {
                       {capability.description}
                     </p>
                     
-                    <Link href="/auth/register">
-                      <ButtonPrimary 
-                        className="inline-flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                        buttonName={`Home Page - ${capability.title} - Get Started`}
-                      >
-                        Get Started
-                        <ArrowRight className="w-4 h-4" />
-                      </ButtonPrimary>
-                    </Link>
+                    <div className="mt-4 flex justify-center">
+                      <Link href="/auth/register">
+                        <div 
+                          className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
+                          style={{
+                            height: '52px',
+                            backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                            paddingTop: '6px',
+                            paddingRight: '10px',
+                            paddingBottom: '6px',
+                            paddingLeft: '10px',
+                            gap: '10px',
+                            backdropFilter: 'blur(40px)',
+                            boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+                            e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+                            e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
+                        >
+                          <div
+                            className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
+                            style={{
+                              background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                              maskComposite: 'exclude',
+                              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                              WebkitMaskComposite: 'xor',
+                              padding: '1px',
+                            }}
+                          />
+                          <span 
+                            className="relative z-10 px-4 py-2 transition-colors cursor-pointer flex items-center gap-2"
+                            style={{
+                              fontFamily: 'Inter',
+                              fontWeight: 500,
+                              fontSize: '14px',
+                              lineHeight: '21.85px',
+                              letterSpacing: '0.27px',
+                              textAlign: 'center',
+                              verticalAlign: 'middle',
+                              background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                              WebkitBackgroundClip: 'text',
+                              backgroundClip: 'text',
+                              color: 'transparent',
+                            }}
+                          >
+                            Get started
+                            <ArrowRight className="w-4 h-4" style={{ color: '#3291FF' }} />
+                          </span>
+                        </div>
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Image */}
@@ -388,15 +438,63 @@ export const UnifiedTraceabilitySection = () => {
                     </p>
                     
                     {/* Call to Action */}
-                    <div style={{ marginTop: '8px' }}>
+                    <div className="mt-4 flex justify-center">
                       <Link href="/auth/register">
-                        <ButtonPrimary 
-                          className="inline-flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                          buttonName={`Home Page - ${capability.title} - Get Started`}
+                        <div 
+                          className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
+                          style={{
+                            height: '52px',
+                            backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                            paddingTop: '6px',
+                            paddingRight: '10px',
+                            paddingBottom: '6px',
+                            paddingLeft: '10px',
+                            gap: '10px',
+                            backdropFilter: 'blur(40px)',
+                            boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+                            e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+                            e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }}
                         >
-                          Get Started
-                          <ArrowRight className="w-4 h-4" />
-                        </ButtonPrimary>
+                          <div
+                            className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
+                            style={{
+                              background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                              maskComposite: 'exclude',
+                              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                              WebkitMaskComposite: 'xor',
+                              padding: '1px',
+                            }}
+                          />
+                          <span 
+                            className="relative z-10 px-4 py-2 transition-colors cursor-pointer flex items-center gap-2"
+                            style={{
+                              fontFamily: 'Inter',
+                              fontWeight: 500,
+                              fontSize: '14px',
+                              lineHeight: '21.85px',
+                              letterSpacing: '0.27px',
+                              textAlign: 'center',
+                              verticalAlign: 'middle',
+                              background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                              WebkitBackgroundClip: 'text',
+                              backgroundClip: 'text',
+                              color: 'transparent',
+                            }}
+                          >
+                            Get started
+                            <ArrowRight className="w-4 h-4" style={{ color: '#3291FF' }} />
+                          </span>
+                        </div>
                       </Link>
                     </div>
                   </div>
