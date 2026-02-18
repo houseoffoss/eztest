@@ -16,9 +16,9 @@ export const HowEzTestWorksSection = () => {
       </div>
 
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 items-start">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 items-start">
         {/* LEFT – Steps */}
-        <div className="space-y-0 relative">
+        <div className="space-y-0 relative order-2 lg:order-1">
           {/* Step 1 */}
           <div 
             className="relative"
@@ -374,13 +374,13 @@ export const HowEzTestWorksSection = () => {
         </div>
 
         {/* RIGHT – Screenshot */}
-        <div className="relative">
+        <div className="relative order-1 lg:order-2">
           {/* Ambient glow */}
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-          <div className="absolute bottom-0 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
+          <div className="absolute -top-12 -left-12 sm:-top-24 sm:-left-24 w-48 h-48 sm:w-96 sm:h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+          <div className="absolute bottom-0 -right-20 sm:-right-40 w-48 h-48 sm:w-96 sm:h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
 
           {/* Glass frame */}
-          <div className="relative w-full rounded-2xl bg-[#0b1220]/85 backdrop-blur-xl p-4 shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div className="relative w-full rounded-xl sm:rounded-2xl bg-[#0b1220]/85 backdrop-blur-xl p-2 sm:p-4 shadow-[0_20px_60px_rgba(0,0,0,0.9)] sm:shadow-[0_40px_120px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Border - gradient thickness from top-left */}
             {/* Rounded corner at top-left */}
             <div 
@@ -413,14 +413,14 @@ export const HowEzTestWorksSection = () => {
             />
 
             {/* macOS window dots */}
-            <div className="absolute top-4 left-4 flex gap-2 z-20">
-              <span className="w-3 h-3 rounded-full bg-red-500/90" />
-              <span className="w-3 h-3 rounded-full bg-yellow-400/90" />
-              <span className="w-3 h-3 rounded-full bg-green-500/90" />
+            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex gap-1.5 sm:gap-2 z-20">
+              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500/90" />
+              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-400/90" />
+              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500/90" />
             </div>
 
             {/* Screenshot */}
-            <div className="relative mt-6 rounded-xl overflow-hidden bg-[#050816]">
+            <div className="relative mt-4 sm:mt-6 rounded-lg sm:rounded-xl overflow-hidden bg-[#050816]">
               <Image
                 src="/screenshots/TestRun_List_Page_half.png"
                 alt="EZTest test run results dashboard"

@@ -64,12 +64,12 @@ export function Navbar({
   // Marketing variant (new design with centered nav and gradient border)
   if (variant === 'marketing') {
     return (
-      <header className={cn("sticky top-4 z-50", className)} {...props}>
-        <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
-          <div className="flex items-center justify-center gap-3 w-full relative">
+      <header className={cn("sticky top-0 sm:top-2 z-50 py-2 sm:py-4 overflow-visible", className)} {...props}>
+        <div className={cn("w-full px-2 sm:px-4 md:px-6 lg:px-8", containerClassName)}>
+          <div className="flex items-center justify-between sm:justify-center gap-2 sm:gap-3 w-full relative min-h-[52px]">
             {/* Left side: Brand */}
             {brandLabel ? (
-              <div className="flex items-center gap-3 absolute left-0">
+              <div className="flex items-center gap-2 sm:gap-3 absolute left-0 z-20">
                 <Link href={brandHref} className="shrink-0 inline-flex items-center">
                   {brandLabel}
                 </Link>
@@ -79,9 +79,8 @@ export function Navbar({
             {/* Center: Nav items + Breadcrumbs */}
             {((items && items.length > 0) || breadcrumbs) ? (
               <div 
-                className="inline-flex items-center relative rounded-[100px]"
+                className="hidden sm:inline-flex items-center relative rounded-[100px] mx-auto"
                 style={{
-                  minWidth: items && items.length > 0 ? '550px' : 'auto',
                   height: '52px',
                   backgroundColor: 'rgba(51, 51, 51, 0.10)',
                   paddingTop: '6px',
@@ -155,7 +154,9 @@ export function Navbar({
                     <>
                       {React.isValidElement(breadcrumbs) && 
                        breadcrumbs.type === React.Fragment ? (
-                        (breadcrumbs.props as { children?: React.ReactNode }).children
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                          {(breadcrumbs.props as { children?: React.ReactNode }).children}
+                        </div>
                       ) : (
                         breadcrumbs
                       )}
@@ -168,11 +169,11 @@ export function Navbar({
             {/* Right side: Actions */}
             {renderedActions ? (
               hasOnlySignOutButton ? (
-                <div className="absolute right-0">
+                <div className="absolute right-0 z-20">
                   {renderedActions}
                 </div>
               ) : (
-                <div className="absolute right-0">
+                <div className="absolute right-0 z-20 flex items-center gap-1 sm:gap-2">
                   {renderedActions}
                 </div>
               )
