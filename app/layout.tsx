@@ -1,8 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ClientLayout } from "@/app/components/layout/ClientLayout";
 import { Providers } from "@/app/components/layout/Providers";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TITLE_DEFAULT,
+  SITE_TITLE_TEMPLATE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  OG_IMAGE_PATH,
+  OG_IMAGE_WIDTH,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_ALT,
+  OG_LOCALE,
+  OG_TYPE,
+  TWITTER_CARD,
+  TWITTER_CREATOR,
+  TWITTER_SITE,
+} from "@/config/seo.config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,18 +36,89 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#050608",
+};
+
 export const metadata: Metadata = {
+  // ── Titles ──────────────────────────────────────────────
   title: {
-    default: "EZTest - Test Management Made Simple",
-    template: "%s | EZTest"
+    default: SITE_TITLE_DEFAULT,
+    template: SITE_TITLE_TEMPLATE,
   },
-  description: "Lightweight, powerful test management platform that runs on minimal hardware. Perfect for teams who want control without complexity.",
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+
+  // ── Canonical & alternate ──────────────────────────────
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+
+  // ── Icons ──────────────────────────────────────────────
   icons: {
-    icon: [
-      { url: '/favicon.png', type: 'image/png' },
-    ],
-    apple: '/favicon.png',
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: "/favicon.png",
   },
+
+  // ── Open Graph ─────────────────────────────────────────
+  openGraph: {
+    type: OG_TYPE as "website",
+    locale: OG_LOCALE,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_TITLE_DEFAULT,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
+
+  // ── Twitter ────────────────────────────────────────────
+  twitter: {
+    card: TWITTER_CARD,
+    title: SITE_TITLE_DEFAULT,
+    description: SITE_DESCRIPTION,
+    site: TWITTER_SITE,
+    creator: TWITTER_CREATOR,
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
+
+  // ── Robots ─────────────────────────────────────────────
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  // ── Application metadata ───────────────────────────────
+  applicationName: SITE_NAME,
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
+  creator: "Belsterns",
+  publisher: "Belsterns",
+  category: "Software",
 };
 
 export default function RootLayout({
