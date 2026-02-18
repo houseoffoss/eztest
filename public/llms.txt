@@ -1,0 +1,37 @@
+# EZTest
+
+> EZTest is a lightweight, open-source, self-hosted test management platform built for modern QA and engineering teams. Organize test cases, suites, runs, and defects in one transparent platform.
+
+EZTest is developed by [Belsterns](https://belsterns.com) and hosted under the [House Of FOSS](https://www.houseoffoss.com) initiative. It is licensed under AGPL-3.0 and free to use.
+
+## Key Features
+
+- **Test Case Management**: Create, organize, and manage test cases with rich descriptions, steps, expected results, and attachments.
+- **Test Suite Management**: Group related test cases into suites for structured test planning.
+- **Test Run Execution**: Execute test runs, record pass/fail results, and track execution history.
+- **Defect Tracking**: Log, assign, and track defects linked to test cases for full traceability.
+- **Module Organization**: Organize test cases into hierarchical modules for large projects.
+- **Import & Export**: Import and export test cases and test runs (CSV, XML) for interoperability.
+- **Role-Based Access Control**: Manage team members with granular permissions per project.
+- **Self-Hosted**: Deploy on your own infrastructure with full data ownership and no vendor lock-in.
+- **API Keys**: Generate API keys for CI/CD integration and automation workflows.
+
+## Tech Stack
+
+- **Framework**: Next.js (TypeScript)
+- **Database**: PostgreSQL via Prisma ORM
+- **Authentication**: NextAuth.js
+- **Storage**: S3-compatible object storage for attachments
+- **Deployment**: Docker / standalone Node.js
+
+## Links
+
+- Website: https://eztest.houseoffoss.com
+- GitHub: https://github.com/houseoffoss/eztest
+- House Of FOSS (Managed Hosting): https://www.houseoffoss.com
+- Belsterns (Creator): https://belsterns.com
+
+## Documentation
+
+- [Full details](llms-full.txt)
+

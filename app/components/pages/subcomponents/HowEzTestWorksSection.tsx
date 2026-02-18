@@ -2,10 +2,10 @@ import Image from "next/image";
 
 export const HowEzTestWorksSection = () => {
   return (
-    <section className="relative overflow-hidden w-full">
+    <section aria-labelledby="how-eztest-works-heading" className="relative overflow-hidden w-full">
       {/* Heading */}
       <div className="text-center mb-16 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4">
+        <h2 id="how-eztest-works-heading" className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4">
           How EZTest works
         </h2>
         <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-3xl mx-auto">

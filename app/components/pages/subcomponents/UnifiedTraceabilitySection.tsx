@@ -95,11 +95,12 @@ export const UnifiedTraceabilitySection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden w-full py-12 sm:py-16 lg:py-20">
+    <section ref={sectionRef} aria-labelledby="key-capabilities-heading" className="relative overflow-hidden w-full py-12 sm:py-16 lg:py-20">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Key capabilities title */}
           <div className="mb-12 sm:mb-16 lg:mb-24">
           <h3 
+            id="key-capabilities-heading"
             className="text-2xl sm:text-3xl lg:text-4xl"
             style={{
               fontFamily: 'Inter, var(--font-inter)',
