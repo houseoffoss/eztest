@@ -233,7 +233,7 @@ export default function HomePage() {
   }, [activeTab, shouldScroll]);
 
   return (
-    <div className="min-h-screen bg-[#050608] relative">
+    <main className="min-h-screen bg-[#050608] relative">
       <Navbar
         variant="marketing"
         brandLabel={
@@ -619,6 +619,6 @@ export default function HomePage() {
       </div>
 
       <GlassFooter />
-    </div>
+    </main>
   );
 }

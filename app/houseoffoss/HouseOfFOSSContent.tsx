@@ -78,7 +78,7 @@ export default function HouseOfFOSSPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050608]">
+    <main className="min-h-screen bg-[#050608]">
       <Navbar
         variant="marketing"
         brandLabel={
@@ -759,7 +759,7 @@ export default function HouseOfFOSSPage() {
       </div>
 
       <GlassFooter />
-    </div>
+    </main>
   );
 }
 

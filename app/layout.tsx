@@ -128,6 +128,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* GEO: llms.txt discovery for AI/LLM crawlers */}
+        <link rel="alternate" type="text/plain" title="LLM-readable site description" href="/llms.txt" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-[#0a1628] min-h-screen text-white relative`}
         suppressHydrationWarning
