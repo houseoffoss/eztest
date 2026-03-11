@@ -1028,7 +1028,7 @@ export class ImportService {
           // platform, device 等は Prisma クライアントが未対応の環境で
           // Unknown argument エラーになるため、まず基本フィールドのみで作成し、
           // 続けて update で拡張フィールドを反映する（両方とも Unknown argument 時はスキップ）
-          let testCase = await prisma.testCase.create({ data: baseCreateData });
+          const testCase = await prisma.testCase.create({ data: baseCreateData });
 
           const extendedUpdateData = {
             platform: platformValue,

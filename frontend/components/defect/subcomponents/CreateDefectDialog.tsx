@@ -106,7 +106,7 @@ export function CreateDefectDialog({
     {
       name: 'title',
       label: 'タイトル',
-      placeholder: '欠陥タイトルを入力',
+      placeholder: 'Defectタイトルを入力',
       type: 'text',
       required: true,
       maxLength: 200,
@@ -301,10 +301,10 @@ export function CreateDefectDialog({
   };
 
   const config: BaseDialogConfig = {
-    title: '新規欠陥を作成',
+    title: '新規Defectを作成',
     description: 'バグの内容を入力してください。ステータスはデフォルトで「新規」になります。',
     fields,
-    submitLabel: '欠陥を作成',
+    submitLabel: 'Defectを作成',
     cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange: handleDialogOpenChange,
@@ -396,8 +396,8 @@ export function CreateDefectDialog({
         const defect = result as Defect;
         setAlert({
           type: 'success',
-          title: '欠陥を作成しました',
-          message: `欠陥 ${defect.defectId} が正常に作成されました`,
+          title: 'Defectを作成しました',
+          message: `Defect ${defect.defectId} が正常に作成されました`,
         });
         // Reset attachments state
         setDescriptionAttachments([]);

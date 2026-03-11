@@ -22,7 +22,7 @@ export function DefectDescriptionAttachmentField({
   onAttachmentsChange,
   projectId,
   defectId,
-  placeholder = '欠陥の詳細を入力...',
+  placeholder = 'Defectの詳細を入力...',
   rows = 3,
   maxLength = 2000,
 }: DefectDescriptionAttachmentFieldProps) {

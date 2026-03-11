@@ -262,7 +262,7 @@ export function DefectDetailsCard({
               onAttachmentsChange={handleDescriptionAttachmentsChange}
               projectId={projectId}
               defectId={defectId}
-              placeholder="欠陥の詳細な説明"
+              placeholder="Defectの詳細な説明"
               rows={4}
               maxLength={2000}
             />
