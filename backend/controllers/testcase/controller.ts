@@ -2,7 +2,7 @@ import { testCaseService } from '@/backend/services/testcase/services';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { NotFoundException, InternalServerException, ValidationException } from '@/backend/utils/exceptions';
 import { TestCaseMessages } from '@/backend/constants/static_messages';
-import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema, linkAttachmentsSchema } from '@/backend/validators';
+import { createTestCaseSchema, updateTestCaseSchema, updateTestStepsSchema, testCaseQuerySchema, linkAttachmentsSchema, bulkDeleteTestCasesSchema } from '@/backend/validators';
 import { z, ZodError } from 'zod';
 
 export class TestCaseController {
@@ -42,6 +42,15 @@ export class TestCaseController {
   }
 
   /**
+   * Get distinct domain and functionName values for filter dropdowns
+   * Access already checked by route wrapper
+   */
+  async getTestCaseFilterOptions(_req: CustomRequest, projectId: string) {
+    const options = await testCaseService.getTestCaseFilterOptions(projectId);
+    return { data: options };
+  }
+
+  /**
    * Get test cases with pagination and module grouping
    * Access already checked by route wrapper
    */
@@ -63,6 +72,8 @@ export class TestCaseController {
       status: searchParams.get('status') || undefined,
       search: searchParams.get('search') || undefined,
       moduleId: searchParams.get('moduleId') || undefined,
+      domain: searchParams.get('domain') || undefined,
+      functionName: searchParams.get('functionName') || undefined,
     };
 
     // Validation with Zod
@@ -136,6 +147,18 @@ export class TestCaseController {
       postconditions: validatedData.postconditions,
       createdById: req.userInfo.id,
       steps: validatedData.steps,
+      // New fields for enhanced test case management
+      rtcId: validatedData.rtcId ?? undefined,
+      flowId: validatedData.flowId ?? undefined,
+      layer: validatedData.layer ?? undefined,
+evidence: validatedData.evidence ?? undefined,
+      notes: validatedData.notes ?? undefined,
+      platform: validatedData.platform ?? undefined,
+      device: validatedData.device ?? undefined,
+      domain: validatedData.domain ?? undefined,
+      functionName: validatedData.functionName ?? undefined,
+      executionType: validatedData.executionType ?? undefined,
+      automationStatus: validatedData.automationStatus ?? undefined,
     });
 
     return { data: testCase, statusCode: 201 };
@@ -202,6 +225,18 @@ export class TestCaseController {
           postconditions: validatedData.postconditions,
           suiteId: validatedData.suiteId,
           moduleId: validatedData.moduleId,
+          // New fields for enhanced test case management
+          rtcId: validatedData.rtcId,
+          flowId: validatedData.flowId,
+          layer: validatedData.layer,
+evidence: validatedData.evidence,
+          notes: validatedData.notes,
+          platform: validatedData.platform,
+          device: validatedData.device,
+          domain: validatedData.domain,
+          functionName: validatedData.functionName,
+          executionType: validatedData.executionType,
+          automationStatus: validatedData.automationStatus,
         }
       );
 
@@ -234,6 +269,47 @@ export class TestCaseController {
         throw new NotFoundException(TestCaseMessages.TestCaseNotFound);
       }
       throw new InternalServerException(TestCaseMessages.FailedToDeleteTestCase);
+    }
+  }
+
+  /**
+   * Bulk delete test cases in a project
+   * Permission already checked by route wrapper
+   */
+  async bulkDeleteTestCases(
+    request: CustomRequest,
+    projectId: string,
+    body: unknown
+  ) {
+    const validationResult = bulkDeleteTestCasesSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const validatedData = validationResult.data;
+
+    try {
+      const result = await testCaseService.bulkDeleteTestCases(
+        projectId,
+        validatedData.testCaseIds,
+        request.userInfo.id,
+        request.scopeInfo.scope_name
+      );
+
+      return {
+        data: {
+          message: `${result.deletedCount} test case(s) deleted successfully`,
+          deletedCount: result.deletedCount,
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Some test cases not found or access denied') {
+        throw new ValidationException('Some selected test cases are invalid or inaccessible');
+      }
+      throw new InternalServerException('Failed to bulk delete test cases');
     }
   }
 

@@ -36,6 +36,18 @@ export const s3Client = new Proxy({} as S3Client, {
   },
 });
 
+/**
+ * Check if S3 is configured and available
+ */
+export function isS3Configured(): boolean {
+  return !!(
+    process.env.AWS_REGION &&
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY &&
+    process.env.AWS_S3_BUCKET
+  );
+}
+
 export function getS3Bucket(): string {
   if (!process.env.AWS_S3_BUCKET) {
     throw new Error('AWS_S3_BUCKET environment variable is not set');

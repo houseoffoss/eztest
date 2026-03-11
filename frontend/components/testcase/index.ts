@@ -33,7 +33,7 @@ export {
   getTestCaseFormFields,
   getCreateTestCaseFormFields,
   getEditTestCaseFormFields,
-} from './constants';
+} from './constants/index';
 
 // Types
 export type { TestCase, TestSuite, TestCaseFormData, Project, Module } from './types';

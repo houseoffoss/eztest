@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DetailPageHeader } from '@/frontend/reusable-components/layout/DetailPageHeader';
 import { Edit, Trash2, RotateCcw } from 'lucide-react';
@@ -39,6 +39,7 @@ export function DefectHeader({
   const { options: priorityOptions } = useDropdownOptions('Defect', 'priority');
   const { options: statusOptions } = useDropdownOptions('Defect', 'status');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
@@ -54,6 +55,7 @@ export function DefectHeader({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
@@ -69,6 +71,7 @@ export function DefectHeader({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'NEW':
@@ -109,19 +112,19 @@ export function DefectHeader({
       onTitleChange={(title) => onFormChange({ ...formData, title })}
       badges={[
         { 
-          label: 'Severity', 
+          label: '深刻度', 
           value: severityLabel, 
           className: severityBadgeProps.className,
           style: severityBadgeProps.style 
         },
         { 
-          label: 'Priority', 
+          label: '優先度', 
           value: priorityLabel, 
           className: priorityBadgeProps.className,
           style: priorityBadgeProps.style 
         },
         { 
-          label: 'Status', 
+          label: 'ステータス', 
           value: statusLabel, 
           className: statusBadgeProps.className,
           style: statusBadgeProps.style 
@@ -129,21 +132,21 @@ export function DefectHeader({
       ]}
       actions={[
         { 
-          label: 'Reopen', 
+          label: '再オープン', 
           icon: RotateCcw, 
           onClick: onReopen, 
           show: defect.status === 'CLOSED' && canUpdate,
           buttonName: 'Defect Detail - Reopen',
         },
         { 
-          label: 'Edit', 
+          label: '編集', 
           icon: Edit, 
           onClick: onEdit, 
           show: canUpdate,
           buttonName: 'Defect Detail - Edit',
         },
         { 
-          label: 'Delete', 
+          label: '削除', 
           icon: Trash2, 
           onClick: onDelete, 
           variant: 'destructive', 

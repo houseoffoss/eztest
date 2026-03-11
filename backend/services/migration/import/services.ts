@@ -29,13 +29,30 @@ export interface MigrationResult {
 export class ImportService {
   /**
    * Normalize column names to handle both export format and import format
+   * _2, _3 等の重複サフィックスを除去（Excel等で全列に _2 が付く場合に対応）
    */
   private normalizeColumnName(columnName: string): string {
-    const normalized = columnName.trim().toLowerCase();
+    const base = columnName.trim().replace(/_[0-9]+$/, '');
+    const normalized = base.toLowerCase();
     
     // Map export format column names to import format
     const columnMap: Record<string, string> = {
-      // New test case fields
+      // 日本語列名（CSV/画面）
+      'テストケースid': 'testCaseId',
+      'テストケース名': 'title',
+      'モジュール・機能': 'module',
+      '優先度': 'priority',
+      '前提条件': 'preconditions',
+      'テスト手順': 'testSteps',
+      'テストデータ': 'testData',
+      '期待結果': 'expectedResult',
+      '状態': 'status',
+      '不具合id': 'defectId',
+      '説明': 'description',
+      'テスト実行時間（秒）': 'estimatedTime',
+      '事後条件': 'postconditions',
+      'テストスイート': 'testsuite',
+      // English (backward compatibility)
       'test case id': 'testCaseId',
       'testcase id': 'testCaseId',
       'test case title': 'title',
@@ -54,11 +71,9 @@ export class ImportService {
       'expected result': 'expectedResult',
       'expectedresult': 'expectedResult',
       'status': 'status',
-      // Defect linking for test cases
       'defect id': 'defectId',
       'defectid': 'defectId',
       'defect': 'defectId',
-      // Older fields (kept for backward compatibility)
       'description': 'description',
       'estimated time (minutes)': 'estimatedTime',
       'estimated time': 'estimatedTime',
@@ -66,6 +81,39 @@ export class ImportService {
       'test suites': 'testsuite',
       'testsuite': 'testsuite',
       'test suite': 'testsuite',
+      // New test case fields for enhanced test case management
+      'rtc-id': 'rtcId',
+      'rtc id': 'rtcId',
+      'rtcid': 'rtcId',
+      'flow-id': 'flowId',
+      'flow id': 'flowId',
+      'flowid': 'flowId',
+      'layer': 'layer',
+      '根拠': 'evidence',
+      '根拠（ドキュメント）': 'evidence',
+      '根拠コード': 'evidence',
+      'evidence': 'evidence',
+      '備考': 'notes',
+      'notes': 'notes',
+      '端末': 'device',
+      'device': 'device',
+      'プラットフォーム': 'platform',
+      'platform': 'platform',
+      'ドメイン': 'domain',
+      'domain': 'domain',
+      '機能': 'functionName',
+      'functionname': 'functionName',
+      'function name': 'functionName',
+      '実行方式': 'executionType',
+      'executiontype': 'executionType',
+      'execution type': 'executionType',
+      '自動化状況': 'automationStatus',
+      'automationstatus': 'automationStatus',
+      'automation status': 'automationStatus',
+      // Test Type (テスト種別)
+      'テスト種別': 'testType',
+      'test type': 'testType',
+      'testtype': 'testType',
       // Defect columns (for defect import)
       'defect title / summary': 'title',
       'defect title': 'title',
@@ -107,11 +155,12 @@ export class ImportService {
     type: ImportType,
     projectId: string,
     userId: string,
-    data: ParsedRow[]
+    data: ParsedRow[],
+    options?: { updateExisting?: boolean }
   ): Promise<MigrationResult> {
     switch (type) {
       case 'testcases':
-        return this.importTestCases(projectId, userId, data);
+        return this.importTestCases(projectId, userId, data, options?.updateExisting ?? false);
       case 'defects':
         return this.importDefects(projectId, userId, data);
       default:
@@ -121,11 +170,13 @@ export class ImportService {
 
   /**
    * Import test cases from parsed data
+   * @param updateExisting - 同一タイトルの既存テストケースをスキップせず更新する
    */
   private async importTestCases(
     projectId: string,
     userId: string,
-    data: ParsedRow[]
+    data: ParsedRow[],
+    updateExisting: boolean = false
   ): Promise<MigrationResult> {
     const result: MigrationResult = {
       success: 0,
@@ -196,6 +247,13 @@ export class ImportService {
     const validPriorities = new Set(priorities.map((p) => p.value.toUpperCase()));
     const validStatuses = new Set(statuses.map((s) => s.value.toUpperCase()));
 
+    // インポートデータのステータスを正規化（他システムの値 → 有効な値）
+    const statusAliasToCanonical: Record<string, string> = {
+      ACTIVE_IOS: 'ACTIVE',
+      ACTIVE_ANDROID: 'ACTIVE',
+      ACTIVE_WEB: 'ACTIVE',
+    };
+
     // Process each row
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
@@ -213,17 +271,46 @@ export class ImportService {
         const preconditions = this.getRowValue(row, 'preconditions');
         const postconditions = this.getRowValue(row, 'postconditions');
         const moduleValue = this.getRowValue(row, 'module');
-        const testsuite = this.getRowValue(row, 'testsuite');
+        // テストスイート列: 正規化キーで取得、なければ日本語/英語ヘッダ名で取得
+        const testsuiteRaw =
+          this.getRowValue(row, 'testsuite') ??
+          (row as Record<string, unknown>)['テストスイート'] ??
+          (row as Record<string, unknown>)['Test Suites'] ??
+          (row as Record<string, unknown>)['Test Suite'];
+        const testsuite =
+          testsuiteRaw !== undefined && testsuiteRaw !== null && String(testsuiteRaw).trim() !== ''
+            ? String(testsuiteRaw).trim()
+            : null;
         const testSteps = this.getRowValue(row, 'testSteps');
         const testData = this.getRowValue(row, 'testData');
         const defectId = this.getRowValue(row, 'defectId');
+        // New fields for enhanced test case management
+        const rtcId = this.getRowValue(row, 'rtcId');
+        const flowId = this.getRowValue(row, 'flowId');
+        const layer = this.getRowValue(row, 'layer');
+        const evidence = this.getRowValue(row, 'evidence');
+        const notes = this.getRowValue(row, 'notes');
+        const testType = this.getRowValue(row, 'testType');
+        const device = this.getRowValue(row, 'device');
+        const platformCol = this.getRowValue(row, 'platform');
+        const domainCol = this.getRowValue(row, 'domain');
+        const functionNameCol = this.getRowValue(row, 'functionName');
+        const executionTypeCol = this.getRowValue(row, 'executionType');
+        const automationStatusCol = this.getRowValue(row, 'automationStatus');
 
-        // Validate required field
-        if (!title || typeof title !== 'string' || title.toString().trim() === '') {
-          throw new Error('Test Case Title is required');
+        // 必須: テストケース名
+        let testCaseTitle: string;
+        if (title && typeof title === 'string' && title.toString().trim() !== '') {
+          testCaseTitle = title.toString().trim();
+        } else {
+          throw new Error('必須列「テストケース名」がありません。');
         }
 
-        const testCaseTitle = title.toString().trim();
+        // RTC-ID の文字列（既存テストケース判定に使用）
+        const rtcIdStr =
+          rtcId != null && typeof rtcId === 'string' && rtcId.toString().trim() !== ''
+            ? rtcId.toString().trim()
+            : null;
 
         // Process defect IDs if provided (supports multiple defects: comma or semicolon separated)
         // Store all defect IDs (both existing and pending) for later linking
@@ -254,27 +341,6 @@ export class ImportService {
               pendingDefectIds.push(providedDefectId);
             }
           }
-        }
-
-        // Check if test case with same title already exists
-        const existingTestCase = await prisma.testCase.findFirst({
-          where: {
-            projectId,
-            title: {
-              equals: testCaseTitle,
-              mode: 'insensitive',
-            },
-          },
-        });
-
-        if (existingTestCase) {
-          result.skipped++;
-          result.skippedItems.push({
-            row: rowNumber,
-            title: testCaseTitle,
-            reason: `Already exists (${existingTestCase.tcId})`,
-          });
-          continue; // Skip this row
         }
 
         // Find or create module
@@ -321,6 +387,69 @@ export class ImportService {
           suiteId = foundSuite.id;
         }
 
+        // 既存テストケースの判定:
+        // RTC-ID があれば RTC-ID 優先、なければタイトルで照合。
+        // ただし suite が異なる場合は別テストケースとして扱い、既存を上書きしない。
+        let existingTestCase: {
+          id: string;
+          tcId: string;
+          suiteId: string | null;
+          testCaseSuites: Array<{ testSuiteId: string }>;
+        } | null = null;
+        if (rtcIdStr) {
+          existingTestCase = await prisma.testCase.findFirst({
+            where: { projectId, rtcId: rtcIdStr },
+            select: {
+              id: true,
+              tcId: true,
+              suiteId: true,
+              testCaseSuites: {
+                select: { testSuiteId: true },
+              },
+            },
+          });
+        } else {
+          existingTestCase = await prisma.testCase.findFirst({
+            where: {
+              projectId,
+              title: { equals: testCaseTitle, mode: 'insensitive' },
+            },
+            select: {
+              id: true,
+              tcId: true,
+              suiteId: true,
+              testCaseSuites: {
+                select: { testSuiteId: true },
+              },
+            },
+          });
+        }
+
+        // Different suite should not overwrite existing test case.
+        if (existingTestCase && suiteId) {
+          const inTargetSuite =
+            existingTestCase.suiteId === suiteId ||
+            existingTestCase.testCaseSuites.some((tcs) => tcs.testSuiteId === suiteId);
+          if (!inTargetSuite) {
+            existingTestCase = null;
+          }
+        }
+
+        let existingTestCaseToUpdate: { id: string; tcId: string } | null = null;
+        if (existingTestCase) {
+          if (updateExisting) {
+            existingTestCaseToUpdate = { id: existingTestCase.id, tcId: existingTestCase.tcId };
+          } else {
+            result.skipped++;
+            result.skippedItems.push({
+              row: rowNumber,
+              title: testCaseTitle,
+              reason: `Already exists (${existingTestCase.tcId})`,
+            });
+            continue; // Skip this row
+          }
+        }
+
         // Validate priority
         const priorityValue = priority
           ? priority.toString().toUpperCase()
@@ -331,12 +460,17 @@ export class ImportService {
           );
         }
 
-        // Validate status
-        const statusValue = status ? status.toString().toUpperCase() : 'ACTIVE';
+        // Validate status（エイリアスを正規化: ACTIVE_iOS 等 → ACTIVE）
+        let statusValue = status ? status.toString().toUpperCase() : 'ACTIVE';
         if (!validStatuses.has(statusValue)) {
-          throw new Error(
-            `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(', ')}`
-          );
+          const normalized = statusAliasToCanonical[statusValue];
+          if (normalized && validStatuses.has(normalized)) {
+            statusValue = normalized;
+          } else {
+            throw new Error(
+              `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(', ')}`
+            );
+          }
         }
 
         // Parse estimated time
@@ -348,41 +482,49 @@ export class ImportService {
           }
         }
 
-        // Parse expected results if provided (can be numbered list, newline-separated, or single value)
-        let expectedResultsList: string[] = [];
+        // Parse expected results with step number mapping to maintain 1-to-1 correspondence
+        // Format: "1. Result1\n2. Result2\n3. " (step 3 has empty result)
+        // This maintains the correspondence between step numbers and expected results
+        const expectedResultsByStepNumber = new Map<number, string>();
         let singleExpectedResult: string | null = null;
-        
+
         if (expectedResult && typeof expectedResult === 'string' && expectedResult.toString().trim()) {
           const expectedResultText = expectedResult.toString().trim();
-          
+
           // Check if it contains numbered points (1., 2., etc.) or newlines
           const hasNumberedPoints = /\d+\./.test(expectedResultText);
           const hasNewlines = expectedResultText.includes('\n');
-          const numberedPointsMatches = expectedResultText.match(/\d+\./g);
-          const numberedPointsCount = numberedPointsMatches ? numberedPointsMatches.length : 0;
-          
-          if (hasNewlines || (hasNumberedPoints && numberedPointsCount > 1)) {
-            // Multi-item format - split by newlines first, then check for numbered points
-            let items: string[] = [];
-            
-            if (hasNewlines) {
-              // Split by newlines first
-              items = expectedResultText.split('\n').map(l => l.trim()).filter(l => l);
-            } else {
-              // No newlines but has multiple numbered points - split by numbered points
-              // Match pattern: number followed by dot and optional space
-              items = expectedResultText.split(/(?=\d+\.\s*)/).map(l => l.trim()).filter(l => l);
+
+          if (hasNewlines || hasNumberedPoints) {
+            // Format with step numbers: "1. Result1\n2. Result2\n3. "
+            // Split by newlines and parse each line
+            const lines = expectedResultText.split('\n');
+
+            for (const line of lines) {
+              const trimmedLine = line.trim();
+              if (!trimmedLine) continue;
+
+              // Try to extract step number and result: "1. Result text"
+              const match = trimmedLine.match(/^(\d+)\.\s*(.*)$/);
+              if (match) {
+                const stepNumber = parseInt(match[1], 10);
+                const result = match[2].trim();
+                // Store even empty results to maintain correspondence
+                expectedResultsByStepNumber.set(stepNumber, result);
+              } else if (!hasNumberedPoints) {
+                // Line without number - treat as content for next step
+                // This handles cases where results are just newline-separated without numbers
+                const stepNumber = expectedResultsByStepNumber.size + 1;
+                expectedResultsByStepNumber.set(stepNumber, trimmedLine);
+              }
             }
-            
-            // Process each item - remove leading number and dot if present
-            expectedResultsList = items.map(item => {
-              return item.replace(/^\d+\.\s*/, '').trim();
-            }).filter(item => item.length > 0);
-          } else if (hasNumberedPoints) {
-            // Single line with number prefix - treat as single result
-            singleExpectedResult = expectedResultText.replace(/^\d+\.\s*/, '').trim();
+
+            // If no numbered results were found but we have text, treat as single result
+            if (expectedResultsByStepNumber.size === 0 && expectedResultText) {
+              singleExpectedResult = expectedResultText;
+            }
           } else {
-            // Single expected result - will apply to all steps
+            // No newlines and no numbering - single expected result for all steps
             singleExpectedResult = expectedResultText;
           }
         }
@@ -390,16 +532,18 @@ export class ImportService {
         // Parse test steps if provided
         // Also handle case where Expected Result column has values but Test Steps is empty
         let testStepsData: Array<{ stepNumber: number; action: string; expectedResult: string }> | undefined;
-        
+
         // If Test Steps is empty but Expected Result has values, create steps from expected results
-        if (!testSteps && (expectedResultsList.length > 0 || singleExpectedResult)) {
-          if (expectedResultsList.length > 0) {
-            // Multiple expected results - create one step per expected result
-            testStepsData = expectedResultsList.map((expectedResult, index) => ({
-              stepNumber: index + 1,
-              action: '', // No action, only expected result
-              expectedResult: expectedResult,
-            }));
+        if (!testSteps && (expectedResultsByStepNumber.size > 0 || singleExpectedResult)) {
+          if (expectedResultsByStepNumber.size > 0) {
+            // Create steps from numbered expected results
+            testStepsData = Array.from(expectedResultsByStepNumber.entries())
+              .sort((a, b) => a[0] - b[0]) // Sort by step number
+              .map(([stepNumber, result]) => ({
+                stepNumber,
+                action: '', // No action, only expected result
+                expectedResult: result,
+              }));
           } else if (singleExpectedResult) {
             // Single expected result - create one step
             testStepsData = [{
@@ -421,17 +565,21 @@ export class ImportService {
                   return Boolean(step);
                 })
                 .map((step, index) => {
-                  const stepAction = (typeof step === 'object' && step !== null) 
-                    ? (step.action || step.step || '') 
+                  const stepNumber = step.stepNumber || (typeof step === 'object' && step !== null ? index + 1 : index + 1);
+                  const stepAction = (typeof step === 'object' && step !== null)
+                    ? (step.action || step.step || '')
                     : String(step);
-                  const stepExpectedResult = (typeof step === 'object' && step !== null) 
-                    ? (step.expectedResult || step.expected || '') 
+                  const stepExpectedResult = (typeof step === 'object' && step !== null)
+                    ? (step.expectedResult || step.expected || '')
                     : '';
-                  // Use Expected Result column if step doesn't have expected result
-                  const finalExpectedResult = stepExpectedResult || expectedResultsList[index] || singleExpectedResult || '';
-                  
+                  // Use Expected Result column by step number if step doesn't have expected result
+                  const finalExpectedResult = stepExpectedResult
+                    || expectedResultsByStepNumber.get(stepNumber)
+                    || singleExpectedResult
+                    || '';
+
                   return {
-                    stepNumber: step.stepNumber || (typeof step === 'object' && step !== null ? index + 1 : index + 1),
+                    stepNumber,
                     action: stepAction,
                     expectedResult: finalExpectedResult,
                   };
@@ -446,13 +594,17 @@ export class ImportService {
                   testStepsData = parsed
                     .filter((step) => step && (step.action || step.step)) // Filter out invalid steps
                     .map((step, index) => {
+                      const stepNumber = step.stepNumber || index + 1;
                       const stepAction = step.action || step.step || '';
                       const stepExpectedResult = step.expectedResult || step.expected || '';
-                      // Use Expected Result column if step doesn't have expected result
-                      const finalExpectedResult = stepExpectedResult || expectedResultsList[index] || singleExpectedResult || '';
-                      
+                      // Use Expected Result column by step number if step doesn't have expected result
+                      const finalExpectedResult = stepExpectedResult
+                        || expectedResultsByStepNumber.get(stepNumber)
+                        || singleExpectedResult
+                        || '';
+
                       return {
-                        stepNumber: step.stepNumber || index + 1,
+                        stepNumber,
                         action: stepAction,
                         expectedResult: finalExpectedResult,
                       };
@@ -482,26 +634,36 @@ export class ImportService {
                   testStepsData = stepLines.map((line, index) => {
                     // Check if line has numbered prefix (e.g., "1. Enter password")
                     const isNumbered = /^\d+\./.test(line);
-                    
-                    // Remove leading number and dot if present
-                    let action = isNumbered ? line.replace(/^\d+\.\s*/, '').trim() : line;
-                    
+
+                    // Extract step number if numbered, otherwise use index + 1
+                    let stepNumber = index + 1;
+                    let action = line;
+
+                    if (isNumbered) {
+                      const match = line.match(/^(\d+)\.\s*(.*)$/);
+                      if (match) {
+                        stepNumber = parseInt(match[1], 10);
+                        action = match[2].trim();
+                      } else {
+                        action = line.replace(/^\d+\.\s*/, '').trim();
+                      }
+                    }
+
                     // Remove expected result from action if it's separated by semicolon or colon
                     // We only want the action, expected result comes from Expected Result column
                     const parts = action.split(/[;:]/).map(p => p.trim()).filter(p => p);
                     action = parts[0] || action; // Take only the action part (before semicolon/colon)
-                    
-                    // Get expected result from Expected Result column by index
-                    // If multiple expected results exist, match by index; if single value, apply to all steps
-                    const expectedResultValue = expectedResultsList[index] || singleExpectedResult || '';
-                    
+
+                    // Get expected result from Expected Result column by step number
+                    const expectedResultValue = expectedResultsByStepNumber.get(stepNumber) || singleExpectedResult || '';
+
                     // If action is empty but expected result exists, use expected result as the content
                     // If expected result is empty but action exists, use action only
                     const finalAction = action || '';
                     const finalExpectedResult = expectedResultValue || '';
-                    
+
                     return {
-                      stepNumber: index + 1,
+                      stepNumber,
                       action: finalAction,
                       expectedResult: finalExpectedResult,
                     };
@@ -520,24 +682,36 @@ export class ImportService {
                     testStepsData = stepLines.map((line, index) => {
                       // Check if line has numbered prefix
                       const isNumbered = /^\d+\./.test(line);
-                      let cleanLine = isNumbered ? line.replace(/^\d+\.\s*/, '').trim() : line;
-                      
+
+                      // Extract step number if numbered, otherwise use index + 1
+                      let stepNumber = index + 1;
+                      let cleanLine = line;
+
+                      if (isNumbered) {
+                        const match = line.match(/^(\d+)\.\s*(.*)$/);
+                        if (match) {
+                          stepNumber = parseInt(match[1], 10);
+                          cleanLine = match[2].trim();
+                        } else {
+                          cleanLine = line.replace(/^\d+\.\s*/, '').trim();
+                        }
+                      }
+
                       // Remove expected result from action if it's separated by semicolon or colon
                       // We only want the action, expected result comes from Expected Result column
                       const parts = cleanLine.split(/[;:]/).map(p => p.trim()).filter(p => p);
                       cleanLine = parts[0] || cleanLine; // Take only the action part (before semicolon/colon)
-                      
-                      // Get expected result from Expected Result column by index
-                      // If multiple expected results exist, match by index; if single value, apply to all steps
-                      const expectedResultValue = expectedResultsList[index] || singleExpectedResult || '';
-                      
+
+                      // Get expected result from Expected Result column by step number
+                      const expectedResultValue = expectedResultsByStepNumber.get(stepNumber) || singleExpectedResult || '';
+
                       // If action is empty but expected result exists, use expected result as the content
                       // If expected result is empty but action exists, use action only
                       const finalAction = cleanLine || '';
                       const finalExpectedResult = expectedResultValue || '';
-                      
+
                       return {
-                        stepNumber: index + 1,
+                        stepNumber,
                         action: finalAction,
                         expectedResult: finalExpectedResult,
                       };
@@ -557,6 +731,137 @@ export class ImportService {
           ? testData.toString().trim()
           : null;
 
+        // Parse new fields for enhanced test case management
+        // RTC-ID, Flow-ID (strings)
+        const rtcIdValue = rtcId && typeof rtcId === 'string' && rtcId.toString().trim()
+          ? rtcId.toString().trim()
+          : null;
+        const flowIdValue = flowId && typeof flowId === 'string' && flowId.toString().trim()
+          ? flowId.toString().trim()
+          : null;
+
+        // Layer (convert to uppercase: "Smoke" -> "SMOKE", unknown values default to "UNKNOWN")
+        let layerValue: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' = 'UNKNOWN';
+        if (layer && typeof layer === 'string' && layer.toString().trim()) {
+          const layerUpper = layer.toString().trim().toUpperCase();
+          if (layerUpper === 'SMOKE' || layerUpper === 'CORE' || layerUpper === 'EXTENDED' || layerUpper === 'UNKNOWN') {
+            layerValue = layerUpper as 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN';
+          } else {
+            // Try to map common variations, default to UNKNOWN if not found
+            const layerMap: Record<string, 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN'> = {
+              'SMOKE': 'SMOKE',
+              'CORE': 'CORE',
+              'EXTENDED': 'EXTENDED',
+              'UNKNOWN': 'UNKNOWN',
+            };
+            layerValue = layerMap[layerUpper] || 'UNKNOWN';
+          }
+        }
+
+        // Evidence (根拠コード)
+        const evidenceValue = evidence && typeof evidence === 'string' && evidence.toString().trim()
+          ? evidence.toString().trim()
+          : null;
+
+        // Notes (備考)
+        const notesValue = notes && typeof notes === 'string' && notes.toString().trim()
+          ? notes.toString().trim()
+          : null;
+
+        // Test Type (テスト種別) - preserve Japanese labels, normalize English to Japanese
+        let testTypeValue: string | null = null;
+        if (testType && typeof testType === 'string' && testType.toString().trim()) {
+          const testTypeStr = testType.toString().trim();
+          const testTypeUpper = testTypeStr.toUpperCase();
+          
+          // Map to Japanese labels (CSV の日本語値はそのまま保持)
+          const testTypeMap: Record<string, string> = {
+            // English values → Japanese labels
+            'NORMAL': '正常系',
+            'ABNORMAL': '異常系',
+            'NON_FUNCTIONAL': '非機能',
+            'NONFUNCTIONAL': '非機能',
+            'NON-FUNCTIONAL': '非機能',
+            'REGRESSION': '回帰',
+            'DATA_INTEGRITY': 'データ整合性確認',
+            'DATAINTEGRITY': 'データ整合性確認',
+            'DATA-INTEGRITY': 'データ整合性確認',
+            'STATE_TRANSITION': '状態遷移確認',
+            'STATETRANSITION': '状態遷移確認',
+            'STATE-TRANSITION': '状態遷移確認',
+            'OPERATIONAL': '運用確認',
+            'FAILURE': '障害時確認',
+            // Japanese labels → そのまま保持
+            '正常系': '正常系',
+            '異常系': '異常系',
+            '非機能': '非機能',
+            '回帰': '回帰',
+            'データ整合性確認': 'データ整合性確認',
+            '状態遷移確認': '状態遷移確認',
+            '運用確認': '運用確認',
+            '障害時確認': '障害時確認',
+          };
+          
+          // Try direct match first (English uppercase)
+          if (testTypeMap[testTypeUpper]) {
+            testTypeValue = testTypeMap[testTypeUpper];
+          } else if (testTypeMap[testTypeStr]) {
+            // Try original case for Japanese labels
+            testTypeValue = testTypeMap[testTypeStr];
+          }
+          // If no match found, leave as null (don't import invalid values)
+        }
+
+        // Device (端末) - iPhone, Android, PC
+        let deviceValue: 'iPhone' | 'Android' | 'PC' | null = null;
+        if (device != null && typeof device === 'string' && device.toString().trim()) {
+          const deviceStr = device.toString().trim();
+          const deviceLower = deviceStr.toLowerCase();
+          if (deviceLower === 'iphone' || deviceStr === 'iPhone') deviceValue = 'iPhone';
+          else if (deviceLower === 'android' || deviceStr === 'Android') deviceValue = 'Android';
+          else if (deviceLower === 'pc' || deviceStr === 'PC') deviceValue = 'PC';
+        }
+
+        // Platform (プラットフォーム) - single: Web, Web(SP), iOS Native, Android Native
+        let platformValue: 'Web' | 'Web(SP)' | 'iOS Native' | 'Android Native' | null = null;
+        if (platformCol != null && typeof platformCol === 'string' && platformCol.toString().trim()) {
+          const platformStr = platformCol.toString().trim();
+          const platformLower = platformStr.toLowerCase();
+          if (platformLower === 'web(sp)' || platformStr === 'Web(SP)' || platformLower === 'web (sp)') platformValue = 'Web(SP)';
+          else if (platformLower === 'ios native' || platformStr === 'iOS Native' || platformLower === 'ios') platformValue = 'iOS Native';
+          else if (platformLower === 'android native' || platformStr === 'Android Native' || platformLower === 'android') platformValue = 'Android Native';
+          else if (platformLower === 'web' || platformStr === 'Web') platformValue = 'Web';
+        }
+
+        // Domain (ドメイン) and Function (機能) - free text
+        console.log(`[Import Row ${rowNumber}] domainCol raw:`, JSON.stringify(domainCol), `type: ${typeof domainCol}`);
+        console.log(`[Import Row ${rowNumber}] functionNameCol raw:`, JSON.stringify(functionNameCol), `type: ${typeof functionNameCol}`);
+        console.log(`[Import Row ${rowNumber}] Row keys:`, Object.keys(row).join(', '));
+        const domainValue = domainCol != null && String(domainCol).trim()
+          ? String(domainCol).trim()
+          : null;
+        const functionNameValue = functionNameCol != null && String(functionNameCol).trim()
+          ? String(functionNameCol).trim()
+          : null;
+        console.log(`[Import Row ${rowNumber}] domainValue:`, JSON.stringify(domainValue), `functionNameValue:`, JSON.stringify(functionNameValue));
+
+        // 実行方式: 手動 / 自動
+        let executionTypeValue: '手動' | '自動' | null = null;
+        if (executionTypeCol != null && typeof executionTypeCol === 'string' && executionTypeCol.toString().trim()) {
+          const s = executionTypeCol.toString().trim();
+          if (s === '手動') executionTypeValue = '手動';
+          else if (s === '自動') executionTypeValue = '自動';
+        }
+        // 自動化状況: 自動化済 / 自動化対象 / 自動化対象外 / 検討中
+        let automationStatusValue: '自動化済' | '自動化対象' | '自動化対象外' | '検討中' | null = null;
+        if (automationStatusCol != null && typeof automationStatusCol === 'string' && automationStatusCol.toString().trim()) {
+          const s = automationStatusCol.toString().trim();
+          if (s === '自動化済') automationStatusValue = '自動化済';
+          else if (s === '自動化対象') automationStatusValue = '自動化対象';
+          else if (s === '自動化対象外') automationStatusValue = '自動化対象外';
+          else if (s === '検討中') automationStatusValue = '検討中';
+        }
+
         // Determine the expected result value to use for the test case
         // If there are no test steps, use the parsed expected result (singleExpectedResult) or original value
         // If there are test steps with individual expected results, only set test case level if single value
@@ -566,15 +871,16 @@ export class ImportService {
           finalExpectedResult = singleExpectedResult || (expectedResult && typeof expectedResult === 'string' && expectedResult.toString().trim() ? expectedResult.toString().trim() : null);
         } else {
           // Has test steps - check if multiple expected results were parsed
-          if (expectedResultsList.length > 1) {
+          if (expectedResultsByStepNumber.size > 1) {
             // Multiple expected results assigned to steps - don't set test case level expectedResult
             // to avoid overwriting first step's individual expected result in the UI
             finalExpectedResult = null;
-          } else if (expectedResultsList.length === 1) {
-            // Single expected result in list - use it for test case level
-            finalExpectedResult = expectedResultsList[0];
+          } else if (expectedResultsByStepNumber.size === 1) {
+            // Single expected result mapped to a specific step - don't set test case level
+            // to avoid duplication (the step already has the expected result)
+            finalExpectedResult = null;
           } else if (singleExpectedResult) {
-            // Single expected result - use it for test case level
+            // Single expected result applied to all steps - use it for test case level
             finalExpectedResult = singleExpectedResult;
           } else {
             // No expected results parsed - use original value if provided
@@ -582,20 +888,112 @@ export class ImportService {
           }
         }
 
-        // Always auto-generate tcId (Test Case ID column removed from import)
-        // Auto-generate tcId in TC-XXX format without padding (TC-1, TC-2, etc.)
-        let tcId = `TC-${nextTcIdNumber}`;
-        while (existingTcIds.has(tcId)) {
-          nextTcIdNumber++;
-          tcId = `TC-${nextTcIdNumber}`;
-        }
-        nextTcIdNumber++;
-        existingTcIds.add(tcId);
+        const filteredSteps =
+          testStepsData && testStepsData.length > 0
+            ? testStepsData
+                .filter((step) => (step.action && step.action.trim()) || (step.expectedResult && step.expectedResult.trim()))
+                .map((step) => ({
+                  stepNumber: step.stepNumber,
+                  action: step.action && step.action.trim() ? step.action.trim() : '',
+                  expectedResult: step.expectedResult && step.expectedResult.trim() ? step.expectedResult.trim() : '',
+                }))
+            : [];
 
-        // Create test case
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const testCase = await (prisma.testCase.create as any)({
-          data: {
+        // DB の一意制約 (testCaseId, stepNumber) に抵触しないよう、
+        // 取り込み時は空行除去後の順序で手順番号を連番に正規化する
+        const normalizedSteps = filteredSteps.map((step, index) => ({
+          stepNumber: index + 1,
+          action: step.action,
+          expectedResult: step.expectedResult,
+        }));
+
+        const baseUpdateData = {
+          title: testCaseTitle,
+          description: description ? description.toString().trim() : null,
+          expectedResult: finalExpectedResult,
+          priority: priorityValue,
+          status: statusValue,
+          estimatedTime: estimatedTimeValue,
+          preconditions: preconditions ? preconditions.toString().trim() : null,
+          postconditions: postconditions ? postconditions.toString().trim() : null,
+          testData: testDataValue,
+          pendingDefectIds: pendingDefectIds.length > 0 ? pendingDefectIds.join(', ') : null,
+          moduleId: moduleId ?? null,
+          suiteId: suiteId ?? null,
+          rtcId: rtcIdValue,
+          flowId: flowIdValue,
+          layer: layerValue,
+          testType: testTypeValue,
+          evidence: evidenceValue,
+          notes: notesValue,
+          domain: domainValue,
+          functionName: functionNameValue,
+        };
+        const extendedUpdateData = {
+          platform: platformValue,
+          device: deviceValue,
+          executionType: executionTypeValue,
+          automationStatus: automationStatusValue,
+        };
+
+        if (existingTestCaseToUpdate) {
+          try {
+            await prisma.testCase.update({
+              where: { id: existingTestCaseToUpdate.id },
+              data: { ...baseUpdateData, ...extendedUpdateData },
+            });
+          } catch (extendedErr) {
+            const errMsg = extendedErr instanceof Error ? extendedErr.message : '';
+            console.warn(`Failed to update test case with extended fields:`, errMsg);
+            if (errMsg.includes('Unknown argument')) {
+              console.warn('Retrying update without extended fields...');
+              await prisma.testCase.update({
+                where: { id: existingTestCaseToUpdate.id },
+                data: baseUpdateData,
+              });
+            } else {
+              throw extendedErr;
+            }
+          }
+          await prisma.testStep.deleteMany({ where: { testCaseId: existingTestCaseToUpdate.id } });
+          if (normalizedSteps.length > 0) {
+            await prisma.testStep.createMany({
+              data: normalizedSteps.map((step) => ({
+                testCaseId: existingTestCaseToUpdate!.id,
+                stepNumber: step.stepNumber,
+                action: step.action,
+                expectedResult: step.expectedResult,
+              })),
+            });
+          }
+          if (suiteId) {
+            await prisma.testCaseSuite.createMany({
+              data: [{ testCaseId: existingTestCaseToUpdate.id, testSuiteId: suiteId }],
+              skipDuplicates: true,
+            });
+          }
+          for (const defect of defectsToLink) {
+            try {
+              await prisma.testCaseDefect.create({
+                data: { testCaseId: existingTestCaseToUpdate.id, defectId: defect.id },
+              });
+            } catch {
+              // already linked
+            }
+          }
+          result.success++;
+          result.imported.push({ tcId: existingTestCaseToUpdate.tcId, title: testCaseTitle });
+        } else {
+          let tcId = `TC-${nextTcIdNumber}`;
+          while (existingTcIds.has(tcId)) {
+            nextTcIdNumber++;
+            tcId = `TC-${nextTcIdNumber}`;
+          }
+          nextTcIdNumber++;
+          existingTcIds.add(tcId);
+
+          // Create test case
+          const baseCreateData = {
             tcId,
             projectId,
             title: testCaseTitle,
@@ -617,54 +1015,61 @@ export class ImportService {
             moduleId,
             suiteId,
             createdById: userId,
-            steps: testStepsData && testStepsData.length > 0
-              ? {
-                  create: testStepsData
-                    .filter((step) => (step.action && step.action.trim()) || (step.expectedResult && step.expectedResult.trim())) // Include steps with either action or expected result
-                    .map((step) => ({
-                      stepNumber: step.stepNumber,
-                      action: step.action && step.action.trim() ? step.action.trim() : '', // Allow empty action
-                      expectedResult: step.expectedResult && step.expectedResult.trim() 
-                        ? step.expectedResult.trim() 
-                        : '', // expectedResult is optional, allow empty string
-                    })),
-                }
-              : undefined,
-          },
-        });
+            rtcId: rtcIdValue,
+            flowId: flowIdValue,
+            layer: layerValue,
+            testType: testTypeValue,
+            evidence: evidenceValue,
+            notes: notesValue,
+            domain: domainValue,
+            functionName: functionNameValue,
+            steps: normalizedSteps.length > 0 ? { create: normalizedSteps } : undefined,
+          };
+          // platform, device 等は Prisma クライアントが未対応の環境で
+          // Unknown argument エラーになるため、まず基本フィールドのみで作成し、
+          // 続けて update で拡張フィールドを反映する（両方とも Unknown argument 時はスキップ）
+          const testCase = await prisma.testCase.create({ data: baseCreateData });
 
-        // Link to test suite via junction table if suite exists
-        if (suiteId) {
-          await prisma.testCaseSuite.create({
-            data: {
-              testCaseId: testCase.id,
-              testSuiteId: suiteId,
-            },
-          });
-        }
-
-        // Link to defects if defect IDs were provided and found
-        if (defectsToLink.length > 0) {
-          for (const defect of defectsToLink) {
+          const extendedUpdateData = {
+            platform: platformValue,
+            device: deviceValue,
+            executionType: executionTypeValue,
+            automationStatus: automationStatusValue,
+          };
+          const hasExtended = Object.values(extendedUpdateData).some((v) => v != null);
+          if (hasExtended) {
             try {
-              await prisma.testCaseDefect.create({
-                data: {
-                  testCaseId: testCase.id,
-                  defectId: defect.id,
-                },
+              await prisma.testCase.update({
+                where: { id: testCase.id },
+                data: extendedUpdateData,
               });
-            } catch {
-              // If link already exists, that's okay - just log it
-              console.warn(`Defect ${defect.defectId} (${defect.id}) already linked to test case ${testCase.id}`);
+              console.log(`[Import Row ${rowNumber}] Extended fields updated successfully for test case ${testCase.id}`);
+            } catch (updateErr) {
+              console.error(`[Import Row ${rowNumber}] Failed to update extended fields for test case ${testCase.id}:`, updateErr);
             }
           }
-        }
 
-        result.success++;
-        result.imported.push({
-          tcId: testCase.tcId,
-          title: testCase.title,
-        });
+          if (suiteId) {
+            await prisma.testCaseSuite.create({
+              data: { testCaseId: testCase.id, testSuiteId: suiteId },
+            });
+          }
+
+          if (defectsToLink.length > 0) {
+            for (const defect of defectsToLink) {
+              try {
+                await prisma.testCaseDefect.create({
+                  data: { testCaseId: testCase.id, defectId: defect.id },
+                });
+              } catch {
+                console.warn(`Defect ${defect.defectId} (${defect.id}) already linked to test case ${testCase.id}`);
+              }
+            }
+          }
+
+          result.success++;
+          result.imported.push({ tcId: testCase.tcId, title: testCase.title });
+        }
       } catch (error) {
         result.failed++;
         const titleValue = this.getRowValue(row, 'title');
@@ -674,6 +1079,28 @@ export class ImportService {
           error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
+    }
+
+    // Cleanup: Delete modules that have no test cases
+    try {
+      const emptyModules = await prisma.module.findMany({
+        where: {
+          projectId,
+          testCases: { none: {} },
+        },
+        select: { id: true, name: true },
+      });
+
+      if (emptyModules.length > 0) {
+        await prisma.module.deleteMany({
+          where: {
+            id: { in: emptyModules.map((m) => m.id) },
+          },
+        });
+        console.log(`[Import] Deleted ${emptyModules.length} empty module(s):`, emptyModules.map((m) => m.name));
+      }
+    } catch (error) {
+      console.warn('[Import] Failed to clean up empty modules:', error instanceof Error ? error.message : error);
     }
 
     // Debug: Log the test case import result before returning

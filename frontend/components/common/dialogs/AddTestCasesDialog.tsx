@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   Dialog,
@@ -56,8 +56,8 @@ export function AddTestCasesDialog({
     );
   };
 
-  const contextLabel = context === 'suite' ? 'this suite' : 'this test run';
-  const title = context === 'suite' ? 'Add Test Cases to Suite' : 'Add Test Cases to Run';
+  const contextLabel = context === 'suite' ? 'このテストスイート' : 'このテストラン';
+  const title = context === 'suite' ? 'テストスイートにテストケースを追加' : 'テストランにテストケースを追加';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -65,14 +65,14 @@ export function AddTestCasesDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Select test cases to add to {contextLabel}
+            {contextLabel}に追加するテストケースを選択してください
           </DialogDescription>
         </DialogHeader>
 
         <div className={context === 'run' ? 'max-h-[400px] overflow-y-auto custom-scrollbar' : 'max-h-[80vh] overflow-y-auto custom-scrollbar pr-4'}>
           {testCases.length === 0 ? (
             <p className={context === 'run' ? 'text-white/60 text-center py-8' : 'text-gray-400 text-center py-8'}>
-              No available test cases to add
+              追加できるテストケースがありません
             </p>
           ) : (
             <div className={context === 'run' ? 'space-y-2' : 'space-y-3'}>
@@ -89,7 +89,7 @@ export function AddTestCasesDialog({
                     id={testCase.id}
                     checked={selectedIds.includes(testCase.id)}
                     onCheckedChange={() => handleToggle(testCase.id)}
-                    label={testCase.title || testCase.name || 'Untitled'}
+                    label={testCase.title || testCase.name || '（タイトルなし）'}
                     description={testCase.description}
                     rightContent={
                       showPriority && testCase.priority ? (
@@ -118,14 +118,14 @@ export function AddTestCasesDialog({
             className="cursor-pointer"
             disabled={loading}
           >
-            Cancel
+            キャンセル
           </Button>
           <ButtonPrimary
             onClick={onSubmit}
             disabled={selectedIds.length === 0 || loading}
             className="cursor-pointer"
           >
-            {loading ? 'Adding...' : `Add ${selectedIds.length > 0 ? `(${selectedIds.length})` : ''}`}
+            {loading ? '追加中...' : `追加${selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}`}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>

@@ -1,10 +1,10 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { formatDateTime } from '@/lib/date-utils';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { DataTable, type ColumnDef } from '@/frontend/reusable-components/tables/DataTable';
+import { GroupedDataTable, type ColumnDef, type GroupConfig } from '@/frontend/reusable-components/tables/GroupedDataTable';
 import { AlertCircle, Plus, Bug, ListChecks, ChevronDown } from 'lucide-react';
 import { TestResult, TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
@@ -62,6 +62,7 @@ export function TestCasesListCard({
   // Check if user can create defects
   const canCreateDefect = hasPermissionCheck('defects:create');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PASSED':
@@ -82,21 +83,29 @@ export function TestCasesListCard({
   const columns: ColumnDef<ResultRow>[] = [
     {
       key: 'tcId',
-      label: 'Test Case ID',
-      className: 'min-w-[80px]',
-      render: (_, row: ResultRow) => (
+      label: 'ID',
+      width: '70px',
+      render: (row: ResultRow) => (
         <p className="text-xs font-mono text-white/70 truncate">{row.testCase.tcId || '-'}</p>
       ),
     },
     {
+      key: 'rtcId',
+      label: 'RTC-ID',
+      width: '160px',
+      render: (row: ResultRow) => (
+        <p className="text-xs font-mono text-white/70 truncate">{row.testCase.rtcId || '-'}</p>
+      ),
+    },
+    {
       key: 'testCase',
-      label: 'Test Case',
-      className: 'min-w-0 max-w-xs whitespace-normal',
-      render: (_, row: ResultRow) => (
-        <div className="min-w-0 max-w-xs overflow-hidden">
+      label: 'テストケース',
+      className: 'min-w-0',
+      render: (row: ResultRow) => (
+        <div className="min-w-0 overflow-hidden">
           <p className="font-medium text-white/90 truncate block">{row.testCase.title}</p>
           {row.comment && (
-            <p className="text-xs text-white/60 mt-1 break-words whitespace-pre-wrap">
+            <p className="text-xs text-white/60 mt-1 truncate">
               {row.comment}
             </p>
           )}
@@ -104,9 +113,27 @@ export function TestCasesListCard({
       ),
     },
     {
+      key: 'estimatedTime',
+      label: 'テスト実行時間',
+      width: '100px',
+      render: (row: ResultRow) => {
+        const t = row.testCase.estimatedTime;
+        if (t == null || !Number.isFinite(t)) return <span className="text-white/70 text-sm">-</span>;
+        const h = Math.floor(t / 3600);
+        const m = Math.floor((t % 3600) / 60);
+        const s = t % 60;
+        return (
+          <span className="text-white/70 text-sm font-mono">
+            {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+          </span>
+        );
+      },
+    },
+    {
       key: 'priority',
-      label: 'Priority',
-      render: (_, row: ResultRow) => {
+      label: '優先度',
+      width: '90px',
+      render: (row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.testCase.priority, priorityOptions);
         const priorityLabel = !loadingPriority && priorityOptions.length > 0
           ? priorityOptions.find(opt => opt.value === row.testCase.priority)?.label || row.testCase.priority
@@ -124,8 +151,9 @@ export function TestCasesListCard({
     },
     {
       key: 'status',
-      label: 'Status',
-      render: (_, row: ResultRow) => {
+      label: 'ステータス',
+      width: '120px',
+      render: (row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
         const label = !loadingStatus && statusOptions.length > 0
           ? statusOptions.find(opt => opt.value === row.status)?.label || row.status
@@ -146,17 +174,19 @@ export function TestCasesListCard({
     },
     {
       key: 'executedBy',
-      label: 'Executed By',
-      render: (_, row: ResultRow) => (
-        <span className="text-white/70 text-sm">
+      label: '実行者',
+      width: '120px',
+      render: (row: ResultRow) => (
+        <span className="text-white/70 text-sm truncate block">
           {row.executedBy?.name || '-'}
         </span>
       ),
     },
     {
       key: 'executedAt',
-      label: 'Date',
-      render: (_, row: ResultRow) => (
+      label: '日時',
+      width: '140px',
+      render: (row: ResultRow) => (
         <span className="text-white/70 text-sm">
           {row.executedAt
             ? formatDateTime(row.executedAt)
@@ -165,9 +195,11 @@ export function TestCasesListCard({
       ),
     },
     {
-      key: 'id',
-      label: 'Actions',
-      render: (_, row: ResultRow) => (
+      key: 'actions',
+      label: 'アクション',
+      width: '140px',
+      align: 'right',
+      render: (row: ResultRow) => (
         <div className="flex items-center gap-2 justify-end">
           {(testRunStatus === 'IN_PROGRESS' || forceShowDefectActions) && (
             <>
@@ -175,11 +207,14 @@ export function TestCasesListCard({
                 <Button
                   variant="glass"
                   size="sm"
-                  onClick={() => onExecuteTestCase(row.testCase)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExecuteTestCase(row.testCase);
+                  }}
                   className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                   buttonName={`Test Cases List Card - ${row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'} (${row.testCase.title || row.testCase.id})`}
                 >
-                  {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
+                  {row.status && row.status !== 'SKIPPED' ? '更新' : '実行'}
                 </Button>
               )}
               {row.status === 'FAILED' && canCreateDefect && (
@@ -187,7 +222,6 @@ export function TestCasesListCard({
                   <DropdownMenuTrigger
                     asChild
                     onClick={(e) => {
-                      // Prevent row click (which navigates to test case detail)
                       e.stopPropagation();
                     }}
                   >
@@ -209,7 +243,7 @@ export function TestCasesListCard({
                         }}
                       >
                         <Bug className="w-4 h-4 mr-2" />
-                        Create Defect
+                        Defectを作成
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem
@@ -219,7 +253,7 @@ export function TestCasesListCard({
                       }}
                     >
                       <ListChecks className="w-4 h-4 mr-2" />
-                      Choose Defect
+                      Defectを選択
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -228,9 +262,21 @@ export function TestCasesListCard({
           )}
         </div>
       ),
-      align: 'right',
     },
   ];
+
+  // Group by Module
+  const groupConfig: GroupConfig<ResultRow> = {
+    getGroupId: (row) => row.testCase.module?.id || 'no-module',
+    getGroupName: (groupId) => {
+      if (groupId === 'no-module') return 'モジュールなし';
+      const result = tableData.find(r => r.testCase.module?.id === groupId);
+      return result?.testCase.module?.name || 'モジュールなし';
+    },
+    getGroupCount: (groupId) => {
+      return tableData.filter(r => (r.testCase.module?.id || 'no-module') === groupId).length;
+    },
+  };
 
   const tableData: ResultRow[] = (results || [])
     .filter((result) => result.testCase)
@@ -243,9 +289,38 @@ export function TestCasesListCard({
       executedAt: result.executedAt,
     }));
 
+  /** モジュール名の末尾の数字を取得（並び替え用）。なければ no-module は末尾にするため Infinity、数字なしは 0 */
+  const getModuleSortKey = (row: ResultRow): number => {
+    const name = row.testCase.module?.name;
+    if (!name || !row.testCase.module?.id) return Number.POSITIVE_INFINITY; // モジュールなしは最後
+    const matches = name.match(/\d+/g);
+    if (!matches || matches.length === 0) return 0;
+    const lastNum = parseInt(matches[matches.length - 1], 10);
+    return Number.isNaN(lastNum) ? 0 : lastNum;
+  };
+
+  // IN_PROGRESS時はRTC-ID昇順のフラットリスト、それ以外はモジュールグループ表示
+  const isInProgress = testRunStatus === 'IN_PROGRESS';
+
+  const tableDataSorted = isInProgress
+    ? [...tableData].sort((a, b) => {
+        const aId = a.testCase.rtcId || '';
+        const bId = b.testCase.rtcId || '';
+        // RTC-IDがない行は末尾に
+        if (!aId && bId) return 1;
+        if (aId && !bId) return -1;
+        return aId.localeCompare(bId, undefined, { numeric: true });
+      })
+    : [...tableData].sort((a, b) => {
+        const keyA = getModuleSortKey(a);
+        const keyB = getModuleSortKey(b);
+        if (keyA !== keyB) return keyA - keyB;
+        return (a.testCase.rtcId || '').localeCompare(b.testCase.rtcId || '', undefined, { numeric: true });
+      });
+
   return (
     <DetailCard
-      title={`Test Cases (${results?.length || 0})`}
+      title={`テストケース (${results?.length || 0})`}
       contentClassName=""
       headerAction={
         results && results.length > 0 && canCreate ? (
@@ -257,7 +332,7 @@ export function TestCasesListCard({
               disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
+              テストスイートを追加
             </Button>
             <Button
               variant="glass"
@@ -266,7 +341,7 @@ export function TestCasesListCard({
               disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
+              テストケースを追加
             </Button>
           </div>
         ) : undefined
@@ -275,7 +350,7 @@ export function TestCasesListCard({
       {!results || results.length === 0 ? (
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-400 mb-4">No test cases in this test run</p>
+          <p className="text-gray-400 mb-4">このテストランにテストケースはありません</p>
           {canCreate && (
             <div className="flex gap-2 justify-center flex-wrap">
               <ButtonPrimary
@@ -284,7 +359,7 @@ export function TestCasesListCard({
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Test Cases
+                テストケースを追加
               </ButtonPrimary>
               <Button
                 variant="glass"
@@ -293,18 +368,21 @@ export function TestCasesListCard({
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Test Suites
+                テストスイートを追加
               </Button>
             </div>
           )}
         </div>
       ) : (
-        <DataTable
+        <GroupedDataTable
+          data={tableDataSorted}
           columns={columns}
-          data={tableData}
-          rowClassName="cursor-pointer hover:bg-accent/20"
+          grouped={!isInProgress}
+          groupConfig={groupConfig}
+          defaultExpanded={true}
           onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
-          emptyMessage="No test cases in this run"
+          gridTemplateColumns="70px 160px 1fr 100px 90px 120px 120px 140px 140px"
+          emptyMessage="テストケースはありません"
         />
       )}
     </DetailCard>

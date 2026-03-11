@@ -1,4 +1,4 @@
-﻿import { formatDateTime } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { StatCard } from '@/frontend/reusable-components/cards/StatCard';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
@@ -30,40 +30,40 @@ export function TestRunStatsCards({
       className="mb-6"
     >
       <StatCard
-        label="Progress"
+        label="進捗"
         value={`${progressPercentage}%`}
-        helpText={`${stats.total - stats.pending} of ${stats.total} executed`}
+        helpText={`${stats.total} 件中 ${stats.total - stats.pending} 件実行済み`}
       />
 
       <StatCard
         icon={<CheckCircle className="w-5 h-5" />}
-        label="Passed"
+        label="合格"
         value={stats.passed}
-        helpText={`${passRate}% pass rate`}
+        helpText={`合格率 ${passRate}%`}
         borderColor="border-l-green-500/30"
       />
 
       <StatCard
         icon={<XCircle className="w-5 h-5" />}
-        label="Failed"
+        label="不合格"
         value={stats.failed}
-        helpText={`${stats.blocked} blocked, ${stats.skipped} skipped`}
+        helpText={`ブロック ${stats.blocked}、スキップ ${stats.skipped}`}
         borderColor="border-l-red-500/30"
       />
 
       <StatCard
         icon={<User className="w-5 h-5" />}
-        label={testRun.assignedTo?.name || 'Unassigned'}
+        label={testRun.assignedTo?.name || '未割当'}
         value={
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-white/60">
               <Calendar className="w-3 h-3" />
-              Created {formatDateTime(testRun.createdAt)}
+              作成日時 {formatDateTime(testRun.createdAt)}
             </div>
             {testRun.startedAt && (
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <Clock className="w-3 h-3" />
-                Started {formatDateTime(testRun.startedAt)}
+                開始日時 {formatDateTime(testRun.startedAt)}
               </div>
             )}
           </div>

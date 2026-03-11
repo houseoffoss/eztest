@@ -1,8 +1,7 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Plus } from 'lucide-react';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
@@ -41,7 +40,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
     if (canCreateTestSuite) {
       actions.push({
         type: 'action' as const,
-        label: 'Create Test Suite',
+        label: 'テストスイートを作成',
         icon: Plus,
         onClick: () => setCreateDialogOpen(true),
         variant: 'primary' as const,
@@ -104,7 +103,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         const errorData = await response.json().catch(() => ({}));
         setAlert({
           type: 'error',
-          title: 'Failed to Load Test Suites',
+          title: 'テストスイートの読み込みに失敗しました',
           message: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
         });
         setTestSuites([]);
@@ -150,7 +149,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Delete Test Suite',
+          title: 'テストスイートの削除に失敗しました',
           message: data.error || 'Failed to delete test suite',
         });
       }
@@ -187,7 +186,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
   const rootSuites = testSuites.filter(s => !s.parentId);
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test suites..." />;
+    return <Loader fullScreen text="テストスイートを読み込み中..." />;
   }
 
   const canDeleteTestSuite = hasPermissionCheck('testsuites:delete');
@@ -204,9 +203,9 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
           breadcrumbs={
             <Breadcrumbs 
               items={[
-                { label: 'Projects', href: '/projects' },
+                { label: 'プロジェクト', href: '/projects' },
                 { label: project.name, href: `/projects/${projectId}` },
-                { label: 'Test Suites', href: `/projects/${projectId}/testsuites` },
+                { label: 'テストスイート', href: `/projects/${projectId}/testsuites` },
               ]}
             />
           }
@@ -218,21 +217,21 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         {/* Header */}
         <PageHeaderWithBadge
           badge={project?.key}
-          title="Test Suites"
-          description="Organize test cases into hierarchical suites"
+          title="テストスイート"
+          description="テストケースを階層的なスイートに整理します"
           className="mb-6"
         />
 
         {/* Actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm text-gray-400">
-            {testSuites.length} suite{testSuites.length !== 1 ? 's' : ''}
+            {testSuites.length} 件のスイート
           </div>
         </div>
 
         {/* Content */}
         {loading ? (
-          <Loader fullScreen={false} text="Loading test suites..." />
+          <Loader fullScreen={false} text="テストスイートを読み込み中..." />
         ) : testSuites.length === 0 ? (
           <EmptyTestSuiteState onCreateClick={() => setCreateDialogOpen(true)} canCreate={canCreateTestSuite} />
         ) : (

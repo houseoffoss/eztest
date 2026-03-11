@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { s3Client, getS3Bucket } from '@/lib/s3-client';
+import { s3Client, getS3Bucket, isS3Configured } from '@/lib/s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
@@ -88,16 +88,20 @@ export class CommentService {
       throw new Error('Comment attachment not found');
     }
 
-    // Generate presigned URL for S3
-    const command = new GetObjectCommand({
-      Bucket: getS3Bucket(),
-      Key: attachment.path,
-    });
-
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    // S3が設定されている場合はpresigned URLを生成、未設定の場合はローカルURLを返す
+    let url: string;
+    if (isS3Configured()) {
+      const command = new GetObjectCommand({
+        Bucket: getS3Bucket(),
+        Key: attachment.path,
+      });
+      url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    } else {
+      url = `/api/attachments/local/${attachment.path}`;
+    }
 
     return {
-      url: signedUrl,
+      url,
       filename: attachment.filename,
       originalName: attachment.originalName,
       mimeType: attachment.mimeType,
@@ -118,15 +122,18 @@ export class CommentService {
     }
 
     if (step === 'prepare') {
-      // Step 1: Generate presigned DELETE URL for S3
-      const command = new DeleteObjectCommand({
-        Bucket: getS3Bucket(),
-        Key: attachment.path,
-      });
-
-      const deleteUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-      return { deleteUrl };
+      if (isS3Configured()) {
+        // S3: Generate presigned DELETE URL
+        const command = new DeleteObjectCommand({
+          Bucket: getS3Bucket(),
+          Key: attachment.path,
+        });
+        const deleteUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+        return { deleteUrl };
+      } else {
+        // ローカル: 直接削除可能としてスキップ
+        return { deleteUrl: null };
+      }
     } else if (step === 'confirm') {
       // Step 2: Remove from database after S3 deletion
       await prisma.commentAttachment.delete({

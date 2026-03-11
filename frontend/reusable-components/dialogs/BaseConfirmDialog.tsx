@@ -28,7 +28,7 @@ export const BaseConfirmDialog = ({
   description,
   content,
   submitLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  cancelLabel = 'キャンセル',
   triggerOpen = false,
   onOpenChange,
   onSubmit,

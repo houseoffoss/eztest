@@ -17,12 +17,24 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export interface TestCase {
   id: string;
   tcId?: string;
+  rtcId?: string | null;
   name?: string;
   title?: string;
   description?: string;
   priority: Priority | string;
   status: string;
+  estimatedTime?: number | null;
   suiteId?: string | null;
+  module?: {
+    id: string;
+    name: string;
+  } | null;
+  testCaseSuites?: Array<{
+    testSuite: {
+      id: string;
+      name: string;
+    };
+  }>;
 }
 
 export interface TestRun {
@@ -30,8 +42,11 @@ export interface TestRun {
   name: string;
   description?: string;
   executionType?: 'MANUAL' | 'AUTOMATION' | string;
+  version?: string;
   status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   environment?: string;
+  platform?: string;
+  device?: string;
   project: {
     id: string;
     name: string;

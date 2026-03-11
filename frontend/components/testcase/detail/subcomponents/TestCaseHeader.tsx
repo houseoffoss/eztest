@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DetailPageHeader } from '@/frontend/reusable-components/layout/DetailPageHeader';
 import { Edit, Trash2 } from 'lucide-react';
@@ -36,6 +36,7 @@ export function TestCaseHeader({
   const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'CRITICAL':
@@ -51,6 +52,7 @@ export function TestCaseHeader({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -81,13 +83,13 @@ export function TestCaseHeader({
       maxLength={200}
       badges={[
         { 
-          label: 'Priority', 
+          label: '優先度', 
           value: priorityLabel, 
           className: priorityBadgeProps.className,
           style: priorityBadgeProps.style 
         },
         { 
-          label: 'Status', 
+          label: '状態', 
           value: statusLabel, 
           className: statusBadgeProps.className,
           style: statusBadgeProps.style 

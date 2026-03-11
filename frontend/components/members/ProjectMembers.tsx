@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,6 @@ import { Project, ProjectMember } from './types';
 import { MembersCard } from './subcomponents/MembersCard';
 import { CreateAddMemberDialog } from './subcomponents/AddMemberDialog';
 import { RemoveMemberDialog } from './subcomponents/RemoveMemberDialog';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface ProjectMembersProps {
   projectId: string;
@@ -40,7 +39,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
     if (isAdminOrManager) {
       actions.push({
         type: 'action' as const,
-        label: 'Add Member',
+        label: 'メンバーを追加',
         icon: Plus,
         onClick: () => setAddDialogOpen(true),
         variant: 'primary' as const,
@@ -56,18 +55,6 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
     return actions;
   }, [isAdminOrManager]);
 
-  const handleSignOut = () => {
-    clearAllPersistedForms();
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('lastProjectId');
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('defects-filters-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    }
-  };
-
   useEffect(() => {
     fetchProjectAndMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,7 +62,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Project Members - ${project.name} | EZTest`;
+      document.title = `メンバー - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -93,8 +80,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         // Project not found or no access - redirect after showing message
         setAlert({
           type: 'error',
-          title: 'Project Not Found',
-          message: 'The project you\'re looking for doesn\'t exist or has been deleted. Redirecting...',
+          title: 'プロジェクトが見つかりません',
+          message: 'お探しのプロジェクトは存在しないか、削除されています。リダイレクト中...',
         });
         setTimeout(() => {
           router.push('/projects');
@@ -119,8 +106,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       setAddDialogOpen(false);
       setAlert({
         type: 'success',
-        title: 'Member Added',
-        message: `${newMember.user?.name || 'User'} has been added to the project.`,
+        title: 'メンバーを追加しました',
+        message: `${newMember.user?.name || 'ユーザー'} がプロジェクトに追加されました。`,
       });
     }
   };
@@ -145,8 +132,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Remove Member',
-          message: data.error || 'Failed to remove member from project.',
+          title: 'メンバーの削除に失敗しました',
+          message: data.error || 'プロジェクトからメンバーを削除できませんでした。',
         });
         return;
       }
@@ -156,29 +143,29 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       setDeleteDialogOpen(false);
       setAlert({
         type: 'success',
-        title: 'Member Removed',
-        message: `${memberToDelete.name} has been removed from the project.`,
+        title: 'メンバーを削除しました',
+        message: `${memberToDelete.name} がプロジェクトから削除されました。`,
       });
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'An unexpected error occurred while removing the member.',
+        title: 'エラー',
+        message: 'メンバーを削除する際に予期しないエラーが発生しました。',
       });
     }
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading project members..." />;
+    return <Loader fullScreen text="メンバーを読み込み中..." />;
   }
 
   if (!project) {
     return (
       <NotFoundState
-        title="Project Not Found"
-        message="The project you're trying to access doesn't exist or has been deleted."
+        title="プロジェクトが見つかりません"
+        message="アクセスしようとしているプロジェクトは存在しないか、削除されています。"
         icon={Users}
-        redirectingMessage="Redirecting to projects page..."
+        redirectingMessage="プロジェクト一覧にリダイレクトしています..."
         showRedirecting={true}
       />
     );
@@ -194,9 +181,9 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
+              { label: 'プロジェクト', href: '/projects' },
               { label: project.name, href: `/projects/${projectId}` },
-              { label: 'Members' },
+              { label: 'メンバー' },
             ]}
           />
         }
@@ -207,8 +194,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         <div className="max-w-6xl mx-auto">
           <PageHeaderWithBadge
             badge={project.key}
-            title="Project Members"
-            description={`Manage project members for ${project.name}${!isAdminOrManager ? ' (Project managers and admins can manage members)' : ''}`}
+            title="プロジェクトメンバー"
+            description={`${project.name} のメンバーを管理${!isAdminOrManager ? '（プロジェクトマネージャーと管理者がメンバーを管理できます）' : ''}`}
             className="mb-6"
           />
 

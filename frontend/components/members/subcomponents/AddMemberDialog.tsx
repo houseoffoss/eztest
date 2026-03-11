@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 
@@ -19,7 +19,7 @@ export function CreateAddMemberDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'email',
-      label: 'User Email',
+      label: 'ユーザーのメールアドレス',
       placeholder: 'user@example.com',
       type: 'email',
       required: true,
@@ -47,11 +47,11 @@ export function CreateAddMemberDialog({
   };
 
   const config: BaseDialogConfig = {
-    title: 'Add Project Member',
-    description: 'Add a project member to this project',
+    title: 'プロジェクトメンバーを追加',
+    description: 'このプロジェクトにメンバーを追加します',
     fields,
-    submitLabel: 'Add Member',
-    cancelLabel: 'Cancel',
+    submitLabel: '追加',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,

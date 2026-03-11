@@ -1,13 +1,12 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestCase, Module } from '../types';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { attachmentStorage } from '@/lib/attachment-storage';
 import type { Attachment } from '@/lib/s3';
 import { uploadFileToS3 } from '@/lib/s3';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
-
 interface CreateTestCaseDialogProps {
   projectId: string;
   defaultModuleId?: string;
@@ -85,7 +84,7 @@ export function CreateTestCaseDialog({
     },
     {
       name: 'priority',
-      label: 'Priority',
+      label: '優先度',
       type: 'select',
       defaultValue: 'MEDIUM',
       options: priorityOptions.map(opt => ({ value: opt.value, label: opt.label })),
@@ -93,7 +92,7 @@ export function CreateTestCaseDialog({
     },
     {
       name: 'status',
-      label: 'Status',
+      label: '状態',
       type: 'select',
       defaultValue: 'DRAFT',
       options: statusOptions.map(opt => ({ value: opt.value, label: opt.label })),
@@ -106,16 +105,123 @@ export function CreateTestCaseDialog({
       placeholder: 'Select a module',
       defaultValue: defaultModuleId || 'none',
       options: [
-        { value: 'none', label: 'None (No Module)' },
+        { value: 'none', label: 'なし（モジュールに属さない）' },
         ...moduleOptions,
       ],
       cols: 1,
     },
     {
       name: 'estimatedTime',
-      label: 'Estimated Time (minutes)',
+      label: 'テスト実行時間（秒）',
       type: 'number',
       placeholder: 'Enter estimated time',
+      cols: 1,
+    },
+    {
+      name: 'rtcId',
+      label: 'RTC-ID',
+      type: 'text',
+      placeholder: 'Enter RTC ID',
+      cols: 1,
+    },
+    {
+      name: 'flowId',
+      label: 'Flow-ID',
+      type: 'text',
+      placeholder: 'Enter flow ID',
+      cols: 1,
+    },
+    {
+      name: 'layer',
+      label: 'Layer',
+      type: 'select',
+      placeholder: 'Select layer',
+      options: [
+        { value: 'SMOKE', label: 'Smoke' },
+        { value: 'CORE', label: 'Core' },
+        { value: 'EXTENDED', label: 'Extended' },
+        { value: 'UNKNOWN', label: 'Unknown' },
+      ],
+      cols: 1,
+    },
+    {
+      name: 'testType',
+      label: 'テスト種別',
+      type: 'select',
+      placeholder: 'テスト種別を選択',
+      options: [
+        { value: 'NORMAL', label: '正常系' },
+        { value: 'ABNORMAL', label: '異常系' },
+        { value: 'NON_FUNCTIONAL', label: '非機能' },
+        { value: 'REGRESSION', label: '回帰' },
+        { value: 'DATA_INTEGRITY', label: 'データ整合性確認' },
+        { value: 'STATE_TRANSITION', label: '状態遷移確認' },
+        { value: 'OPERATIONAL', label: '運用確認' },
+        { value: 'FAILURE', label: '障害時確認' },
+      ],
+      cols: 1,
+    },
+    {
+      name: 'platform',
+      label: 'プラットフォーム',
+      type: 'select',
+      placeholder: 'プラットフォームを選択',
+      options: [
+        { value: 'Web', label: 'Web' },
+        { value: 'Web(SP)', label: 'Web(SP)' },
+        { value: 'iOS Native', label: 'iOS Native' },
+        { value: 'Android Native', label: 'Android Native' },
+      ],
+      cols: 1,
+    },
+    {
+      name: 'device',
+      label: '端末',
+      type: 'select',
+      placeholder: '端末を選択',
+      options: [
+        { value: 'iPhone', label: 'iPhone' },
+        { value: 'Android', label: 'Android' },
+        { value: 'PC', label: 'PC' },
+      ],
+      cols: 1,
+    },
+    {
+      name: 'domain',
+      label: 'ドメイン',
+      type: 'text',
+      placeholder: 'ドメインを入力',
+      cols: 1,
+    },
+    {
+      name: 'functionName',
+      label: '機能',
+      type: 'text',
+      placeholder: '機能を入力',
+      cols: 1,
+    },
+    {
+      name: 'executionType',
+      label: '実行方式',
+      type: 'select',
+      placeholder: '実行方式を選択',
+      options: [
+        { value: '手動', label: '手動' },
+        { value: '自動', label: '自動' },
+      ],
+      cols: 1,
+    },
+    {
+      name: 'automationStatus',
+      label: '自動化状況',
+      type: 'select',
+      placeholder: '自動化状況を選択',
+      options: [
+        { value: '自動化済', label: '自動化済' },
+        { value: '自動化対象', label: '自動化対象' },
+        { value: '自動化対象外', label: '自動化対象外' },
+        { value: '検討中', label: '検討中' },
+      ],
       cols: 1,
     },
     {
@@ -140,8 +246,16 @@ export function CreateTestCaseDialog({
     //   onAttachmentsChange: setExpectedResultAttachments,
     // },
     {
+      name: 'evidence',
+      label: '根拠コード',
+      type: 'textarea',
+      placeholder: 'Enter evidence',
+      rows: 3,
+      cols: 1,
+    },
+    {
       name: 'preconditions',
-      label: 'Preconditions',
+      label: '前提条件',
       type: 'textarea-with-attachments',
       placeholder: 'Enter preconditions',
       rows: 3,
@@ -151,7 +265,7 @@ export function CreateTestCaseDialog({
     },
     {
       name: 'postconditions',
-      label: 'Postconditions',
+      label: '事後条件',
       type: 'textarea-with-attachments',
       placeholder: 'Enter postconditions',
       rows: 3,
@@ -161,9 +275,17 @@ export function CreateTestCaseDialog({
     },
     {
       name: 'testData',
-      label: 'Test Data',
+      label: 'テストデータ',
       type: 'textarea',
       placeholder: 'Enter test data or input values',
+      rows: 3,
+      cols: 1,
+    },
+    {
+      name: 'notes',
+      label: '備考',
+      type: 'textarea',
+      placeholder: 'Enter notes',
       rows: 3,
       cols: 1,
     },
@@ -247,6 +369,19 @@ export function CreateTestCaseDialog({
         preconditions: formData.preconditions || undefined,
         postconditions: formData.postconditions || undefined,
         moduleId: formData.moduleId !== 'none' ? formData.moduleId : undefined,
+        // New fields
+        rtcId: formData.rtcId || undefined,
+        flowId: formData.flowId || undefined,
+        layer: formData.layer || undefined,
+        testType: formData.testType || undefined,
+        evidence: formData.evidence || undefined,
+        notes: formData.notes || undefined,
+        platform: formData.platform || undefined,
+        device: formData.device || undefined,
+        domain: formData.domain || undefined,
+        functionName: formData.functionName || undefined,
+        executionType: formData.executionType || undefined,
+        automationStatus: formData.automationStatus || undefined,
       }),
     });
 
@@ -261,7 +396,7 @@ export function CreateTestCaseDialog({
     // Associate uploaded attachments with the test case
     if (uploadedAttachments.length > 0) {
       try {
-        const attachmentResponse = await fetch(`/api/projects/${projectId}/testcases/${createdTestCase.id}/attachments`, {
+        const attachmentResponse = await fetch(`/api/testcases/${createdTestCase.id}/attachments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ attachments: uploadedAttachments }),
@@ -321,11 +456,11 @@ export function CreateTestCaseDialog({
   };
 
   const config: BaseDialogConfig<TestCase> = {
-    title: 'Create Test Case',
-    description: 'Add a new test case to this project. Fill in the details to get started.',
+    title: 'テストケースを作成',
+    description: 'このプロジェクトに新しいテストケースを追加します。詳細を入力してください。',
     fields,
-    submitLabel: 'Create Test Case',
-    cancelLabel: 'Cancel',
+    submitLabel: 'テストケースを作成',
+    cancelLabel: 'キャンセル',
     triggerOpen: open !== undefined ? open : triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,

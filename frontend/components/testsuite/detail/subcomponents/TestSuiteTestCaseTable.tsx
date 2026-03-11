@@ -7,8 +7,7 @@ import {
   HoverCardTrigger,
 } from '@/frontend/reusable-elements/hover-cards/HoverCard';
 import { Trash2, Bug } from 'lucide-react';
-import { PriorityBadge } from '@/frontend/reusable-components/badges/PriorityBadge';
-import { GroupedDataTable, ColumnDef, GroupConfig, ActionConfig } from '@/frontend/reusable-components/tables/GroupedDataTable';
+import { GroupedDataTable, ColumnDef, ActionConfig } from '@/frontend/reusable-components/tables/GroupedDataTable';
 import { TestCase, Module } from '@/frontend/components/testcase/types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
@@ -27,27 +26,35 @@ interface TestSuiteTestCaseTableProps {
  */
 export function TestSuiteTestCaseTable({
   testCases,
-  modules = [],
   onDelete,
   onClick,
   canDelete = true,
 }: TestSuiteTestCaseTableProps) {
-  const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
+  const sortedTestCases = [...testCases].sort((a, b) => {
+    const aRtc = (a.rtcId || '').trim();
+    const bRtc = (b.rtcId || '').trim();
+
+    // RTC-ID があるものを先にし、同士は数値考慮で昇順
+    if (aRtc && bRtc) {
+      const rtcCompare = aRtc.localeCompare(bRtc, undefined, { numeric: true, sensitivity: 'base' });
+      if (rtcCompare !== 0) return rtcCompare;
+    } else if (aRtc && !bRtc) {
+      return -1;
+    } else if (!aRtc && bRtc) {
+      return 1;
+    }
+
+    // RTC-ID が同値/空の場合は安定化のため tcId で比較
+    return (a.tcId || '').localeCompare(b.tcId || '', undefined, { numeric: true, sensitivity: 'base' });
+  });
 
   // Define columns
   const columns: ColumnDef<TestCase>[] = [
     {
-      key: 'tcId',
-      label: 'ID',
-      width: '70px',
-      render: (row) => (
-        <p className="text-xs font-mono text-white/70 truncate">{row.tcId}</p>
-      ),
-    },
-    {
       key: 'title',
       label: 'TITLE',
+      width: '360px',
       className: 'min-w-0',
       render: (row) => (
         <div className="min-w-0 flex items-center gap-2">
@@ -61,7 +68,7 @@ export function TestSuiteTestCaseTable({
               {row.title && row.title.length > 40 && (
                 <HoverCardContent side="top" className="w-80">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-white">Test Case Title</h4>
+                    <h4 className="text-sm font-semibold text-white">テストケース名</h4>
                     <p className="text-sm text-white/80 break-words">{row.title}</p>
                     {row._count.defects > 0 && (
                       <div className="pt-2 border-t border-white/10">
@@ -85,27 +92,8 @@ export function TestSuiteTestCaseTable({
       ),
     },
     {
-      key: 'priority',
-      label: 'PRIORITY',
-      width: '100px',
-      render: (row) => {
-        const badgeProps = getDynamicBadgeProps(row.priority, priorityOptions);
-        const priorityLabel = priorityOptions.find(opt => opt.value === row.priority)?.label || row.priority;
-        return (
-          <PriorityBadge
-            priority={row.priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical'}
-            dynamicClassName={badgeProps.className}
-            dynamicStyle={badgeProps.style}
-          >
-            {priorityLabel}
-          </PriorityBadge>
-        );
-      },
-    },
-    {
       key: 'status',
       label: 'STATUS',
-      width: '90px',
       render: (row) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
         const label = statusOptions.find(opt => opt.value === row.status)?.label || row.status;
@@ -121,30 +109,6 @@ export function TestSuiteTestCaseTable({
       },
     },
     {
-      key: 'owner',
-      label: 'OWNER',
-      width: '140px',
-      render: (row) => (
-        <div className="min-w-0">
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <span className="text-xs text-white/70 truncate block cursor-pointer">
-                {row.createdBy.name}
-              </span>
-            </HoverCardTrigger>
-            {row.createdBy.name && row.createdBy.name.length > 20 && (
-              <HoverCardContent side="top" className="w-60">
-                <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-white/60">Owner</h4>
-                  <p className="text-sm text-white/90">{row.createdBy.name}</p>
-                </div>
-              </HoverCardContent>
-            )}
-          </HoverCard>
-        </div>
-      ),
-    },
-    {
       key: 'runs',
       label: 'RUNS',
       width: '70px',
@@ -153,25 +117,6 @@ export function TestSuiteTestCaseTable({
       ),
     },
   ];
-
-  // Group configuration
-  const groupConfig: GroupConfig<TestCase> = {
-    getGroupId: (row) => row.moduleId || 'no-module',
-    getGroupName: (groupId) => {
-      if (groupId === 'no-module') return 'Ungrouped';
-      const moduleItem = modules.find((m) => m.id === groupId);
-      return moduleItem?.name || 'Ungrouped';
-    },
-    getGroupCount: (groupId) => {
-      const moduleItem = modules.find((m) => m.id === groupId);
-      return moduleItem?._count?.testCases;
-    },
-    emptyGroups: modules.map((moduleItem) => ({
-      id: moduleItem.id,
-      name: moduleItem.name,
-      count: moduleItem._count?.testCases,
-    })),
-  };
 
   // Action configuration
   const actions: ActionConfig<TestCase> | undefined =
@@ -193,13 +138,12 @@ export function TestSuiteTestCaseTable({
 
   return (
     <GroupedDataTable
-      data={testCases}
+      data={sortedTestCases}
       columns={columns}
       onRowClick={(row) => onClick(row.id)}
-      grouped={true}
-      groupConfig={groupConfig}
+      grouped={false}
       actions={actions}
-      gridTemplateColumns="70px 1fr 100px 90px 140px 70px 40px"
+      gridTemplateColumns="360px 1fr 70px 40px"
       emptyMessage="No test cases available"
     />
   );

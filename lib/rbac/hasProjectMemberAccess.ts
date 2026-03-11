@@ -5,6 +5,7 @@ import { baseInterceptor, BaseApiMethod } from '@/backend/utils/baseInterceptor'
 import { CustomRequest, ScopeInfo, UserInfo } from '@/backend/utils/interceptor';
 import { prisma } from '@/lib/prisma';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type UserWithRole = Prisma.UserGetPayload<{
   include: { role: { include: { permissions: { include: { permission: true } } } } };
 }>;

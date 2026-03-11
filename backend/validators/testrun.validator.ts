@@ -13,6 +13,9 @@ export const createTestRunSchema = z.object({
   executionType: z.enum(['MANUAL', 'AUTOMATION']).optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
+  version: z.string().max(100, 'Version must not exceed 100 characters').optional(),
+  platform: z.string().optional(),
+  device: z.string().optional(),
   status: z.string().optional(),
   testCaseIds: z.array(z.string().min(1)).optional(),
   testSuiteIds: z.array(z.string().min(1)).optional(),
@@ -33,6 +36,9 @@ export const updateTestRunSchema = z.object({
   status: z.string().optional(),
   assignedToId: z.string().min(1, 'Invalid user ID format').optional(),
   environment: z.string().optional(),
+  version: z.string().max(100, 'Version must not exceed 100 characters').optional(),
+  platform: z.string().optional(),
+  device: z.string().optional(),
 });
 
 /**

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -31,16 +31,16 @@ export default function AdminDashboard() {
       <div className="px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <PageHeaderWithBadge
-            title="Admin Dashboard"
-            description="Manage application users and access control"
+            title="管理ダッシュボード"
+            description="アプリケーションのユーザーとアクセス制御を管理"
             className="mb-6"
           />
 
           <ResponsiveGrid columns={{ default: 1, md: 2, lg: 3 }} gap="md">
             {/* User Management */}
             <ItemCard
-              title="User Management"
-              description="Add, edit, and manage application users"
+              title="ユーザー管理"
+              description="アプリケーションのユーザーを追加・編集・管理"
               badges={
                 <div className="p-3 bg-blue-500/10 rounded-lg">
                   <Users className="w-6 h-6 text-blue-500" />
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
               }
               content={
                 <p className="text-sm text-white/60">
-                  Manage user accounts and assign application-level roles
+                  ユーザーアカウントを管理し、アプリケーションレベルのロールを割り当て
                 </p>
               }
               borderColor="primary"
@@ -58,8 +58,8 @@ export default function AdminDashboard() {
 
             {/* Dropdown Options Management */}
             <ItemCard
-              title="Dropdown Options"
-              description="Manage dropdown options for various entities"
+              title="ドロップダウンオプション"
+              description="各種エンティティのドロップダウンオプションを管理"
               badges={
                 <div className="p-3 bg-purple-500/10 rounded-lg">
                   <Settings className="w-6 h-6 text-purple-500" />
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
               }
               content={
                 <p className="text-sm text-white/60">
-                  Configure dropdown options for priorities, statuses, and more
+                  優先度、ステータスなどのドロップダウンオプションを設定
                 </p>
               }
               borderColor="primary"

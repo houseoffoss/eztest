@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ImportResult {
@@ -43,6 +44,8 @@ export interface FileImportDialogProps {
   templateEndpoint: string;
   itemName: string; // e.g., "test cases", "defects"
   onImportComplete: () => void;
+  /** テストケースインポート時のみ: 同一タイトルの既存を更新するオプションを表示 */
+  showUpdateExistingOption?: boolean;
 }
 
 export function FileImportDialog({
@@ -54,11 +57,13 @@ export function FileImportDialog({
   templateEndpoint,
   itemName,
   onImportComplete,
+  showUpdateExistingOption = false,
 }: FileImportDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [updateExisting, setUpdateExisting] = useState(showUpdateExistingOption);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when dialog opens
@@ -68,12 +73,12 @@ export function FileImportDialog({
       setResult(null);
       setError(null);
       setUploading(false);
-      // Reset file input
+      setUpdateExisting(showUpdateExistingOption);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
-  }, [open]);
+  }, [open, showUpdateExistingOption]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -83,7 +88,7 @@ export function FileImportDialog({
         setFile(selectedFile);
         setError(null);
       } else {
-        setError('Please select a CSV or Excel file (.csv, .xlsx, .xls)');
+        setError('CSVまたはExcelファイルを選択してください (.csv, .xlsx, .xls)');
         setFile(null);
       }
     }
@@ -129,13 +134,13 @@ export function FileImportDialog({
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch {
-      setError('Failed to download template');
+      setError('テンプレートのダウンロードに失敗しました');
     }
   };
 
   const handleImport = async () => {
     if (!file) {
-      setError('Please select a file');
+      setError('ファイルを選択してください');
       return;
     }
 
@@ -146,26 +151,40 @@ export function FileImportDialog({
     try {
       const formData = new FormData();
       formData.append('file', file);
+      if (showUpdateExistingOption && updateExisting) {
+        formData.append('updateExisting', 'true');
+      }
 
       const response = await fetch(importEndpoint, {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data: { message?: string; data?: unknown };
+      try {
+        data = JSON.parse(text) as { message?: string; data?: unknown };
+      } catch {
+        if (text.trimStart().startsWith('<')) {
+          throw new Error(
+            'サーバーがHTMLを返しました。接続先URL・ネットワーク、またはサーバーエラーを確認してください。'
+          );
+        }
+        throw new Error('サーバーからの応答を解析できませんでした。');
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Import failed');
       }
 
       // The response structure is: { message: "...", data: { success, failed, skipped, ... } }
-      const resultData = data.data;
-      
+      const resultData = data.data as Record<string, unknown> | null | undefined;
+
       if (!resultData || typeof resultData !== 'object') {
         console.error('Unexpected response structure:', data);
         throw new Error('Invalid response format from server');
       }
-      
+
       // Ensure all required fields exist with defaults
       const finalResult: ImportResult = {
         success: Number(resultData.success) || 0,
@@ -175,11 +194,11 @@ export function FileImportDialog({
         skippedItems: Array.isArray(resultData.skippedItems) ? resultData.skippedItems : [],
         imported: Array.isArray(resultData.imported) ? resultData.imported : [],
       };
-      
+
       setResult(finalResult);
-      
+
       // Auto-refresh only if all items imported successfully (no failures or skips)
-      if (Number(resultData.success) > 0 && Number(resultData.failed) === 0 && Number(resultData.skipped) === 0) {
+      if (finalResult.success > 0 && finalResult.failed === 0 && finalResult.skipped === 0) {
         setTimeout(() => {
           onImportComplete();
           // Reset state before closing
@@ -228,7 +247,7 @@ export function FileImportDialog({
         setFile(droppedFile);
         setError(null);
       } else {
-        setError('Please select a CSV or Excel file (.csv, .xlsx, .xls)');
+        setError('CSVまたはExcelファイルを選択してください (.csv, .xlsx, .xls)');
       }
     }
   };
@@ -250,9 +269,9 @@ export function FileImportDialog({
                 <FileSpreadsheet className="h-5 w-5 text-white/70" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white/90">Download Template</p>
+                <p className="text-sm font-medium text-white/90">テンプレートをダウンロード</p>
                 <p className="text-xs text-white/50">
-                  Get a template file with the correct format
+                  正しいフォーマットのテンプレートファイルを取得
                 </p>
               </div>
             </div>
@@ -265,7 +284,7 @@ export function FileImportDialog({
               buttonName={`${title} - Download Template`}
             >
               <Download className="h-4 w-4 mr-2" />
-              Download
+              ダウンロード
             </Button>
           </div>
 
@@ -295,14 +314,32 @@ export function FileImportDialog({
             ) : (
               <div>
                 <p className="text-sm font-medium text-white/90">
-                  Click to upload or drag and drop
+                  クリックしてアップロード、またはドラッグ＆ドロップ
                 </p>
                 <p className="text-xs text-white/50 mt-1">
-                  CSV or Excel files (.csv, .xlsx, .xls)
+                  CSVまたはExcelファイル (.csv, .xlsx, .xls)
                 </p>
               </div>
             )}
           </div>
+
+          {showUpdateExistingOption && (
+            <div className="flex items-start gap-3 p-4 rounded-lg border border-white/20 bg-white/5">
+              <Checkbox
+                id="import-update-existing"
+                checked={updateExisting}
+                onCheckedChange={(checked) => setUpdateExisting(checked === true)}
+                disabled={uploading}
+                className="mt-1"
+              />
+              <label htmlFor="import-update-existing" className="flex-1 cursor-pointer text-sm">
+                <span className="font-medium text-white/90">同一タイトルの既存テストケースを更新する</span>
+                <p className="mt-1 text-xs text-white/50">
+                  オフのときは同一タイトルはスキップされます。オンにすると既存レコードを上書き更新します。
+                </p>
+              </label>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -320,7 +357,7 @@ export function FileImportDialog({
                 <div className="flex items-center gap-3 p-4 border border-green-500/30 rounded-lg bg-green-500/10">
                   <CheckCircle className="h-6 w-6 text-green-500" />
                   <div>
-                    <p className="text-sm font-medium text-white/90">Success</p>
+                    <p className="text-sm font-medium text-white/90">成功</p>
                     <p className="text-2xl font-bold text-green-500">
                       {Number(result.success) || 0}
                     </p>
@@ -329,7 +366,7 @@ export function FileImportDialog({
                 <div className="flex items-center gap-3 p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/10">
                   <AlertCircle className="h-6 w-6 text-yellow-500" />
                   <div>
-                    <p className="text-sm font-medium text-white/90">Skipped</p>
+                    <p className="text-sm font-medium text-white/90">スキップ</p>
                     <p className="text-2xl font-bold text-yellow-500">
                       {Number(result.skipped) || 0}
                     </p>
@@ -338,7 +375,7 @@ export function FileImportDialog({
                 <div className="flex items-center gap-3 p-4 border border-red-500/30 rounded-lg bg-red-500/10">
                   <XCircle className="h-6 w-6 text-red-500" />
                   <div>
-                    <p className="text-sm font-medium text-white/90">Failed</p>
+                    <p className="text-sm font-medium text-white/90">失敗</p>
                     <p className="text-2xl font-bold text-red-500">
                       {Number(result.failed) || 0}
                     </p>
@@ -349,12 +386,12 @@ export function FileImportDialog({
               {result.skippedItems && result.skippedItems.length > 0 && (
                 <div className="border border-yellow-500/30 rounded-lg p-4 max-h-60 overflow-y-auto custom-scrollbar bg-yellow-500/5">
                   <h4 className="text-sm font-medium mb-2 text-yellow-400">
-                    Skipped Items ({result.skippedItems.length}):
+                    スキップされた項目 ({result.skippedItems.length}件):
                   </h4>
                   <ul className="space-y-2">
                     {result.skippedItems.map((item, index) => (
                       <li key={index} className="text-sm text-yellow-300">
-                        <span className="font-medium text-white/70">Row {item.row}:</span>{' '}
+                        <span className="font-medium text-white/70">行 {item.row}:</span>{' '}
                         <span className="text-white/60">{item.title}</span> - {item.reason}
                       </li>
                     ))}
@@ -365,12 +402,12 @@ export function FileImportDialog({
               {result.errors && result.errors.length > 0 && (
                 <div className="border border-red-500/30 rounded-lg p-4 max-h-60 overflow-y-auto custom-scrollbar bg-red-500/5">
                   <h4 className="text-sm font-medium mb-2 text-red-400">
-                    Import Errors ({result.errors.length}):
+                    インポートエラー ({result.errors.length}件):
                   </h4>
                   <ul className="space-y-2">
                     {result.errors.map((err, index) => (
                       <li key={index} className="text-sm text-red-400">
-                        <span className="font-medium text-white/70">Row {err.row}:</span>{' '}
+                        <span className="font-medium text-white/70">行 {err.row}:</span>{' '}
                         <span className="text-white/60">{err.title}</span> - {err.error}
                       </li>
                     ))}
@@ -382,7 +419,7 @@ export function FileImportDialog({
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Successfully imported {Number(result.success) || 0} {itemName}. Refreshing...
+                    {Number(result.success) || 0}件の{itemName}をインポートしました。更新中...
                   </AlertDescription>
                 </Alert>
               )}
@@ -390,10 +427,10 @@ export function FileImportDialog({
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Partially imported: {Number(result.success) || 0} succeeded
-                    {Number(result.skipped) > 0 && `, ${Number(result.skipped) || 0} skipped`}
-                    {Number(result.failed) > 0 && `, ${Number(result.failed) || 0} failed`}.
-                    Click Close & Refresh to see the imported items.
+                    一部インポート完了: {Number(result.success) || 0}件成功
+                    {Number(result.skipped) > 0 && `、${Number(result.skipped) || 0}件スキップ`}
+                    {Number(result.failed) > 0 && `、${Number(result.failed) || 0}件失敗`}。
+                    「閉じて更新」をクリックしてインポートした項目を確認してください。
                   </AlertDescription>
                 </Alert>
               )}
@@ -401,9 +438,9 @@ export function FileImportDialog({
                 <Alert variant="destructive">
                   <XCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Import completed with issues:
-                    {Number(result.skipped) > 0 && ` ${Number(result.skipped) || 0} skipped`}
-                    {Number(result.failed) > 0 && ` ${Number(result.failed) || 0} failed`}.
+                    インポートに問題がありました:
+                    {Number(result.skipped) > 0 && ` ${Number(result.skipped) || 0}件スキップ`}
+                    {Number(result.failed) > 0 && ` ${Number(result.failed) || 0}件失敗`}。
                   </AlertDescription>
                 </Alert>
               )}
@@ -422,7 +459,7 @@ export function FileImportDialog({
             className="cursor-pointer"
             buttonName={`${title} - ${result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}`}
           >
-            {result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? 'Close & Refresh' : result ? 'Close' : 'Cancel'}
+            {result && Number(result.success) > 0 && (Number(result.failed) > 0 || Number(result.skipped) > 0) ? '閉じて更新' : result ? '閉じる' : 'キャンセル'}
           </Button>
           {!result && (
             <ButtonPrimary
@@ -437,7 +474,7 @@ export function FileImportDialog({
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
               )}
-              {uploading ? 'Importing...' : 'Import'}
+              {uploading ? 'インポート中...' : 'インポート'}
             </ButtonPrimary>
           )}
         </div>

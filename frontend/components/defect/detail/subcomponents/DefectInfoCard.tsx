@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
@@ -13,14 +13,14 @@ interface DefectInfoCardProps {
 
 export function DefectInfoCard({ defect }: DefectInfoCardProps) {
   return (
-    <DetailCard title="Information" contentClassName="space-y-3">
+    <DetailCard title="情報" contentClassName="space-y-3">
       <div>
         <h4 className="text-sm font-medium text-white/60 mb-1">Defect ID</h4>
         <p className="text-white/90 text-sm font-mono">{defect.defectId}</p>
       </div>
 
       <UserInfoSection
-        label="Created By"
+        label="作成者"
         user={{
           name: defect.createdBy.name,
           email: defect.createdBy.email,
@@ -29,7 +29,7 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
 
       {defect.assignedTo && (
         <UserInfoSection
-          label="Assigned To"
+          label="担当者"
           user={{
             name: defect.assignedTo.name,
             email: defect.assignedTo.email,
@@ -41,7 +41,7 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
       {defect.testCases && defect.testCases.length > 0 && (
         <div>
           <h4 className="text-sm font-medium text-white/60 mb-1">
-            Related Test Cases
+            関連テストケース
           </h4>
           <div className="space-y-2">
             {defect.testCases.map((tc) => (
@@ -59,7 +59,7 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
       {defect.testRun && (
         <div>
           <h4 className="text-sm font-medium text-white/60 mb-1">
-            Test Run
+            テスト実行
           </h4>
           <Badge variant="outline">{defect.testRun.name}</Badge>
         </div>
@@ -67,18 +67,18 @@ export function DefectInfoCard({ defect }: DefectInfoCardProps) {
 
       <StatisticsSection
         statistics={[
-          { label: 'Comments', value: defect.comments.length },
-          { label: 'Attachments', value: defect.attachments.length },
+          { label: 'コメント', value: defect.comments.length },
+          { label: '添付', value: defect.attachments.length },
         ]}
       />
 
-      <DateInfoSection label="Created" date={defect.createdAt} />
-      <DateInfoSection label="Last Updated" date={defect.updatedAt} />
+      <DateInfoSection label="作成日時" date={defect.createdAt} />
+      <DateInfoSection label="最終更新" date={defect.updatedAt} />
       {defect.resolvedAt && (
-        <DateInfoSection label="Resolved At" date={defect.resolvedAt} />
+        <DateInfoSection label="解決日時" date={defect.resolvedAt} />
       )}
       {defect.closedAt && (
-        <DateInfoSection label="Closed At" date={defect.closedAt} />
+        <DateInfoSection label="クローズ日時" date={defect.closedAt} />
       )}
     </DetailCard>
   );

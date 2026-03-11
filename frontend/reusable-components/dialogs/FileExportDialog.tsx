@@ -29,6 +29,7 @@ export function FileExportDialog({
   title,
   description,
   exportOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   itemName,
 }: FileExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | null>(null);
@@ -37,7 +38,7 @@ export function FileExportDialog({
 
   const handleExport = async () => {
     if (!selectedFormat) {
-      setError('Please select an export format');
+      setError('エクスポートフォーマットを選択してください');
       return;
     }
 
@@ -84,7 +85,7 @@ export function FileExportDialog({
             <div className="space-y-5">
               {/* Format Selection */}
               <div className="space-y-3">
-                <p className="text-sm font-medium text-white/90">Select Export Format</p>
+                <p className="text-sm font-medium text-white/90">エクスポートフォーマットを選択</p>
                 
                 {/* CSV Option */}
                 <div
@@ -104,9 +105,9 @@ export function FileExportDialog({
                       }`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white/90">CSV Format</p>
+                      <p className="text-sm font-medium text-white/90">CSVフォーマット</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Comma-separated values file (.csv)
+                        カンマ区切りファイル (.csv)
                       </p>
                     </div>
                     {selectedFormat === 'csv' && (
@@ -135,9 +136,9 @@ export function FileExportDialog({
                       }`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white/90">Excel Format</p>
+                      <p className="text-sm font-medium text-white/90">Excelフォーマット</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Microsoft Excel spreadsheet (.xlsx)
+                        Microsoft Excelスプレッドシート (.xlsx)
                       </p>
                     </div>
                     {selectedFormat === 'excel' && (
@@ -170,7 +171,7 @@ export function FileExportDialog({
             className="cursor-pointer"
             buttonName={`${title} - Cancel`}
           >
-            Cancel
+            キャンセル
           </Button>
           <ButtonPrimary
             type="button"
@@ -184,7 +185,7 @@ export function FileExportDialog({
             ) : (
               <Upload className="h-4 w-4 mr-2" />
             )}
-            {exporting ? 'Exporting...' : 'Export'}
+            {exporting ? 'エクスポート中...' : 'エクスポート'}
           </ButtonPrimary>
         </div>
       </DialogContent>

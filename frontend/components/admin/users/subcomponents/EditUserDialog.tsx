@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
@@ -20,26 +20,26 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
     if (open && user) {
       setKey((prev) => prev + 1);
     }
-  }, [open, user?.id]);
+  }, [open, user]);
 
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Full Name',
+      label: '氏名',
       type: 'text',
       required: true,
       defaultValue: user?.name || '',
     },
     {
       name: 'email',
-      label: 'Email Address',
+      label: 'メールアドレス',
       type: 'email',
       required: true,
       defaultValue: user?.email || '',
     },
     {
       name: 'roleId',
-      label: 'Application Role',
+      label: 'アプリケーションロール',
       type: 'select',
       required: true,
       defaultValue: user?.role.id || '',
@@ -50,22 +50,22 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
     },
     {
       name: 'phone',
-      label: 'Phone',
-      placeholder: 'Optional',
+      label: '電話番号',
+      placeholder: '任意',
       type: 'text',
       defaultValue: user?.phone || '',
     },
     {
       name: 'location',
-      label: 'Location',
-      placeholder: 'Optional',
+      label: '所在地',
+      placeholder: '任意',
       type: 'text',
       defaultValue: user?.location || '',
     },
     {
       name: 'bio',
-      label: 'Bio',
-      placeholder: 'Optional',
+      label: '自己紹介',
+      placeholder: '任意',
       type: 'textarea',
       rows: 3,
       cols: 2,
@@ -106,10 +106,10 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   return (
     <BaseDialog
       key={key}
-      title="Edit User"
-      description="Update user information and role"
+      title="ユーザーを編集"
+      description="ユーザー情報とロールを更新"
       fields={fields}
-      submitLabel="Update User"
+      submitLabel="ユーザーを更新"
       triggerOpen={open}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}

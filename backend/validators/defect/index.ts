@@ -10,6 +10,8 @@ export const createDefectSchema = z.object({
   status: z.string().optional(),
   assignedToId: z.string().optional().nullable(),
   environment: z.string().optional().nullable(),
+  platform: z.string().optional().nullable(),
+  device: z.string().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   progressPercentage: z.number().int().min(0).max(100).optional().nullable(),
   testCaseIds: z.array(z.string()).optional(),

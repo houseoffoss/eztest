@@ -1,12 +1,12 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { TestTube2, Play, FileText, Folder, Bug, LogOut } from 'lucide-react';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
-import { Breadcrumbs, type BreadcrumbItem } from '@/frontend/reusable-components/layout/Breadcrumbs';
+import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { ClickableStatCard } from '@/frontend/reusable-components/cards/ClickableStatCard';
@@ -24,7 +24,6 @@ interface ProjectDetailProps {
 
 export default function ProjectDetail({ projectId }: ProjectDetailProps) {
   const router = useRouter();
-  const { status } = useSession();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);

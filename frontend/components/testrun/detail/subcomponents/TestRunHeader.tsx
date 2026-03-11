@@ -1,7 +1,7 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
-import { Play, Square } from 'lucide-react';
+import { Play, Square, RotateCcw, User, Timer, Pencil } from 'lucide-react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 
@@ -11,6 +11,14 @@ interface TestRunHeaderProps {
     description?: string;
     status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
     environment?: string;
+    version?: string;
+    platform?: string;
+    device?: string;
+    assignedTo?: {
+      id: string;
+      name: string;
+      email: string;
+    } | null;
     project: {
       id: string;
     };
@@ -18,8 +26,11 @@ interface TestRunHeaderProps {
   executionTypeLabel?: string;
   actionLoading: boolean;
   canUpdate?: boolean;
+  onEditTestRun?: () => void;
   onStartTestRun: () => void;
   onCompleteTestRun: () => void;
+  onReopenTestRun?: () => void;
+  totalExecutionTime?: number; // 秒単位の総計
 }
 
 export function TestRunHeader({
@@ -27,12 +38,16 @@ export function TestRunHeader({
   executionTypeLabel,
   actionLoading,
   canUpdate = true,
+  onEditTestRun,
   onStartTestRun,
   onCompleteTestRun,
+  onReopenTestRun,
+  totalExecutionTime = 0,
 }: TestRunHeaderProps) {
   const { options: statusOptions } = useDropdownOptions('TestRun', 'status');
   const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PLANNED':
@@ -58,9 +73,10 @@ export function TestRunHeader({
   const environmentLabel = testRun.environment 
     ? (environmentOptions.find(opt => opt.value === testRun.environment)?.label || testRun.environment.toUpperCase())
     : null;
+  const versionLabel = testRun.version?.trim() || '未設定';
 
   // Determine execution type badge color based on label
-  const executionTypeBadgeClassName = executionTypeLabel === 'Automation'
+  const executionTypeBadgeClassName = executionTypeLabel === 'AUTOMATION'
     ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
     : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
 
@@ -73,7 +89,7 @@ export function TestRunHeader({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-wrap gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-white/60">Status:</span>
+            <span className="text-white/60">ステータス:</span>
             <Badge 
               variant="outline" 
               className={statusBadgeProps.className}
@@ -84,7 +100,7 @@ export function TestRunHeader({
           </div>
           {executionTypeLabel && (
             <div className="flex items-center gap-2">
-              <span className="text-white/60">Execution:</span>
+              <span className="text-white/60">実行種別:</span>
               <Badge variant="outline" className={executionTypeBadgeClassName}>
                 {executionTypeLabel}
               </Badge>
@@ -92,7 +108,7 @@ export function TestRunHeader({
           )}
           {testRun.environment && environmentBadgeProps && (
             <div className="flex items-center gap-2">
-              <span className="text-white/60">Environment:</span>
+              <span className="text-white/60">環境:</span>
               <Badge
                 variant="outline"
                 className={environmentBadgeProps.className}
@@ -102,13 +118,70 @@ export function TestRunHeader({
               </Badge>
             </div>
           )}
+          <div className="flex items-center gap-2">
+            <span className="text-white/60">バージョン:</span>
+            <Badge
+              variant="outline"
+              className={
+                testRun.version
+                  ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                  : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+              }
+            >
+              {versionLabel}
+            </Badge>
+          </div>
+          {testRun.platform && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">プラットフォーム:</span>
+              <Badge variant="outline" className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20">
+                {testRun.platform}
+              </Badge>
+            </div>
+          )}
+          {testRun.device && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">端末:</span>
+              <Badge variant="outline" className="bg-teal-500/10 text-teal-500 border-teal-500/20">
+                {testRun.device}
+              </Badge>
+            </div>
+          )}
+          {testRun.assignedTo && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">テスター:</span>
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                <User className="w-3 h-3 mr-1" />
+                {testRun.assignedTo.name}
+              </Badge>
+            </div>
+          )}
+          {totalExecutionTime > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">テスト実行時間（総計）:</span>
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                <Timer className="w-3 h-3 mr-1" />
+                {String(Math.floor(totalExecutionTime / 3600)).padStart(2, '0')}:
+                {String(Math.floor((totalExecutionTime % 3600) / 60)).padStart(2, '0')}:
+                {String(totalExecutionTime % 60).padStart(2, '0')}
+              </Badge>
+            </div>
+          )}
         </div>
 
         {canUpdate && (
           <ActionButtonGroup
             buttons={[
               {
-                label: 'Start Test Run',
+                label: 'テストランを編集',
+                icon: Pencil,
+                onClick: onEditTestRun || (() => {}),
+                variant: 'secondary',
+                show: !!onEditTestRun,
+                loading: false,
+              },
+              {
+                label: 'テストランを開始',
                 icon: Play,
                 onClick: onStartTestRun,
                 variant: 'primary',
@@ -116,12 +189,20 @@ export function TestRunHeader({
                 loading: actionLoading && testRun.status === 'PLANNED',
               },
               {
-                label: 'Complete Test Run',
+                label: 'テストランを完了',
                 icon: Square,
                 onClick: onCompleteTestRun,
                 variant: 'primary',
                 show: testRun.status === 'IN_PROGRESS',
                 loading: actionLoading && testRun.status === 'IN_PROGRESS',
+              },
+              {
+                label: 'テストランを再開',
+                icon: RotateCcw,
+                onClick: onReopenTestRun || (() => {}),
+                variant: 'secondary',
+                show: testRun.status === 'COMPLETED' && !!onReopenTestRun,
+                loading: actionLoading && testRun.status === 'COMPLETED',
               },
             ]}
           />

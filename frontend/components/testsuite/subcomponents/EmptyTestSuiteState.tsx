@@ -12,9 +12,9 @@ export function EmptyTestSuiteState({ onCreateClick, canCreate = false }: EmptyT
   return (
     <EmptyStateCard
       icon={Folder}
-      title="No test suites found"
+      title="テストスイートがありません"
       description="Organize your test cases into suites to keep your testing structured and manageable."
-      actionLabel={canCreate ? 'Create Test Suite' : undefined}
+      actionLabel={canCreate ? 'テストスイートを作成' : undefined}
       onAction={canCreate ? onCreateClick : undefined}
       actionButtonName="Test Suite List - Create Test Suite (Empty State)"
     />

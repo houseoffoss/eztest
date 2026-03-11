@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 
@@ -15,13 +15,13 @@ interface DeleteProjectDialogProps {
 export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDeleted }: DeleteProjectDialogProps) => {
   const content = (
     <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
-      <p className="font-semibold mb-2">This will permanently delete:</p>
+      <p className="font-semibold mb-2">以下が完全に削除されます：</p>
       <ul className="list-disc list-inside space-y-1">
-        <li>All test cases</li>
-        <li>All test runs</li>
-        <li>All test suites</li>
-        <li>All requirements</li>
-        <li>All project data</li>
+        <li>すべてのテストケース</li>
+        <li>すべてのテストラン</li>
+        <li>すべてのテストスイート</li>
+        <li>すべての要件</li>
+        <li>プロジェクトのすべてのデータ</li>
       </ul>
     </div>
   );
@@ -36,16 +36,16 @@ export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDele
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to delete project');
+      throw new Error(data.message || data.error || 'プロジェクトの削除に失敗しました');
     }
   };
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Project',
-    description: `Are you sure you want to delete "${project?.name}"? This action cannot be undone.`,
+    title: 'プロジェクトを削除',
+    description: `「${project?.name}」を削除してもよろしいですか？この操作は取り消せません。`,
     content,
-    submitLabel: 'Delete Project',
-    cancelLabel: 'Cancel',
+    submitLabel: 'プロジェクトを削除',
+    cancelLabel: 'キャンセル',
     triggerOpen: open,
     onOpenChange,
     onSubmit: handleSubmit,

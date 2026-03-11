@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -6,7 +6,7 @@ import { X, FileIcon, Image as ImageIcon, File, FileText, Video, Archive, Downlo
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
-import { type Attachment, validateFile, downloadFile, formatFileSize, getFileIconType } from '@/lib/s3';
+import { type Attachment, validateFile, downloadFile, formatFileSize, getFileIconType, uploadFileToS3 } from '@/lib/s3';
 import { cn } from '@/lib/utils';
 import { isAttachmentsEnabledClient } from '@/lib/attachment-config';
 
@@ -35,6 +35,8 @@ interface FileUploadModalProps {
   title?: string;
   maxFiles?: number;
   onDeleteMarked?: (deletedIds: string[]) => void;
+  forceShow?: boolean;
+  uploadOnSave?: boolean;
 }
 
 export function FileUploadModal({
@@ -49,6 +51,8 @@ export function FileUploadModal({
   title = 'Manage Files',
   maxFiles = 20,
   onDeleteMarked,
+  forceShow = false,
+  uploadOnSave = false,
 }: FileUploadModalProps) {
   const [attachmentsEnabled, setAttachmentsEnabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +63,31 @@ export function FileUploadModal({
   const [markedForDeletion, setMarkedForDeletion] = useState<Set<string>>(new Set());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  const fetchAttachmentUrl = async (attachment: Attachment): Promise<string | null> => {
+    const candidateEndpoints: string[] = [];
+    if (attachment.entityType === 'defect') {
+      candidateEndpoints.push(`/api/defect-attachments/${attachment.id}`);
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    } else if (attachment.entityType === 'comment') {
+      candidateEndpoints.push(`/api/comment-attachments/${attachment.id}`);
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    } else {
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    }
+
+    for (const endpoint of candidateEndpoints) {
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) continue;
+        const result = await response.json();
+        if (result.data?.url) return result.data.url;
+      } catch {
+        // try next endpoint
+      }
+    }
+    return null;
+  };
 
   // Mount portal on client side only
   useEffect(() => {
@@ -88,20 +117,9 @@ export function FileUploadModal({
               urls[attachment.id] = objectUrl;
             }
           } else {
-            try {
-              const endpoint = attachment.entityType === 'defect' 
-                ? `/api/defect-attachments/${attachment.id}`
-                : `/api/attachments/${attachment.id}`;
-              
-              const response = await fetch(endpoint);
-              if (response.ok) {
-                const result = await response.json();
-                if (result.data?.url) {
-                  urls[attachment.id] = result.data.url;
-                }
-              }
-            } catch (error) {
-              console.error('Error fetching image URL:', error);
+            const url = await fetchAttachmentUrl(attachment);
+            if (url) {
+              urls[attachment.id] = url;
             }
           }
         }
@@ -144,14 +162,13 @@ export function FileUploadModal({
     if (!files || files.length === 0) return;
 
     setFileError('');
-
-    const newAttachments: Attachment[] = [];
+    const nextAttachments = [...attachments];
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
       // Check max files limit
-      if (attachments.length + newAttachments.length >= maxFiles) {
+      if (nextAttachments.length >= maxFiles) {
         setFileError(`Maximum ${maxFiles} files allowed`);
         break;
       }
@@ -162,25 +179,44 @@ export function FileUploadModal({
         continue;
       }
 
-      // Create pending attachment (will be uploaded on save)
-      const pendingAttachment: Attachment = {
-        id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-        filename: file.name,
-        originalName: file.name,
-        size: file.size,
-        mimeType: file.type,
-        uploadedAt: new Date().toISOString(),
-        fieldName: fieldName,
-        // @ts-expect-error - Add file object for later upload
-        _pendingFile: file,
-      };
-      
-      newAttachments.push(pendingAttachment);
+      if (!uploadOnSave && (forceShow || entityId)) {
+        // 即座にアップロード（ローカルフォールバック含む）
+        try {
+          const result = await uploadFileToS3({
+            file,
+            fieldName,
+            entityId,
+            projectId,
+            entityType,
+            onProgress: () => {},
+          });
+          if (result.success && result.attachment) {
+            nextAttachments.push(result.attachment);
+          } else {
+            setFileError(result.error || 'アップロードに失敗しました');
+          }
+        } catch (error) {
+          console.error('Upload failed:', error);
+          setFileError('アップロードに失敗しました');
+        }
+      } else {
+        // Creating new entity - store in memory, upload on save
+        const pendingAttachment: Attachment = {
+          id: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          filename: file.name,
+          originalName: file.name,
+          size: file.size,
+          mimeType: file.type,
+          uploadedAt: new Date().toISOString(),
+          fieldName: fieldName,
+          // @ts-expect-error - Add file object for later upload
+          _pendingFile: file,
+        };
+        nextAttachments.push(pendingAttachment);
+      }
     }
 
-    if (newAttachments.length > 0) {
-      onAttachmentsChange([...attachments, ...newAttachments]);
-    }
+    onAttachmentsChange(nextAttachments);
     
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -242,7 +278,7 @@ export function FileUploadModal({
     ? title.replace(fieldName, formatFieldName(fieldName))
     : title;
 
-  if (!attachmentsEnabled || !isOpen) return null;
+  if ((!attachmentsEnabled && !forceShow) || !isOpen) return null;
 
   // Don't render on server side
   if (!mounted) return null;
@@ -305,7 +341,7 @@ export function FileUploadModal({
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar,.png,.jpg,.jpeg"
+                accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar,.png,.jpg,.jpeg"
               />
               
               {/* Single Drag & Drop Area */}

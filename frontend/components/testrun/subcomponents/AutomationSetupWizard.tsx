@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/frontend/reusable-elements/dialogs/Dialog';
-import { ChevronLeft, ChevronRight, CheckCircle2, Copy, FileCode, Code, Settings, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Copy, FileCode, BookOpen } from 'lucide-react';
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
 
 interface AutomationSetupWizardProps {
@@ -31,7 +31,6 @@ export function AutomationSetupWizard({
   open,
   onOpenChange,
   projectId,
-  projectKey = 'PROJ',
 }: AutomationSetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -49,7 +48,7 @@ export function AutomationSetupWizard({
   const CodeBlock = ({ code, id, language = 'bash' }: { code: string; id: string; language?: string }) => (
     <div className="relative group">
       <pre className="bg-[#0a0e1a] border border-white/10 rounded-lg p-4 overflow-x-auto text-sm">
-        <code className="text-white/90">{code}</code>
+        <code className="text-white/90" data-language={language}>{code}</code>
       </pre>
       <button
         onClick={() => copyToClipboard(code, id)}

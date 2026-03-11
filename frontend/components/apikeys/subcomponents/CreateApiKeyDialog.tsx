@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
+import type { ApiKey } from '../ApiKeysManagement';
 
 interface Project {
   id: string;
@@ -11,7 +12,7 @@ interface Project {
 interface CreateApiKeyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApiKeyCreated: (data: { key: string; apiKey: any }) => void;
+  onApiKeyCreated: (data: { key: string; apiKey: ApiKey }) => void;
 }
 
 export function CreateApiKeyDialog({
@@ -75,7 +76,11 @@ export function CreateApiKeyDialog({
   ];
 
   const handleSubmit = async (formData: Record<string, string>) => {
-    const requestBody: any = {
+    const requestBody: {
+      name: string;
+      projectId: string | null;
+      expiresAt: string | null;
+    } = {
       name: formData.name,
       projectId: formData.projectId === '__all__' ? null : (formData.projectId || null),
       expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : null,

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
@@ -33,8 +33,8 @@ export function ConfirmDeleteDialog({
   isLoading = false,
   onOpenChange,
   onConfirm,
-  cancelLabel = 'Cancel',
-  confirmLabel = 'Delete',
+  cancelLabel = 'キャンセル',
+  confirmLabel = '削除',
   dialogName,
 }: ConfirmDeleteDialogProps) {
   const dialogTrackingName = dialogName || title;

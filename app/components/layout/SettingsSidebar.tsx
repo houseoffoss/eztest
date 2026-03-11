@@ -14,12 +14,12 @@ export interface SettingsSidebarItem {
 
 const SETTINGS_ITEMS: SettingsSidebarItem[] = [
   {
-    label: 'Profile',
+    label: 'プロフィール',
     href: '/settings/profile',
     icon: <User className="w-4 h-4" />,
   },
   {
-    label: 'Account & Security',
+    label: 'アカウントとセキュリティ',
     href: '/settings/account',
     icon: <Lock className="w-4 h-4" />,
   },

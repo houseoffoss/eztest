@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -52,7 +52,7 @@ export function TestStepsCard({
 }: TestStepsCardProps) {
   return (
     <DetailCard
-      title="Test Steps"
+      title="テスト手順"
       contentClassName="space-y-3"
       headerAction={
         isEditing ? (
@@ -134,7 +134,7 @@ export function TestStepsCard({
                     </div>
                     <div>
                       <h5 className="text-xs font-medium text-white/60 mb-1">
-                        Expected Result
+                        期待結果
                       </h5>
                       {isEditing ? (
                         <TextareaWithAttachments
@@ -213,7 +213,7 @@ export function TestStepsCard({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Expected Result</Label>
+                <Label>期待結果</Label>
                 <TextareaWithAttachments
                   variant="glass"
                   value={newStep.expectedResult}

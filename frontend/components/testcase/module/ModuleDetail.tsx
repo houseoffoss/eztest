@@ -1,10 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
-import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
-import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
+import { useEffect, useState, useCallback } from 'react';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { TestTube2, Folder } from 'lucide-react';
@@ -20,7 +18,6 @@ import { ModuleDetailsCard } from './subcomponents/ModuleDetailsCard';
 import { ModuleTestCasesCard } from './subcomponents/ModuleTestCasesCard';
 import { ModuleInfoCard } from './subcomponents/ModuleInfoCard';
 import { ModuleStatisticsCard } from './subcomponents/ModuleStatisticsCard';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 interface ModuleDetailProps {
   projectId: string;
@@ -50,37 +47,12 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
-  const navbarActions = useMemo(() => {
-    return [
-      {
-        type: 'signout' as const,
-        showConfirmation: true,
-      },
-    ];
-  }, []);
-
-  useEffect(() => {
-    fetchProject();
-    fetchModule();
-    fetchTestCases();
-  }, [projectId, moduleId]);
-
-  useEffect(() => {
-    if (module) {
-      document.title = `${module.name} - Module | EZTest`;
-      setFormData({
-        name: module.name,
-        description: module.description || '',
-      });
-    }
-  }, [module]);
-
   const canCreateTestCase = hasPermissionCheck('testcases:create');
   const canUpdateModule = hasPermissionCheck('testcases:update');
   const canDeleteModule = hasPermissionCheck('testcases:delete');
   const canDeleteTestCase = hasPermissionCheck('testcases:delete');
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}`);
       const data = await response.json();
@@ -90,9 +62,9 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     } catch (error) {
       console.error('Error fetching project:', error);
     }
-  };
+  }, [projectId]);
 
-  const fetchModule = async () => {
+  const fetchModule = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}/modules/${moduleId}`);
       const data = await response.json();
@@ -114,9 +86,9 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         message: 'Failed to load module',
       });
     }
-  };
+  }, [projectId, moduleId, router]);
 
-  const fetchTestCases = async () => {
+  const fetchTestCases = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/projects/${projectId}/testcases`, {
@@ -132,7 +104,23 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, moduleId]);
+
+  useEffect(() => {
+    fetchProject();
+    fetchModule();
+    fetchTestCases();
+  }, [fetchProject, fetchModule, fetchTestCases]);
+
+  useEffect(() => {
+    if (module) {
+      document.title = `${module.name} - Module | EZTest`;
+      setFormData({
+        name: module.name,
+        description: module.description || '',
+      });
+    }
+  }, [module]);
 
   const handleSave = async () => {
     if (!module) return;
@@ -212,7 +200,7 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     if (!selectedTestCase) return;
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/testcases/${selectedTestCase.id}`, {
+      const response = await fetch(`/api/testcases/${selectedTestCase.id}`, {
         method: 'DELETE',
       });
 
@@ -282,23 +270,16 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
     <div className="flex-1">
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      <Navbar
-        brandLabel={null}
-        items={[]}
-        breadcrumbs={
-          <Breadcrumbs 
-            items={[
-              { label: 'Projects', href: '/projects' },
-              { label: project.name, href: `/projects/${projectId}` },
-              { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
-              { label: module.name, href: `/projects/${projectId}/modules/${module.id}` },
-            ]}
-          />
-        }
-        actions={navbarActions}
+      <TopBar
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project.name, href: `/projects/${projectId}` },
+          { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
+          { label: module.name },
+        ]}
       />
 
-      <div className="p-4 md:p-6 lg:p-8 pt-8">
+      <div className="p-4 md:p-6 lg:p-8">
         <ModuleHeader
           module={module}
           projectName={project.name}

@@ -7,7 +7,7 @@ type SidebarItem = SidebarProps['items'][number];
  */
 export const mainSidebarItems: SidebarItem[] = [
   {
-    label: 'Projects',
+    label: 'プロジェクト',
     href: '/projects',
   },
 ];
@@ -17,11 +17,11 @@ export const mainSidebarItems: SidebarItem[] = [
  */
 export const getAdminSidebarItems = (): SidebarItem[] => [
   {
-    label: 'Projects',
+    label: 'プロジェクト',
     href: '/projects',
   },
   {
-    label: 'Admin',
+    label: '管理',
     href: '/admin',
   },
 ];
@@ -32,46 +32,44 @@ export const getAdminSidebarItems = (): SidebarItem[] => [
 export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = false, canManageSettings: boolean = false): SidebarItem[] => {
   const items: SidebarItem[] = [
     {
-      label: 'Projects',
+      label: 'プロジェクト',
       href: '/projects',
     },
     {
-      label: 'Test Suites',
+      label: 'テストスイート',
       href: `/projects/${projectId}/testsuites`,
-      children: [], // Will be populated dynamically
+      children: [],
     },
     {
-      label: 'Test Cases',
+      label: 'テストケース',
       href: `/projects/${projectId}/testcases`,
     },
     {
-      label: 'Test Runs',
+      label: 'テストラン',
       href: `/projects/${projectId}/testruns`,
-      children: [], // Will be populated dynamically
+      children: [],
     },
     {
-      label: 'Defects',
+      label: 'Defect',
       href: `/projects/${projectId}/defects`,
     },
     {
-      label: 'Members',
+      label: 'メンバー',
       href: `/projects/${projectId}/members`,
     },
   ];
 
-  // Only show Settings if user has manage permissions (ADMIN, PROJECT_MANAGER) or testruns:update permission
   if (isAdmin || canManageSettings) {
     items.push({
-      label: 'Settings',
+      label: '設定',
       href: `/projects/${projectId}/settings`,
     });
   }
 
-  // Add admin items if user is admin
   if (isAdmin) {
     items.push(
       {
-        label: 'Admin',
+        label: '管理',
         href: '/admin',
       }
     );
@@ -86,36 +84,35 @@ export const getProjectSidebarItems = (projectId: string, isAdmin: boolean = fal
 export const getProjectsPageSidebarItems = (isAdmin: boolean = false): SidebarItem[] => {
   const items: SidebarItem[] = [
     {
-      label: 'Projects',
+      label: 'プロジェクト',
       href: '/projects',
     },
     {
-      label: 'Test Suites',
+      label: 'テストスイート',
       children: [],
     },
     {
-      label: 'Test Cases',
+      label: 'テストケース',
       href: '#',
     },
     {
-      label: 'Test Runs',
+      label: 'テストラン',
       children: [],
     },
     {
-      label: 'Defects',
+      label: 'Defect',
       href: '#',
     },
     {
-      label: 'Members',
+      label: 'メンバー',
       href: '#',
     },
   ];
 
-  // Add admin items if user is admin
   if (isAdmin) {
     items.push(
       {
-        label: 'Admin',
+        label: '管理',
         href: '/admin',
       }
     );

@@ -1,32 +1,37 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import { ActionMenu } from '@/frontend/reusable-components/menus/ActionMenu';
 import { ProgressBarWithLabel } from '@/frontend/reusable-components/data/ProgressBarWithLabel';
 import { CompactStatsGrid } from '@/frontend/reusable-components/data/CompactStatsGrid';
 import { CardFooter } from '@/frontend/reusable-components/layout/CardFooter';
-import { Calendar, Play, Trash2, User } from 'lucide-react';
+import { Calendar, Play, Trash2, User, Pencil } from 'lucide-react';
 import { TestRun } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 
 interface TestRunCardProps {
   testRun: TestRun;
+  canUpdate?: boolean;
   canDelete?: boolean;
   onCardClick: () => void;
   onViewDetails: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }
 
 export function TestRunCard({
   testRun,
+  canUpdate = true,
   canDelete = true,
   onCardClick,
   onViewDetails,
+  onEdit,
   onDelete,
 }: TestRunCardProps) {
   const { options: statusOptions } = useDropdownOptions('TestRun', 'status');
   const { options: environmentOptions } = useDropdownOptions('TestRun', 'environment');
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PLANNED':
@@ -123,6 +128,21 @@ export function TestRunCard({
           {environmentLabel}
         </Badge>
       )}
+      {testRun.version && (
+        <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+          {testRun.version}
+        </Badge>
+      )}
+      {testRun.platform && (
+        <Badge variant="outline" className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20">
+          {testRun.platform}
+        </Badge>
+      )}
+      {testRun.device && (
+        <Badge variant="outline" className="bg-teal-500/10 text-teal-500 border-teal-500/20">
+          {testRun.device}
+        </Badge>
+      )}
     </>
   );
 
@@ -130,13 +150,20 @@ export function TestRunCard({
     <ActionMenu
       items={[
         {
-          label: 'View Details',
+          label: '詳細を見る',
           icon: Play,
           onClick: onViewDetails,
           buttonName: `Test Run Card - View Details (${testRun.name})`,
         },
         {
-          label: 'Delete',
+          label: '編集',
+          icon: Pencil,
+          onClick: onEdit,
+          show: canUpdate,
+          buttonName: `Test Run Card - Edit (${testRun.name})`,
+        },
+        {
+          label: '削除',
           icon: Trash2,
           onClick: onDelete,
           variant: 'destructive',
@@ -154,7 +181,7 @@ export function TestRunCard({
       {/* Progress */}
       {testRun._count.results > 0 && (
         <ProgressBarWithLabel
-          label="Pass Rate"
+          label="合格率"
           value={passRate}
           fillClassName="bg-green-400/30 border border-green-400/30"
         />
@@ -165,24 +192,24 @@ export function TestRunCard({
         stats={[
           {
             value: testRun._count.results,
-            label: 'Total',
+            label: '合計',
             show: true,
           },
           {
             value: counts.passed,
-            label: 'Passed',
+            label: '合格',
             valueClassName: 'text-green-500',
             show: counts.passed > 0,
           },
           {
             value: counts.failed,
-            label: 'Failed',
+            label: '不合格',
             valueClassName: 'text-red-500',
             show: counts.failed > 0,
           },
           {
             value: counts.blocked,
-            label: 'Blocked',
+            label: 'ブロック',
             valueClassName: 'text-orange-500',
             show: counts.blocked > 0,
           },

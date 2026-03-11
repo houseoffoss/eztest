@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
@@ -6,12 +6,10 @@ import { FilterDropdown, type FilterOption } from '@/frontend/reusable-component
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
 import { MembersList } from '@/frontend/reusable-components/users/MembersList';
-import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { 
   Users, 
   UserPlus,
@@ -20,7 +18,6 @@ import { User, Role, UserFormData, EditUserFormData } from './types';
 import { AddUserDialog } from './subcomponents/AddUserDialog';
 import { EditUserDialog } from './subcomponents/EditUserDialog';
 import { DeleteUserDialog } from './subcomponents/DeleteUserDialog';
-import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -50,8 +47,8 @@ export default function UserManagement() {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Load Users',
-        message: 'Could not load users list.',
+        title: 'ユーザーの読み込みに失敗しました',
+        message: 'ユーザー一覧を読み込めませんでした。',
       });
     } finally {
       setLoading(false);
@@ -68,8 +65,8 @@ export default function UserManagement() {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Load Roles',
-        message: 'Could not load available roles.',
+        title: 'ロールの読み込みに失敗しました',
+        message: '利用可能なロールを読み込めませんでした。',
       });
     }
   };
@@ -90,8 +87,8 @@ export default function UserManagement() {
     fetchUsers();
     setAlert({
       type: 'success',
-      title: 'User Added',
-      message: `User "${data.data.name}" has been added successfully.`,
+      title: 'ユーザーを追加しました',
+      message: `ユーザー「${data.data.name}」が正常に追加されました。`,
     });
   };
 
@@ -115,8 +112,8 @@ export default function UserManagement() {
     fetchUsers();
     setAlert({
       type: 'success',
-      title: 'User Updated',
-      message: `User "${userName}" has been updated successfully.`,
+      title: 'ユーザーを更新しました',
+      message: `ユーザー「${userName}」が正常に更新されました。`,
     });
   };
 
@@ -135,15 +132,15 @@ export default function UserManagement() {
         fetchUsers();
         setAlert({
           type: 'success',
-          title: 'User Deleted',
-          message: `User "${userName}" has been deleted successfully.`,
+          title: 'ユーザーを削除しました',
+          message: `ユーザー「${userName}」が正常に削除されました。`,
         });
       }
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Delete User',
-        message: 'Could not delete the user.',
+        title: 'ユーザーの削除に失敗しました',
+        message: 'ユーザーを削除できませんでした。',
       });
     }
   };
@@ -151,7 +148,7 @@ export default function UserManagement() {
 
   // Build role filter options from roles
   const roleFilterOptions: FilterOption[] = [
-    { value: 'all', label: 'All Roles' },
+    { value: 'all', label: 'すべてのロール' },
     ...roles.map((role) => ({
       value: role.id,
       label: role.name,
@@ -173,7 +170,7 @@ export default function UserManagement() {
     return [
       {
         type: 'action' as const,
-        label: 'Add User',
+        label: 'ユーザーを追加',
         icon: UserPlus,
         onClick: () => setAddDialogOpen(true),
         variant: 'primary' as const,
@@ -195,8 +192,8 @@ export default function UserManagement() {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Admin', href: '/admin' },
-              { label: 'Users', href: '/admin/users' },
+              { label: '管理', href: '/admin' },
+              { label: 'ユーザー', href: '/admin/users' },
             ]}
           />
         }
@@ -208,8 +205,8 @@ export default function UserManagement() {
         <HeaderWithFilters
           header={
             <PageHeaderWithBadge
-              title="User Management"
-              description="Manage application users and assign roles"
+              title="ユーザー管理"
+              description="アプリケーションのユーザーを管理し、ロールを割り当て"
             />
           }
           filters={
@@ -218,14 +215,14 @@ export default function UserManagement() {
                 <SearchInput
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="Search users..."
+                  placeholder="ユーザーを検索..."
                 />
               </div>
               <div>
                 <FilterDropdown
                   value={roleFilter}
                   onValueChange={setRoleFilter}
-                  placeholder="Role"
+                  placeholder="ロール"
                   options={roleFilterOptions}
                 />
               </div>
@@ -238,7 +235,7 @@ export default function UserManagement() {
       <div className="px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <Loader fullScreen={false} text="Loading users..." />
+            <Loader fullScreen={false} text="ユーザーを読み込み中..." />
           ) : (
             <MembersList
               members={filteredUsers.map((user) => ({
@@ -252,10 +249,10 @@ export default function UserManagement() {
                 },
                 createdAt: user.createdAt,
               }))}
-              title={`All Users (${filteredUsers.length})`}
-              description="Application users and their assigned roles"
-              emptyTitle="No users found"
-              emptyDescription={searchQuery ? 'Try a different search term' : 'Add your first user to get started'}
+              title={`全ユーザー（${filteredUsers.length}）`}
+              description="アプリケーションのユーザーと割り当てられたロール"
+              emptyTitle="ユーザーが見つかりません"
+              emptyDescription={searchQuery ? '別の検索条件をお試しください' : '最初のユーザーを追加して始めましょう'}
               emptyIcon={Users}
               onEdit={(userId) => {
                 const user = filteredUsers.find((u) => u.id === userId);

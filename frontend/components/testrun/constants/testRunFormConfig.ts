@@ -1,17 +1,17 @@
 import { FormFieldConfig } from '../../testcase/subcomponents/TestCaseFormField';
 
 export const ENVIRONMENT_OPTIONS = [
-  { label: 'Production', value: 'Production' },
-  { label: 'Staging', value: 'Staging' },
+  { label: '本番', value: 'Production' },
+  { label: 'ステージング', value: 'Staging' },
   { label: 'QA', value: 'QA' },
-  { label: 'Development', value: 'Development' },
+  { label: '開発', value: 'Development' },
 ];
 
 export const STATUS_OPTIONS = [
-  { label: 'Planned', value: 'PLANNED' },
-  { label: 'In Progress', value: 'IN_PROGRESS' },
-  { label: 'Completed', value: 'COMPLETED' },
-  { label: 'Cancelled', value: 'CANCELLED' },
+  { label: '計画中', value: 'PLANNED' },
+  { label: '実行中', value: 'IN_PROGRESS' },
+  { label: '完了', value: 'COMPLETED' },
+  { label: 'キャンセル', value: 'CANCELLED' },
 ];
 
 /**
@@ -21,27 +21,27 @@ export function getTestRunFormFields(): FormFieldConfig[] {
   return [
     {
       name: 'name',
-      label: 'Name',
+      label: '名前',
       type: 'text',
       required: true,
-      placeholder: 'Enter test run name',
+      placeholder: 'テストラン名を入力',
       maxLength: 50,
     },
     {
       name: 'description',
-      label: 'Description',
+      label: '説明',
       type: 'textarea',
       required: false,
-      placeholder: 'Enter test run description',
+      placeholder: 'テストランの説明を入力',
       maxLength: 250,
     },
     {
       name: 'environment',
-      label: 'Environment',
+      label: '環境',
       type: 'select',
       required: false,
       options: ENVIRONMENT_OPTIONS,
-      placeholder: 'Select environment',
+      placeholder: '環境を選択',
     },
   ];
 }

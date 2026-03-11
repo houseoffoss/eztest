@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -30,14 +30,14 @@ export function GeneralSettingsCard({
 }: GeneralSettingsCardProps) {
   return (
     <DetailCard
-      title="General Information"
-      description="Update your project name and description"
+      title="基本情報"
+      description="プロジェクト名と説明を更新"
       contentClassName="p-8"
     >
       <form onSubmit={onSave} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="block text-sm font-medium text-muted-foreground">
-              Project Name *
+              プロジェクト名 *
             </Label>
             <Input
               id="name"
@@ -55,7 +55,7 @@ export function GeneralSettingsCard({
 
           <div className="space-y-2">
             <Label htmlFor="key" className="block text-sm font-medium text-muted-foreground">
-              Project Key
+              プロジェクトキー
             </Label>
             <Input
               id="key"
@@ -64,13 +64,13 @@ export function GeneralSettingsCard({
               disabled
             />
             <p className="text-xs text-muted-foreground">
-              Project key cannot be changed after creation
+              プロジェクトキーは作成後に変更できません
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description" className="block text-sm font-medium text-muted-foreground">
-              Description
+              説明
             </Label>
             <Textarea
               id="description"
@@ -87,10 +87,10 @@ export function GeneralSettingsCard({
           <div className="flex gap-3 pt-4">
             <ButtonPrimary type="submit" disabled={saving || !canUpdate}>
               <Save className="w-4 h-4 mr-2" />
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? '保存中...' : '変更を保存'}
             </ButtonPrimary>
             <Button type="button" variant="glass" onClick={onCancel} className="!rounded-full">
-              Cancel
+              キャンセル
             </Button>
           </div>
         </form>

@@ -30,6 +30,8 @@ type TextareaWithAttachmentsProps = Omit<React.ComponentProps<"textarea">, 'valu
   projectId?: string;
   entityType?: 'testcase' | 'defect' | 'comment' | 'testresult' | 'teststep' | 'unassigned';
   showAttachments?: boolean;
+  forceShowAttachments?: boolean;
+  uploadOnSave?: boolean;
 }
 
 function TextareaWithAttachments({ 
@@ -46,11 +48,13 @@ function TextareaWithAttachments({
   projectId,
   entityType = 'testcase',
   showAttachments = true,
+  forceShowAttachments = false,
+  uploadOnSave = false,
   ...props 
 }: TextareaWithAttachmentsProps) {
   // Check if attachments feature is enabled
   const [attachmentsEnabled, setAttachmentsEnabled] = React.useState(false);
-  const shouldShowAttachments = showAttachments && attachmentsEnabled;
+  const shouldShowAttachments = showAttachments && (attachmentsEnabled || forceShowAttachments);
   
   const [charCount, setCharCount] = React.useState(0);
   const [isOverLimit, setIsOverLimit] = React.useState(false);
@@ -64,6 +68,31 @@ function TextareaWithAttachments({
   const [fileModalOpen, setFileModalOpen] = React.useState(false);
   const [markedForDeletion, setMarkedForDeletion] = React.useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const fetchAttachmentUrl = React.useCallback(async (attachment: Attachment): Promise<string | null> => {
+    const candidateEndpoints: string[] = [];
+    if (attachment.entityType === 'defect') {
+      candidateEndpoints.push(`/api/defect-attachments/${attachment.id}`);
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    } else if (attachment.entityType === 'comment') {
+      candidateEndpoints.push(`/api/comment-attachments/${attachment.id}`);
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    } else {
+      candidateEndpoints.push(`/api/attachments/${attachment.id}`);
+    }
+
+    for (const endpoint of candidateEndpoints) {
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) continue;
+        const result = await response.json();
+        if (result.data?.url) return result.data.url;
+      } catch {
+        // Try next endpoint
+      }
+    }
+    return null;
+  }, []);
 
   // Fetch attachment feature status from server
   React.useEffect(() => {
@@ -103,27 +132,13 @@ function TextareaWithAttachments({
               console.warn(`No file found for pending attachment ${attachment.id}`);
             }
           } else {
-            // For uploaded attachments, fetch from server
-            try {
-              // Use different endpoint based on entity type
-              const endpoint = attachment.entityType === 'defect' 
-                ? `/api/defect-attachments/${attachment.id}`
-                : `/api/attachments/${attachment.id}`;
-              
-              const response = await fetch(endpoint);
-              if (response.ok) {
-                const result = await response.json();
-                // API returns { data: { url, ... } }
-                if (result.data?.url) {
-                  urls[attachment.id] = result.data.url;
-                } else {
-                  console.warn(`[TextareaWithAttachments] No URL in response for ${attachment.id}`, result);
-                }
-              } else {
-                console.warn(`[TextareaWithAttachments] Failed to fetch image URL for ${attachment.id}:`, response.status);
-              }
-            } catch (error) {
-              console.error('[TextareaWithAttachments] Error fetching image URL:', error);
+            // For uploaded attachments, fetch from server.
+            // Try entity-specific endpoint first, then fall back to generic attachment endpoint.
+            const url = await fetchAttachmentUrl(attachment);
+            if (url) {
+              urls[attachment.id] = url;
+            } else {
+              console.warn(`[TextareaWithAttachments] Failed to resolve image URL for ${attachment.id}`);
             }
           }
         }
@@ -148,7 +163,7 @@ function TextareaWithAttachments({
       });
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attachments]);
+  }, [attachments, fetchAttachmentUrl]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange?.(e.target.value);
@@ -210,9 +225,10 @@ function TextareaWithAttachments({
       return;
     }
 
-    // Store file in browser memory as "pending" instead of uploading immediately
-    if (entityId) {
-      // Editing existing entity - upload immediately
+    // Upload behavior:
+    // - uploadOnSave=true: keep as pending and upload on parent form save
+    // - uploadOnSave=false: upload immediately when entityId/forceShowAttachments is available
+    if (!uploadOnSave && (entityId || forceShowAttachments)) {
       await handleUpload(file);
     } else {
       // Creating new entity - store in memory, upload on save
@@ -223,7 +239,7 @@ function TextareaWithAttachments({
         size: file.size,
         mimeType: file.type,
         uploadedAt: new Date().toISOString(),
-        fieldName: fieldName, // Track which field this attachment belongs to
+        fieldName: fieldName,
         // @ts-expect-error - Add file object for later upload
         _pendingFile: file,
       };
@@ -327,20 +343,66 @@ function TextareaWithAttachments({
       
       {/* Attachment Display and Button - Below textarea */}
       {shouldShowAttachments && (
-        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
-          {/* Left side - Attachment count display (non-clickable) */}
-          <span className="text-white/60">{attachments.length} Attachment{attachments.length !== 1 ? 's' : ''}</span>
-          
-          {/* Right side - Clickable button with paperclip icon */}
-          <button
-            type="button"
-            onClick={() => setFileModalOpen(true)}
-            disabled={uploading}
-            className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white/60 hover:text-white/80"
-            title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Attach Files'}
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
+        <div className="w-full rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-white/60">{attachments.length} 件のファイル</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="px-2 py-1 rounded-md bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-blue-400 hover:text-blue-300 text-xs"
+              >
+                ファイルを追加
+              </button>
+              <button
+                type="button"
+                onClick={() => setFileModalOpen(true)}
+                disabled={uploading}
+                className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white/60 hover:text-white/80"
+                title="ファイルを管理"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          {/* 添付ファイル一覧 */}
+          {attachments.length > 0 && (
+            <div className="px-3 pb-2 space-y-1">
+              {attachments.map((att) => (
+                <div key={att.id} className="flex items-center gap-2 px-2 py-1 rounded bg-white/5 text-xs">
+                  {getFileIcon(att.mimeType, "w-3 h-3 text-white/50 flex-shrink-0")}
+                  <span className="text-white/70 truncate flex-1">{att.originalName}</span>
+                  <span className="text-white/40 flex-shrink-0">{formatFileSize(att.size)}</span>
+                  {att.id.startsWith('pending-') && (
+                    <span className="text-yellow-400 flex-shrink-0">保存待ち</span>
+                  )}
+                </div>
+              ))}
+              {attachments.some((att) => att.mimeType.startsWith('image/')) && (
+                <div className="pt-2 grid grid-cols-4 gap-2">
+                  {attachments
+                    .filter((att) => att.mimeType.startsWith('image/'))
+                    .map((att) => (
+                      <div key={`preview-${att.id}`} className="w-full aspect-square rounded overflow-hidden border border-white/15 bg-white/5">
+                        {imageUrls[att.id] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={imageUrls[att.id]}
+                            alt={att.originalName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/40 text-[10px]">
+                            読み込み中
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
       
@@ -353,7 +415,7 @@ function TextareaWithAttachments({
         </div>
       )}
 
-      {showAttachments && (
+      {shouldShowAttachments && (
         <>
           {/* Hidden File Input */}
           <input
@@ -362,7 +424,7 @@ function TextareaWithAttachments({
             onChange={handleFileSelect}
             disabled={uploading}
             className="hidden"
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.zip,.rar"
           />
           
           {/* Upload Progress */}
@@ -411,7 +473,7 @@ function TextareaWithAttachments({
       )}
 
       {/* Hover Preview Card */}
-      {showAttachments && hoveredId && attachments.find(a => a.id === hoveredId) && (
+      {shouldShowAttachments && hoveredId && attachments.find(a => a.id === hoveredId) && (
         <div 
           className="absolute bottom-16 left-2 z-50 w-80 bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" 
         >
@@ -430,6 +492,7 @@ function TextareaWithAttachments({
                 <div className="relative h-64 bg-black/20 flex items-center justify-center">
                   {isImage ? (
                     imageUrls[attachment.id] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={imageUrls[attachment.id]}
                         alt={attachment.originalName}
@@ -526,6 +589,8 @@ function TextareaWithAttachments({
           projectId={projectId}
           entityType={entityType}
           title={`Manage Files - ${fieldName}`}
+          forceShow={forceShowAttachments}
+          uploadOnSave={uploadOnSave}
         />
       )}
     </div>

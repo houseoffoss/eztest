@@ -1,5 +1,52 @@
 import { prisma } from '@/lib/prisma';
-import { CustomRequest } from '@/backend/utils/interceptor';
+
+/**
+ * TestCase 一覧取得用の select（platform, device 等が DB にない環境用）
+ * これらの列がある環境では通常の include が使われる
+ */
+const TEST_CASE_LIST_SELECT = {
+  id: true,
+  tcId: true,
+  projectId: true,
+  moduleId: true,
+  suiteId: true,
+  title: true,
+  description: true,
+  expectedResult: true,
+  priority: true,
+  status: true,
+  estimatedTime: true,
+  preconditions: true,
+  postconditions: true,
+  testData: true,
+  pendingDefectIds: true,
+  rtcId: true,
+  flowId: true,
+  layer: true,
+  testType: true,
+  evidence: true,
+  notes: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+  module: { select: { id: true, name: true, updatedAt: true } },
+  suite: { select: { id: true, name: true } },
+  createdBy: { select: { id: true, name: true, email: true, avatar: true } },
+  _count: {
+    select: {
+      steps: true,
+      results: true,
+      requirements: true,
+      defects: {
+        where: {
+          defect: {
+            status: { not: 'CLOSED' },
+          },
+        },
+      },
+    },
+  },
+} as const;
 
 interface CreateTestCaseInput {
   projectId: string;
@@ -20,6 +67,19 @@ interface CreateTestCaseInput {
     action: string;
     expectedResult: string;
   }>;
+  // New fields
+  rtcId?: string | null;
+  flowId?: string | null;
+  layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
+  testType?: string | null;
+  evidence?: string | null;
+  notes?: string | null;
+  platform?: 'Web' | 'Web(SP)' | 'iOS Native' | 'Android Native' | null;
+  device?: 'iPhone' | 'Android' | 'PC' | null;
+  domain?: string | null;
+  functionName?: string | null;
+  executionType?: '手動' | '自動' | null;
+  automationStatus?: '自動化済' | '自動化対象' | '自動化対象外' | '検討中' | null;
 }
 
 interface UpdateTestCaseInput {
@@ -34,6 +94,19 @@ interface UpdateTestCaseInput {
   postconditions?: string;
   moduleId?: string | null;
   suiteId?: string | null;
+  // New fields
+  rtcId?: string | null;
+  flowId?: string | null;
+  layer?: 'SMOKE' | 'CORE' | 'EXTENDED' | 'UNKNOWN' | null;
+  testType?: string | null;
+  evidence?: string | null;
+  notes?: string | null;
+  platform?: 'Web' | 'Web(SP)' | 'iOS Native' | 'Android Native' | null;
+  device?: 'iPhone' | 'Android' | 'PC' | null;
+  domain?: string | null;
+  functionName?: string | null;
+  executionType?: '手動' | '自動' | null;
+  automationStatus?: '自動化済' | '自動化対象' | '自動化対象外' | '検討中' | null;
 }
 
 interface TestCaseFilters {
@@ -41,6 +114,8 @@ interface TestCaseFilters {
   priority?: string;
   status?: string;
   search?: string;
+  domain?: string;
+  functionName?: string;
 }
 
 export class TestCaseService {
@@ -124,38 +199,11 @@ export class TestCaseService {
 
     return await prisma.testCase.findMany({
       where,
-      include: {
-        suite: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        module: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        _count: {
-          select: {
-            steps: true,
-            results: true,
-            requirements: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      select: TEST_CASE_LIST_SELECT,
+      orderBy: [
+        { module: { name: 'asc' } },  // Module name ascending (SM_008, SM_009...)
+        { flowId: 'asc' }  // Then Flow-ID ascending
+      ],
     });
   }
 
@@ -188,6 +236,14 @@ export class TestCaseService {
       where.moduleId = filters.moduleId;
     }
     
+    if (filters?.domain) {
+      where.domain = filters.domain;
+    }
+    
+    if (filters?.functionName) {
+      where.functionName = filters.functionName;
+    }
+    
     if (filters?.search) {
       where.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },
@@ -206,41 +262,25 @@ export class TestCaseService {
           select: { testCases: true }
         }
       },
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { name: 'asc' }
     });
 
     if (groupBy === 'module') {
       // Module-based pagination with proper handling of large modules
       // Strategy: Flatten test cases while maintaining module order, then paginate
       
-      // Get all test cases for grouping, sorted by updatedAt DESC (most recent first)
+      // Get all test cases for grouping, sorted by module name then flowId
       const allTestCases = await prisma.testCase.findMany({
         where,
-        include: {
-          module: { select: { id: true, name: true, updatedAt: true } },
-          suite: { select: { id: true, name: true } },
-          createdBy: { select: { id: true, name: true, email: true, avatar: true } },
-          _count: { 
-            select: { 
-              steps: true, 
-              results: true, 
-              requirements: true,
-              defects: {
-                where: {
-                  defect: {
-                    status: { not: 'CLOSED' } // Only count open defects
-                  }
-                }
-              }
-            } 
-          }
-        },
-        orderBy: { updatedAt: 'desc' }  // Most recently updated test cases first
+        select: TEST_CASE_LIST_SELECT,
+        orderBy: [
+          { module: { name: 'asc' } },  // Module name ascending (SM_008, SM_009...)
+          { flowId: 'asc' }  // Then Flow-ID ascending
+        ]
       });
 
       // Group test cases by module
       const grouped: Record<string, typeof allTestCases> = {};
-      const moduleLastUpdate: Record<string, Date> = {};
       
       allTestCases.forEach(tc => {
         const moduleId = tc.moduleId || 'no-module';
@@ -248,57 +288,39 @@ export class TestCaseService {
           grouped[moduleId] = [];
         }
         grouped[moduleId].push(tc);
-        
-        // Track the most recent update time for each module
-        const tcUpdateTime = new Date(tc.updatedAt);
-        if (!moduleLastUpdate[moduleId] || tcUpdateTime > moduleLastUpdate[moduleId]) {
-          moduleLastUpdate[moduleId] = tcUpdateTime;
-        }
       });
 
-      // Create list of all groups (modules + ungrouped) with their sort keys
+      // Create list of all groups (modules + ungrouped) preserving module order
       interface GroupInfo {
         id: string;
         testCases: typeof allTestCases;
-        mostRecentUpdate: number;
         isEmpty: boolean;
       }
 
       const allGroups: GroupInfo[] = [];
 
-      // Add all module groups (including empty modules)
+      // Add all module groups (including empty modules) in the order from modules array
+      // modules array is already sorted by order: 'asc', so we preserve that order
       modules.forEach(module => {
         const hasTestCases = grouped[module.id] && grouped[module.id].length > 0;
-        const moduleUpdatedTime = new Date(module.updatedAt).getTime();
-        const testCaseUpdatedTime = moduleLastUpdate[module.id]?.getTime() || 0;
         
         allGroups.push({
           id: module.id,
           testCases: hasTestCases ? grouped[module.id] : [],
-          // Use the most recent time between module's own updatedAt and its test cases' updatedAt
-          mostRecentUpdate: Math.max(moduleUpdatedTime, testCaseUpdatedTime),
           isEmpty: !hasTestCases
         });
       });
 
-      // Add ungrouped test cases as a group
+      // Add ungrouped test cases as a group at the end
       if (grouped['no-module'] && grouped['no-module'].length > 0) {
         allGroups.push({
           id: 'no-module',
           testCases: grouped['no-module'],
-          mostRecentUpdate: moduleLastUpdate['no-module']?.getTime() || 0,
           isEmpty: false
         });
       }
 
-      // Sort all groups: non-empty modules first (by most recent update), then empty modules last (by most recent update)
-      allGroups.sort((a, b) => {
-        // Empty modules always go last
-        if (a.isEmpty && !b.isEmpty) return 1;
-        if (!a.isEmpty && b.isEmpty) return -1;
-        // Within the same category (both empty or both non-empty), sort by most recent update
-        return b.mostRecentUpdate - a.mostRecentUpdate;
-      });
+      // No additional sorting needed - modules are already in correct order from the modules array
 
       // Flatten all test cases in sorted group order
       const orderedTestCases: typeof allTestCases = [];
@@ -306,20 +328,13 @@ export class TestCaseService {
       allGroups.forEach(group => {
         // Only add test cases from groups that have them (skip empty modules)
         if (group.testCases.length > 0) {
-          // Sort test cases within each group by updatedAt DESC (most recent first)
-          const sortedTestCases = group.testCases.sort((a, b) => {
-            const timeA = new Date(a.updatedAt).getTime();
-            const timeB = new Date(b.updatedAt).getTime();
-            return timeB - timeA; // Descending order
-          });
-          orderedTestCases.push(...sortedTestCases);
+          // Test cases are already sorted by module order and flowId from the query above
+          orderedTestCases.push(...group.testCases);
         }
       });
 
-      // Get empty modules (sorted by most recent update)
-      const emptyModules = allGroups
-        .filter(g => g.isEmpty)
-        .sort((a, b) => b.mostRecentUpdate - a.mostRecentUpdate);
+      // Get empty modules (preserve order from modules array)
+      const emptyModules = allGroups.filter(g => g.isEmpty);
 
       // Calculate pagination including empty modules as "phantom items" on the last page
       const emptyModuleCount = emptyModules.length;
@@ -355,33 +370,18 @@ export class TestCaseService {
         }
       };
     } else {
-      // Simple pagination (no grouping) - also sorted by updatedAt
+      // Simple pagination (no grouping) - sorted by module name then flowId
       const skip = (page - 1) * limit;
       
       const testCases = await prisma.testCase.findMany({
         where,
         skip,
         take: limit,
-        include: {
-          module: { select: { id: true, name: true } },
-          suite: { select: { id: true, name: true } },
-          createdBy: { select: { id: true, name: true, email: true, avatar: true } },
-          _count: { 
-            select: { 
-              steps: true, 
-              results: true, 
-              requirements: true,
-              defects: {
-                where: {
-                  defect: {
-                    status: { not: 'CLOSED' } // Only count open defects
-                  }
-                }
-              }
-            } 
-          }
-        },
-        orderBy: { updatedAt: 'desc' }  // Most recently updated first
+        select: TEST_CASE_LIST_SELECT,
+        orderBy: [
+          { module: { name: 'asc' } },  // Module name ascending (SM_008, SM_009...)
+          { flowId: 'asc' }  // Then Flow-ID ascending
+        ]
       });
 
       const totalPages = Math.ceil(totalItems / limit) || 1;
@@ -398,6 +398,32 @@ export class TestCaseService {
           hasPreviousPage: page > 1,
         }
       };
+    }
+  }
+
+  /**
+   * Get distinct domain and functionName values for a project (for filter dropdowns)
+   */
+  async getTestCaseFilterOptions(projectId: string): Promise<{ domains: string[]; functionNames: string[] }> {
+    try {
+      const [domainRows, functionNameRows] = await Promise.all([
+        prisma.testCase.findMany({
+          where: { projectId, domain: { not: null } },
+          select: { domain: true },
+          distinct: ['domain'],
+        }),
+        prisma.testCase.findMany({
+          where: { projectId, functionName: { not: null } },
+          select: { functionName: true },
+          distinct: ['functionName'],
+        }),
+      ]);
+      const domains = domainRows.map(r => r.domain).filter((s): s is string => s != null && s.trim() !== '').sort();
+      const functionNames = functionNameRows.map(r => r.functionName).filter((s): s is string => s != null && s.trim() !== '').sort();
+      return { domains, functionNames };
+    } catch {
+      // domain/functionName 列が DB にない環境では空配列を返す
+      return { domains: [], functionNames: [] };
     }
   }
 
@@ -558,6 +584,19 @@ export class TestCaseService {
             preconditions: data.preconditions,
             postconditions: data.postconditions,
             createdById: data.createdById,
+            // New fields
+            rtcId: data.rtcId,
+            flowId: data.flowId,
+            layer: data.layer,
+            testType: data.testType,
+            evidence: data.evidence,
+            notes: data.notes,
+            platform: data.platform ?? undefined,
+            device: data.device ?? undefined,
+            domain: data.domain ?? undefined,
+            functionName: data.functionName ?? undefined,
+            executionType: data.executionType ?? undefined,
+            automationStatus: data.automationStatus ?? undefined,
             steps: data.steps
               ? {
                   create: data.steps.map((step) => ({
@@ -701,6 +740,19 @@ export class TestCaseService {
     if (data.postconditions !== undefined) updateData.postconditions = data.postconditions;
     if (data.suiteId !== undefined) updateData.suiteId = data.suiteId;
     if (data.moduleId !== undefined) updateData.moduleId = data.moduleId;
+    // New fields
+    if (data.rtcId !== undefined) updateData.rtcId = data.rtcId;
+    if (data.flowId !== undefined) updateData.flowId = data.flowId;
+    if (data.layer !== undefined) updateData.layer = data.layer;
+    if (data.testType !== undefined) updateData.testType = data.testType;
+    if (data.evidence !== undefined) updateData.evidence = data.evidence;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.platform !== undefined) updateData.platform = data.platform;
+    if (data.device !== undefined) updateData.device = data.device;
+    if (data.domain !== undefined) updateData.domain = data.domain;
+    if (data.functionName !== undefined) updateData.functionName = data.functionName;
+    if (data.executionType !== undefined) updateData.executionType = data.executionType;
+    if (data.automationStatus !== undefined) updateData.automationStatus = data.automationStatus;
 
     return await prisma.testCase.update({
       where: { id: testCaseId },
@@ -760,6 +812,7 @@ export class TestCaseService {
 
     const testCase = await prisma.testCase.findFirst({
       where: whereClause,
+      select: { id: true }, // 存在確認のみ。platform 等が DB にない環境でも動作するため
     });
 
     if (!testCase) {
@@ -790,7 +843,8 @@ export class TestCaseService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket, isS3Configured }, { DeleteObjectCommand }]) => {
+        if (!isS3Configured()) return;
         const bucket = getS3Bucket();
         Promise.all(
           attachments.map(attachment =>
@@ -808,6 +862,51 @@ export class TestCaseService {
     }
 
     return result;
+  }
+
+  /**
+   * Bulk delete test cases in a project
+   * Ensures all selected test cases are accessible within the target project
+   */
+  async bulkDeleteTestCases(projectId: string, testCaseIds: string[], userId: string, scope: string) {
+    const uniqueTestCaseIds = Array.from(new Set(testCaseIds));
+
+    if (uniqueTestCaseIds.length === 0) {
+      return { deletedCount: 0 };
+    }
+
+    let whereClause: Record<string, unknown> = {
+      id: { in: uniqueTestCaseIds },
+      projectId,
+    };
+
+    if (scope === 'project') {
+      whereClause = {
+        ...whereClause,
+        project: {
+          members: {
+            some: {
+              userId,
+            },
+          },
+        },
+      };
+    }
+
+    const accessibleTestCases = await prisma.testCase.findMany({
+      where: whereClause,
+      select: { id: true },
+    });
+
+    if (accessibleTestCases.length !== uniqueTestCaseIds.length) {
+      throw new Error('Some test cases not found or access denied');
+    }
+
+    await Promise.all(
+      uniqueTestCaseIds.map((testCaseId) => this.deleteTestCase(testCaseId, userId, scope))
+    );
+
+    return { deletedCount: uniqueTestCaseIds.length };
   }
 
   /**
@@ -850,11 +949,6 @@ export class TestCaseService {
     if (!testCase) {
       throw new Error('Test case not found or access denied');
     }
-
-    // Get existing steps
-    const existingSteps = await prisma.testStep.findMany({
-      where: { testCaseId },
-    });
 
     // Update or create steps while preserving IDs for existing steps
     if (steps.length > 0) {
@@ -1352,7 +1446,8 @@ export class TestCaseService {
       Promise.all([
         import('@/lib/s3-client'),
         import('@aws-sdk/client-s3')
-      ]).then(([{ s3Client, getS3Bucket }, { DeleteObjectCommand }]) => {
+      ]).then(([{ s3Client, getS3Bucket, isS3Configured }, { DeleteObjectCommand }]) => {
+        if (!isS3Configured()) return;
         const bucket = getS3Bucket();
         s3Client.send(
           new DeleteObjectCommand({

@@ -711,10 +711,6 @@ This is an automated notification from EZTest.
 export async function sendDefectUpdateEmail(
   data: DefectUpdateEmailData
 ): Promise<boolean> {
-  const changeDescription = data.changes
-    .map(c => `${c.field} changed from ${c.oldValue} to ${c.newValue}`)
-    .join(', ');
-  
   const subject = `🔔 Defect Updated: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 

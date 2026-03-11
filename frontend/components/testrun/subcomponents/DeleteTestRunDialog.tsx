@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { TestRun } from '../types';
@@ -19,10 +19,10 @@ export function DeleteTestRunDialog({
   onConfirm,
 }: DeleteTestRunDialogProps) {
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Test Run',
-    description: `Are you sure you want to delete "${testRun?.name}"? This will also delete all test results. This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'テストランを削除',
+    description: `「${testRun?.name}」を削除してもよろしいですか？すべてのテスト結果も削除されます。この操作は取り消せません。`,
+    submitLabel: '削除',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: onConfirm,

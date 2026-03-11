@@ -257,5 +257,6 @@ export class DropdownOptionService {
   }
 }
 
-export default new DropdownOptionService();
+const dropdownOptionService = new DropdownOptionService();
+export default dropdownOptionService;
 

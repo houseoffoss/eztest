@@ -1,23 +1,18 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
-import { Plus, FolderPlus, Import, Upload, ChevronDown } from 'lucide-react';
-import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
-import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
-import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/frontend/reusable-elements/dropdowns/DropdownMenu';
+import { useEffect, useState } from 'react';
+import { Plus, FolderPlus, Import, Upload, Trash2 } from 'lucide-react';
+import { TopBar } from '@/frontend/reusable-components/layout/TopBar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
+import { ActionButtonGroup } from '@/frontend/reusable-components/layout/ActionButtonGroup';
 import { HeaderWithFilters } from '@/frontend/reusable-components/layout/HeaderWithFilters';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
+import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
+import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
-import { TestCase, Project, Module } from './types';
+import { TestCase, TestSuite, Project, Module } from './types';
 import { TestCaseTable } from './subcomponents/TestCaseTable';
 import { CreateTestCaseDialog } from './subcomponents/CreateTestCaseDialog';
 import { CreateModuleDialog } from './subcomponents/CreateModuleDialog';
@@ -27,6 +22,7 @@ import { EmptyTestCaseState } from './subcomponents/EmptyTestCaseState';
 import { usePermissions } from '@/hooks/usePermissions';
 import { FileImportDialog } from '@/frontend/reusable-components/dialogs/FileImportDialog';
 import { FileExportDialog } from '@/frontend/reusable-components/dialogs/FileExportDialog';
+import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 
 interface TestCaseListProps {
   projectId: string;
@@ -38,6 +34,8 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
 
   const [project, setProject] = useState<Project | null>(null);
   const [testCases, setTestCases] = useState<TestCase[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [testSuites, setTestSuites] = useState<TestSuite[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -47,15 +45,18 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
+  const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [domainFilter, setDomainFilter] = useState<string>('');
+  const [functionNameFilter, setFunctionNameFilter] = useState<string>('');
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
   const [totalPagesCount, setTotalPagesCount] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isPaginationChange, setIsPaginationChange] = useState(false);
@@ -77,7 +78,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
   useEffect(() => {
     fetchTestCases();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, currentPage, itemsPerPage, searchQuery, priorityFilter, statusFilter]);
+  }, [projectId, currentPage, itemsPerPage, searchQuery, statusFilter, domainFilter, functionNameFilter]);
 
   useEffect(() => {
     if (project) {
@@ -110,18 +111,19 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: itemsPerPage.toString(),
-        groupBy: 'module',
       });
       
       if (searchQuery) params.append('search', searchQuery);
-      if (priorityFilter !== 'all') params.append('priority', priorityFilter);
       if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (domainFilter) params.append('domain', domainFilter);
+      if (functionNameFilter) params.append('functionName', functionNameFilter);
       
       const response = await fetch(`/api/projects/${projectId}/testcases?${params}`);
       const data = await response.json();
       
       if (data.data) {
         setTestCases(data.data);
+        setSelectedTestCaseIds(new Set());
       }
       
       if (data.modules) {
@@ -145,7 +147,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       const response = await fetch(`/api/projects/${projectId}/testsuites`);
       const data = await response.json();
       if (data.data) {
-        // Test suites available for module context
+        setTestSuites(data.data);
       }
     } catch (error) {
       console.error('Error fetching test suites:', error);
@@ -162,20 +164,6 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setItemsPerPage(items);
     setCurrentPage(1); // Reset to first page when items per page changes
   };
-
-  // Show modules that have test cases in the current page OR are truly empty (on last page only)
-  const modulesForTable = testCases.length === 0 
-    ? modules 
-    : modules.filter(module => {
-        // Include if module has test cases in current page
-        const hasTestCasesInPage = testCases.some(tc => tc.moduleId === module.id);
-        if (hasTestCasesInPage) return true;
-        
-        // Include if module is truly empty AND we're on the last page
-        const isTrulyEmpty = module._count?.testCases === 0;
-        const isLastPage = currentPage === totalPagesCount;
-        return isTrulyEmpty && isLastPage;
-      });
 
   const handleTestCaseCreated = (newTestCase: TestCase) => {
     setAlert({
@@ -204,7 +192,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     if (!selectedTestCase) return;
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/testcases/${selectedTestCase.id}`, {
+      const response = await fetch(`/api/testcases/${selectedTestCase.id}`, {
         method: 'DELETE',
       });
 
@@ -223,7 +211,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Delete Test Case',
+          title: 'テストケースの削除に失敗しました',
           message: data.error || 'Failed to delete test case',
         });
       }
@@ -247,106 +235,139 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
     setDeleteDialogOpen(true);
   };
 
-  // Check permissions before early returns
+  const handleSelectTestCase = (testCaseId: string) => {
+    setSelectedTestCaseIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(testCaseId)) {
+        next.delete(testCaseId);
+      } else {
+        next.add(testCaseId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllTestCases = (selected: boolean) => {
+    if (!selected) {
+      setSelectedTestCaseIds(new Set());
+      return;
+    }
+    setSelectedTestCaseIds(new Set(testCases.map((testCase) => testCase.id)));
+  };
+
+  const handleBulkDeleteTestCases = async () => {
+    if (selectedTestCaseIds.size === 0) return;
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/testcases/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ testCaseIds: Array.from(selectedTestCaseIds) }),
+      });
+
+      if (response.ok) {
+        const deletedCount = selectedTestCaseIds.size;
+        setBulkDeleteDialogOpen(false);
+        setSelectedTestCaseIds(new Set());
+        setAlert({
+          type: 'success',
+          title: 'Success',
+          message: `${deletedCount}件のテストケースを削除しました`,
+        });
+        setTimeout(() => setAlert(null), 5000);
+        fetchTestCases();
+      } else {
+        const data = await response.json();
+        setAlert({
+          type: 'error',
+          title: 'テストケースの一括削除に失敗しました',
+          message: data.error || 'Failed to bulk delete test cases',
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAlert({
+        type: 'error',
+        title: 'Connection Error',
+        message: errorMessage,
+      });
+      console.error('Error bulk deleting test cases:', error);
+    }
+  };
+
+
+  if (loading || permissionsLoading) {
+    return <Loader fullScreen text="テストケースを読み込み中..." />;
+  }
+
+  // Check permissions
   const canCreateTestCase = hasPermissionCheck('testcases:create');
   const canDeleteTestCase = hasPermissionCheck('testcases:delete');
   const canImport = ['ADMIN', 'PROJECT_MANAGER', 'TESTER'].includes(role);
-
-  const navbarActions = useMemo(() => {
-    const actions = [];
-    
-    if (canCreateTestCase) {
-      actions.push({
-        type: 'custom' as const,
-        custom: (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                Add
-                <ChevronDown className="w-4 h-4" />
-              </ButtonSecondary>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => setCreateModuleDialogOpen(true)}>
-                <FolderPlus className="w-4 h-4" />
-                New Module
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="w-4 h-4" />
-                New Test Case
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
-      });
-    }
-
-    if (canCreateTestCase && canImport) {
-      actions.push({
-        type: 'custom' as const,
-        custom: (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                Migration
-                <ChevronDown className="w-4 h-4" />
-              </ButtonSecondary>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
-                <Import className="w-4 h-4" />
-                Import Test Cases
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
-                <Upload className="w-4 h-4" />
-                Export Test Cases
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
-      });
-    }
-
-    actions.push({
-      type: 'signout' as const,
-      showConfirmation: true,
-    });
-
-    return actions;
-  }, [canCreateTestCase, canImport]);
-
-  if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test cases..." />;
-  }
+  const allSelectedTestCases = testCases.length > 0 && testCases.every((testCase) => selectedTestCaseIds.has(testCase.id));
 
   return (
     <>
       {/* Alert Messages */}
       <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
 
-      {/* Navbar */}
-      <Navbar 
-        brandLabel={null}
-        items={[]}
-        breadcrumbs={
-          <Breadcrumbs 
-            items={[
-              { label: 'Projects', href: '/projects' },
-              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-              { label: 'Test Cases' }
-            ]}
-          />
+      <TopBar 
+        breadcrumbs={[
+          { label: 'プロジェクト', href: '/projects' },
+          { label: project?.name || '読み込み中...', href: `/projects/${projectId}` },
+          { label: 'テストケース' }
+        ]}
+        actions={
+          canCreateTestCase ? (
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {canImport && (
+                <>
+                  <ButtonSecondary onClick={() => setImportDialogOpen(true)} className="cursor-pointer flex-shrink-0">
+                    <Import className="w-4 h-4 mr-2" />
+                    インポート
+                  </ButtonSecondary>
+                  <ButtonSecondary 
+                    onClick={() => setExportDialogOpen(true)} 
+                    className="cursor-pointer flex-shrink-0"
+                    title="テストケースをエクスポート"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    エクスポート
+                  </ButtonSecondary>
+                </>
+              )}
+              <ActionButtonGroup
+                buttons={[
+                  {
+                    label: '新規モジュール',
+                    icon: FolderPlus,
+                    onClick: () => setCreateModuleDialogOpen(true),
+                    variant: 'secondary',
+                    buttonName: 'Test Case List - New Module',
+                  },
+                  {
+                    label: '新規テストケース',
+                    icon: Plus,
+                    onClick: () => setCreateDialogOpen(true),
+                    variant: 'primary',
+                    buttonName: 'Test Case List - New Test Case',
+                  },
+                ]}
+              />
+            </div>
+          ) : undefined
         }
-        actions={navbarActions}
       />
-
-      <div className="px-4 sm:px-6 lg:px-8 pt-8 w-full min-w-0 overflow-hidden">
+      
+      <div className="px-4 sm:px-6 lg:px-8 pt-4 w-full min-w-0 overflow-hidden">
         {/* Header and Filters Section */}
         <HeaderWithFilters
           header={
             <PageHeaderWithBadge
               badge={project?.key}
-              title="Test Cases"
+              title="テストケース"
               description={project?.name}
             />
           }
@@ -354,11 +375,13 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             mounted ? (
               <TestCaseFilters
                 searchQuery={searchQuery}
-                priorityFilter={priorityFilter}
                 statusFilter={statusFilter}
+                domainFilter={domainFilter}
+                functionNameFilter={functionNameFilter}
                 onSearchChange={setSearchQuery}
-                onPriorityChange={setPriorityFilter}
                 onStatusChange={setStatusFilter}
+                onDomainChange={setDomainFilter}
+                onFunctionNameChange={setFunctionNameFilter}
               />
             ) : null
           }
@@ -369,7 +392,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
       <div className="max-w-7xl mx-auto px-8 py-4">
         {/* Test Cases List */}
         {loading ? (
-          <Loader fullScreen={false} text="Loading test cases..." />
+          <Loader fullScreen={false} text="テストケースを読み込み中..." />
         ) : testCases.length === 0 && totalItems === 0 ? (
           <EmptyTestCaseState
             hasFilters={false}
@@ -378,15 +401,36 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
           />
         ) : (
           <>
+            {canDeleteTestCase && (
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="text-sm text-white/70">
+                  一括選択: {allSelectedTestCases ? 'ON' : 'OFF'}（選択中 {selectedTestCaseIds.size} 件）
+                </div>
+                <ButtonDestructive
+                  variant="outline"
+                  onClick={() => setBulkDeleteDialogOpen(true)}
+                  disabled={selectedTestCaseIds.size === 0}
+                  buttonName="Test Case List - Bulk Delete"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  選択中を削除
+                </ButtonDestructive>
+              </div>
+            )}
+
             <TestCaseTable
               testCases={testCases}
-              groupedByModule={true}
-              modules={modulesForTable}
+              groupedByModule={false}
+              modules={[]}
               onDelete={handleDeleteClick}
               onClick={handleCardClick}
               canDelete={canDeleteTestCase}
               projectId={projectId}
               enableModuleLink={true}
+              selectedTestCases={selectedTestCaseIds}
+              onSelectTestCase={handleSelectTestCase}
+              onSelectAll={handleSelectAllTestCases}
+              showSelection={canDeleteTestCase}
             />
 
             {/* Pagination */}
@@ -431,6 +475,21 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
           onConfirm={handleDeleteTestCase}
         />
 
+        {/* Bulk Delete Dialog */}
+        <BaseConfirmDialog
+          title="テストケースを一括削除"
+          description={`選択した ${selectedTestCaseIds.size} 件のテストケースを削除します。この操作は元に戻せません。`}
+          submitLabel="削除"
+          cancelLabel="キャンセル"
+          triggerOpen={bulkDeleteDialogOpen}
+          onOpenChange={setBulkDeleteDialogOpen}
+          onSubmit={handleBulkDeleteTestCases}
+          destructive={true}
+          dialogName="Bulk Delete Test Cases Dialog"
+          submitButtonName="Bulk Delete Test Cases Dialog - Delete"
+          cancelButtonName="Bulk Delete Test Cases Dialog - Cancel"
+        />
+
         {/* Import Dialog */}
         <FileImportDialog
           open={importDialogOpen}
@@ -444,6 +503,7 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
             fetchTestCases();
             setImportDialogOpen(false);
           }}
+          showUpdateExistingOption={true}
         />
 
         {/* Export Dialog */}
@@ -459,7 +519,6 @@ export default function TestCaseList({ projectId }: TestCaseListProps) {
               moduleId: undefined,
               suiteId: undefined,
               status: statusFilter !== 'all' ? statusFilter : undefined,
-              priority: priorityFilter !== 'all' ? priorityFilter : undefined,
             },
           }}
           itemName="test cases"

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -32,7 +32,7 @@ export function CreateDialog({
   children,
   onOpenChange,
   onConfirm,
-  cancelLabel = 'Cancel',
+  cancelLabel = 'キャンセル',
   confirmLabel = 'Create',
 }: CreateDialogProps) {
   const handleConfirm = async () => {

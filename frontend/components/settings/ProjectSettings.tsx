@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -43,7 +43,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Settings - ${project.name} | EZTest`;
+      document.title = `設定 - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -61,8 +61,8 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
         // Project not found or no access - redirect after showing message
         setAlert({
           type: 'error',
-          title: 'Project Not Found',
-          message: 'The project you\'re looking for doesn\'t exist or has been deleted. Redirecting...',
+          title: 'プロジェクトが見つかりません',
+          message: 'お探しのプロジェクトは存在しないか、削除されています。リダイレクト中...',
         });
         setTimeout(() => {
           router.push('/projects');
@@ -70,15 +70,15 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       } else {
         setAlert({
           type: 'error',
-          title: 'Failed to Load Project',
-          message: 'Could not load project details.',
+          title: 'プロジェクトの読み込みに失敗しました',
+          message: 'プロジェクトの詳細を読み込めませんでした。',
         });
       }
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'An error occurred while loading project.',
+        title: 'エラー',
+        message: 'プロジェクトの読み込み中にエラーが発生しました。',
       });
     } finally {
       setLoading(false);
@@ -107,21 +107,21 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
         setProject(data.data);
         setAlert({
           type: 'success',
-          title: 'Project Updated',
-          message: 'Project settings have been saved successfully.',
+          title: 'プロジェクトを更新しました',
+          message: 'プロジェクト設定が正常に保存されました。',
         });
       } else {
         setAlert({
           type: 'error',
-          title: 'Failed to Update',
-          message: data.error || 'Failed to update project.',
+          title: '更新に失敗しました',
+          message: data.error || 'プロジェクトの更新に失敗しました。',
         });
       }
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'An error occurred. Please try again.',
+        title: 'エラー',
+        message: 'エラーが発生しました。もう一度お試しください。',
       });
     } finally {
       setSaving(false);
@@ -151,16 +151,16 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Delete',
-          message: data.error || 'Failed to delete project.',
+          title: '削除に失敗しました',
+          message: data.error || 'プロジェクトの削除に失敗しました。',
         });
         setDeleteDialogOpen(false);
       }
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'An error occurred. Please try again.',
+        title: 'エラー',
+        message: 'エラーが発生しました。もう一度お試しください。',
       });
       setDeleteDialogOpen(false);
     } finally {
@@ -169,16 +169,16 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading project settings..." />;
+    return <Loader fullScreen text="設定を読み込み中..." />;
   }
 
   if (!project) {
     return (
       <NotFoundState
-        title="Project Not Found"
-        message="The project you're trying to configure doesn't exist or has been deleted."
+        title="プロジェクトが見つかりません"
+        message="設定しようとしているプロジェクトは存在しないか、削除されています。"
         icon={Settings}
-        redirectingMessage="Redirecting to projects page..."
+        redirectingMessage="プロジェクト一覧にリダイレクトしています..."
         showRedirecting={true}
       />
     );

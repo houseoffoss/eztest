@@ -68,7 +68,7 @@ export default function DropdownOptionsManagement() {
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading dropdown options..." />;
+    return <Loader fullScreen text="ドロップダウンオプションを読み込み中..." />;
   }
 
   return (
@@ -80,8 +80,8 @@ export default function DropdownOptionsManagement() {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Admin', href: '/admin' }, 
-              { label: 'Dropdown Options', href: '/admin/dropdown-options' }
+              { label: '管理', href: '/admin' }, 
+              { label: 'ドロップダウンオプション', href: '/admin/dropdown-options' }
             ]}
           />
         }
@@ -92,16 +92,16 @@ export default function DropdownOptionsManagement() {
       <div className="px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <PageHeaderWithBadge
-            title="Dropdown Options Management"
-            description="Manage dropdown options for various entities across the application"
+            title="ドロップダウンオプション管理"
+            description="アプリケーション全体で各種エンティティのドロップダウンオプションを管理"
             className="mb-6"
           />
 
           {/* Dropdown Options Table */}
           {Object.keys(groupedOptions).length === 0 ? (
             <div className="text-center py-12 text-white/60 bg-white/5 rounded-lg border border-white/10">
-              <p>No dropdown options found.</p>
-              <p className="text-sm mt-2">Run the seed script to populate dropdown options.</p>
+              <p>ドロップダウンオプションが見つかりません。</p>
+              <p className="text-sm mt-2">シードスクリプトを実行してドロップダウンオプションを設定してください。</p>
             </div>
           ) : (
             <DropdownOptionsTable

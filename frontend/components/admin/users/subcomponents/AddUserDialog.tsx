@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, type BaseDialogField } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { Role, UserFormData } from '../types';
@@ -18,28 +18,28 @@ export function AddUserDialog({ open, roles, onOpenChange, onAdd }: AddUserDialo
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Full Name',
-      placeholder: 'John Doe',
+      label: '氏名',
+      placeholder: '山田 太郎',
       type: 'text',
       required: true,
     },
     {
       name: 'email',
-      label: 'Email Address',
-      placeholder: 'john@example.com',
+      label: 'メールアドレス',
+      placeholder: 'user@example.com',
       type: 'email',
       required: true,
     },
     {
       name: 'password',
-      label: 'Password',
+      label: 'パスワード',
       placeholder: '••••••••',
       type: 'password',
       required: true,
     },
     {
       name: 'roleId',
-      label: 'User Role',
+      label: 'ユーザーロール',
       type: 'select',
       required: true,
       defaultValue: defaultRoleId,
@@ -62,10 +62,10 @@ export function AddUserDialog({ open, roles, onOpenChange, onAdd }: AddUserDialo
 
   return (
     <BaseDialog
-      title="Add New User"
-      description="Create a new user account with application-level role"
+      title="新規ユーザーを追加"
+      description="アプリケーションレベルのロールを持つ新しいユーザーアカウントを作成"
       fields={fields}
-      submitLabel="Add User"
+      submitLabel="ユーザーを追加"
       triggerOpen={open}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}

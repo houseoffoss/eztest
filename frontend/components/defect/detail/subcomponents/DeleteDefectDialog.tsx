@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   BaseConfirmDialog,
@@ -22,10 +22,10 @@ export function DeleteDefectDialog({
   if (!defect) return null;
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Defect',
-    description: `Are you sure you want to delete defect "${defect.defectId}: ${defect.title}"? This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'Defectを削除',
+    description: `Defect「${defect.defectId}: ${defect.title}」を削除してもよろしいですか？この操作は取り消せません。`,
+    submitLabel: '削除',
+    cancelLabel: 'キャンセル',
     triggerOpen: open,
     onOpenChange,
     onSubmit: onConfirm,

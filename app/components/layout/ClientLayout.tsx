@@ -51,7 +51,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       // User logged out - clear all session storage
       sessionStorage.clear();
     }
-  }, [session?.user?.email]);
+  }, [session]);
 
   // Pages that shouldn't have sidebar
   const isAuthPage = pathname?.startsWith('/auth');

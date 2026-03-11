@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
@@ -106,7 +106,7 @@ export function DefectTable({
           <Checkbox
             checked={allSelected}
             onCheckedChange={onSelectAll}
-            aria-label="Select all defects"
+            aria-label="すべてのDefectを選択"
             className={someSelected ? 'data-[state=checked]:bg-primary/50' : ''}
           />
         </div>
@@ -121,42 +121,42 @@ export function DefectTable({
           onClick={() => onSort?.('title')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          TITLE
+          タイトル
           <SortIcon field="title" />
         </button>
         <button 
           onClick={() => onSort?.('severity')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          SEVERITY
+          深刻度
           <SortIcon field="severity" />
         </button>
         <button 
           onClick={() => onSort?.('priority')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          PRIORITY
+          優先度
           <SortIcon field="priority" />
         </button>
         <button 
           onClick={() => onSort?.('status')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          STATUS
+          ステータス
           <SortIcon field="status" />
         </button>
         <button 
           onClick={() => onSort?.('assignedTo')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          ASSIGNEE
+          担当者
           <SortIcon field="assignedTo" />
         </button>
         <button 
           onClick={() => onSort?.('reporter')}
           className="flex items-center hover:text-white transition-colors cursor-pointer"
         >
-          REPORTER
+          報告者
           <SortIcon field="reporter" />
         </button>
         <div></div>
@@ -165,7 +165,7 @@ export function DefectTable({
       {/* Defect Rows */}
       {defects.length === 0 ? (
         <div className="text-center py-8 text-white/50">
-          No defects to display
+          表示するDefectがありません
         </div>
       ) : (
         defects.map((defect, rowIndex) => (
@@ -183,7 +183,7 @@ export function DefectTable({
               <Checkbox
                 checked={selectedDefects.has(defect.id)}
                 onCheckedChange={() => onSelectDefect(defect.id)}
-                aria-label={`Select defect ${defect.defectId}`}
+                aria-label={`Defect ${defect.defectId} を選択`}
               />
             </div>
 
@@ -203,11 +203,11 @@ export function DefectTable({
                 {defect.title && defect.title.length > 50 && (
                   <HoverCardContent side="top" className="w-96">
                     <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-white">Defect Title</h4>
+                      <h4 className="text-sm font-semibold text-white">Defectタイトル</h4>
                       <p className="text-sm text-white/80 break-words">{defect.title}</p>
                       {defect.description && (
                         <>
-                          <h4 className="text-sm font-semibold text-white mt-3">Description</h4>
+                          <h4 className="text-sm font-semibold text-white mt-3">説明</h4>
                           <p className="text-sm text-white/70 break-words line-clamp-3">{defect.description}</p>
                         </>
                       )}

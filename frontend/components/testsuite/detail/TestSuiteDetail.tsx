@@ -1,4 +1,4 @@
-﻿import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
@@ -95,7 +95,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
         const errorData = await response.json().catch(() => ({}));
         setAlert({
           type: 'error',
-          title: 'Failed to Load Test Suite',
+          title: 'テストスイートの読み込みに失敗しました',
           message: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
         });
       } else {
@@ -143,7 +143,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
       } else {
         setAlert({
           type: 'error',
-          title: 'Failed to Update Test Suite',
+          title: 'テストスイートの更新に失敗しました',
           message: data.error || 'Failed to update test suite',
         });
       }
@@ -396,7 +396,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
   };
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test suite..." />;
+    return <Loader fullScreen text="テストスイートを読み込み中..." />;
   }
 
   if (!testSuite) {

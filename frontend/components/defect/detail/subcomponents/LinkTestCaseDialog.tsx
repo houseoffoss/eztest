@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
@@ -66,9 +66,9 @@ export function LinkTestCaseDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'testCaseId',
-      label: 'Select Test Case',
+      label: 'テストケースを選択',
       type: 'select',
-      placeholder: 'Choose a test case to link',
+      placeholder: 'リンクするテストケースを選択',
       required: true,
       options: testCaseOptions,
       cols: 2,
@@ -76,11 +76,11 @@ export function LinkTestCaseDialog({
   ];
 
   const config: BaseDialogConfig = {
-    title: 'Link Test Case',
-    description: 'Link a test case to this defect to track related failures.',
+    title: 'テストケースをリンク',
+    description: 'Defectに関連する失敗を追跡するため、テストケースをリンクします。',
     fields,
-    submitLabel: 'Link Test Case',
-    cancelLabel: 'Cancel',
+    submitLabel: 'リンクする',
+    cancelLabel: 'キャンセル',
     triggerOpen: open,
     onOpenChange,
     onSubmit: async (formData) => {
@@ -108,8 +108,8 @@ export function LinkTestCaseDialog({
     onSuccess: () => {
       setAlert({
         type: 'success',
-        title: 'Test Case Linked',
-        message: 'The test case has been successfully linked to this defect',
+        title: 'リンクしました',
+        message: 'テストケースがこのDefectに正常にリンクされました',
       });
       onTestCaseLinked();
     },

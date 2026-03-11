@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { SearchInput } from '@/frontend/reusable-elements/inputs/SearchInput';
 import { FilterDropdown, type FilterOption } from '@/frontend/reusable-components/inputs/FilterDropdown';
@@ -38,23 +38,23 @@ export function DefectFilters({
 
   // Map to FilterOption format with "All" option
   const severityOptions: FilterOption[] = [
-    { value: 'all', label: 'All Severities' },
+    { value: 'all', label: 'すべての深刻度' },
     ...severityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
 
   const priorityOptions: FilterOption[] = [
-    { value: 'all', label: 'All Priorities' },
+    { value: 'all', label: 'すべての優先度' },
     ...priorityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
 
   const statusOptions: FilterOption[] = [
-    { value: 'all', label: 'All Statuses' },
+    { value: 'all', label: 'すべてのステータス' },
     ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
   // Build assignee options from available assignees
   const assigneeOptions: FilterOption[] = [
-    { value: 'all', label: 'All Assignees' },
-    { value: 'unassigned', label: 'Unassigned' },
+    { value: 'all', label: 'すべての担当者' },
+    { value: 'unassigned', label: '未割当' },
     ...availableAssignees.map((assignee) => ({
       value: assignee.id,
       label: assignee.name,
@@ -68,7 +68,7 @@ export function DefectFilters({
           <SearchInput
             value={searchQuery}
             onChange={onSearchChange}
-            placeholder="Search defects..."
+            placeholder="Defectを検索..."
           />
         </div>
 
@@ -76,7 +76,7 @@ export function DefectFilters({
           <FilterDropdown
             value={severityFilter}
             onValueChange={onSeverityChange}
-            placeholder="All Severities"
+            placeholder="深刻度"
             options={severityOptions}
           />
         </div>
@@ -85,7 +85,7 @@ export function DefectFilters({
           <FilterDropdown
             value={priorityFilter}
             onValueChange={onPriorityChange}
-            placeholder="All Priorities"
+            placeholder="優先度"
             options={priorityOptions}
           />
         </div>
@@ -94,7 +94,7 @@ export function DefectFilters({
           <FilterDropdown
             value={statusFilter}
             onValueChange={onStatusChange}
-            placeholder="All Statuses"
+            placeholder="ステータス"
             options={statusOptions}
           />
         </div>
@@ -103,7 +103,7 @@ export function DefectFilters({
           <FilterDropdown
             value={assigneeFilter}
             onValueChange={onAssigneeChange}
-            placeholder="All Assignees"
+            placeholder="担当者"
             options={assigneeOptions}
           />
         </div>

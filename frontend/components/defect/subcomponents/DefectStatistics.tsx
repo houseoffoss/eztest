@@ -1,10 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { BarChart3 } from 'lucide-react';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
-import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
-import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 
 interface DefectStatistics {
   total: number;
@@ -19,8 +16,11 @@ interface DefectStatisticsProps {
 }
 
 export function DefectStatistics({ projectId, refreshTrigger }: DefectStatisticsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [statistics, setStatistics] = useState<DefectStatistics | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { options: statusOptions } = useDropdownOptions('Defect', 'status');
 
   const fetchStatistics = useCallback(async () => {

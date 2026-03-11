@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
@@ -23,21 +23,20 @@ export function DeleteProjectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Project</DialogTitle>
+          <DialogTitle>プロジェクトを削除</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete &quot;{projectName}&quot;? This action cannot be
-            undone.
+            「{projectName}」を削除してもよろしいですか？この操作は取り消せません。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
-            <p className="font-semibold mb-2">This will permanently delete:</p>
+            <p className="font-semibold mb-2">以下が永続的に削除されます:</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>All test cases</li>
-              <li>All test runs</li>
-              <li>All test suites</li>
-              <li>All requirements</li>
-              <li>All project data</li>
+              <li>すべてのテストケース</li>
+              <li>すべてのテスト実行</li>
+              <li>すべてのテストスイート</li>
+              <li>すべての要件</li>
+              <li>すべてのプロジェクトデータ</li>
             </ul>
           </div>
           <div className="flex gap-3 justify-end">
@@ -48,7 +47,7 @@ export function DeleteProjectDialog({
               disabled={deleting}
               data-analytics-button="Delete Project Dialog (Settings) - Cancel"
             >
-              Cancel
+              キャンセル
             </Button>
             <ButtonDestructive
               type="button"
@@ -56,7 +55,7 @@ export function DeleteProjectDialog({
               disabled={deleting}
               buttonName="Delete Project Dialog (Settings) - Delete Project"
             >
-              {deleting ? 'Deleting...' : 'Delete Project'}
+              {deleting ? '削除中...' : 'プロジェクトを削除'}
             </ButtonDestructive>
           </div>
         </div>

@@ -15,6 +15,13 @@ datasource db {
 // Values are now managed through the DropdownOption table
 // ====================================
 
+enum TestLayer {
+  SMOKE
+  CORE
+  EXTENDED
+  UNKNOWN
+}
+
 // ====================================
 // User Management
 // ====================================
@@ -199,11 +206,24 @@ model TestCase {
   expectedResult String?  // Overall expected result for the test case
   priority      String   @default("MEDIUM") // Dynamic dropdown value
   status        String   @default("ACTIVE") // Dynamic dropdown value
-  estimatedTime Int?     // in minutes
+  estimatedTime Int?     // in seconds
   preconditions String?
   postconditions String?
   testData      String?  // Test data/input values for the test case
   pendingDefectIds String?  // Comma-separated defect IDs that don't exist yet (e.g., "DEF-1, DEF-2")
+  // New fields for enhanced test case management
+  rtcId         String?  // RTC-ID
+  flowId        String?  // Flow-ID
+  layer         TestLayer?  // Layer
+  testType      String?  // テスト種別（正常系、異常系、非機能、回帰、データ整合性確認、状態遷移確認、運用確認、障害時確認）
+  evidence      String?  // 根拠コード
+  notes         String?  // 備考
+  platform      String?   // プラットフォーム: Web, Web(SP), iOS Native, Android Native（単一選択）
+  device        String?   // 端末: iPhone, Android, PC
+  domain        String?   // ドメイン
+  functionName  String?   @map("function") // 機能（DB予約語のため functionName）
+  executionType String?   // 実行方式: 手動 / 自動
+  automationStatus String? // 自動化状況: 自動化済 / 自動化対象 / 自動化対象外 / 検討中
   createdById   String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -261,19 +281,22 @@ model TestStep {
 }
 
 model TestRun {
-  id          String   @id @default(cuid())
-  projectId   String
-  name        String
-  description String?
-  executionType String @default("MANUAL") // MANUAL | AUTOMATION
-  status      String   @default("PLANNED") // Dynamic dropdown value
-  assignedToId String?
-  environment String?  // Dynamic dropdown value e.g., "Production", "Staging", "QA"
-  startedAt   DateTime?
-  completedAt DateTime?
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  projectId     String
+  name          String
+  description   String?
+  status        String   @default("PLANNED") // Dynamic dropdown value
+  executionType String   @default("MANUAL")  // MANUAL or AUTOMATION
+  assignedToId  String?
+  environment   String?  // Dynamic dropdown value e.g., "Production", "Staging", "QA"
+  version       String?  // Arbitrary version label (e.g., v1.2.3, build-2026.02)
+  platform      String?  // Web, Web(SP), iOS Native, Android Native
+  device        String?  // iPhone, Android, PC
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignedTo  User?    @relation(fields: [assignedToId], references: [id])
@@ -465,6 +488,8 @@ model Defect {
   assignedToId  String?
   testRunId     String?       // Optional link to test run
   environment   String?       // Dynamic dropdown value e.g., "Production", "Staging", "QA"
+  platform      String?       // プラットフォーム: Web, Web(SP), iOS Native, Android Native
+  device        String?       // 端末: iPhone, Android, PC
   dueDate       DateTime?     // Optional due date for the defect
   progressPercentage Int?      // Optional progress percentage (0-100)
   createdById   String

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { TestSuite } from '../types';
@@ -29,7 +29,7 @@ export function CreateTestSuiteDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Test Suite Name',
+      label: 'テストスイート名',
       placeholder: 'Authentication Tests',
       type: 'text',
       required: true,
@@ -80,11 +80,11 @@ export function CreateTestSuiteDialog({
   };
 
   const config: BaseDialogConfig<TestSuite> = {
-    title: 'Create Test Suite',
-    description: 'Organize your test cases into suites to keep your testing structured and manageable.',
+    title: 'テストスイートを作成',
+    description: 'テストケースをスイートにまとめて、テストを整理しやすくします。',
     fields,
-    submitLabel: 'Create Test Suite',
-    cancelLabel: 'Cancel',
+    submitLabel: 'テストスイートを作成',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { MembersList } from '@/frontend/reusable-components/users/MembersList';
 import { Users } from 'lucide-react';
@@ -24,10 +24,10 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
         },
         createdAt: member.joinedAt,
       }))}
-      title={`Project Members (${members.length})`}
-      description="People who have access to this project"
-      emptyTitle="No members yet"
-      emptyDescription={isAdminOrManager ? 'Add project members to collaborate on this project' : 'Waiting for project manager or admin to add members'}
+      title={`プロジェクトメンバー（${members.length}）`}
+      description="このプロジェクトにアクセスできるメンバー"
+      emptyTitle="メンバーがいません"
+      emptyDescription={isAdminOrManager ? 'プロジェクトメンバーを追加して協力できます' : 'プロジェクトマネージャーまたは管理者によるメンバー追加をお待ちください'}
       emptyIcon={Users}
       onDelete={isAdminOrManager ? onRemoveMember : undefined}
       showProjects={false}

@@ -68,7 +68,7 @@ export function useAttachments(options: UseAttachmentsOptions = {}) {
         setTimeout(() => setError(null), 5000);
       }
     },
-    [maxFileSize, allowedMimeTypes]
+    [maxFileSize, allowedMimeTypes, error]
   );
 
   /**

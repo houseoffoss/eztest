@@ -13,11 +13,11 @@ export function EmptyTestCaseState({ hasFilters, onCreateClick, canCreate = true
   return (
     <EmptyStateCard
       icon={AlertCircle}
-      title="No test cases found"
+      title="テストケースがありません"
       description={hasFilters
-        ? 'Try adjusting your filters'
-        : 'Get started by creating your first test case'}
-      actionLabel={!hasFilters && canCreate ? 'Create Test Case' : undefined}
+        ? '検索条件を変更してみてください'
+        : '最初のテストケースを作成して始めましょう'}
+      actionLabel={!hasFilters && canCreate ? 'テストケースを作成' : undefined}
       onAction={!hasFilters && canCreate ? onCreateClick : undefined}
       actionButtonName="Test Case List - Create Test Case (Empty State)"
     />

@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 
 interface TestRunsHeaderProps {
   project: {
@@ -20,7 +20,7 @@ export function TestRunsHeader({ project }: TestRunsHeaderProps) {
             {project.key}
           </Badge>
         )}
-        <h1 className="text-2xl font-bold text-white">Test Runs</h1>
+        <h1 className="text-2xl font-bold text-white">テストラン</h1>
       </div>
       {project && <p className="text-white/70 text-sm mb-2">{project.name}</p>}
     </div>

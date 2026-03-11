@@ -28,7 +28,7 @@ export class ModuleService {
         },
       },
       orderBy: {
-        order: 'asc',
+        name: 'asc',
       },
     });
 

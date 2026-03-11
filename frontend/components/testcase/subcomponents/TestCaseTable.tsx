@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import {
@@ -7,12 +7,12 @@ import {
   HoverCardTrigger,
 } from '@/frontend/reusable-elements/hover-cards/HoverCard';
 import { Trash2, Bug } from 'lucide-react';
-import { PriorityBadge } from '@/frontend/reusable-components/badges/PriorityBadge';
 import { GroupedDataTable, ColumnDef, GroupConfig, ActionConfig } from '@/frontend/reusable-components/tables/GroupedDataTable';
 import { TestCase, Module } from '../types';
 import { useRouter } from 'next/navigation';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
+import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 
 interface TestCaseTableProps {
   testCases: TestCase[];
@@ -23,6 +23,10 @@ interface TestCaseTableProps {
   canDelete?: boolean;
   projectId?: string;
   enableModuleLink?: boolean;
+  selectedTestCases?: Set<string>;
+  onSelectTestCase?: (testCaseId: string) => void;
+  onSelectAll?: (selected: boolean) => void;
+  showSelection?: boolean;
 }
 
 /**
@@ -58,11 +62,18 @@ export function TestCaseTable({
   canDelete = true,
   projectId,
   enableModuleLink = false,
+  selectedTestCases = new Set<string>(),
+  onSelectTestCase,
+  onSelectAll,
+  showSelection = false,
 }: TestCaseTableProps) {
   const router = useRouter();
-  const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
+  const isSelectionEnabled = showSelection && Boolean(onSelectTestCase) && Boolean(onSelectAll);
+  const allSelected = testCases.length > 0 && testCases.every((testCase) => selectedTestCases.has(testCase.id));
+  const someSelected = testCases.some((testCase) => selectedTestCases.has(testCase.id)) && !allSelected;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -78,14 +89,30 @@ export function TestCaseTable({
 
   // Define columns
   const columns: ColumnDef<TestCase>[] = [
-    {
-      key: 'tcId',
-      label: 'ID',
-      width: '70px',
-      render: (row) => (
-        <p className="text-xs font-mono text-white/70 truncate">{row.tcId}</p>
+    ...(isSelectionEnabled ? [{
+      key: 'select',
+      label: (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={(checked) => onSelectAll?.(checked === true)}
+            aria-label="すべてのテストケースを選択"
+            className={someSelected ? 'data-[state=checked]:bg-primary/50' : ''}
+          />
+        </div>
       ),
-    },
+      width: '40px',
+      align: 'center' as const,
+      render: (row: TestCase) => (
+        <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={selectedTestCases.has(row.id)}
+            onCheckedChange={() => onSelectTestCase?.(row.id)}
+            aria-label={`テストケース ${row.tcId || row.title} を選択`}
+          />
+        </div>
+      ),
+    }] : []),
     {
       key: 'title',
       label: 'TITLE',
@@ -102,7 +129,7 @@ export function TestCaseTable({
               {row.title && row.title.length > 40 && (
                 <HoverCardContent side="top" className="w-80">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-white">Test Case Title</h4>
+                    <h4 className="text-sm font-semibold text-white">テストケース名</h4>
                     <p className="text-sm text-white/80 break-words">{row.title}</p>
                     {row._count.defects > 0 && (
                       <div className="pt-2 border-t border-white/10">
@@ -126,27 +153,9 @@ export function TestCaseTable({
       ),
     },
     {
-      key: 'priority',
-      label: 'PRIORITY',
-      width: '100px',
-      render: (row) => {
-        const badgeProps = getDynamicBadgeProps(row.priority, priorityOptions);
-        const priorityLabel = priorityOptions.find(opt => opt.value === row.priority)?.label || row.priority;
-        return (
-          <PriorityBadge
-            priority={row.priority.toLowerCase() as 'low' | 'medium' | 'high' | 'critical'}
-            dynamicClassName={badgeProps.className}
-            dynamicStyle={badgeProps.style}
-          >
-            {priorityLabel}
-          </PriorityBadge>
-        );
-      },
-    },
-    {
       key: 'status',
       label: 'STATUS',
-      width: '90px',
+      width: '70px',
       render: (row) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
         const label = statusOptions.find(opt => opt.value === row.status)?.label || row.status;
@@ -162,27 +171,43 @@ export function TestCaseTable({
       },
     },
     {
-      key: 'owner',
-      label: 'OWNER',
-      width: '140px',
+      key: 'flowId',
+      label: 'FLOW-ID',
+      width: '80px',
       render: (row) => (
-        <div className="min-w-0">
-          <HoverCard openDelay={200}>
-            <HoverCardTrigger asChild>
-              <span className="text-xs text-white/70 truncate block cursor-pointer">
-                {row.createdBy.name}
-              </span>
-            </HoverCardTrigger>
-            {row.createdBy.name && row.createdBy.name.length > 20 && (
-              <HoverCardContent side="top" className="w-60">
-                <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-white/60">Owner</h4>
-                  <p className="text-sm text-white/90">{row.createdBy.name}</p>
-                </div>
-              </HoverCardContent>
-            )}
-          </HoverCard>
-        </div>
+        <span className="text-xs text-white/70 truncate">{row.flowId || '-'}</span>
+      ),
+    },
+    {
+      key: 'platform',
+      label: 'プラットフォーム',
+      width: '100px',
+      render: (row) => (
+        <span className="text-xs text-white/70 truncate">{row.platform || '-'}</span>
+      ),
+    },
+    {
+      key: 'executionType',
+      label: '実行方式',
+      width: '80px',
+      render: (row) => (
+        <span className="text-xs text-white/70 truncate">{row.executionType || '-'}</span>
+      ),
+    },
+    {
+      key: 'automationStatus',
+      label: '自動化状況',
+      width: '100px',
+      render: (row) => (
+        <span className="text-xs text-white/70 truncate">{row.automationStatus || '-'}</span>
+      ),
+    },
+    {
+      key: 'device',
+      label: '端末',
+      width: '80px',
+      render: (row) => (
+        <span className="text-xs text-white/70 truncate">{row.device || '-'}</span>
       ),
     },
     {
@@ -249,7 +274,11 @@ export function TestCaseTable({
       grouped={groupedByModule}
       groupConfig={groupConfig}
       actions={actions}
-      gridTemplateColumns="70px 1fr 100px 90px 140px 70px 40px"
+      gridTemplateColumns={
+        isSelectionEnabled
+          ? '40px minmax(900px, 6fr) 70px 80px 100px 80px 100px 80px 70px 40px'
+          : 'minmax(900px, 6fr) 70px 80px 100px 80px 100px 80px 70px 40px'
+      }
       emptyMessage="No test cases available"
     />
   );

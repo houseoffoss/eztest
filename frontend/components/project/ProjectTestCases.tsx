@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -311,7 +311,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
               </div>
 
               <div>
-                <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
+                <Label htmlFor="estimatedTime">テスト実行時間（秒）</Label>
                 <Input
                   id="estimatedTime"
                   type="number"

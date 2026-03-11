@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 
@@ -25,21 +25,21 @@ export function RemoveMemberDialog({
 
   const content = (
     <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-      <p className="font-semibold mb-2">This action will:</p>
+      <p className="font-semibold mb-2">この操作により:</p>
       <ul className="list-disc list-inside space-y-1">
-        <li>Remove this member&apos;s access to the project</li>
-        <li>Revoke their permissions immediately</li>
-        <li>This can be reversed by re-adding the member</li>
+        <li>このメンバーのプロジェクトへのアクセスが削除されます</li>
+        <li>権限は即座に失効します</li>
+        <li>メンバーを再度追加すれば元に戻せます</li>
       </ul>
     </div>
   );
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Remove Team Member',
-    description: `Are you sure you want to remove ${member.name} from this project?`,
+    title: 'チームメンバーを削除',
+    description: `${member.name} をこのプロジェクトから削除してもよろしいですか？`,
     content,
-    submitLabel: 'Remove',
-    cancelLabel: 'Cancel',
+    submitLabel: '削除',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: onConfirm,

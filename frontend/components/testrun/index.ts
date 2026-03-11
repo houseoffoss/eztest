@@ -14,6 +14,7 @@ export type {
 // Subcomponents
 export {
   CreateTestRunDialog,
+  EditTestRunDialog,
   DeleteTestRunDialog,
   TestRunCard,
   TestRunsEmptyState,
@@ -22,6 +23,7 @@ export {
 } from './subcomponents';
 export type {
   CreateTestRunDialogProps,
+  EditTestRunDialogProps,
   DeleteTestRunDialogProps,
 } from './subcomponents';
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { formatDateTime } from '@/lib/date-utils';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
@@ -52,24 +52,24 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
     <ActionMenu
       items={[
         {
-          label: 'Open Project',
+          label: 'プロジェクトを開く',
           icon: Folder,
           onClick: () => onNavigate(`/projects/${project.id}`),
         },
         {
-          label: 'Settings',
+          label: '設定',
           icon: Settings,
           onClick: () => onNavigate(`/projects/${project.id}/settings`),
           show: canUpdate,
         },
         {
-          label: 'Manage Members',
+          label: 'メンバー管理',
           icon: Users,
           onClick: () => onNavigate(`/projects/${project.id}/members`),
           show: canManageMembers,
         },
         {
-          label: 'Delete',
+          label: '削除',
           icon: Trash2,
           onClick: onDelete,
           variant: 'destructive',
@@ -86,25 +86,25 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
         {
           icon: TestTube2,
           value: project._count?.testCases || 0,
-          label: 'Test Cases',
+          label: 'テストケース',
           iconColor: 'text-primary',
         },
         {
           icon: Play,
           value: project._count?.testRuns || 0,
-          label: 'Test Runs',
+          label: 'テストラン',
           iconColor: 'text-accent',
         },
         {
           icon: FileText,
           value: project._count?.testSuites || 0,
-          label: 'Test Suites',
+          label: 'テストスイート',
           iconColor: 'text-purple-400',
         },
         {
           icon: Bug,
           value: project._count?.defects || 0,
-          label: 'Defects',
+          label: 'Defect',
           iconColor: 'text-red-400',
         },
       ]}
@@ -129,7 +129,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
           showCount={true}
         />
         <span className="text-xs text-white/60">
-          {project.members.length} member{project.members.length !== 1 ? 's' : ''}
+          {project.members.length} 名のメンバー
         </span>
       </div>
       <span className="text-xs text-white/50">

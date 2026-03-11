@@ -5,7 +5,7 @@ interface InlineErrorProps {
   onClose?: () => void;
 }
 
-export const InlineError = ({ message, onClose }: InlineErrorProps) => {
+export const InlineError = ({ message }: InlineErrorProps) => {
   if (!message) return null;
 
   return (

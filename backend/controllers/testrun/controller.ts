@@ -5,7 +5,6 @@ import {
   updateTestRunSchema, 
   addTestResultSchema 
 } from '@/backend/validators/testrun.validator';
-import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
 import { TestRunMessages } from '@/backend/constants/static_messages';
 
@@ -35,7 +34,8 @@ export class TestRunController {
    */
   async getTestRunById(
     testRunId: string,
-    userId: string
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _userId: string
   ) {
     const testRun = await testRunService.getTestRunById(testRunId);
 
@@ -85,6 +85,9 @@ export class TestRunController {
       executionType: validatedData.executionType,
       assignedToId,
       environment: validatedData.environment,
+      version: validatedData.version,
+      platform: validatedData.platform,
+      device: validatedData.device,
       status: validatedData.status,
       testCaseIds: validatedData.testCaseIds,
       createdById: userId,
@@ -151,6 +154,15 @@ export class TestRunController {
           : 'Email service is not configured. Report cannot be sent.',
       },
     };
+  }
+
+  /**
+   * Reopen a completed test run
+   */
+  async reopenTestRun(testRunId: string) {
+    const testRun = await testRunService.reopenTestRun(testRunId);
+
+    return { data: testRun };
   }
 
   /**

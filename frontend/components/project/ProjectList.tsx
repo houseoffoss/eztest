@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -36,7 +36,7 @@ export default function ProjectList() {
     if (canCreateProject) {
       actions.push({
         type: 'action' as const,
-        label: '+ New Project',
+        label: '+ 新規プロジェクト',
         onClick: () => setTriggerCreateDialog(true),
         variant: 'primary' as const,
         buttonName: 'Project List - New Project',
@@ -76,7 +76,7 @@ export default function ProjectList() {
         const errorData = await response.json().catch(() => ({}));
         setAlert({
           type: 'error',
-          title: 'Failed to Load Projects',
+          title: 'プロジェクトの読み込みに失敗しました',
           message: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
         });
         setProjects([]);
@@ -88,7 +88,7 @@ export default function ProjectList() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setAlert({
         type: 'error',
-        title: 'Connection Error',
+        title: '接続エラー',
         message: errorMessage,
       });
       console.error('Failed to fetch projects:', error);
@@ -101,8 +101,8 @@ export default function ProjectList() {
     setProjects([newProject, ...projects]);
     setAlert({
       type: 'success',
-      title: 'Success',
-      message: `Project "${newProject.name}" created successfully`,
+      title: '成功',
+      message: `プロジェクト「${newProject.name}」を作成しました`,
     });
     setTimeout(() => setAlert(null), 5000);
   };
@@ -114,8 +114,8 @@ export default function ProjectList() {
     if (deletedProject) {
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: `Project "${deletedProject.name}" deleted successfully`,
+        title: '成功',
+        message: `プロジェクト「${deletedProject.name}」を削除しました`,
       });
       setTimeout(() => setAlert(null), 5000);
     }
@@ -137,7 +137,7 @@ export default function ProjectList() {
   };
 
   if (status === 'loading' || loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading projects..." />;
+    return <Loader fullScreen text="プロジェクトを読み込み中..." />;
   }
 
   if (status === 'unauthenticated') {
@@ -161,15 +161,15 @@ export default function ProjectList() {
       <div className="max-w-7xl mx-auto px-8 py-6 pt-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
-              <p className="text-white/70 text-sm">Manage your test projects and track progress</p>
+              <h1 className="text-3xl font-bold text-white mb-1">プロジェクト</h1>
+              <p className="text-white/70 text-sm">テストプロジェクトを管理し、進捗を追跡します</p>
             </div>
           </div>
           
           {/* Info Banner - Only show when no project has been selected */}
           {projects.length > 0 && !hasSelectedProject && (
             <InfoBanner
-              message="Select a project below to view test suites, test cases, and manage testing activities."
+              message="下のプロジェクトを選択すると、テストスイート・テストケースの表示やテスト活動の管理ができます。"
               variant="info"
               className="mb-6"
             />

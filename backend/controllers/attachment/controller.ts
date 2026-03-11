@@ -74,7 +74,8 @@ export class AttachmentController {
         validatedData.fileSize,
         validatedData.fileType,
         validatedData.testCaseId ?? undefined,
-        validatedData.testStepId ?? undefined
+        validatedData.testStepId ?? undefined,
+        validatedData.fieldName
       );
 
       return {

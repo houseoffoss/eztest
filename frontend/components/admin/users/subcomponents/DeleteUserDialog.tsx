@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 
@@ -11,10 +11,10 @@ interface DeleteUserDialogProps {
 
 export function DeleteUserDialog({ open, userName, onOpenChange, onConfirm }: DeleteUserDialogProps) {
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete User',
-    description: `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'ユーザーを削除',
+    description: `「${userName}」を削除してもよろしいですか？この操作は取り消せません。`,
+    submitLabel: '削除',
+    cancelLabel: 'キャンセル',
     triggerOpen: open,
     onOpenChange,
     onSubmit: onConfirm,

@@ -94,6 +94,19 @@ export class ExportService {
         preconditions: true,
         postconditions: true,
         testData: true,
+        // New fields for enhanced test case management
+        rtcId: true,
+        flowId: true,
+        layer: true,
+        testType: true,
+        evidence: true,
+        notes: true,
+        platform: true,
+        device: true,
+        domain: true,
+        functionName: true,
+        executionType: true,
+        automationStatus: true,
         module: {
           select: {
             name: true,
@@ -155,27 +168,23 @@ export class ExportService {
         })
         .join('\n');
 
-      // Format expected results in import format
-      // Single result: plain string (no numbering)
-      // Multiple results: numbered list, newline-separated
-      const expectedResultsList: string[] = [];
-      tc.steps.forEach((step) => {
-        if (step.expectedResult && step.expectedResult.trim()) {
-          expectedResultsList.push(step.expectedResult.trim());
-        }
-      });
-      
+      // Format expected results to maintain step-to-result correspondence
+      // Always use numbered list format to preserve which step has which expected result
+      // This ensures proper round-trip import/export even when only some steps have results
       let expectedResultFormatted = '';
-      if (expectedResultsList.length > 1) {
-        // Multiple results: format as numbered list "1. Result 1\n2. Result 2\n..."
-        expectedResultFormatted = expectedResultsList
-          .map((result, index) => `${index + 1}. ${result}`)
-          .join('\n');
-      } else if (expectedResultsList.length === 1) {
-        // Single result: export as plain string (no numbering)
-        expectedResultFormatted = expectedResultsList[0];
+
+      if (tc.steps.length > 0) {
+        // Map each step to its expected result, maintaining step numbers
+        // Use step number to ensure 1-to-1 correspondence on import
+        const stepResults = tc.steps.map((step) => {
+          const result = step.expectedResult && step.expectedResult.trim()
+            ? step.expectedResult.trim()
+            : ''; // Empty string for steps without expected result
+          return `${step.stepNumber}. ${result}`;
+        });
+        expectedResultFormatted = stepResults.join('\n');
       } else if (tc.expectedResult && tc.expectedResult.trim()) {
-        // Fall back to test case level expected result if no step-level results
+        // Fall back to test case level expected result if no steps exist
         expectedResultFormatted = tc.expectedResult.trim();
       }
       // If empty, expectedResultFormatted remains empty string
@@ -187,22 +196,52 @@ export class ExportService {
       const linkedDefectIds = defectsByTestCaseId.get(tc.id) || [];
       const defectIds = linkedDefectIds.join(', ');
 
+      // Format layer to display value
+      const layerFormatted = tc.layer || '';
+
+      // Format testType to Japanese display value
+      const testTypeMap: Record<string, string> = {
+        'NORMAL': '正常系',
+        'ABNORMAL': '異常系',
+        'NON_FUNCTIONAL': '非機能',
+        'REGRESSION': '回帰',
+        'DATA_INTEGRITY': 'データ整合性確認',
+        'STATE_TRANSITION': '状態遷移確認',
+        'OPERATIONAL': '運用確認',
+        'FAILURE': '障害時確認',
+      };
+      const testTypeFormatted = tc.testType ? (testTypeMap[tc.testType] || tc.testType) : '';
+
       return {
-        'Test Case ID': tc.tcId,
-        'Test Case Title': tc.title,
-        'Module / Feature': tc.module?.name || '',
-        'Priority': tc.priority,
-        'Preconditions': tc.preconditions || '',
-        'Test Steps': testStepsFormatted,
-        'Test Data': testData,
-        'Expected Result': expectedResultFormatted,
-        'Status': tc.status,
-        'Defect ID': defectIds,
+        'テストケースID': tc.tcId,
+        'テストケース名': tc.title,
+        'フロータイトル': tc.title,
+        'モジュール・機能': tc.module?.name || '',
+        '優先度': tc.priority,
+        '前提条件': tc.preconditions || '',
+        'テスト手順': testStepsFormatted,
+        'テストデータ': testData,
+        '期待結果': expectedResultFormatted,
+        '状態': tc.status,
+        '不具合ID': defectIds,
+        // New fields for enhanced test case management
+        'RTC-ID': tc.rtcId || '',
+        'Flow-ID': tc.flowId || '',
+        'Layer': layerFormatted,
+        'テスト種別': testTypeFormatted,
+        '根拠コード': tc.evidence || '',
+        '備考': tc.notes || '',
+        'プラットフォーム': tc.platform || '',
+        '端末': tc.device || '',
+        'ドメイン': tc.domain || '',
+        '機能': tc.functionName || '',
+        '実行方式': tc.executionType || '',
+        '自動化状況': tc.automationStatus || '',
         // Older fields (for backward compatibility)
-        'Description': tc.description || '',
-        'Estimated Time (minutes)': tc.estimatedTime || '',
-        'Postconditions': tc.postconditions || '',
-        'Test Suites': suites,
+        '説明': tc.description || '',
+        'テスト実行時間（秒）': tc.estimatedTime || '',
+        '事後条件': tc.postconditions || '',
+        'テストスイート': suites,
       };
     });
 

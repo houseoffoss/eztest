@@ -1,7 +1,6 @@
-﻿'use client';
+'use client';
 
 import { Card, CardContent } from '@/frontend/reusable-elements/cards/Card';
-import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Folder, Plus } from 'lucide-react';
 
@@ -18,11 +17,11 @@ export const EmptyProjectsState = ({ onCreateProject, canCreateProject = true }:
     >
       <CardContent className="flex flex-col items-center justify-center py-16">
         <Folder className="w-16 h-16 text-white/50 mb-4" />
-        <h3 className="text-xl font-semibold mb-2 text-white">No projects yet</h3>
+        <h3 className="text-xl font-semibold mb-2 text-white">プロジェクトがありません</h3>
         <p className="text-white/60 mb-6 text-center max-w-sm">
           {canCreateProject
-            ? 'Get started by creating your first project to organize test cases and track testing progress.'
-            : 'You do not have permission to create projects. Contact an admin to get started.'}
+            ? '最初のプロジェクトを作成して、テストケースの管理とテスト進捗の追跡を始めましょう。'
+            : 'プロジェクトを作成する権限がありません。管理者にお問い合わせください。'}
         </p>
         {canCreateProject && (
           <ButtonPrimary 
@@ -30,7 +29,7 @@ export const EmptyProjectsState = ({ onCreateProject, canCreateProject = true }:
             buttonName="Project List - Create Your First Project (Empty State)"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Your First Project
+            最初のプロジェクトを作成
           </ButtonPrimary>
         )}
       </CardContent>

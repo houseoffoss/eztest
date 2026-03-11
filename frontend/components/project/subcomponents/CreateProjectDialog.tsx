@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseDialog, BaseDialogField, BaseDialogConfig } from '@/frontend/reusable-components/dialogs/BaseDialog';
 import { Project } from '../types';
@@ -13,8 +13,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Project Name',
-      placeholder: 'My Awesome Project',
+      label: 'プロジェクト名',
+      placeholder: '例: マイプロジェクト',
       type: 'text',
       required: true,
       minLength: 3,
@@ -22,7 +22,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     },
     {
       name: 'key',
-      label: 'Project Key',
+      label: 'プロジェクトキー',
       placeholder: 'ECOM',
       type: 'text',
       required: true,
@@ -33,8 +33,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     },
     {
       name: 'description',
-      label: 'Description',
-      placeholder: 'Brief description of the project...',
+      label: '説明',
+      placeholder: 'プロジェクトの簡単な説明...',
       type: 'textarea',
       rows: 3,
       maxLength: 250,
@@ -57,7 +57,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to create project');
+      throw new Error(data.message || data.error || 'プロジェクトの作成に失敗しました');
     }
 
     // Ensure the project has the required structure
@@ -71,11 +71,11 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
   };
 
   const config: BaseDialogConfig<Project> = {
-    title: 'Create New Project',
-    description: 'Set up a new project to organize your test cases and test runs.',
+    title: '新規プロジェクトを作成',
+    description: 'テストケースとテストランを整理するための新しいプロジェクトを設定します。',
     fields,
-    submitLabel: 'Create Project',
-    cancelLabel: 'Cancel',
+    submitLabel: 'プロジェクトを作成',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,

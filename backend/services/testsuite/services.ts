@@ -2,6 +2,44 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Use explicit, DB-safe field selection for suite detail queries.
+// Some environments may not have newly added TestCase columns yet.
+const TEST_SUITE_TEST_CASE_SELECT = {
+  id: true,
+  tcId: true,
+  projectId: true,
+  moduleId: true,
+  suiteId: true,
+  title: true,
+  description: true,
+  priority: true,
+  status: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+  module: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+  },
+  createdBy: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+  _count: {
+    select: {
+      steps: true,
+      results: true,
+      defects: true,
+    },
+  },
+} as const;
+
 export class TestSuiteService {
   /**
    * Get all test suites for a project with hierarchical structure
@@ -106,31 +144,10 @@ export class TestSuiteService {
         testCaseSuites: {
           include: {
             testCase: {
-              include: {
-                module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                  },
-                },
-                createdBy: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                  },
-                },
-                _count: {
-                  select: {
-                    steps: true,
-                    results: true,
-                  },
-                },
-              },
+              select: TEST_SUITE_TEST_CASE_SELECT,
             },
           },
-          orderBy: { addedAt: 'desc' },
+          orderBy: { testCase: { module: { name: 'asc' } } },
         },
         _count: {
           select: { 
@@ -195,19 +212,34 @@ export class TestSuiteService {
     suiteId: string,
     data: {
       name?: string;
-      description?: string;
-      parentId?: string;
+      description?: string | null;
+      parentId?: string | null;
       order?: number;
     }
   ) {
+    const updatePayload: {
+      name?: string;
+      description?: string | null;
+      parentId?: string | null;
+      order?: number;
+    } = {};
+
+    if (Object.prototype.hasOwnProperty.call(data, 'name')) {
+      updatePayload.name = data.name;
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'description')) {
+      updatePayload.description = data.description;
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'parentId')) {
+      updatePayload.parentId = data.parentId;
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'order')) {
+      updatePayload.order = data.order;
+    }
+
     const suite = await prisma.testSuite.update({
       where: { id: suiteId },
-      data: {
-        name: data.name,
-        description: data.description,
-        parentId: data.parentId,
-        order: data.order,
-      },
+      data: updatePayload,
       include: {
         parent: true,
         _count: {
@@ -359,7 +391,7 @@ export class TestSuiteService {
       where: { projectId: suite.projectId },
       include: {
         testCases: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { flowId: 'asc' },
         },
         _count: {
           select: { testCases: true },
@@ -374,7 +406,7 @@ export class TestSuiteService {
         projectId: suite.projectId,
         moduleId: null,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { flowId: 'asc' },
     });
 
     // Filter out test cases already in this suite
@@ -531,15 +563,7 @@ export class TestSuiteService {
         testCaseSuites: {
           include: {
             testCase: {
-              include: {
-                module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                  },
-                },
-              },
+              select: TEST_SUITE_TEST_CASE_SELECT,
             },
           },
         },
@@ -595,15 +619,7 @@ export class TestSuiteService {
         testCaseSuites: {
           include: {
             testCase: {
-              include: {
-                module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                  },
-                },
-              },
+              select: TEST_SUITE_TEST_CASE_SELECT,
             },
           },
         },
@@ -659,15 +675,7 @@ export class TestSuiteService {
         testCaseSuites: {
           include: {
             testCase: {
-              include: {
-                module: {
-                  select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                  },
-                },
-              },
+              select: TEST_SUITE_TEST_CASE_SELECT,
             },
           },
         },

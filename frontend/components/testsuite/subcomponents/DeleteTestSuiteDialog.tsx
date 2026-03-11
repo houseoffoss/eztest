@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { BaseConfirmDialog, BaseConfirmDialogConfig } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
 import { TestSuite } from '../types';
@@ -29,36 +29,36 @@ export function DeleteTestSuiteDialog({
     <div className="space-y-3">
       {hasTestCases && (
         <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
-          <p className="font-medium">⚠️ This suite contains {suite._count.testCases} test case(s)</p>
+          <p className="font-medium">⚠️ このスイートには {suite._count.testCases} 件のテストケースが含まれています</p>
           <p className="mt-1 text-yellow-300/80">
-            Test cases will not be deleted but will become unorganized.
+            テストケースは削除されませんが、未整理になります。
           </p>
         </div>
       )}
 
       {hasChildren && (
         <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-200">
-          <p className="font-medium">⚠️ This suite contains {suite.children?.length} child suite(s)</p>
+          <p className="font-medium">⚠️ このスイートには {suite.children?.length} 件の子スイートが含まれています</p>
           <p className="mt-1 text-yellow-300/80">
-            Child suites will be moved to root level.
+            子スイートはルートレベルに移動します。
           </p>
         </div>
       )}
 
       {!hasTestCases && !hasChildren && (
         <p className="text-sm text-gray-300">
-          This action cannot be undone.
+          この操作は取り消せません。
         </p>
       )}
     </div>
   );
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Test Suite',
-    description: `Are you sure you want to delete "${suite.name}"?`,
+    title: 'テストスイートを削除',
+    description: `「${suite.name}」を削除してもよろしいですか？`,
     content,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    submitLabel: '削除',
+    cancelLabel: 'キャンセル',
     triggerOpen,
     onOpenChange,
     onSubmit: async () => onConfirm(),

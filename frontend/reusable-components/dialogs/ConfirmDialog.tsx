@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import * as React from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/frontend/reusable-elements/dialogs/Dialog"
@@ -19,7 +19,7 @@ export function ConfirmDialog({
   title = "Confirm action",
   description,
   confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  cancelLabel = "キャンセル",
   onConfirm,
   variant = "glass",
   children,

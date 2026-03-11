@@ -17,11 +17,11 @@ export function TestRunsEmptyState({
   return (
     <EmptyStateCard
       icon={AlertCircle}
-      title="No test runs found"
+      title="テストランがありません"
       description={hasTestRuns
-        ? 'Try adjusting your filters'
-        : 'Get started by creating your first test run'}
-      actionLabel={!hasTestRuns && canCreate ? 'Create Test Run' : undefined}
+        ? 'フィルターを調整してみてください'
+        : '最初のテストランを作成して始めましょう'}
+      actionLabel={!hasTestRuns && canCreate ? 'テストランを作成' : undefined}
       onAction={!hasTestRuns && canCreate ? onCreateClick : undefined}
     />
   );

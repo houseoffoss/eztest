@@ -1,11 +1,11 @@
-﻿'use client';
+'use client';
 
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { LogOut } from 'lucide-react';
 import { clearAllPersistedForms } from '@/hooks/useFormPersistence';
 
 export function ProfileHeader() {
-  const handleSignOut = (e: React.FormEvent) => {
+  const handleSignOut = () => {
     // Clear all persisted form data before signing out
     clearAllPersistedForms();
     // Clear project context from session storage

@@ -1,14 +1,15 @@
-﻿'use client';
+'use client';
 
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Defect, DefectFormData } from '../types';
-import { FormBuilder, FormFieldConfig, SelectOption } from '@/frontend/reusable-components';
+import { SelectOption } from '@/frontend/reusable-components';
 import { useEffect, useState } from 'react';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
-import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
+import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { type Attachment } from '@/lib/s3';
 import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
+import { DefectDescriptionAttachmentField } from '@/frontend/components/defect/shared/DefectDescriptionAttachmentField';
 import {
   Select,
   SelectContent,
@@ -26,6 +27,9 @@ interface DefectDetailsCardProps {
   onFormChange: (data: DefectFormData) => void;
   onFieldChange?: (field: keyof DefectFormData, value: string | number | null) => void;
   projectId?: string;
+  defectId?: string;
+  onSave?: () => void;
+  saving?: boolean;
   // Attachments
   descriptionAttachments?: Attachment[];
   onDescriptionAttachmentsChange?: (attachments: Attachment[]) => void;
@@ -45,6 +49,9 @@ export function DefectDetailsCard({
   onFormChange,
   onFieldChange,
   projectId,
+  defectId,
+  onSave,
+  saving = false,
   descriptionAttachments = [],
   onDescriptionAttachmentsChange,
 }: DefectDetailsCardProps) {
@@ -81,7 +88,7 @@ export function DefectDetailsCard({
   }, [isEditing, defect.projectId]);
 
   const assignedToOptions: SelectOption[] = [
-    { value: 'unassigned', label: 'Not Assigned' },
+    { value: 'unassigned', label: '未割当' },
     ...users.map((user) => ({
       value: user.id,
       label: `${user.name} (${user.email})`,
@@ -106,14 +113,14 @@ export function DefectDetailsCard({
   };
 
   return (
-    <DetailCard title="Details" contentClassName="space-y-6">
+    <DetailCard title="詳細" contentClassName="space-y-6">
       {isEditing ? (
         <div className="space-y-4">
           {/* Severity and Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="severity">
-                Severity <span className="text-red-500">*</span>
+                深刻度 <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.severity}
@@ -124,7 +131,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingSeverity ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>読み込み中...</SelectItem>
                   ) : (
                     severityOptions.map((opt) => (
                       <SelectItem 
@@ -141,7 +148,7 @@ export function DefectDetailsCard({
 
             <div className="space-y-2">
               <Label htmlFor="priority">
-                Priority <span className="text-red-500">*</span>
+                優先度 <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.priority}
@@ -152,7 +159,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingPriority ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>読み込み中...</SelectItem>
                   ) : (
                     priorityOptions.map((opt) => (
                       <SelectItem 
@@ -172,7 +179,7 @@ export function DefectDetailsCard({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">
-                Status <span className="text-red-500">*</span>
+                ステータス <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.status}
@@ -183,7 +190,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingStatus ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>読み込み中...</SelectItem>
                   ) : (
                     statusOptions.map((opt) => (
                       <SelectItem 
@@ -199,7 +206,7 @@ export function DefectDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="assignedToId">Assigned To</Label>
+              <Label htmlFor="assignedToId">担当者</Label>
               <Select
                 value={formData.assignedToId || 'unassigned'}
                 onValueChange={(value) => handleSelectChange('assignedToId', value)}
@@ -221,7 +228,7 @@ export function DefectDetailsCard({
           {/* Due Date and Progress */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="dueDate">期限</Label>
               <Input
                 id="dueDate"
                 variant="glass"
@@ -232,7 +239,7 @@ export function DefectDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="progressPercentage">Progress (%)</Label>
+              <Label htmlFor="progressPercentage">進捗 (%)</Label>
               <Input
                 id="progressPercentage"
                 variant="glass"
@@ -247,35 +254,42 @@ export function DefectDetailsCard({
 
           {/* Description with Attachments */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <TextareaWithAttachments
-              fieldName="description"
-              variant="glass"
+            <Label htmlFor="description">説明</Label>
+            <DefectDescriptionAttachmentField
               value={formData.description || ''}
               onChange={(value) => handleFieldChange('description', value)}
-              placeholder="Detailed description of the defect"
-              rows={4}
-              maxLength={2000}
-              showCharCount={true}
               attachments={descriptionAttachments}
               onAttachmentsChange={handleDescriptionAttachmentsChange}
-              entityType="defect"
               projectId={projectId}
-              showAttachments={true}
+              defectId={defectId}
+              placeholder="Defectの詳細な説明"
+              rows={4}
+              maxLength={2000}
             />
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
           </div>
 
           {/* Environment */}
           <div className="space-y-2">
-            <Label htmlFor="environment">Environment</Label>
+            <Label htmlFor="environment">環境</Label>
             <Input
               id="environment"
               variant="glass"
               value={formData.environment || ''}
               onChange={(e) => handleFieldChange('environment', e.target.value)}
-              placeholder="e.g., Production, Staging, Development"
+              placeholder="例: Production, Staging, Development"
             />
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <ButtonPrimary
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="cursor-pointer"
+            >
+              {saving ? '保存中...' : '保存する'}
+            </ButtonPrimary>
           </div>
         </div>
       ) : (
@@ -284,12 +298,12 @@ export function DefectDetailsCard({
             <div className="border-t border-white/10 pt-6">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-medium text-white/60">
-                  Description
+                  説明
                 </h4>
                 {descriptionAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{descriptionAttachments.length} Attachments</span>
+                  <span className="text-xs text-white/50">添付 {descriptionAttachments.length} 件</span>
                 ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
+                  <span className="text-xs text-white/40">添付なし</span>
                 )}
               </div>
               {defect.description && descriptionAttachments.length > 0 ? (
@@ -316,7 +330,7 @@ export function DefectDetailsCard({
           {defect.environment && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Environment
+                環境
               </h4>
               <p className="text-white/90 break-words whitespace-pre-wrap">
                 {defect.environment}
@@ -327,7 +341,7 @@ export function DefectDetailsCard({
           {defect.dueDate && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Due Date
+                期限
               </h4>
               <p className="text-white/90">
                 {new Date(defect.dueDate).toLocaleDateString()}
@@ -338,7 +352,7 @@ export function DefectDetailsCard({
           {defect.progressPercentage !== null && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Progress
+                進捗
               </h4>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">

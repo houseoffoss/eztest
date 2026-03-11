@@ -55,7 +55,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
     },
     {
       name: 'estimatedTime',
-      label: 'Estimated Time (minutes)',
+      label: 'テスト実行時間（秒）',
       type: 'number',
       placeholder: 'Enter estimated time',
     },
@@ -69,7 +69,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
     },
     {
       name: 'preconditions',
-      label: 'Preconditions',
+      label: '前提条件',
       type: 'textarea',
       placeholder: 'Enter preconditions',
       rows: 2,
@@ -77,7 +77,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
     },
     {
       name: 'postconditions',
-      label: 'Postconditions',
+      label: '事後条件',
       type: 'textarea',
       placeholder: 'Enter postconditions',
       rows: 2,
@@ -85,7 +85,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
     },
     {
       name: 'expectedResult',
-      label: 'Expected Result',
+      label: '期待結果',
       type: 'textarea',
       placeholder: 'Enter the expected result',
       rows: 3,

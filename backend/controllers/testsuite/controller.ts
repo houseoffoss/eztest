@@ -113,13 +113,27 @@ export class TestSuiteController {
 
       const body = await request.json();
       const { name, description, parentId, order } = body;
+      const updateData: {
+        name?: string;
+        description?: string | null;
+        parentId?: string | null;
+        order?: number;
+      } = {};
 
-      const suite = await testSuiteService.updateTestSuite(suiteId, {
-        name: name?.trim(),
-        description: description?.trim(),
-        parentId,
-        order,
-      });
+      if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+        updateData.name = typeof name === 'string' ? name.trim() : name;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'description')) {
+        updateData.description = typeof description === 'string' ? description.trim() : null;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'parentId')) {
+        updateData.parentId = parentId ?? null;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'order')) {
+        updateData.order = order;
+      }
+
+      const suite = await testSuiteService.updateTestSuite(suiteId, updateData);
 
       return NextResponse.json({
         data: suite,

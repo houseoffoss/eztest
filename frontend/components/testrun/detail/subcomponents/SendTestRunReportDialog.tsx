@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import {
@@ -33,7 +33,7 @@ export function SendTestRunReportDialog({
       await onConfirm();
       onOpenChange(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send report';
+      const errorMessage = err instanceof Error ? err.message : 'レポートの送信に失敗しました';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -44,9 +44,9 @@ export function SendTestRunReportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Send Test Run Report</DialogTitle>
+          <DialogTitle>テストランレポートを送信</DialogTitle>
           <DialogDescription>
-            Would you like to send the test run report via email to admin, project managers, and defect assignees?
+            管理者、プロジェクトマネージャー、Defect担当者にテストランレポートをメールで送信しますか？
           </DialogDescription>
         </DialogHeader>
         {error && (
@@ -61,7 +61,7 @@ export function SendTestRunReportDialog({
             disabled={isLoading}
             buttonName="Send Test Run Report Dialog - Cancel"
           >
-            No
+            いいえ
           </Button>
           <ButtonPrimary
             onClick={handleConfirm}
@@ -70,7 +70,7 @@ export function SendTestRunReportDialog({
             buttonName="Send Test Run Report Dialog - Send Report"
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isLoading ? 'Sending...' : 'Yes, Send Report'}
+            {isLoading ? '送信中...' : 'はい、送信する'}
           </ButtonPrimary>
         </div>
       </DialogContent>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
@@ -79,7 +79,46 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
   const [commentAttachments, setCommentAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>('');
   const commentsEndRef = useRef<HTMLDivElement>(null);
+
+  const uploadCommentAttachmentWithFallback = async (file: File): Promise<Attachment> => {
+    const uploadResult = await uploadFileToS3({
+      file,
+      fieldName: 'comment',
+      entityType: 'comment',
+      projectId,
+      onProgress: () => {},
+    });
+
+    if (uploadResult.success && uploadResult.attachment) {
+      return uploadResult.attachment;
+    }
+
+    // S3経由が失敗した場合はローカル保存へ再フォールバック
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fieldName', 'comment');
+    formData.append('entityType', 'comment');
+    formData.append('projectId', projectId);
+
+    const localResponse = await fetch('/api/attachments/upload-local', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!localResponse.ok) {
+      const localError = await localResponse.json().catch(() => ({ error: 'Failed to upload attachment' }));
+      throw new Error(uploadResult.error || localError.error || 'Failed to upload attachment');
+    }
+
+    const localData = await localResponse.json();
+    if (!localData?.attachment) {
+      throw new Error('アップロード結果が不正です');
+    }
+
+    return localData.attachment as Attachment;
+  };
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
@@ -103,9 +142,10 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
     if (!hasText && !hasAttachments) return;
 
     setSubmitting(true);
+    setSubmitError('');
     try {
       // First upload any pending attachments
-      const uploadedAttachments = [];
+      const uploadedAttachments: Attachment[] = [];
       for (const attachment of commentAttachments) {
         if (attachment.id.startsWith('pending-')) {
           // This is a pending attachment, need to upload it first
@@ -116,20 +156,8 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             continue;
           }
 
-          // Upload the file
-          const uploadResult = await uploadFileToS3({
-            file,
-            fieldName: 'comment',
-            entityType: 'comment',
-            projectId,
-            onProgress: () => {},
-          });
-
-          if (uploadResult.success && uploadResult.attachment) {
-            uploadedAttachments.push(uploadResult.attachment);
-          } else {
-            console.error('Failed to upload attachment:', uploadResult.error);
-          }
+          const uploaded = await uploadCommentAttachmentWithFallback(file);
+          uploadedAttachments.push(uploaded);
         } else {
           // Already uploaded
           uploadedAttachments.push(attachment);
@@ -170,6 +198,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
           if (!linkResponse.ok) {
             const errorText = await linkResponse.text();
             console.error('Failed to link attachment:', errorText);
+            throw new Error(`添付ファイルの関連付けに失敗しました: ${errorText}`);
           }
         }
       }
@@ -183,8 +212,9 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
       setTimeout(() => {
         commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } catch {
-      console.error('Failed to add comment');
+    } catch (error) {
+      console.error('Failed to add comment', error);
+      setSubmitError(error instanceof Error ? error.message : 'コメント投稿に失敗しました');
     } finally {
       setSubmitting(false);
     }
@@ -202,12 +232,12 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return 'たった今';
+    if (diffMins < 60) return `${diffMins}分前`;
+    if (diffHours < 24) return `${diffHours}時間前`;
+    if (diffDays < 7) return `${diffDays}日前`;
     
-    return commentDate.toLocaleDateString('en-US', {
+    return commentDate.toLocaleDateString('ja-JP', {
       month: 'short',
       day: 'numeric',
       year: commentDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
@@ -215,19 +245,19 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
   };
 
   return (
-    <DetailCard title="Comments" contentClassName="!p-0">
+    <DetailCard title="コメント" contentClassName="!p-0">
       <div className="flex flex-col h-[500px]">
         {/* Comments list */}
         <div className={`flex-1 p-6 space-y-4 ${comments.length > 0 ? 'overflow-y-auto custom-scrollbar' : 'overflow-y-hidden'}`}>
           {loading ? (
             <div className="flex items-center justify-center h-full text-gray-400">
-              Loading comments...
+              コメントを読み込み中...
             </div>
           ) : comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <div className="bg-gray-800/50 rounded-xl p-8 text-center">
-                <p className="text-base font-medium text-gray-300">No comments yet</p>
-                <p className="text-sm mt-2 text-gray-500">Be the first to share your thoughts</p>
+                <p className="text-base font-medium text-gray-300">まだコメントがありません</p>
+                <p className="text-sm mt-2 text-gray-500">最初のコメントを投稿してみましょう</p>
               </div>
             </div>
           ) : (
@@ -241,6 +271,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                 >
                   <div className="w-10 h-10 flex-shrink-0 ring-2 ring-white/10 rounded-full overflow-hidden">
                     {comment.user.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img 
                         src={comment.user.avatar} 
                         alt={comment.user.name} 
@@ -257,7 +288,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                       <span className={`text-sm font-semibold ${
                         isCurrentUser ? 'text-blue-400' : 'text-gray-200'
                       }`}>
-                        {isCurrentUser ? 'You' : comment.user.name}
+                        {isCurrentUser ? 'あなた' : comment.user.name}
                       </span>
                       <span className="text-xs text-gray-500 font-medium">
                         {formatTimestamp(comment.createdAt)}
@@ -302,7 +333,10 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
               attachments={commentAttachments}
               onAttachmentsChange={setCommentAttachments}
               entityType="comment"
-              placeholder="Write a comment..."
+              projectId={projectId}
+              forceShowAttachments={true}
+              uploadOnSave={true}
+              placeholder="コメントを入力..."
               rows={2}
               disabled={submitting}
             />
@@ -314,9 +348,12 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                 className="min-w-[120px]"
               >
                 <Send className="w-4 h-4 mr-2" />
-                {submitting ? 'Posting...' : 'Post Comment'}
+                {submitting ? '保存中...' : '保存する'}
               </ButtonPrimary>
             </div>
+            {submitError && (
+              <p className="text-xs text-red-400">{submitError}</p>
+            )}
           </form>
         </div>
       </div>

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useState, useEffect, useMemo, ReactNode } from 'react';
 import { ActionMenu } from '@/frontend/reusable-components/menus/ActionMenu';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 
 export interface ColumnDef<T> {
   key: string;
-  label: string;
+  label: ReactNode;
   width?: string;
   render?: (row: T, index: number) => ReactNode;
   className?: string;
@@ -47,6 +47,7 @@ export interface GroupedDataTableProps<T> {
   rowClassName?: string;
   emptyMessage?: string;
   gridTemplateColumns?: string;
+  defaultExpanded?: boolean;
 }
 
 /**
@@ -88,8 +89,23 @@ export function GroupedDataTable<T = Record<string, unknown>>({
   rowClassName = '',
   emptyMessage = 'No data available',
   gridTemplateColumns,
+  defaultExpanded = false,
 }: GroupedDataTableProps<T>) {
+  // デフォルト展開時は全グループIDを初期値にする
+  const allGroupIds = useMemo(() => {
+    if (!defaultExpanded || !grouped || !groupConfig) return new Set<string>();
+    const ids = new Set<string>();
+    data.forEach((row) => ids.add(groupConfig.getGroupId(row)));
+    return ids;
+  }, [defaultExpanded, grouped, groupConfig, data]);
+
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (defaultExpanded && allGroupIds.size > 0) {
+      setExpandedGroups(allGroupIds);
+    }
+  }, [defaultExpanded, allGroupIds]);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) => {
