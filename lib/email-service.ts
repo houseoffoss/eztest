@@ -11,6 +11,8 @@ interface EmailOptions {
 
 interface DefectAssignmentEmailData {
   assignee: User;
+  /** Additional recipients (e.g. watchers) who receive the same notification with watcher wording */
+  additionalRecipients?: User[];
   defectId: string;
   defectKey: string;
   defectTitle: string;
@@ -68,6 +70,17 @@ interface DefectUpdateEmailData {
   assignedTo?: User;
   createdBy: User;
   recipients: User[];
+  appUrl: string;
+}
+
+interface DefectWatcherAddedEmailData {
+  watcher: User;
+  defectId: string;
+  defectKey: string;
+  defectTitle: string;
+  projectId: string;
+  projectName: string;
+  addedByUser: User;
   appUrl: string;
 }
 
@@ -697,8 +710,130 @@ View defect: ${defectUrl}
 This is an automated notification from EZTest.
   `;
 
-  return sendEmail({
+  const assigneeSent = await sendEmail({
     to: data.assignee.email,
+    subject,
+    html,
+    text,
+  });
+
+  // Send to additional recipients (e.g. watchers) with watcher-specific wording
+  if (data.additionalRecipients?.length) {
+    const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
+    const watcherPromises = data.additionalRecipients.map(async (recipient) => {
+      const watcherHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+        </div>
+
+        <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+          <h2 style="color: #991b1b; font-size: 20px; margin: 0;">🐛 Defect Assignment (Watching)</h2>
+        </div>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
+          Hi <strong>${recipient.name}</strong>,
+        </p>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+          A defect you're watching has been assigned to <strong>${data.assignee.name}</strong> in project <strong>${data.projectName}</strong> by <strong>${data.assignedBy.name}</strong>.
+        </p>
+
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectKey}: ${data.defectTitle}</h3>
+          ${data.defectDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">${data.defectDescription}</p>` : ''}
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status} | Severity: ${data.severity} | Priority: ${data.priority}</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">View Defect</a>
+        </div>
+
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">This is an automated notification from EZTest.</p>
+      </div>
+    </div>
+  `;
+      const watcherText = `Hi ${recipient.name},\n\nA defect you're watching has been assigned to ${data.assignee.name} in project ${data.projectName}.\n\n${data.defectKey}: ${data.defectTitle}\nView: ${defectUrl}`;
+      return sendEmail({
+        to: recipient.email,
+        subject,
+        html: watcherHtml,
+        text: watcherText,
+      });
+    });
+    const watcherResults = await Promise.all(watcherPromises);
+    return assigneeSent && watcherResults.every(Boolean);
+  }
+
+  return assigneeSent;
+}
+
+/**
+ * Send email when a user is added as a watcher to a defect
+ */
+export async function sendDefectWatcherAddedEmail(
+  data: DefectWatcherAddedEmailData
+): Promise<boolean> {
+  const subject = `👁️ Added as Watcher: ${data.defectTitle}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+        </div>
+
+        <div style="background-color: #eef2ff; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+          <h2 style="color: #3730a3; font-size: 18px; margin: 0;">👁️ You're now watching a defect</h2>
+        </div>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
+          Hi <strong>${data.watcher.name}</strong>,
+        </p>
+
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+          You've been added as a watcher on the defect <strong>${data.defectKey}: ${data.defectTitle}</strong> in project <strong>${data.projectName}</strong> by <strong>${data.addedByUser.name}</strong>.
+          You'll receive email notifications for comments and status changes on this defect.
+        </p>
+
+        <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+          <p style="color: #4b5563; font-size: 14px; margin: 0 0 4px 0;"><strong>Defect:</strong> ${data.defectKey}: ${data.defectTitle}</p>
+          <p style="color: #6b7280; font-size: 13px; margin: 0;"><strong>Project:</strong> ${data.projectName}</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
+            View Defect
+          </a>
+        </div>
+
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+          This is an automated notification from EZTest.
+        </p>
+      </div>
+    </div>
+  `;
+
+  const text = `
+You are now watching a defect.
+
+Defect: ${data.defectKey}: ${data.defectTitle}
+Project: ${data.projectName}
+
+You will receive notifications for comments and status changes on this defect.
+
+View defect: ${defectUrl}
+
+---
+This is an automated notification from EZTest.
+  `;
+
+  return sendEmail({
+    to: data.watcher.email,
     subject,
     html,
     text,

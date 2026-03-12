@@ -10,6 +10,7 @@ import {
   sendUserInvitationEmail as sendUserInvitationEmailUtil,
   sendUserUpdateEmail as sendUserUpdateEmailUtil,
   sendUserDeleteEmail as sendUserDeleteEmailUtil,
+  sendDefectWatcherAddedEmail as sendDefectWatcherAddedEmailUtil,
   isEmailServiceAvailable as checkEmailServiceAvailable,
 } from '@/lib/email-service';
 import { NotFoundException } from '@/backend/utils/exceptions';
@@ -86,6 +87,13 @@ interface SendUserDeleteEmailInput {
   appUrl: string;
 }
 
+interface SendDefectWatcherAddedEmailInput {
+  defectId: string;
+  watcherId: string;
+  addedByUserId: string;
+  appUrl: string;
+}
+
 export class EmailService {
   /**
    * Send defect creation notification email to the creator
@@ -111,13 +119,18 @@ export class EmailService {
     }
 
     try {
-      // Fetch defect with all related data
+      // Fetch defect with all related data and watchers
       const defect = await prisma.defect.findUnique({
         where: { id: defectId },
         include: {
           project: true,
           assignedTo: true,
           createdBy: true,
+          watchers: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
@@ -195,6 +208,14 @@ export class EmailService {
         }
       });
 
+      // Add watchers (excluding soft-deleted)
+      defect.watchers.forEach((w) => {
+        if (w.user.deletedAt == null && !recipientIds.has(w.user.id)) {
+          recipientIds.add(w.user.id);
+          recipients.push(w.user);
+        }
+      });
+
       console.log('[EMAIL] Sending email to', recipients.length, 'recipient(s):');
       recipients.forEach((r) => console.log('[EMAIL]   -', r.email));
 
@@ -248,12 +269,17 @@ export class EmailService {
     }
 
     try {
-      // Fetch defect
+      // Fetch defect with watchers
       const defect = await prisma.defect.findUnique({
         where: { id: defectId },
         include: {
           project: true,
           assignedTo: true,
+          watchers: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
@@ -282,9 +308,15 @@ export class EmailService {
         throw new NotFoundException('User not found');
       }
 
+      // Watchers as additional recipients (exclude assignee and soft-deleted)
+      const additionalRecipients = defect.watchers
+        .filter((w) => w.user.deletedAt == null && w.user.id !== assignee.id)
+        .map((w) => w.user);
+
       // Send email via utility function
       const emailSent = await sendDefectAssignmentEmailUtil({
         assignee,
+        additionalRecipients: additionalRecipients.length > 0 ? additionalRecipients : undefined,
         defectId: defect.id,
         defectKey: defect.defectId,
         defectTitle: defect.title,
@@ -321,13 +353,18 @@ export class EmailService {
     }
 
     try {
-      // Fetch defect with all related data
+      // Fetch defect with all related data and watchers
       const defect = await prisma.defect.findUnique({
         where: { id: defectId },
         include: {
           project: true,
           assignedTo: true,
           createdBy: true,
+          watchers: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
@@ -378,7 +415,7 @@ export class EmailService {
           })
         : [];
 
-      // Collect all recipients: admins + project managers + creator + assignee + updater (avoid duplicates)
+      // Collect all recipients: admins + project managers + creator + assignee + updater + watchers (avoid duplicates)
       const recipientIds = new Set<string>();
       const recipients: typeof adminUsers = [];
 
@@ -411,6 +448,14 @@ export class EmailService {
         if (!recipientIds.has(pm.id)) {
           recipientIds.add(pm.id);
           recipients.push(pm);
+        }
+      });
+
+      // Add watchers (excluding soft-deleted)
+      defect.watchers.forEach((w) => {
+        if (w.user.deletedAt == null && !recipientIds.has(w.user.id)) {
+          recipientIds.add(w.user.id);
+          recipients.push(w.user);
         }
       });
 
@@ -544,7 +589,7 @@ export class EmailService {
     }
 
     try {
-      // Fetch defect with related data
+      // Fetch defect with related data and watchers
       const defect = await prisma.defect.findUnique({
         where: { id: defectId },
         include: {
@@ -552,6 +597,9 @@ export class EmailService {
           assignedTo: true,
           createdBy: true,
           comments: {
+            include: { user: true },
+          },
+          watchers: {
             include: { user: true },
           },
         },
@@ -587,6 +635,13 @@ export class EmailService {
       defect.comments.forEach((comment) => {
         if (comment.user.id !== commentAuthorId) {
           usersToNotifySet.add(comment.user.id);
+        }
+      });
+
+      // Add watchers (excluding comment author and soft-deleted)
+      defect.watchers.forEach((w) => {
+        if (w.user.deletedAt == null && w.user.id !== commentAuthorId) {
+          usersToNotifySet.add(w.user.id);
         }
       });
 
@@ -732,6 +787,64 @@ export class EmailService {
       return emailSent;
     } catch (error) {
       console.error('Error sending member removal email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send notification when a user is added as a watcher to a defect
+   */
+  async sendDefectWatcherAddedEmail(input: SendDefectWatcherAddedEmailInput): Promise<boolean> {
+    const { defectId, watcherId, addedByUserId, appUrl } = input;
+
+    const isAvailable = await checkEmailServiceAvailable();
+    if (!isAvailable) {
+      console.warn('Email service not available, skipping defect watcher added email');
+      return false;
+    }
+
+    try {
+      const defect = await prisma.defect.findUnique({
+        where: { id: defectId },
+        include: {
+          project: true,
+        },
+      });
+
+      if (!defect) {
+        throw new NotFoundException('Defect not found');
+      }
+
+      const watcher = await prisma.user.findUnique({
+        where: { id: watcherId },
+      });
+
+      if (!watcher) {
+        throw new NotFoundException('Watcher not found');
+      }
+
+      const addedByUser = await prisma.user.findUnique({
+        where: { id: addedByUserId },
+      });
+
+      if (!addedByUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      const emailSent = await sendDefectWatcherAddedEmailUtil({
+        watcher,
+        defectId: defect.id,
+        defectKey: defect.defectId,
+        defectTitle: defect.title,
+        projectId: defect.project.id,
+        projectName: defect.project.name,
+        addedByUser,
+        appUrl,
+      });
+
+      return emailSent;
+    } catch (error) {
+      console.error('Error sending defect watcher added email:', error);
       return false;
     }
   }

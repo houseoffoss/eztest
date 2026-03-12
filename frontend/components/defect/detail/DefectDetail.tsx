@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
@@ -22,6 +22,7 @@ import {
   DeleteDefectDialog,
   LinkedTestCasesCard,
   DefectCommentsCard,
+  DefectWatchersCard,
 } from './subcomponents';
 
 interface DefectDetailProps {
@@ -436,6 +437,12 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
 
           <div className="space-y-6">
             <DefectInfoCard defect={defect} />
+            <DefectWatchersCard
+              defect={defect}
+              projectId={projectId}
+              defectId={defectId}
+              onRefresh={fetchDefect}
+            />
           </div>
         </div>
 

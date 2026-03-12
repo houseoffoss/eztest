@@ -146,14 +146,22 @@ export function hasPermission(
 ) {
   return baseInterceptor(async (request: NextRequest, context) => {
     // Extract projectId from URL if available (for project-specific key validation)
+    // Only treat the segment after `/api/projects/` as a projectId.
+    // This avoids misinterpreting other `[id]` params (e.g. attachmentId, commentId) as project IDs.
     let projectId: string | undefined;
     try {
-      const params = await context.params;
-      if (params && 'id' in params) {
-        projectId = params.id as string;
+      const url = new URL(request.url);
+      const segments = url.pathname.split('/').filter(Boolean);
+      const apiIndex = segments.indexOf('api');
+      if (
+        apiIndex !== -1 &&
+        segments[apiIndex + 1] === 'projects' &&
+        segments[apiIndex + 2]
+      ) {
+        projectId = segments[apiIndex + 2];
       }
     } catch {
-      // No projectId in URL, that's fine
+      // If URL parsing fails, we simply won't apply project-scoped checks
     }
 
     // Authenticate using either API key or session
