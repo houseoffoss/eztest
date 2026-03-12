@@ -130,18 +130,17 @@ export const HeroSection = () => {
 
       {/* Grid image layer - shifted down so it starts below title/description */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-[28%] z-0 h-[420px] bg-[url('/Grid.png')] bg-top bg-no-repeat bg-[length:min(1600px,100vw)_auto]"
+        className="pointer-events-none absolute inset-x-0 top-[28%] z-0 h-[280px] sm:h-[350px] md:h-[420px] bg-[url('/Grid.png')] bg-top bg-no-repeat bg-[length:min(1600px,100vw)_auto]"
         aria-hidden="true"
       />
 
       {/* Centered content container (match width with HowEzTestWorksSection) */}
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <h1
-          className="mb-4 text-[34px] sm:text-[42px] md:text-[50px] lg:text-[55px] font-semibold leading-[1] tracking-[0] text-white"
+          className="mb-4 text-[28px] xs:text-[34px] sm:text-[42px] md:text-[50px] lg:text-[55px] font-semibold leading-[1.1] sm:leading-[1] tracking-[0] text-white"
           style={{
             fontFamily: 'var(--font-inter)',
             fontWeight: 600,
-            lineHeight: '100%',
             letterSpacing: '0%',
           }}
         >
@@ -151,12 +150,11 @@ export const HeroSection = () => {
         </h1>
 
         <p
-          className="mb-8 max-w-3xl mx-auto text-white/75"
+          className="mb-6 sm:mb-8 max-w-3xl mx-auto text-white/75 text-base sm:text-lg md:text-xl"
           style={{
             fontFamily: 'var(--font-inter)',
             fontWeight: 500,
-            fontSize: '20px',
-            lineHeight: '37.26px',
+            lineHeight: '1.5',
             letterSpacing: '0%',
           }}
         >
@@ -165,7 +163,7 @@ export const HeroSection = () => {
         </p>
 
         {/* Screenshot Showcase */}
-        <div className="relative mx-auto mt-64 max-w-6xl px-1 hero-tilt-perspective">
+        <div className="relative mx-auto mt-32 sm:mt-48 md:mt-64 max-w-6xl px-1 hero-tilt-perspective">
           <div ref={zoomTargetRef} className="relative hero-zoom-target">
             <div className="hero-window-glow" aria-hidden="true" />
             <div className="hero-window">

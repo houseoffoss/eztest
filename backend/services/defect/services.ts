@@ -430,6 +430,18 @@ export class DefectService {
             createdAt: 'desc',
           },
         },
+        watchers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -462,6 +474,93 @@ export class DefectService {
       ...defect,
       testCases: testCasesWithFailureCount,
     };
+  }
+
+  /**
+   * Get watchers for a defect
+   */
+  async getDefectWatchers(defectId: string) {
+    const defect = await prisma.defect.findUnique({
+      where: { id: defectId },
+      select: { id: true },
+    });
+    if (!defect) {
+      return null;
+    }
+    return prisma.defectWatcher.findMany({
+      where: { defectId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Add a watcher to a defect. Validates defect exists and user is a project member.
+   */
+  async addWatcher(defectId: string, userId: string) {
+    const defect = await prisma.defect.findUnique({
+      where: { id: defectId },
+      select: { id: true, projectId: true },
+    });
+    if (!defect) {
+      throw new Error('Defect not found');
+    }
+    const isMember = await prisma.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: defect.projectId,
+          userId,
+        },
+      },
+    });
+    if (!isMember) {
+      throw new Error('User is not a project member');
+    }
+    return prisma.defectWatcher.upsert({
+      where: {
+        defectId_userId: { defectId, userId },
+      },
+      create: { defectId, userId },
+      update: {},
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Remove a watcher from a defect
+   */
+  async removeWatcher(defectId: string, userId: string) {
+    const existing = await prisma.defectWatcher.findUnique({
+      where: {
+        defectId_userId: { defectId, userId },
+      },
+    });
+    if (!existing) {
+      throw new Error('Watcher not found');
+    }
+    await prisma.defectWatcher.delete({
+      where: {
+        defectId_userId: { defectId, userId },
+      },
+    });
+    return { success: true };
   }
 
   /**

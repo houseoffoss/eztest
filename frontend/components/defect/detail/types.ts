@@ -49,6 +49,17 @@ export interface Defect {
   } | null;
   attachments: DefectAttachment[];
   comments: DefectComment[];
+  watchers?: DefectWatcher[];
+}
+
+export interface DefectWatcher {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+  };
 }
 
 export interface DefectAttachment {

@@ -54,10 +54,6 @@ export function Navbar({
   }, [actions, renderActionButtons]);
 
   // Check if we have only a sign-out button
-  // This is true when:
-  // - No navigation items
-  // - Actions is an array with only one item of type 'signout'
-  // OR when hideNavbarContainer prop is explicitly set to true
   const hasOnlySignOutButton = hideNavbarContainer || (
     (!items || items.length === 0) && 
     Array.isArray(actions) && 
@@ -68,12 +64,12 @@ export function Navbar({
   // Marketing variant (new design with centered nav and gradient border)
   if (variant === 'marketing') {
     return (
-      <header className={cn("sticky top-4 z-50", className)} {...props}>
-        <div className={cn("w-full px-4 sm:px-6 lg:px-8", containerClassName)}>
-          <div className="flex items-center justify-center gap-3 w-full relative">
+      <header className={cn("sticky top-0 sm:top-2 z-50 py-2 sm:py-4 overflow-visible", className)} {...props}>
+        <div className={cn("w-full px-2 sm:px-4 md:px-6 lg:px-8", containerClassName)}>
+          <div className="flex items-center justify-between sm:justify-center gap-2 sm:gap-3 w-full relative min-h-[52px]">
             {/* Left side: Brand */}
             {brandLabel ? (
-              <div className="flex items-center gap-3 absolute left-0">
+              <div className="flex items-center gap-2 sm:gap-3 absolute left-0 z-20">
                 <Link href={brandHref} className="shrink-0 inline-flex items-center">
                   {brandLabel}
                 </Link>
@@ -83,61 +79,101 @@ export function Navbar({
             {/* Center: Nav items + Breadcrumbs */}
             {((items && items.length > 0) || breadcrumbs) ? (
               <div 
-                className="inline-flex items-center rounded-[53px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
+                className="hidden sm:inline-flex items-center relative rounded-[100px] mx-auto"
                 style={{
-                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.1) 6%, rgba(255, 255, 255, 0.15) 13%, rgba(255, 255, 255, 0.25) 25%, rgba(255, 255, 255, 0.4) 42%, rgba(255, 255, 255, 0.4) 44%, rgba(255, 255, 255, 0.25) 69%, rgba(255, 255, 255, 0.15) 83%, rgba(255, 255, 255, 0.1) 91%, rgba(255, 255, 255, 0.08) 100%)',
+                  height: '52px',
+                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                  paddingTop: '6px',
+                  paddingRight: '10px',
+                  paddingBottom: '6px',
+                  paddingLeft: '10px',
+                  gap: '10px',
+                  backdropFilter: 'blur(40px)',
+                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
                 }}
               >
-                <div className="inline-flex items-center gap-[10px] rounded-[53px] px-[10px] py-[6px]" style={{ backgroundColor: '#050608' }}>
-                  <nav className="hidden md:flex items-center gap-1">
-                    {items && items.length > 0 ? (
-                      <>
-                        {items.map((it) => {
-                          // Use exact matching to prevent multiple highlights
-                          const active = pathname === it.href;
-                          return (
-                            <Link
-                              key={it.href}
-                              href={it.href}
-                              className={cn(
-                                "px-4 py-2 text-sm rounded-full transition-colors cursor-pointer",
-                                active
-                                  ? "bg-white/12 text-white shadow-inner"
-                                  : "text-white/80 hover:text-white hover:bg-white/8"
-                              )}
-                              aria-current={active ? "page" : undefined}
-                            >
-                              {it.label}
-                            </Link>
-                          );
-                        })}
-                      </>
-                    ) : null}
-                    {breadcrumbs && (
-                      <>
-                        {React.isValidElement(breadcrumbs) && 
-                         breadcrumbs.type === React.Fragment ? (
-                          // If breadcrumbs is a Fragment, render children directly
-                          (breadcrumbs.props as { children?: React.ReactNode }).children
-                        ) : (
-                          // Single breadcrumb item
-                          breadcrumbs
-                        )}
-                      </>
-                    )}
-                  </nav>
-                </div>
+                <div
+                  className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
+                  style={{
+                    background: 'conic-gradient(from 275deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 145deg, rgba(255, 255, 255, 0.05) 175deg, rgba(255, 255, 255, 0.4) 180deg, rgba(255, 255, 255, 0.4) 325deg, rgba(255, 255, 255, 0.05) 355deg, rgba(255, 255, 255, 0.4) 360deg)',
+                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    maskComposite: 'exclude',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    padding: '1px',
+                  }}
+                />
+                <nav className="hidden md:flex items-center gap-1 relative z-10">
+                  {items && items.length > 0 ? (
+                    <>
+                      {items.map((it) => {
+                        // Use exact matching to prevent multiple highlights
+                        const active = pathname === it.href;
+                        return (
+                          <Link
+                            key={it.href}
+                            href={it.href}
+                            className={cn(
+                              "px-4 py-2 text-sm rounded-full transition-all cursor-pointer",
+                              active
+                                ? "bg-white/12 text-white shadow-inner"
+                                : "text-white/80 hover:text-white"
+                            )}
+                            style={!active ? {
+                              '--hover-bg': 'rgba(255, 255, 255, 0.05)',
+                              '--hover-backdrop': 'blur(10px)',
+                              '--hover-border': '1px solid rgba(255, 255, 255, 0.1)',
+                            } as React.CSSProperties & {
+                              '--hover-bg'?: string;
+                              '--hover-backdrop'?: string;
+                              '--hover-border'?: string;
+                            } : undefined}
+                            onMouseEnter={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                e.currentTarget.style.backdropFilter = 'blur(10px)';
+                                e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!active) {
+                                e.currentTarget.style.background = '';
+                                e.currentTarget.style.backdropFilter = '';
+                                e.currentTarget.style.border = '';
+                              }
+                            }}
+                            aria-current={active ? "page" : undefined}
+                          >
+                            {it.label}
+                          </Link>
+                        );
+                      })}
+                    </>
+                  ) : null}
+                  {breadcrumbs && (
+                    <>
+                      {React.isValidElement(breadcrumbs) && 
+                       breadcrumbs.type === React.Fragment ? (
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                          {(breadcrumbs.props as { children?: React.ReactNode }).children}
+                        </div>
+                      ) : (
+                        breadcrumbs
+                      )}
+                    </>
+                  )}
+                </nav>
               </div>
             ) : null}
 
             {/* Right side: Actions */}
             {renderedActions ? (
               hasOnlySignOutButton ? (
-                <div className="absolute right-0">
+                <div className="absolute right-0 z-20">
                   {renderedActions}
                 </div>
               ) : (
-                <div className="absolute right-0">
+                <div className="absolute right-0 z-20 flex items-center gap-1 sm:gap-2">
                   {renderedActions}
                 </div>
               )
@@ -167,12 +203,10 @@ export function Navbar({
                 <>
                   {React.isValidElement(breadcrumbs) && 
                    breadcrumbs.type === React.Fragment ? (
-                    // If breadcrumbs is a Fragment, render children separately (for multiple separate items)
                     <div className="flex items-center gap-2">
                       {(breadcrumbs.props as { children?: React.ReactNode }).children}
                     </div>
                   ) : (
-                    // Single breadcrumb item - wrap in glass panel
                     <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
                       {breadcrumbs}
                     </div>
@@ -195,7 +229,6 @@ export function Navbar({
                 {items && items.length > 0 ? (
                   <nav className="hidden md:flex items-center gap-1">
                     {items.map((it) => {
-                      // Use exact matching to prevent multiple highlights
                       const active = pathname === it.href;
                       return (
                         <Link
@@ -231,4 +264,3 @@ export function Navbar({
 }
 
 export default Navbar;
-

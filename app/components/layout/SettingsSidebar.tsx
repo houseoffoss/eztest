@@ -36,13 +36,13 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
 
   return (
     <div
-      className={cn('w-52 flex-shrink-0 rounded-3xl p-[0.5px]', className)}
+      className={cn('w-52 flex-shrink-0 rounded-3xl p-[1.0px] transition-all duration-300', className)}
       style={{
         background: gradientStyle,
       }}
     >
       <div className="relative overflow-hidden flex flex-col h-full rounded-3xl" style={{ backgroundColor: '#0a1628' }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl border border-white/10 shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
         <div className="relative z-10 h-full flex flex-col">
       <nav className="space-y-1 p-4 flex-1">
         {SETTINGS_ITEMS.map((item) => {
@@ -70,7 +70,7 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
       </nav>
       
       {/* Sign Out Button at Bottom */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/[0.08]">
         <SignOutButton 
           size="sm" 
           className="w-full px-4 flex items-center justify-center gap-2"

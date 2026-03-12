@@ -1,0 +1,171 @@
+# EZTest — Full Documentation for LLMs
+
+> EZTest is a lightweight, open-source, self-hosted test management platform built for modern QA and engineering teams. Organize test cases, suites, runs, and defects in one transparent platform.
+
+## Overview
+
+EZTest is an open-source test management platform that provides a structured workflow for managing both manual and automated tests. It helps QA and engineering teams stay organized and move with confidence through the entire testing lifecycle.
+
+Developed by Belsterns and available through House Of FOSS for managed hosting, EZTest is licensed under AGPL-3.0 and is completely free to use and self-host.
+
+## Core Concepts
+
+### Projects
+Projects are the top-level organizational unit. Each project contains its own test cases, test suites, test runs, defects, and team members. Projects have configurable settings and support role-based access control.
+
+### Test Cases
+Test cases are the fundamental building blocks. Each test case includes:
+- Title and description
+- Priority level (Critical, High, Medium, Low)
+- Type (Functional, Regression, Smoke, Integration, etc.)
+- Status (Draft, Active, Deprecated)
+- Step-by-step test steps with expected results
+- File attachments (screenshots, documents)
+- Linked defects for traceability
+- Execution history across test runs
+
+### Test Suites
+Test suites group related test cases for organized test planning. Features include:
+- Hierarchical organization within projects
+- Ability to add/remove test cases
+- Suite-level metadata and descriptions
+
+### Test Runs
+Test runs represent a specific execution cycle. Features include:
+- Select test cases or suites to include in a run
+- Record individual test case results (Pass, Fail, Blocked, Skipped)
+- Add comments and attachments to results
+- Track execution progress and completion status
+- Export results for reporting
+- XML import/export for CI/CD integration (JUnit format)
+- Email reporting capabilities
+
+### Defects
+Defect tracking is integrated directly into the testing workflow:
+- Create defects linked to specific test cases
+- Assign defects to team members
+- Track defect status and resolution
+- Bulk operations (assign, status change, delete)
+- File attachments for evidence
+- Email notifications for assignments
+
+### Modules
+Modules provide hierarchical organization for test cases within a project:
+- Create nested module structures
+- Drag-and-drop reordering
+- Filter test cases by module
+
+## Key Features
+
+### Test Case Management
+- Create, edit, and organize test cases with rich metadata
+- Define step-by-step test procedures with expected results
+- Attach files and screenshots to test cases and steps
+- Import test cases from CSV files
+- Export test cases to CSV for backup or migration
+- Bulk operations for efficient management
+
+### Test Execution
+- Create test runs from selected test cases or suites
+- Record pass/fail/blocked/skipped results per test case
+- Add execution notes and attachments
+- Track execution progress in real-time
+- Complete or abort test runs
+- Generate and email test run reports
+
+### Defect Tracking
+- Integrated defect logging from test results
+- Link defects to test cases for traceability
+- Assign defects to team members with email notifications
+- Track defect lifecycle (Open, In Progress, Fixed, Closed, etc.)
+- Bulk status updates and assignments
+- Import/export defect data
+
+### Project Management
+- Create and configure multiple projects
+- Invite and manage team members
+- Role-based permissions (Admin, Manager, Tester, Viewer)
+- Project-level settings and customization
+- Dashboard with project statistics and metrics
+
+### Import & Export
+- CSV import/export for test cases
+- CSV import/export for defects
+- XML (JUnit) import/export for test runs
+- Interoperability with CI/CD pipelines
+
+### Collaboration
+- Comment system on defects and test cases
+- File attachments on comments
+- Email notifications for assignments and updates
+- Team member management per project
+
+### Administration
+- User management (create, edit, deactivate users)
+- Customizable dropdown options (priorities, statuses, types)
+- System-wide configuration
+- API key management for integrations
+
+## Technical Architecture
+
+### Tech Stack
+- **Frontend & Backend**: Next.js 15 (App Router, TypeScript)
+- **Database**: PostgreSQL via Prisma ORM
+- **Authentication**: NextAuth.js with credentials provider
+- **File Storage**: S3-compatible object storage (AWS S3, MinIO, etc.)
+- **Email**: SMTP integration for notifications
+- **Analytics**: Optional Firebase Analytics
+- **Styling**: Tailwind CSS with custom glassmorphism design system
+
+### Deployment Options
+1. **Self-Hosted with Docker**: Full Docker support with docker-compose for easy deployment
+2. **Standalone Node.js**: Build and run as a standalone Next.js application
+3. **Managed Hosting via House Of FOSS**: Fully managed deployment with enterprise support
+
+### API
+EZTest provides a comprehensive REST API covering:
+- Projects CRUD and management
+- Test cases CRUD with steps and attachments
+- Test suites CRUD with test case associations
+- Test runs CRUD with result recording
+- Defects CRUD with assignments
+- User management and authentication
+- File upload/download (multipart S3 uploads)
+- Import/export endpoints
+
+## Pricing
+
+EZTest is **100% free and open-source** under the AGPL-3.0 license. There are no per-user fees, no feature gates, and no premium tiers.
+
+For managed hosting through House Of FOSS, you pay only for server usage (not per user), which can save up to 60% compared to commercial test management tools.
+
+## Comparison with Alternatives
+
+EZTest is designed as a transparent, self-hosted alternative to commercial test management tools like:
+- TestRail
+- Zephyr
+- qTest
+- PractiTest
+
+Key differentiators:
+- **Open Source**: Full source code access, no vendor lock-in
+- **Self-Hosted**: Complete data ownership and privacy
+- **No Per-User Pricing**: Unlimited users at no additional cost
+- **Modern Stack**: Built with Next.js, TypeScript, and modern web technologies
+- **Lightweight**: Minimal infrastructure requirements
+- **Extensible**: API-first design for custom integrations
+
+## Links
+
+- **Website**: https://eztest.houseoffoss.com
+- **GitHub Repository**: https://github.com/houseoffoss/eztest
+- **House Of FOSS (Managed Hosting)**: https://www.houseoffoss.com
+- **Belsterns (Creator)**: https://belsterns.com
+- **License**: AGPL-3.0 (https://github.com/houseoffoss/eztest/blob/main/LICENSE)
+
+## Contact
+
+- **Organization**: Belsterns
+- **Twitter/X**: @houseoffoss
+- **GitHub Issues**: https://github.com/houseoffoss/eztest/issues
+

@@ -342,7 +342,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
   return (
     <div
       className={cn(
-        'fixed left-2 top-2 bottom-2 h-auto rounded-3xl p-[0.5px] transition-all duration-300',
+        'fixed left-2 top-2 bottom-2 h-auto rounded-3xl p-[1.0px] transition-all duration-300',
         isMounted && isCollapsed ? 'w-16' : 'w-56',
         className
       )}
@@ -354,7 +354,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
         className="h-full relative overflow-hidden flex flex-col rounded-3xl"
         style={{ backgroundColor: '#0a1628' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl border border-white/10 shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
         <div className={cn(
           'relative z-10 h-full flex flex-col',
           isMounted && isCollapsed ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'

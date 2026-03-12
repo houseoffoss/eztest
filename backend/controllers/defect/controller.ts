@@ -6,7 +6,8 @@ import {
   defectQuerySchema,
   bulkDeleteSchema,
   bulkUpdateStatusSchema,
-  bulkAssignSchema
+  bulkAssignSchema,
+  addWatcherSchema,
 } from '@/backend/validators/defect';
 import { linkAttachmentsSchema } from '@/backend/validators/attachment.validator';
 import { CustomRequest } from '@/backend/utils/interceptor';
@@ -518,6 +519,75 @@ export class DefectController {
         throw new ValidationException('Defect attachment not found');
       }
       throw new ValidationException('Failed to delete attachment');
+    }
+  }
+
+  /**
+   * Get watchers for a defect
+   */
+  async getDefectWatchers(req: CustomRequest, defectId: string) {
+    const watchers = await defectService.getDefectWatchers(defectId);
+    if (watchers === null) {
+      throw new ValidationException('Defect not found');
+    }
+    return { data: watchers };
+  }
+
+  /**
+   * Add a watcher to a defect
+   */
+  async addWatcher(req: CustomRequest, defectId: string, body: unknown) {
+    const validationResult = addWatcherSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+    const { userId } = validationResult.data;
+    try {
+      const watcher = await defectService.addWatcher(defectId, userId);
+      const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
+
+      // Fire-and-forget email to the newly added watcher
+      const addedByUserId = req.userInfo?.id;
+      if (addedByUserId) {
+        emailService
+          .sendDefectWatcherAddedEmail({
+            defectId,
+            watcherId: userId,
+            addedByUserId,
+            appUrl,
+          })
+          .catch((error) => {
+            console.error('Failed to send defect watcher added email:', error);
+          });
+      }
+
+      return { data: watcher };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Defect not found') {
+        throw new ValidationException('Defect not found');
+      }
+      if (error instanceof Error && error.message === 'User is not a project member') {
+        throw new ValidationException('User is not a project member');
+      }
+      throw new ValidationException('Failed to add watcher');
+    }
+  }
+
+  /**
+   * Remove a watcher from a defect
+   */
+  async removeWatcher(req: CustomRequest, defectId: string, userId: string) {
+    try {
+      await defectService.removeWatcher(defectId, userId);
+      return { data: { success: true } };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Watcher not found') {
+        throw new ValidationException('Watcher not found');
+      }
+      throw new ValidationException('Failed to remove watcher');
     }
   }
 }
