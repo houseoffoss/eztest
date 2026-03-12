@@ -47,6 +47,7 @@ model User {
   defectComments  DefectComment[]
   defectAttachments DefectAttachment[]
   commentAttachments CommentAttachment[]
+  defectWatchers  DefectWatcher[]
 
   @@index([email])
   @@index([roleId])
@@ -480,6 +481,7 @@ model Defect {
   testCases     TestCaseDefect[] // Many-to-many relation
   attachments   DefectAttachment[]
   comments      DefectComment[]
+  watchers      DefectWatcher[]
 
   @@unique([projectId, defectId])
   @@index([projectId])
@@ -523,6 +525,20 @@ model DefectComment {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   attachments   CommentAttachment[]
 
+  @@index([defectId])
+  @@index([userId])
+}
+
+model DefectWatcher {
+  id        String   @id @default(cuid())
+  defectId  String
+  userId    String
+  addedAt   DateTime @default(now())
+
+  defect    Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([defectId, userId])
   @@index([defectId])
   @@index([userId])
 }

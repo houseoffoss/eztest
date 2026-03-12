@@ -115,8 +115,9 @@ export class AttachmentService {
         ContentType: fileType,
         ServerSideEncryption: 'AES256',
         Metadata: {
-          originalName: fileName,
-          uploadedAt: new Date().toISOString(),
+            // Use a sanitized name in metadata to avoid invalid header characters
+            originalName: sanitizedFileName,
+            uploadedAt: new Date().toISOString(),
         },
       })
     );

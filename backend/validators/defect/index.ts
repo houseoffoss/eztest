@@ -51,3 +51,7 @@ export const bulkAssignSchema = z.object({
   defectIds: z.array(z.string()).min(1, 'At least one defect ID is required'),
   assignedToId: z.string().nullable(),
 });
+
+export const addWatcherSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+});
