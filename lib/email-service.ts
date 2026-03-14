@@ -32,6 +32,7 @@ interface TestRunReportEmailData {
   testRunName: string;
   testRunDescription?: string;
   environment?: string;
+  projectId: string;
   projectName: string;
   stats: {
     total: number;
@@ -50,6 +51,7 @@ interface DefectCommentEmailData {
   defectKey: string;
   commentAuthor: User;
   commentContent: string;
+  projectId: string;
   projectName: string;
   recipients: User[];
   appUrl: string;
@@ -1029,7 +1031,7 @@ export async function sendTestRunReportEmail(
   data: TestRunReportEmailData
 ): Promise<boolean> {
   const subject = `📊 Test Run Report: ${data.testRunName}`;
-  const testRunUrl = `${data.appUrl}/projects/${data.testRunId}`;
+  const testRunUrl = `${data.appUrl}/projects/${data.projectId}/testruns/${data.testRunId}`;
   const passRate = data.stats.total > 0 
     ? Math.round((data.stats.passed / data.stats.total) * 100) 
     : 0;
@@ -1151,7 +1153,7 @@ export async function sendDefectCommentEmail(
   data: DefectCommentEmailData
 ): Promise<boolean> {
   const subject = `💬 New Comment on Defect ${data.defectKey}: ${data.defectTitle}`;
-  const defectUrl = `${data.appUrl}/projects/${data.defectId}`;
+  const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   // Create email content for each recipient
   const sendPromises = data.recipients.map(async (recipient) => {
