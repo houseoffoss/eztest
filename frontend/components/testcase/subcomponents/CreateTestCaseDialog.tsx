@@ -226,13 +226,16 @@ export function CreateTestCaseDialog({
                             attachments={stepAttachments[String(step.stepNumber)]?.action || []}
                             onAttachmentsChange={(attachments) => {
                               const stepKey = String(step.stepNumber);
-                              setStepAttachments(prev => ({
-                                ...prev,
-                                [stepKey]: {
-                                  action: attachments,
-                                  expectedResult: prev[stepKey]?.expectedResult || []
-                                }
-                              }));
+                              setStepAttachments(prev => {
+                                const existingStep = prev[stepKey] || { action: [], expectedResult: [] };
+                                return {
+                                  ...prev,
+                                  [stepKey]: {
+                                    ...existingStep,
+                                    action: attachments
+                                  }
+                                };
+                              });
                             }}
                             entityType="teststep"
                             projectId={projectId}
@@ -260,13 +263,16 @@ export function CreateTestCaseDialog({
                             attachments={stepAttachments[String(step.stepNumber)]?.expectedResult || []}
                             onAttachmentsChange={(attachments) => {
                               const stepKey = String(step.stepNumber);
-                              setStepAttachments(prev => ({
-                                ...prev,
-                                [stepKey]: {
-                                  action: prev[stepKey]?.action || [],
-                                  expectedResult: attachments
-                                }
-                              }));
+                              setStepAttachments(prev => {
+                                const existingStep = prev[stepKey] || { action: [], expectedResult: [] };
+                                return {
+                                  ...prev,
+                                  [stepKey]: {
+                                    ...existingStep,
+                                    expectedResult: attachments
+                                  }
+                                };
+                              });
                             }}
                             entityType="teststep"
                             projectId={projectId}
@@ -633,16 +639,15 @@ export function CreateTestCaseDialog({
       } as TestStep,
     ]);
 
-    // Store attachments for the new step
-    if (newStepActionAttachments.length > 0 || newStepExpectedResultAttachments.length > 0) {
-      setStepAttachments(prev => ({
-        ...prev,
-        [String(nextStepNumber)]: {
-          action: newStepActionAttachments,
-          expectedResult: newStepExpectedResultAttachments
-        }
-      }));
-    }
+    // Always store the step attachment structure, even if attachments are empty
+    // This ensures both action and expectedResult fields are tracked
+    setStepAttachments(prev => ({
+      ...prev,
+      [String(nextStepNumber)]: {
+        action: newStepActionAttachments,
+        expectedResult: newStepExpectedResultAttachments
+      }
+    }));
 
     // Clear the form and attachments
     setNewStep({ action: '', expectedResult: '' });
