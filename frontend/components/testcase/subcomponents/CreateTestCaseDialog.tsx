@@ -10,6 +10,7 @@ import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { TestStep } from '../detail/types';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
+import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -43,6 +44,10 @@ export function CreateTestCaseDialog({
     action: '',
     expectedResult: '',
   });
+  // Step attachments state
+  const [stepAttachments, setStepAttachments] = useState<Record<string, Record<string, Attachment[]>>>({});
+  const [newStepActionAttachments, setNewStepActionAttachments] = useState<Attachment[]>([]);
+  const [newStepExpectedResultAttachments, setNewStepExpectedResultAttachments] = useState<Attachment[]>([]);
 
   // Fetch dynamic dropdown options
   const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
@@ -195,7 +200,7 @@ export function CreateTestCaseDialog({
                 No test steps defined yet. Add steps to break down this test case.
               </p>
             ) : (
-              steps.map((step) => (
+              steps.map((step: TestStep) => (
                 <div
                   key={step.stepNumber}
                   className="border border-white/10 rounded-lg p-4 space-y-2"
@@ -210,32 +215,64 @@ export function CreateTestCaseDialog({
                           <Label className="text-xs font-medium text-white/60 mb-1">
                             Action
                           </Label>
-                          <Textarea
+                          <TextareaWithAttachments
+                            variant="glass"
                             value={step.action}
-                            onChange={(e) =>
-                              handleStepChange(step.stepNumber, 'action', e.target.value)
+                            onChange={(value) =>
+                              handleStepChange(step.stepNumber, 'action', value)
                             }
                             placeholder="Enter action"
-                            rows={3}
-                            className="bg-[#101a2b]/70 border border-white/15 text-white/90"
+                            fieldName="action"
+                            attachments={stepAttachments[String(step.stepNumber)]?.action || []}
+                            onAttachmentsChange={(attachments) => {
+                              const stepKey = String(step.stepNumber);
+                              setStepAttachments(prev => ({
+                                ...prev,
+                                [stepKey]: {
+                                  action: attachments,
+                                  expectedResult: prev[stepKey]?.expectedResult || []
+                                }
+                              }));
+                            }}
+                            entityType="teststep"
+                            projectId={projectId}
+                            showAttachments={true}
+                            maxLength={1000}
+                            showCharCount={false}
                           />
                         </div>
                         <div>
                           <Label className="text-xs font-medium text-white/60 mb-1">
                             Expected Result
                           </Label>
-                          <Textarea
+                          <TextareaWithAttachments
+                            variant="glass"
                             value={step.expectedResult}
-                            onChange={(e) =>
+                            onChange={(value) =>
                               handleStepChange(
                                 step.stepNumber,
                                 'expectedResult',
-                                e.target.value,
+                                value,
                               )
                             }
                             placeholder="Enter expected result"
-                            rows={3}
-                            className="bg-[#101a2b]/70 border border-white/15 text-white/90"
+                            fieldName="expectedResult"
+                            attachments={stepAttachments[String(step.stepNumber)]?.expectedResult || []}
+                            onAttachmentsChange={(attachments) => {
+                              const stepKey = String(step.stepNumber);
+                              setStepAttachments(prev => ({
+                                ...prev,
+                                [stepKey]: {
+                                  action: prev[stepKey]?.action || [],
+                                  expectedResult: attachments
+                                }
+                              }));
+                            }}
+                            entityType="teststep"
+                            projectId={projectId}
+                            showAttachments={true}
+                            maxLength={1000}
+                            showCharCount={false}
                           />
                         </div>
                       </div>
@@ -257,26 +294,40 @@ export function CreateTestCaseDialog({
             <div className="border border-blue-500/50 rounded-lg p-4 space-y-3 bg-blue-500/5">
               <div className="space-y-2">
                 <Label>Action</Label>
-                <Textarea
+                <TextareaWithAttachments
+                  variant="glass"
                   value={newStep.action}
-                  onChange={(e) =>
-                    setNewStep((prev) => ({ ...prev, action: e.target.value }))
+                  onChange={(value) =>
+                    setNewStep((prev) => ({ ...prev, action: value }))
                   }
                   placeholder="Enter action"
-                  rows={3}
-                  className="bg-[#101a2b]/70 border border-white/25 text-white/90"
+                  fieldName="action"
+                  attachments={newStepActionAttachments}
+                  onAttachmentsChange={setNewStepActionAttachments}
+                  entityType="teststep"
+                  projectId={projectId}
+                  showAttachments={true}
+                  maxLength={1000}
+                  showCharCount={false}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Expected Result</Label>
-                <Textarea
+                <TextareaWithAttachments
+                  variant="glass"
                   value={newStep.expectedResult}
-                  onChange={(e) =>
-                    setNewStep((prev) => ({ ...prev, expectedResult: e.target.value }))
+                  onChange={(value) =>
+                    setNewStep((prev) => ({ ...prev, expectedResult: value }))
                   }
                   placeholder="Enter expected result"
-                  rows={3}
-                  className="bg-[#101a2b]/70 border border-white/25 text-white/90"
+                  fieldName="expectedResult"
+                  attachments={newStepExpectedResultAttachments}
+                  onAttachmentsChange={setNewStepExpectedResultAttachments}
+                  entityType="teststep"
+                  projectId={projectId}
+                  showAttachments={true}
+                  maxLength={1000}
+                  showCharCount={false}
                 />
               </div>
               <div className="flex justify-end">
@@ -307,7 +358,7 @@ export function CreateTestCaseDialog({
     ];
 
     const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
-    
+
     if (pendingAttachments.length === 0) {
       return []; // No pending attachments
     }
@@ -352,9 +403,64 @@ export function CreateTestCaseDialog({
     return uploadedAttachments;
   };
 
+  const uploadPendingStepAttachments = async (): Promise<Array<{ stepNumber: number; id?: string; s3Key: string; fileName: string; mimeType: string; fieldName: string }>> => {
+    const uploadedStepAttachments: Array<{ stepNumber: number; id?: string; s3Key: string; fileName: string; mimeType: string; fieldName: string }> = [];
+
+    // Upload all pending step attachments
+    for (const stepNum of Object.keys(stepAttachments)) {
+      const stepNum_int = parseInt(stepNum);
+      const stepAtts = stepAttachments[stepNum];
+
+      if (!stepAtts) continue;
+
+      for (const fieldName of ['action' as const, 'expectedResult' as const]) {
+        const fieldAttachments = stepAtts[fieldName] || [];
+        const pendingFieldAttachments = fieldAttachments.filter((att) => att.id.startsWith('pending-'));
+
+        for (const attachment of pendingFieldAttachments) {
+          // @ts-expect-error - Access the pending file object
+          const file = attachment._pendingFile;
+          if (!file) continue;
+
+          try {
+            const result = await uploadFileToS3({
+              file,
+              fieldName,
+              entityType: 'teststep',
+              projectId,
+              onProgress: () => {}, // Silent upload
+            });
+
+            if (!result.success) {
+              throw new Error(result.error || 'Upload failed');
+            }
+
+            // Store the uploaded attachment info for linking
+            if (result.attachment) {
+              uploadedStepAttachments.push({
+                stepNumber: stepNum_int,
+                id: result.attachment.id,
+                s3Key: result.attachment.filename,
+                fileName: file.name,
+                mimeType: file.type,
+                fieldName,
+              });
+            }
+          } catch (error) {
+            console.error('Failed to upload step attachment:', error);
+            throw error;
+          }
+        }
+      }
+    }
+
+    return uploadedStepAttachments;
+  };
+
   const handleSubmit = async (formData: Record<string, string>) => {
     // Upload all pending attachments first
     const uploadedAttachments = await uploadPendingAttachments();
+    const uploadedStepAttachments = await uploadPendingStepAttachments();
 
     const estimatedTime = formData.estimatedTime ? parseInt(formData.estimatedTime) : undefined;
 
@@ -419,54 +525,63 @@ export function CreateTestCaseDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ attachments: uploadedAttachments }),
         });
-        
+
         if (!attachmentResponse.ok) {
           const errorData = await attachmentResponse.json();
           console.error('Failed to associate attachments:', errorData);
           throw new Error('Failed to link attachments to test case');
         }
-        
+
         await attachmentResponse.json();
-
-        // TODO: Uncomment for future use - Link expectedResult attachments to first step
-        // If there's an expectedResult with attachments, also link them to the first step
-        // This follows the same pattern as expectedResult text - it's saved at test case level
-        // and displayed in the first step, so attachments should also be associated with the first step
-        // const expectedResultAttachmentsToLink = uploadedAttachments.filter(
-        //   (att) => att.fieldName === 'expectedResult'
-        // );
-
-        // if (expectedResultAttachmentsToLink.length > 0 && formData.expectedResult) {
-        //   try {
-        //     // Fetch the test case with steps to check if there's a first step
-        //     const testCaseResponse = await fetch(`/api/testcases/${createdTestCase.id}`);
-        //     if (testCaseResponse.ok) {
-        //       const testCaseData = await testCaseResponse.json();
-        //       const steps = testCaseData.data?.steps || [];
-        //       
-        //       // If there's a first step, link expectedResult attachments to it
-        //       // This mirrors how expectedResult text is handled - it's shown in the first step
-        //       if (steps.length > 0 && steps[0]?.id) {
-        //         const firstStepId = steps[0].id;
-        //         const stepAttachmentResponse = await fetch(`/api/teststeps/${firstStepId}/attachments`, {
-        //           method: 'POST',
-        //           headers: { 'Content-Type': 'application/json' },
-        //           body: JSON.stringify({ attachments: expectedResultAttachmentsToLink }),
-        //         });
-        //         
-        //         if (!stepAttachmentResponse.ok) {
-        //           console.warn('Failed to link expectedResult attachments to first step, but test case attachments are saved');
-        //         }
-        //       }
-        //     }
-        //   } catch (error) {
-        //     // Non-critical error - attachments are already linked to test case
-        //     console.warn('Error linking expectedResult attachments to step:', error);
-        //   }
-        // }
       } catch (error) {
         console.error('Error associating attachments:', error);
         throw new Error('Failed to link attachments. Test case was created but attachments were not saved.');
+      }
+    }
+
+    // Link step attachments to created steps
+    if (uploadedStepAttachments.length > 0 && createdTestCase.steps) {
+      try {
+        // Create a mapping of step numbers to step IDs
+        const stepNumberToId: Record<number, string> = {};
+        createdTestCase.steps.forEach((step: TestStep) => {
+          if (step.id) {
+            stepNumberToId[step.stepNumber] = step.id;
+          }
+        });
+
+        // Group attachments by step ID
+        const attachmentsByStepId: Record<string, Array<{ id: string; fieldName: string }>> = {};
+
+        uploadedStepAttachments.forEach((att) => {
+          const stepId = stepNumberToId[att.stepNumber];
+          if (stepId) {
+            if (!attachmentsByStepId[stepId]) {
+              attachmentsByStepId[stepId] = [];
+            }
+            attachmentsByStepId[stepId].push({
+              id: att.id!,
+              fieldName: att.fieldName,
+            });
+          }
+        });
+
+        // Link attachments to each step
+        for (const stepId of Object.keys(attachmentsByStepId)) {
+          try {
+            await fetch(`/api/teststeps/${stepId}/attachments`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ attachments: attachmentsByStepId[stepId] }),
+            });
+          } catch (error) {
+            console.error(`Error linking attachments to step ${stepId}:`, error);
+            // Continue with other steps even if one fails
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to link step attachments:', error);
+        // Non-critical - test case was created successfully
       }
     }
 
@@ -486,9 +601,13 @@ export function CreateTestCaseDialog({
     onSuccess: (testCase) => {
       if (testCase) {
         onTestCaseCreated(testCase);
-        // Clear attachments after successful creation
+        // Clear all attachments after successful creation
         attachmentStorage.clearAllAttachments();
         attachmentStorage.clearContext();
+        // Clear step attachment state
+        setStepAttachments({});
+        setNewStepActionAttachments([]);
+        setNewStepExpectedResultAttachments([]);
       }
     },
     submitButtonName: 'Create Test Case Dialog - Create Test Case',
@@ -503,28 +622,59 @@ export function CreateTestCaseDialog({
       return;
     }
 
-    setSteps((prev) => {
-      const nextStepNumber = prev.length + 1;
-      return [
-        ...prev,
-        {
-          stepNumber: nextStepNumber,
-          action: trimmedAction,
-          expectedResult: trimmedExpectedResult,
-        },
-      ];
-    });
+    const nextStepNumber = steps.length + 1;
 
+    setSteps((prev) => [
+      ...prev,
+      {
+        stepNumber: nextStepNumber,
+        action: trimmedAction,
+        expectedResult: trimmedExpectedResult,
+      } as TestStep,
+    ]);
+
+    // Store attachments for the new step
+    if (newStepActionAttachments.length > 0 || newStepExpectedResultAttachments.length > 0) {
+      setStepAttachments(prev => ({
+        ...prev,
+        [String(nextStepNumber)]: {
+          action: newStepActionAttachments,
+          expectedResult: newStepExpectedResultAttachments
+        }
+      }));
+    }
+
+    // Clear the form and attachments
     setNewStep({ action: '', expectedResult: '' });
+    setNewStepActionAttachments([]);
+    setNewStepExpectedResultAttachments([]);
   };
 
   const handleRemoveStep = (stepNumber: number) => {
     setSteps((prev) => {
       const filtered = prev.filter((step) => step.stepNumber !== stepNumber);
-      return filtered.map((step, index) => ({
+      const renumbered: TestStep[] = filtered.map((step, index) => ({
         ...step,
         stepNumber: index + 1,
       }));
+
+      // Update attachments mapping with new step numbers
+      const currentStepAttachments = { ...stepAttachments };
+      delete currentStepAttachments[String(stepNumber)];
+
+      // Renumber attachments for remaining steps
+      const renumberedAttachments: Record<string, Record<string, Attachment[]>> = {};
+      Object.keys(currentStepAttachments).forEach(oldStepNum => {
+        const oldNum = parseInt(oldStepNum);
+        if (oldNum > stepNumber) {
+          renumberedAttachments[String(oldNum - 1)] = currentStepAttachments[oldStepNum];
+        } else {
+          renumberedAttachments[String(oldNum)] = currentStepAttachments[oldStepNum];
+        }
+      });
+
+      setStepAttachments(renumberedAttachments);
+      return renumbered;
     });
   };
 
