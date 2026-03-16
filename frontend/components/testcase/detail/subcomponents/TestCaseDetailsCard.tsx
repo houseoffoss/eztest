@@ -1,11 +1,12 @@
 ﻿'use client';
 
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { Clock } from 'lucide-react';
+import { Clock, Paperclip } from 'lucide-react';
 import { TestCase, TestCaseFormData, Module } from '../../types';
+import { useState } from 'react';
+import { FileUploadModal } from '@/frontend/reusable-components/uploads/FileUploadModal';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
-import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import {
   Select,
@@ -27,15 +28,9 @@ interface TestCaseDetailsCardProps {
   onFormChange: (data: TestCaseFormData) => void;
   onFieldChange?: (field: keyof TestCaseFormData, value: string | number | null) => void;
   projectId?: string;
-  // Attachments
-  descriptionAttachments?: Attachment[];
-  expectedResultAttachments?: Attachment[];
-  preconditionAttachments?: Attachment[];
-  postconditionAttachments?: Attachment[];
-  onDescriptionAttachmentsChange?: (attachments: Attachment[]) => void;
-  onExpectedResultAttachmentsChange?: (attachments: Attachment[]) => void;
-  onPreconditionAttachmentsChange?: (attachments: Attachment[]) => void;
-  onPostconditionAttachmentsChange?: (attachments: Attachment[]) => void;
+  // Attachments - consolidated
+  commonAttachments?: Attachment[];
+  onCommonAttachmentsChange?: (attachments: Attachment[]) => void;
 }
 
 export function TestCaseDetailsCard({
@@ -47,15 +42,11 @@ export function TestCaseDetailsCard({
   onFormChange,
   onFieldChange,
   projectId,
-  descriptionAttachments = [],
-  expectedResultAttachments = [],
-  preconditionAttachments = [],
-  postconditionAttachments = [],
-  onDescriptionAttachmentsChange,
-  onExpectedResultAttachmentsChange,
-  onPreconditionAttachmentsChange,
-  onPostconditionAttachmentsChange,
+  commonAttachments = [],
+  onCommonAttachmentsChange,
 }: TestCaseDetailsCardProps) {
+  const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
+
   // Fetch dynamic dropdown options
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestCase', 'status');
@@ -64,11 +55,8 @@ export function TestCaseDetailsCard({
     onFormChange({ ...formData, [field]: value });
   });
 
-  // Create safe attachment handlers with default no-op functions
-  const handleDescriptionAttachmentsChange = onDescriptionAttachmentsChange || (() => {});
-  const handleExpectedResultAttachmentsChange = onExpectedResultAttachmentsChange || (() => {});
-  const handlePreconditionAttachmentsChange = onPreconditionAttachmentsChange || (() => {});
-  const handlePostconditionAttachmentsChange = onPostconditionAttachmentsChange || (() => {});
+  // Create safe attachment handler with default no-op function
+  const handleCommonAttachmentsChange = onCommonAttachmentsChange || (() => {});
 
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
@@ -180,64 +168,46 @@ export function TestCaseDetailsCard({
             />
           </div>
 
-          {/* Description with Attachments */}
+          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <TextareaWithAttachments
-              fieldName="description"
+            <Textarea
+              id="description"
               variant="glass"
               value={formData.description}
-              onChange={(value) => handleFieldChange('description', value)}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="Enter test case description"
               rows={3}
               maxLength={250}
-              showCharCount={true}
-              attachments={descriptionAttachments}
-              onAttachmentsChange={handleDescriptionAttachmentsChange}
-              entityType="testcase"
-              projectId={projectId}
-              showAttachments={true}
             />
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
           </div>
 
-          {/* Preconditions with Attachments */}
+          {/* Preconditions */}
           <div className="space-y-2">
             <Label htmlFor="preconditions">Preconditions</Label>
-            <TextareaWithAttachments
-              fieldName="preconditions"
+            <Textarea
+              id="preconditions"
               variant="glass"
               value={formData.preconditions}
-              onChange={(value) => handleFieldChange('preconditions', value)}
+              onChange={(e) => handleFieldChange('preconditions', e.target.value)}
               placeholder="Enter preconditions"
               rows={3}
               maxLength={250}
-              showCharCount={true}
-              attachments={preconditionAttachments}
-              onAttachmentsChange={handlePreconditionAttachmentsChange}
-              entityType="testcase"
-              projectId={projectId}
-              showAttachments={true}
             />
           </div>
 
-          {/* Postconditions with Attachments */}
+          {/* Postconditions */}
           <div className="space-y-2">
             <Label htmlFor="postconditions">Postconditions</Label>
-            <TextareaWithAttachments
-              fieldName="postconditions"
+            <Textarea
+              id="postconditions"
               variant="glass"
               value={formData.postconditions}
-              onChange={(value) => handleFieldChange('postconditions', value)}
+              onChange={(e) => handleFieldChange('postconditions', e.target.value)}
               placeholder="Enter postconditions"
               rows={3}
               maxLength={250}
-              showCharCount={true}
-              attachments={postconditionAttachments}
-              onAttachmentsChange={handlePostconditionAttachmentsChange}
-              entityType="testcase"
-              projectId={projectId}
-              showAttachments={true}
             />
           </div>
 
@@ -255,6 +225,56 @@ export function TestCaseDetailsCard({
             />
             {errors.testData && <p className="text-xs text-red-400">{errors.testData}</p>}
           </div>
+
+          {/* Common Attachments (Description, Preconditions, Postconditions) */}
+          <div className="pt-2">
+            <DetailCard
+              title="Attachments"
+              contentClassName="space-y-3"
+              headerAction={
+                <button
+                  type="button"
+                  onClick={() => setAttachmentModalOpen(true)}
+                  className="text-white/60 hover:text-white p-1 rounded transition-colors"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+              }
+            >
+              {commonAttachments.length > 0 ? (
+                <div className="space-y-1">
+                  {commonAttachments.map((att) => (
+                    <div key={att.id} className="flex items-center gap-2 text-sm text-white/80 py-1 px-2 bg-white/5 rounded">
+                      <Paperclip className="w-3 h-3 shrink-0 text-white/40" />
+                      <span className="truncate flex-1">{att.originalName}</span>
+                      {att.size && (
+                        <span className="text-white/40 text-xs shrink-0">
+                          {(att.size / 1024).toFixed(1)} KB
+                        </span>
+                      )}
+                      {att.id.startsWith('pending-') && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-white/40 py-2">No attachments yet</p>
+              )}
+              <FileUploadModal
+                isOpen={attachmentModalOpen}
+                onClose={() => setAttachmentModalOpen(false)}
+                attachments={commonAttachments}
+                onAttachmentsChange={handleCommonAttachmentsChange}
+                fieldName="attachment"
+                entityType="testcase"
+                projectId={projectId}
+                title="Test Case Attachments"
+              />
+            </DetailCard>
+          </div>
         </div>
       ) : (
         <>
@@ -267,32 +287,12 @@ export function TestCaseDetailsCard({
             </div>
           )}
 
-          {(testCase.description || descriptionAttachments.length > 0) && (
+          {testCase.description && (
             <div className="border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-white/60">
-                  Description
-                </h4>
-                {descriptionAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{descriptionAttachments.length} Attachments</span>
-                ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
-                )}
-              </div>
-              {testCase.description && descriptionAttachments.length > 0 ? (
-                <div className="flex gap-4 items-start">
-                  <p className="text-white/90 break-words whitespace-pre-wrap flex-1">{testCase.description}</p>
-                  <div className="flex-shrink-0">
-                    <AttachmentDisplay attachments={descriptionAttachments} />
-                  </div>
-                </div>
-              ) : testCase.description ? (
-                <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
-              ) : descriptionAttachments.length > 0 ? (
-                <div className="flex justify-end">
-                  <AttachmentDisplay attachments={descriptionAttachments} />
-                </div>
-              ) : null}
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Description
+              </h4>
+              <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
             </div>
           )}
 
@@ -308,69 +308,25 @@ export function TestCaseDetailsCard({
             </div>
           )}
 
-          {(testCase.preconditions || preconditionAttachments.length > 0) && (
+          {testCase.preconditions && (
             <div className="border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-white/60">
-                  Preconditions
-                </h4>
-                {preconditionAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{preconditionAttachments.length} Attachments</span>
-                ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
-                )}
-              </div>
-              {testCase.preconditions && preconditionAttachments.length > 0 ? (
-                <div className="flex gap-4 items-start">
-                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
-                    {testCase.preconditions}
-                  </p>
-                  <div className="flex-shrink-0">
-                    <AttachmentDisplay attachments={preconditionAttachments} />
-                  </div>
-                </div>
-              ) : testCase.preconditions ? (
-                <p className="text-white/90 whitespace-pre-wrap break-words">
-                  {testCase.preconditions}
-                </p>
-              ) : preconditionAttachments.length > 0 ? (
-                <div className="flex justify-end">
-                  <AttachmentDisplay attachments={preconditionAttachments} />
-                </div>
-              ) : null}
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Preconditions
+              </h4>
+              <p className="text-white/90 whitespace-pre-wrap break-words">
+                {testCase.preconditions}
+              </p>
             </div>
           )}
 
-          {(testCase.postconditions || postconditionAttachments.length > 0) && (
+          {testCase.postconditions && (
             <div className="border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-white/60">
-                  Postconditions
-                </h4>
-                {postconditionAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{postconditionAttachments.length} Attachments</span>
-                ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
-                )}
-              </div>
-              {testCase.postconditions && postconditionAttachments.length > 0 ? (
-                <div className="flex gap-4 items-start">
-                  <p className="text-white/90 whitespace-pre-wrap break-words flex-1">
-                    {testCase.postconditions}
-                  </p>
-                  <div className="flex-shrink-0">
-                    <AttachmentDisplay attachments={postconditionAttachments} />
-                  </div>
-                </div>
-              ) : testCase.postconditions ? (
-                <p className="text-white/90 whitespace-pre-wrap break-words">
-                  {testCase.postconditions}
-                </p>
-              ) : postconditionAttachments.length > 0 ? (
-                <div className="flex justify-end">
-                  <AttachmentDisplay attachments={postconditionAttachments} />
-                </div>
-              ) : null}
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Postconditions
+              </h4>
+              <p className="text-white/90 whitespace-pre-wrap break-words">
+                {testCase.postconditions}
+              </p>
             </div>
           )}
 
@@ -382,6 +338,15 @@ export function TestCaseDetailsCard({
               <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.testData}
               </p>
+            </div>
+          )}
+
+          {commonAttachments.length > 0 && (
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Attachments
+              </h4>
+              <AttachmentDisplay attachments={commonAttachments} />
             </div>
           )}
         </>

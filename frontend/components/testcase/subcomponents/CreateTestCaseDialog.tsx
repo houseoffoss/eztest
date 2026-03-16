@@ -9,12 +9,12 @@ import { uploadFileToS3 } from '@/lib/s3';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { TestStep } from '../detail/types';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
-import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
-import { Plus, Trash2 } from 'lucide-react';
+import { FileUploadModal } from '@/frontend/reusable-components/uploads/FileUploadModal';
+import { Plus, Trash2, Paperclip } from 'lucide-react';
 
 interface CreateTestCaseDialogProps {
   projectId: string;
@@ -34,17 +34,15 @@ export function CreateTestCaseDialog({
   onTestCaseCreated,
 }: CreateTestCaseDialogProps) {
   const [modules, setModules] = useState<Module[]>([]);
-  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
-  // TODO: Uncomment for future use - Expected Result field at test case level
-  // const [expectedResultAttachments, setExpectedResultAttachments] = useState<Attachment[]>([]);
-  const [preconditionsAttachments, setPreconditionsAttachments] = useState<Attachment[]>([]);
-  const [postconditionsAttachments, setPostconditionsAttachments] = useState<Attachment[]>([]);
+  // Common attachments - SINGLE SOURCE OF TRUTH for test case level
+  const [commonAttachments, setCommonAttachments] = useState<Attachment[]>([]);
+  const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
   const [steps, setSteps] = useState<TestStep[]>([]);
   const [newStep, setNewStep] = useState<{ action: string; expectedResult: string }>({
     action: '',
     expectedResult: '',
   });
-  // Step attachments state
+  // Step attachments state - ONLY for test steps
   const [stepAttachments, setStepAttachments] = useState<Record<string, Record<string, Attachment[]>>>({});
   const [newStepActionAttachments, setNewStepActionAttachments] = useState<Attachment[]>([]);
   const [newStepExpectedResultAttachments, setNewStepExpectedResultAttachments] = useState<Attachment[]>([]);
@@ -65,9 +63,9 @@ export function CreateTestCaseDialog({
         console.error('Error fetching modules:', error);
       }
     };
-    
+
     fetchModules();
-    
+
     // Set attachment context when dialog opens
     if (open !== false) {
       attachmentStorage.setContext({
@@ -75,7 +73,7 @@ export function CreateTestCaseDialog({
         projectId,
       });
     }
-    
+
     return () => {
       // Clear context when dialog closes
       if (open === false) {
@@ -138,43 +136,26 @@ export function CreateTestCaseDialog({
     {
       name: 'description',
       label: 'Description',
-      type: 'textarea-with-attachments',
+      type: 'textarea',
       placeholder: 'Enter test case description',
       rows: 3,
       cols: 1,
-      attachments: descriptionAttachments,
-      onAttachmentsChange: setDescriptionAttachments,
     },
-    // TODO: Uncomment for future use - Expected Result field at test case level
-    // {
-    //   name: 'expectedResult',
-    //   label: 'Expected Result',
-    //   type: 'textarea-with-attachments',
-    //   placeholder: 'Enter the expected result',
-    //   rows: 3,
-    //   cols: 1,
-    //   attachments: expectedResultAttachments,
-    //   onAttachmentsChange: setExpectedResultAttachments,
-    // },
     {
       name: 'preconditions',
       label: 'Preconditions',
-      type: 'textarea-with-attachments',
+      type: 'textarea',
       placeholder: 'Enter preconditions',
       rows: 3,
       cols: 1,
-      attachments: preconditionsAttachments,
-      onAttachmentsChange: setPreconditionsAttachments,
     },
     {
       name: 'postconditions',
       label: 'Postconditions',
-      type: 'textarea-with-attachments',
+      type: 'textarea',
       placeholder: 'Enter postconditions',
       rows: 3,
       cols: 1,
-      attachments: postconditionsAttachments,
-      onAttachmentsChange: setPostconditionsAttachments,
     },
     {
       name: 'testData',
@@ -183,6 +164,64 @@ export function CreateTestCaseDialog({
       placeholder: 'Enter test data or input values',
       rows: 3,
       cols: 1,
+    },
+    {
+      name: 'attachments',
+      label: 'Attachments',
+      type: 'custom',
+      cols: 2,
+      customRender: () => (
+        <DetailCard
+          title="Attachments"
+          contentClassName="space-y-3"
+          headerAction={
+            <button
+              type="button"
+              onClick={() => setAttachmentModalOpen(true)}
+              className="text-white/60 hover:text-white p-1 rounded transition-colors"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+          }
+        >
+          <div className="space-y-2">
+            {commonAttachments.length === 0 ? (
+              <p className="text-white/60 text-center py-4">
+                No attachments yet. Click the paperclip icon to add files.
+              </p>
+            ) : (
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                {commonAttachments.map((att) => (
+                  <div key={att.id} className="flex items-center gap-2 text-sm text-white/80 py-2 px-3 rounded-lg bg-white/5 border border-white/10">
+                    <Paperclip className="w-3 h-3 shrink-0 text-white/40" />
+                    <span className="truncate flex-1">{att.originalName}</span>
+                    {att.size && (
+                      <span className="text-white/40 text-xs shrink-0">
+                        {(att.size / 1024).toFixed(1)} KB
+                      </span>
+                    )}
+                    {att.id.startsWith('pending-') && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            <FileUploadModal
+              isOpen={attachmentModalOpen}
+              onClose={() => setAttachmentModalOpen(false)}
+              attachments={commonAttachments}
+              onAttachmentsChange={setCommonAttachments}
+              fieldName="attachment"
+              entityType="testcase"
+              projectId={projectId}
+              title="Test Case Attachments"
+            />
+          </div>
+        </DetailCard>
+      ),
     },
     {
       name: 'steps',
@@ -355,23 +394,14 @@ export function CreateTestCaseDialog({
   ];
 
   const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
-    const allAttachments = [
-      ...descriptionAttachments,
-      // TODO: Uncomment for future use - Expected Result attachments
-      // ...expectedResultAttachments,
-      ...preconditionsAttachments,
-      ...postconditionsAttachments,
-    ];
-
-    const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+    const pendingAttachments = commonAttachments.filter((att) => att.id.startsWith('pending-'));
 
     if (pendingAttachments.length === 0) {
-      return []; // No pending attachments
+      return [];
     }
 
     const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
 
-    // Upload all pending files
     for (const attachment of pendingAttachments) {
       // @ts-expect-error - Access the pending file object
       const file = attachment._pendingFile;
@@ -383,17 +413,16 @@ export function CreateTestCaseDialog({
           fieldName: attachment.fieldName || 'attachment',
           entityType: 'testcase',
           projectId,
-          onProgress: () => {}, // Silent upload
+          onProgress: () => {},
         });
 
         if (!result.success) {
           throw new Error(result.error || 'Upload failed');
         }
 
-        // Store the uploaded attachment info for linking
         if (result.attachment) {
           uploadedAttachments.push({
-            id: result.attachment.id, // Use the database ID
+            id: result.attachment.id,
             s3Key: result.attachment.filename,
             fileName: file.name,
             mimeType: file.type,
@@ -402,7 +431,7 @@ export function CreateTestCaseDialog({
         }
       } catch (error) {
         console.error('Failed to upload attachment:', error);
-        throw error; // Throw error to stop test case creation
+        throw error;
       }
     }
 
@@ -412,13 +441,67 @@ export function CreateTestCaseDialog({
   const uploadPendingStepAttachments = async (): Promise<Array<{ stepNumber: number; id?: string; s3Key: string; fileName: string; mimeType: string; fieldName: string }>> => {
     const uploadedStepAttachments: Array<{ stepNumber: number; id?: string; s3Key: string; fileName: string; mimeType: string; fieldName: string }> = [];
 
+    // Collect ALL step attachments including steps that will be added
+    const allStepsWithAttachments = [
+      ...steps,
+      // Include pending new step if it has content
+      ...(newStep.action.trim().length > 0 || newStep.expectedResult.trim().length > 0
+        ? [{ stepNumber: steps.length + 1, action: newStep.action, expectedResult: newStep.expectedResult }]
+        : []),
+    ];
+
     // Upload all pending step attachments
-    for (const stepNum of Object.keys(stepAttachments)) {
-      const stepNum_int = parseInt(stepNum);
-      const stepAtts = stepAttachments[stepNum];
+    for (const step of allStepsWithAttachments) {
+      const stepKey = String(step.stepNumber);
+      const stepAtts = stepAttachments[stepKey];
 
-      if (!stepAtts) continue;
+      if (!stepAtts) {
+        // If no attachments for this step in state, check if it's the new step
+        if (step.stepNumber === steps.length + 1) {
+          // This is the new step - upload from newStepActionAttachments and newStepExpectedResultAttachments
+          const newStepAttachmentsList = [
+            ...newStepActionAttachments.filter((att) => att.id.startsWith('pending-')).map((att) => ({ ...att, fieldName: 'action' })),
+            ...newStepExpectedResultAttachments.filter((att) => att.id.startsWith('pending-')).map((att) => ({ ...att, fieldName: 'expectedResult' })),
+          ];
 
+          for (const attachment of newStepAttachmentsList) {
+            // @ts-expect-error - Access the pending file object
+            const file = attachment._pendingFile;
+            if (!file) continue;
+
+            try {
+              const result = await uploadFileToS3({
+                file,
+                fieldName: (attachment as any).fieldName,
+                entityType: 'teststep',
+                projectId,
+                onProgress: () => {},
+              });
+
+              if (!result.success) {
+                throw new Error(result.error || 'Upload failed');
+              }
+
+              if (result.attachment) {
+                uploadedStepAttachments.push({
+                  stepNumber: step.stepNumber,
+                  id: result.attachment.id,
+                  s3Key: result.attachment.filename,
+                  fileName: file.name,
+                  mimeType: file.type,
+                  fieldName: (attachment as any).fieldName,
+                });
+              }
+            } catch (error) {
+              console.error('Failed to upload new step attachment:', error);
+              throw error;
+            }
+          }
+        }
+        continue;
+      }
+
+      // Process existing steps from state
       for (const fieldName of ['action' as const, 'expectedResult' as const]) {
         const fieldAttachments = stepAtts[fieldName] || [];
         const pendingFieldAttachments = fieldAttachments.filter((att) => att.id.startsWith('pending-'));
@@ -434,17 +517,16 @@ export function CreateTestCaseDialog({
               fieldName,
               entityType: 'teststep',
               projectId,
-              onProgress: () => {}, // Silent upload
+              onProgress: () => {},
             });
 
             if (!result.success) {
               throw new Error(result.error || 'Upload failed');
             }
 
-            // Store the uploaded attachment info for linking
             if (result.attachment) {
               uploadedStepAttachments.push({
-                stepNumber: stepNum_int,
+                stepNumber: step.stepNumber,
                 id: result.attachment.id,
                 s3Key: result.attachment.filename,
                 fileName: file.name,
@@ -502,8 +584,6 @@ export function CreateTestCaseDialog({
       body: JSON.stringify({
         title: formData.title,
         description: formData.description || undefined,
-        // TODO: Uncomment for future use - Expected Result at test case level
-        // expectedResult: formData.expectedResult || undefined,
         testData: formData.testData || undefined,
         priority: formData.priority,
         status: formData.status,
@@ -582,12 +662,10 @@ export function CreateTestCaseDialog({
             });
           } catch (error) {
             console.error(`Error linking attachments to step ${stepId}:`, error);
-            // Continue with other steps even if one fails
           }
         }
       } catch (error) {
         console.warn('Failed to link step attachments:', error);
-        // Non-critical - test case was created successfully
       }
     }
 
@@ -601,7 +679,16 @@ export function CreateTestCaseDialog({
     submitLabel: 'Create Test Case',
     cancelLabel: 'Cancel',
     triggerOpen: open !== undefined ? open : triggerOpen,
-    onOpenChange,
+    onOpenChange: (isOpen) => {
+      if (!isOpen) {
+        setAttachmentModalOpen(false);
+        setCommonAttachments([]);
+        setStepAttachments({});
+        setNewStepActionAttachments([]);
+        setNewStepExpectedResultAttachments([]);
+      }
+      onOpenChange?.(isOpen);
+    },
     onSubmit: handleSubmit,
     projectId,
     onSuccess: (testCase) => {
@@ -610,7 +697,7 @@ export function CreateTestCaseDialog({
         // Clear all attachments after successful creation
         attachmentStorage.clearAllAttachments();
         attachmentStorage.clearContext();
-        // Clear step attachment state
+        setCommonAttachments([]);
         setStepAttachments({});
         setNewStepActionAttachments([]);
         setNewStepExpectedResultAttachments([]);
@@ -640,12 +727,12 @@ export function CreateTestCaseDialog({
     ]);
 
     // Always store the step attachment structure, even if attachments are empty
-    // This ensures both action and expectedResult fields are tracked
+    // IMPORTANT: Create copies of arrays to avoid reference issues
     setStepAttachments(prev => ({
       ...prev,
       [String(nextStepNumber)]: {
-        action: newStepActionAttachments,
-        expectedResult: newStepExpectedResultAttachments
+        action: [...newStepActionAttachments],
+        expectedResult: [...newStepExpectedResultAttachments]
       }
     }));
 
