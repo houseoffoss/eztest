@@ -53,10 +53,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [newStep, setNewStep] = useState({ action: '', expectedResult: '' });
   const [addingStep, setAddingStep] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
-  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
+  const [commonAttachments, setCommonAttachments] = useState<Attachment[]>([]);
   const [expectedResultAttachments, setExpectedResultAttachments] = useState<Attachment[]>([]);
-  const [preconditionAttachments, setPreconditionAttachments] = useState<Attachment[]>([]);
-  const [postconditionAttachments, setPostconditionAttachments] = useState<Attachment[]>([]);
   const [stepAttachments, setStepAttachments] = useState<Record<string, Record<string, Attachment[]>>>({});
   const [newStepActionAttachments, setNewStepActionAttachments] = useState<Attachment[]>([]);
   const [newStepExpectedResultAttachments, setNewStepExpectedResultAttachments] = useState<Attachment[]>([]);
@@ -204,16 +202,18 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
             }
             const attachmentsData = await attachmentsResponse.json();
             if (attachmentsData.data && Array.isArray(attachmentsData.data)) {
-              // Filter attachments by fieldName
-              const descAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'description');
+              // Consolidate description, preconditions, postconditions into commonAttachments
+              // Include 'attachment' fieldName for common attachments uploaded via FileUploadModal
+              const commonAtts = attachmentsData.data.filter((att: Attachment) =>
+                att.fieldName === 'description' ||
+                att.fieldName === 'preconditions' ||
+                att.fieldName === 'postconditions' ||
+                att.fieldName === 'attachment'
+              );
               const expResultAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'expectedResult');
-              const preCondAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'preconditions');
-              const postCondAttachments = attachmentsData.data.filter((att: Attachment) => att.fieldName === 'postconditions');
-              
-              setDescriptionAttachments(descAttachments);
+
+              setCommonAttachments(commonAtts);
               setExpectedResultAttachments(expResultAttachments);
-              setPreconditionAttachments(preCondAttachments);
-              setPostconditionAttachments(postCondAttachments);
               
               // Group step attachments by stepId and fieldName
               const stepAtts: Record<string, Record<string, Attachment[]>> = {};
@@ -308,14 +308,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   };
 
   const uploadPendingAttachments = async (): Promise<Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }>> => {
-    const allAttachments = [
-      ...descriptionAttachments,
-      ...expectedResultAttachments,
-      ...preconditionAttachments,
-      ...postconditionAttachments,
-    ];
-
-    const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+    const pendingAttachments = commonAttachments.filter((att) => att.id.startsWith('pending-'));
     
     if (pendingAttachments.length === 0) {
       return []; // No pending attachments
@@ -591,13 +584,11 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         }
         
         setIsEditing(false);
-        
+
         // Clear only test case level attachment states after successful save
         // DON'T clear stepAttachments - they are preserved in updatedStepAttachmentsMap
-        setDescriptionAttachments([]);
+        setCommonAttachments([]);
         setExpectedResultAttachments([]);
-        setPreconditionAttachments([]);
-        setPostconditionAttachments([]);
         setNewStepActionAttachments([]);
         setNewStepExpectedResultAttachments([]);
         
@@ -815,10 +806,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           onCancel={() => {
             setIsEditing(false);
             // Clear any pending attachments when cancelling
-            setDescriptionAttachments([]);
+            setCommonAttachments([]);
             setExpectedResultAttachments([]);
-            setPreconditionAttachments([]);
-            setPostconditionAttachments([]);
             setNewStepActionAttachments([]);
             setNewStepExpectedResultAttachments([]);
             // Refetch to restore original data
@@ -867,14 +856,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               modules={modules}
               onFormChange={setFormData}
               projectId={testCase?.project?.id}
-              descriptionAttachments={descriptionAttachments}
-              expectedResultAttachments={expectedResultAttachments}
-              preconditionAttachments={preconditionAttachments}
-              postconditionAttachments={postconditionAttachments}
-              onDescriptionAttachmentsChange={setDescriptionAttachments}
-              onExpectedResultAttachmentsChange={setExpectedResultAttachments}
-              onPreconditionAttachmentsChange={setPreconditionAttachments}
-              onPostconditionAttachmentsChange={setPostconditionAttachments}
+              commonAttachments={commonAttachments}
+              onCommonAttachmentsChange={setCommonAttachments}
             />
 
             <TestStepsCard

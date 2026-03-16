@@ -794,6 +794,7 @@ UI Update
 1. [Development Setup](./contributing/development-setup.md)
 2. [Architecture Overview](./architecture/README.md)
 3. [API Reference](./api/README.md)
+4. [Coding Agent Guide](./coding-agent/README.md) – if you are using an AI coding agent, this gives it a compact, implementation‑focused entrypoint.
 
 ### For Contributors
 

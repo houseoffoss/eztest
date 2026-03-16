@@ -1,0 +1,359 @@
+# EzTest Cursor Rules
+
+## Project Overview
+EzTest is a self-hosted test management platform built with Next.js 15, React 19, TypeScript, Prisma, and PostgreSQL. It provides comprehensive test case management, test execution, defect tracking, and reporting capabilities.
+
+## Architecture & Code Organization
+
+### Frontend Structure
+- **Components:** Located in `frontend/components/` organized by feature (testcase, defect, testrun, testsuite)
+- **Reusable Components:** `frontend/reusable-components/` for multi-feature usage (dialogs, forms, cards, tables)
+- **Base Elements:** `frontend/reusable-elements/` or `components/ui/` for primitive UI components (buttons, inputs, badges)
+- **Styling:** Tailwind CSS v4 + Radix UI + Glass Morphism design pattern
+
+### Backend Structure
+- **API Routes:** `app/api/**/route.ts` - Next.js App Router REST endpoints
+- **Controllers:** `backend/controllers/` - Request validation and response formatting
+- **Services:** `backend/services/` - Business logic and data operations
+- **Validators:** `backend/validators/` - Zod schemas for input validation
+- **Database:** Prisma ORM with PostgreSQL 16
+
+### Request Flow
+```
+Client Request → API Route → Controller → Service → Prisma → Database
+```
+
+## Development Guidelines
+
+### File Organization & Naming
+- **Components:** PascalCase (e.g., `TestCaseDialog.tsx`)
+- **Utilities/Hooks:** camelCase (e.g., `useTestCase.ts`, `formatDate.ts`)
+- **API Routes:** RESTful paths matching resource names (e.g., `/api/testcases/[id]/route.ts`)
+- **Services/Controllers:** One file per resource (e.g., `backend/services/testcase/index.ts`)
+
+### Import Patterns
+```typescript
+// Use @ alias for absolute imports
+import { testCaseService } from '@/backend/services/testcase';
+import { TestCaseDialog } from '@/frontend/components/testcase';
+import { Button } from '@/components/ui/button';
+
+// Group imports: React → External → Internal
+import React, { useState } from 'react';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+```
+
+### Server vs Client Components
+- **Default:** Server Components for data fetching and security
+- **"use client"** for: interactive forms, dialogs, state management, event handlers
+- Always keep auth logic server-side (lib/auth, lib/rbac)
+
+## Authentication & Authorization
+
+### Auth Implementation
+- **Method:** NextAuth.js with JWT in httpOnly cookies
+- **Password Hashing:** bcryptjs v3.0.2
+- **Session:** Stateless JWT containing user permissions
+- **RBAC:** Role-based access control with fine-grained permissions
+
+### Authorization Pattern
+```typescript
+// In API routes (always server-side)
+import { getSessionUser } from '@/lib/auth/getSessionUser';
+import { hasPermission } from '@/lib/rbac';
+
+const user = await getSessionUser();
+if (!hasPermission(user, 'manage_projects')) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+}
+```
+
+### API Key Auth
+For programmatic access:
+```typescript
+import { apiKeyAuth } from '@/lib/auth/apiKeyAuth';
+const user = await apiKeyAuth(request.headers.get('x-api-key'));
+```
+
+## Database
+
+### Schema Location
+- `prisma/schema.prisma` - All data models
+- `prisma/migrations/` - Historical migrations
+- Key Models: User, Project, TestCase, TestStep, TestSuite, Module, TestRun, Defect, Attachment
+
+### Key Pattern: Dynamic Enums
+Enums have been replaced with `DropdownOption` table for dynamic management. Don't add static enums to schema.
+
+### Prisma Usage
+```typescript
+import { prisma } from '@/lib/prisma';
+
+// Always use Prisma for database operations
+const testCase = await prisma.testCase.findUnique({
+  where: { id },
+  include: { steps: true, attachments: true }
+});
+```
+
+### Migrations
+```bash
+npx prisma migrate dev --name description  # Create migration
+npx prisma migrate deploy                  # Apply migrations
+npx prisma studio                          # Visual explorer
+```
+
+## API Response Format
+```typescript
+// Successful response
+{
+  status: 'success',
+  data: { /* resource data */ },
+  message: 'Optional success message'
+}
+
+// Error response
+{
+  status: 'error',
+  error: 'Error description',
+  message: 'User-friendly message'
+}
+```
+
+## Validation & Error Handling
+
+### Input Validation
+Always use Zod for runtime validation:
+```typescript
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  steps: z.array(z.object({ title: z.string() }))
+});
+
+const data = schema.parse(req.body);
+```
+
+### HTTP Status Codes
+- **200/201:** Success
+- **400:** Bad request (validation error)
+- **401:** Unauthenticated
+- **403:** Unauthorized (permission denied)
+- **404:** Not found
+- **500:** Server error
+
+## Feature: File Attachments
+
+### Storage Options
+- AWS S3 (preferred for production)
+- Local directory (development)
+
+### Multipart Upload
+Large files use chunked uploads via AWS S3 multipart API. Endpoints:
+- `POST /api/attachments/upload` - Initiate
+- `POST /api/attachments/upload/part` - Upload chunk
+- `POST /api/attachments/upload/complete` - Finalize
+
+### Usage
+```typescript
+// Test case attachments
+await prisma.testCaseAttachment.create({
+  data: {
+    testCaseId, fieldName, s3Key, fileName, mimeType, size, uploadedBy
+  }
+});
+
+// Defect attachments
+await prisma.defectAttachment.create({
+  data: {
+    defectId, fieldName, s3Key, fileName, mimeType, size, uploadedBy
+  }
+});
+```
+
+## Component Patterns
+
+### Dialog/Modal Pattern
+```typescript
+// frontend/reusable-components/dialogs/MyDialog.tsx
+'use client';
+
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+
+interface MyDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit?: (data: any) => Promise<void>;
+}
+
+export function MyDialog({ open, onOpenChange, onSubmit }: MyDialogProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        {/* Dialog content */}
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+### Form Pattern
+```typescript
+'use client';
+
+export function MyForm() {
+  const [errors, setErrors] = useState({});
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      const response = await fetch('/api/resource', {
+        method: 'POST',
+        body: JSON.stringify(Object.fromEntries(formData))
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        setErrors(error);
+        return;
+      }
+
+      // Success handling
+    } catch (error) {
+      setErrors({ submit: error.message });
+    }
+  }
+
+  return <form onSubmit={handleSubmit}>{/* fields */}</form>;
+}
+```
+
+## Testing & Running
+
+### Development
+```bash
+npm install              # Install dependencies
+npm run dev             # Start dev server (http://localhost:3000)
+npx prisma migrate dev  # Create/apply migrations
+npx prisma db seed     # Seed sample data
+```
+
+### Build & Deploy
+```bash
+npm run build           # Build for production
+npm start              # Start production server
+npm run lint           # Run ESLint
+npm run lint -- --fix  # Auto-fix issues
+```
+
+### Docker
+```bash
+docker-compose up                              # Full stack with PostgreSQL
+docker-compose -f docker-compose.dev.yml up   # Just PostgreSQL for local dev
+```
+
+## Environment Variables
+Required for development (see `.env.example`):
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXTAUTH_SECRET` - Auth secret (generate: `openssl rand -base64 32`)
+- `NEXTAUTH_URL` - Application URL (http://localhost:3000)
+- `NODE_ENV` - development/production
+
+Optional:
+- AWS S3 credentials for attachments
+- SMTP settings for email notifications
+- Firebase analytics config
+
+## Code Quality Standards
+
+### TypeScript
+- Always use strict mode
+- Type all function parameters and returns
+- Use interfaces for object shapes
+- Avoid `any` type
+
+### Component Guidelines
+- Keep components focused (single responsibility)
+- Use composition over inheritance
+- Memoize expensive computations with useMemo
+- Handle loading and error states explicitly
+
+### Accessibility
+- Use semantic HTML
+- Add ARIA labels for interactive elements
+- Ensure color contrast meets WCAG standards
+- Test keyboard navigation
+
+## Performance Optimization
+
+- Use Server Components for data fetching
+- Implement pagination for large lists
+- Optimize images with Next.js Image component
+- Cache database queries where appropriate
+- Lazy load heavy components
+
+## Common Patterns to Follow
+
+### Adding New Resource/Feature
+1. Add Prisma model to `schema.prisma`
+2. Create service: `backend/services/resource/index.ts`
+3. Create controller: `backend/controllers/resource/index.ts`
+4. Create API routes: `app/api/resources/route.ts`
+5. Create frontend components in `frontend/components/resource/`
+6. Add to navigation and link from relevant pages
+
+### Modifying Existing Features
+1. Update Prisma schema if needed → create migration
+2. Update service logic
+3. Update API routes if changing endpoints
+4. Update frontend components
+5. Test with `npm run dev` locally
+
+### Working with Transactions
+Use Prisma transactions for multi-step operations:
+```typescript
+await prisma.$transaction(async (tx) => {
+  await tx.testCase.update({ where: { id }, data: {...} });
+  await tx.defect.create({ data: {...} });
+});
+```
+
+## Documentation
+- Architecture details: `docs/architecture/`
+- API specs: `docs/api/`
+- Feature documentation: `docs/features/`
+- See `CLAUDE.md` for detailed development guide
+
+## Common Mistakes to Avoid
+
+1. **Don't:** Store auth logic in client components
+   - **Do:** Use server-side auth checks and lib/auth functions
+
+2. **Don't:** Skip input validation
+   - **Do:** Use Zod schemas for all external input
+
+3. **Don't:** Hardcode configuration values
+   - **Do:** Use environment variables
+
+4. **Don't:** Mix data fetching in client components
+   - **Do:** Fetch in server components or use API routes
+
+5. **Don't:** Forget to add indexes to frequently queried fields
+   - **Do:** Review `schema.prisma` for index coverage
+
+6. **Don't:** Modify database without migrations
+   - **Do:** Use `npx prisma migrate dev`
+
+7. **Don't:** Commit `.env` file
+   - **Do:** Use `.env.example` as template
+
+## Questions or Clarifications?
+For detailed information, refer to:
+- `.env.example` - Environment configuration template
+- `CLAUDE.md` - Extended development guide
+- `docs/architecture/` - System design documentation
+- `docs/api/` - API endpoint documentation

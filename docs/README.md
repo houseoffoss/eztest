@@ -35,6 +35,8 @@ EZTest is a lightweight, open-source test management platform built with Next.js
 
 > 📖 **New to EZTest?** Start with the [**Project Explanation**](./PROJECT_EXPLANATION.md) to understand what EZTest is, how it works, and why it exists.
 
+> 🤖 **Using an AI coding agent?** See the [**Coding Agent Guide**](./coding-agent/README.md) for an agent‑optimized overview of the architecture, domains, and change patterns.
+
 ---
 
 ## Documentation Structure
