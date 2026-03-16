@@ -55,7 +55,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
 
   // Attachment states
-  const [descriptionAttachments, setDescriptionAttachments] = useState<Attachment[]>([]);
+  const [commonAttachments, setCommonAttachments] = useState<Attachment[]>([]);
 
   const navbarActions = useMemo(() => {
     return [
@@ -104,8 +104,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
 
         // Load existing attachments
         if (data.data.attachments && Array.isArray(data.data.attachments)) {
-          const descAtts = data.data.attachments
-            .filter((att: Attachment) => !att.fieldName || att.fieldName === 'description')
+          const commonAtts = data.data.attachments
+            .filter((att: Attachment) => !att.fieldName || att.fieldName === 'description' || att.fieldName === 'attachment')
             .map((att: Attachment) => ({
               id: att.id,
               filename: att.filename,
@@ -116,7 +116,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               fieldName: att.fieldName,
               entityType: 'defect' as const,
             }));
-          setDescriptionAttachments(descAtts);
+          setCommonAttachments(commonAtts);
         }
       }
     } catch (error) {
@@ -130,8 +130,7 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
     setSaving(true);
     try {
       // Upload pending attachments first
-      const allAttachments = [...descriptionAttachments];
-      const pendingAttachments = allAttachments.filter((att) => att.id.startsWith('pending-'));
+      const pendingAttachments = commonAttachments.filter((att) => att.id.startsWith('pending-'));
       const uploadedAttachments: Array<{ id?: string; s3Key: string; fileName: string; mimeType: string; fieldName?: string }> = [];
 
       if (pendingAttachments.length > 0) {
@@ -428,8 +427,8 @@ export default function DefectDetail({ projectId, defectId }: DefectDetailProps)
               formData={formData}
               onFormChange={setFormData}
               projectId={projectId}
-              descriptionAttachments={descriptionAttachments}
-              onDescriptionAttachmentsChange={setDescriptionAttachments}
+              commonAttachments={commonAttachments}
+              onCommonAttachmentsChange={setCommonAttachments}
             />
             <LinkedTestCasesCard defect={defect} onRefresh={fetchDefect} />
             <DefectCommentsCard projectId={projectId} defectId={defectId} />

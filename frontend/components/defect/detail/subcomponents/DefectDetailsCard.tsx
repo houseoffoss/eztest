@@ -6,9 +6,11 @@ import { FormBuilder, FormFieldConfig, SelectOption } from '@/frontend/reusable-
 import { useEffect, useState } from 'react';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Input } from '@/frontend/reusable-elements/inputs/Input';
-import { TextareaWithAttachments } from '@/frontend/reusable-elements/textareas/TextareaWithAttachments';
+import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
 import { type Attachment } from '@/lib/s3';
 import { AttachmentDisplay } from '@/frontend/reusable-components/attachments/AttachmentDisplay';
+import { FileUploadModal } from '@/frontend/reusable-components/uploads/FileUploadModal';
+import { Paperclip } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -26,9 +28,9 @@ interface DefectDetailsCardProps {
   onFormChange: (data: DefectFormData) => void;
   onFieldChange?: (field: keyof DefectFormData, value: string | number | null) => void;
   projectId?: string;
-  // Attachments
-  descriptionAttachments?: Attachment[];
-  onDescriptionAttachmentsChange?: (attachments: Attachment[]) => void;
+  // Attachments - consolidated
+  commonAttachments?: Attachment[];
+  onCommonAttachmentsChange?: (attachments: Attachment[]) => void;
 }
 
 interface User {
@@ -45,11 +47,12 @@ export function DefectDetailsCard({
   onFormChange,
   onFieldChange,
   projectId,
-  descriptionAttachments = [],
-  onDescriptionAttachmentsChange,
+  commonAttachments = [],
+  onCommonAttachmentsChange,
 }: DefectDetailsCardProps) {
   const [users, setUsers] = useState<User[]>([]);
-  
+  const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
+
   // Fetch dynamic dropdown options
   const { options: severityOptions, loading: loadingSeverity } = useDropdownOptions('Defect', 'severity');
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('Defect', 'priority');
@@ -59,8 +62,8 @@ export function DefectDetailsCard({
     onFormChange({ ...formData, [field]: value });
   });
 
-  // Create safe attachment handlers with default no-op functions
-  const handleDescriptionAttachmentsChange = onDescriptionAttachmentsChange || (() => {});
+  // Create safe attachment handler with default no-op function
+  const handleCommonAttachmentsChange = onCommonAttachmentsChange || (() => {});
 
   useEffect(() => {
     if (isEditing) {
@@ -245,25 +248,69 @@ export function DefectDetailsCard({
             </div>
           </div>
 
-          {/* Description with Attachments */}
+          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <TextareaWithAttachments
-              fieldName="description"
+            <Textarea
+              id="description"
               variant="glass"
               value={formData.description || ''}
-              onChange={(value) => handleFieldChange('description', value)}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="Detailed description of the defect"
               rows={4}
               maxLength={2000}
-              showCharCount={true}
-              attachments={descriptionAttachments}
-              onAttachmentsChange={handleDescriptionAttachmentsChange}
-              entityType="defect"
-              projectId={projectId}
-              showAttachments={true}
             />
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
+          </div>
+
+          {/* Common Attachments */}
+          <div className="pt-2">
+            <DetailCard
+              title="Attachments"
+              contentClassName="space-y-3"
+              headerAction={
+                <button
+                  type="button"
+                  onClick={() => setAttachmentModalOpen(true)}
+                  className="text-white/60 hover:text-white p-1 rounded transition-colors"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+              }
+            >
+              {commonAttachments.length > 0 ? (
+                <div className="space-y-1">
+                  {commonAttachments.map((att) => (
+                    <div key={att.id} className="flex items-center gap-2 text-sm text-white/80 py-1 px-2 bg-white/5 rounded">
+                      <Paperclip className="w-3 h-3 shrink-0 text-white/40" />
+                      <span className="truncate flex-1">{att.originalName}</span>
+                      {att.size && (
+                        <span className="text-white/40 text-xs shrink-0">
+                          {(att.size / 1024).toFixed(1)} KB
+                        </span>
+                      )}
+                      {att.id.startsWith('pending-') && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-white/40 py-2">No attachments yet</p>
+              )}
+              <FileUploadModal
+                isOpen={attachmentModalOpen}
+                onClose={() => setAttachmentModalOpen(false)}
+                attachments={commonAttachments}
+                onAttachmentsChange={handleCommonAttachmentsChange}
+                fieldName="attachment"
+                entityType="defect"
+                projectId={projectId}
+                title="Defect Attachments"
+              />
+            </DetailCard>
           </div>
 
           {/* Environment */}
@@ -280,36 +327,14 @@ export function DefectDetailsCard({
         </div>
       ) : (
         <>
-          {(defect.description || descriptionAttachments.length > 0) && (
+          {defect.description && (
             <div className="border-t border-white/10 pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium text-white/60">
-                  Description
-                </h4>
-                {descriptionAttachments.length > 0 ? (
-                  <span className="text-xs text-white/50">{descriptionAttachments.length} Attachments</span>
-                ) : (
-                  <span className="text-xs text-white/40">No Attachments</span>
-                )}
-              </div>
-              {defect.description && descriptionAttachments.length > 0 ? (
-                <div className="flex gap-4 items-start">
-                  <p className="text-white/90 break-words whitespace-pre-wrap flex-1">
-                    {defect.description}
-                  </p>
-                  <div className="flex-shrink-0">
-                    <AttachmentDisplay attachments={descriptionAttachments} />
-                  </div>
-                </div>
-              ) : defect.description ? (
-                <p className="text-white/90 break-words whitespace-pre-wrap">
-                  {defect.description}
-                </p>
-              ) : descriptionAttachments.length > 0 ? (
-                <div className="flex justify-end">
-                  <AttachmentDisplay attachments={descriptionAttachments} />
-                </div>
-              ) : null}
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Description
+              </h4>
+              <p className="text-white/90 break-words whitespace-pre-wrap">
+                {defect.description}
+              </p>
             </div>
           )}
 
@@ -351,6 +376,15 @@ export function DefectDetailsCard({
                   {defect.progressPercentage}%
                 </span>
               </div>
+            </div>
+          )}
+
+          {commonAttachments.length > 0 && (
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="text-sm font-medium text-white/60 mb-2">
+                Attachments
+              </h4>
+              <AttachmentDisplay attachments={commonAttachments} />
             </div>
           )}
         </>
