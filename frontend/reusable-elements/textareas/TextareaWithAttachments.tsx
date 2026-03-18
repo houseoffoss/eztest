@@ -4,6 +4,7 @@ import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonDestructive } from '@/frontend/reusable-elements/buttons/ButtonDestructive';
 import { X, File, FileText, Image, Video, Archive, Download, Paperclip } from 'lucide-react';
 import { BaseConfirmDialog } from '@/frontend/reusable-components/dialogs/BaseConfirmDialog';
+import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import {
   type Attachment,
   validateFile,
@@ -327,21 +328,57 @@ function TextareaWithAttachments({
       
       {/* Attachment Display and Button - Below textarea */}
       {shouldShowAttachments && (
-        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
-          {/* Left side - Attachment count display (non-clickable) */}
-          <span className="text-white/60">{attachments.length} Attachment{attachments.length !== 1 ? 's' : ''}</span>
-          
-          {/* Right side - Clickable button with paperclip icon */}
-          <button
-            type="button"
-            onClick={() => setFileModalOpen(true)}
-            disabled={uploading}
-            className="p-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-white/60 hover:text-white/80"
-            title={attachments.length > 0 ? `Manage ${attachments.length} file${attachments.length !== 1 ? 's' : ''}` : 'Attach Files'}
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
-        </div>
+        <DetailCard
+          title={`Attachments (${attachments.length})`}
+          contentClassName="space-y-3"
+          headerAction={
+            <button
+              type="button"
+              onClick={() => setFileModalOpen(true)}
+              className="text-white/60 hover:text-white p-1 rounded transition-colors"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+          }
+        >
+          <div className="space-y-2">
+            {attachments.length === 0 ? (
+              <p className="text-white/60 text-center py-4">
+                No attachments yet. Click the paperclip icon to add files.
+              </p>
+            ) : (
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                {attachments.map((att) => (
+                  <div key={att.id} className="flex items-center gap-2 text-sm text-white/80 py-2 px-3 rounded-lg bg-white/5 border border-white/10">
+                    <Paperclip className="w-3 h-3 shrink-0 text-white/40" />
+                    <span className="truncate flex-1">{att.originalName}</span>
+                    {att.size && (
+                      <span className="text-white/40 text-xs shrink-0">
+                        {(att.size / 1024).toFixed(1)} KB
+                      </span>
+                    )}
+                    {att.id.startsWith('pending-') && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            <FileUploadModal
+              isOpen={fileModalOpen}
+              onClose={() => setFileModalOpen(false)}
+              attachments={attachments}
+              onAttachmentsChange={onAttachmentsChange || (() => {})}
+              fieldName={fieldName}
+              entityId={entityId}
+              projectId={projectId}
+              entityType={entityType}
+              title={`${fieldName} Attachments`}
+            />
+          </div>
+        </DetailCard>
       )}
       
       {showCharCount && maxLength && (
