@@ -1,6 +1,6 @@
 # Scope of Work — Autonomous AI Agent Testing Framework
 
-> A framework that autonomously evaluates and tests any AI agent — from writing test cases to generating reports — with zero human-authored tests per agent.
+> A true Agentic AI that autonomously evaluates any AI agent — it reasons, plans, acts, and adapts its own testing strategy from input to report with no fixed pipeline.
 
 ---
 
@@ -9,11 +9,25 @@
 ### Problem
 Testing AI agents today is done manually — engineers hand-write test prompts, run them against the agent, and visually inspect responses. This approach does not scale, misses edge cases, and produces no consistent quality metrics over time.
 
+Existing "automated" solutions are agentic **workflows** — fixed pipelines where agents execute assigned tasks in a predetermined sequence. They cannot adapt to what they discover mid-run, cannot probe failures deeper, and cannot change strategy based on evidence.
+
 ### Solution
-An autonomous multi-agent framework that accepts a target AI agent (via API endpoint or Git repository), understands what it does, generates a full test suite, executes the tests, evaluates results using an LLM judge, and produces a structured report — with zero human involvement per test run.
+A **true Agentic AI** — a goal-driven agent running a ReAct loop (Reason → Act → Observe → Reason) that decides its own testing strategy at runtime. It accepts a target AI agent (via API endpoint or Git repository), understands what it does, autonomously generates and adapts its test suite, executes tests, probes failures deeper when warranted, evaluates results using an LLM judge, and produces a structured report.
+
+The human review gate is not a fixed pipeline step — the agent decides when it has enough tests ready and when human judgment is appropriate before execution.
+
+### What makes this Agentic AI, not Agentic Workflow
+
+| | Agentic Workflow | This Framework (Agentic AI) |
+|---|---|---|
+| Flow | Fixed, predetermined | Agent decides every next step |
+| Adapts to failures | No | Yes — probes deeper on failures |
+| Human review timing | Fixed gate | Agent-initiated when ready |
+| Can backtrack | No | Yes |
+| Stops when | Pipeline ends | Agent judges goal achieved |
 
 ### Goal
-A production-ready testing framework that works against **any** AI agent regardless of how it is built, what LLM it uses, or where it is deployed.
+A production-ready Agentic AI testing system that works against **any** AI agent regardless of how it is built, what LLM it uses, or where it is deployed.
 
 ---
 
@@ -45,11 +59,17 @@ A production-ready testing framework that works against **any** AI agent regardl
 - Read existing test files to reuse rather than regenerate
 - Parse `.env.example` for required services
 
-#### Orchestrator
-- Central coordinator managing the full pipeline
-- State machine: `INIT → PARSE → WRITE → EXECUTE → EVALUATE → REPORT → DONE`
-- Retry logic for sub-agent failures
-- Resumable runs — persist state to DB so a crashed run can continue
+#### Master Agentic AI (ReAct Loop)
+- Not an orchestrator with a fixed pipeline — a goal-driven LLM agent running a continuous **ReAct loop** (Reason → Act → Observe → Reason)
+- Has a toolbox of capabilities it calls in any order, any number of times, based on what it reasons is needed next
+- Phases emerge from the agent's reasoning, not from hardcoded steps:
+  - **Understand** — parse repo or probe the agent to build context
+  - **Plan & Generate** — generate test cases and scripts based on what was learned
+  - **Review** — agent calls `request_human_review` when it judges tests are ready
+  - **Execute & Adapt** — runs tests, evaluates each, decides whether to probe deeper
+  - **Report** — agent calls `generate_report` when it judges sufficient evidence exists
+- Persists state to DB at each reasoning step — run is resumable after a crash
+- Stops when the agent itself reasons: "I have thoroughly evaluated this agent"
 
 #### Test Case Writer Agent
 - Auto-generate test cases from `AgentSpec` using an LLM
@@ -59,8 +79,27 @@ A production-ready testing framework that works against **any** AI agent regardl
   - Adversarial (prompt injection, jailbreak, role confusion)
   - Tool-use correctness
   - Multi-turn conversation
+- For each test case, also generate the **test script** — the exact execution plan (input sequence, tool call expectations, expected output criteria)
 - Define invariants for adversarial tests (things the agent must never do)
 - Cache generated test cases in DB — reuse if agent spec is unchanged
+
+#### Human Review Gate
+The pipeline pauses after test generation and requires explicit user approval before any test is executed against the target agent.
+
+**What the user reviews:**
+- **Test Cases** — the list of generated tests, grouped by category, with rationale for each
+- **Test Scripts** — the exact execution plan per test (input, expected tool calls, expected output criteria, invariants)
+
+**Review actions:**
+- `Approve All` — proceed with all generated tests as-is
+- `Approve with edits` — user edits individual test cases or scripts inline before approving
+- `Reject with feedback` — user provides feedback; Writer agent regenerates the entire suite incorporating the feedback
+- `Delete individual tests` — remove specific test cases before approving the rest
+
+**Constraints:**
+- No test is ever executed before an `Approve` action is received
+- Rejection loops are capped at 3 regenerations — after that, user must manually approve or abort
+- All review decisions (approve/edit/reject + feedback) are stored in DB for audit
 
 #### Test Executor Agent
 - Adapter layer supporting 4 agent interfaces:
@@ -80,15 +119,48 @@ A production-ready testing framework that works against **any** AI agent regardl
 - **Strategy 4 — Black-box:** Input/output only, no trace access *(third-party agents)*
 
 #### Evaluation Layer
-- Separate LLM judge (not the model being tested) scores every result
-- 6 evaluation dimensions:
-  - Factual accuracy (LLM judge, 0–10)
-  - Tool use correctness (exact match, pass/fail)
-  - Instruction following (rubric scoring, 0–10)
-  - Safety / refusals (classifier, pass/fail)
-  - Consistency across turns (embedding similarity, 0–10)
-  - Latency (hard threshold, pass/fail)
-- Invariant checker — `CRITICAL FAIL` if any invariant is violated
+A separate LLM judge (never the model being tested) scores every executed test result across 6 dimensions.
+
+**Per-Test Score Card:**
+
+| Dimension | Method | Score Type | Weight |
+|---|---|---|---|
+| Factual Accuracy | LLM judge compares output to expected criteria | 0–10 | 25% |
+| Tool Use Correctness | Exact match on tool name + parameters vs test script expectation | Pass / Fail | 20% |
+| Instruction Following | Rubric-based LLM scoring — did it do what was asked | 0–10 | 20% |
+| Safety / Refusals | Classifier — did it refuse when it should, respond when it should | Pass / Fail | 15% |
+| Consistency | Embedding similarity across multi-turn responses | 0–10 | 10% |
+| Latency | Hard threshold from `eval-config.yaml` | Pass / Fail | 10% |
+
+**Composite Score Calculation:**
+```
+Test Score = (Factual × 0.25) + (Instruction × 0.20) + (Consistency × 0.10)
+           + (Tool Use × 0.20) + (Safety × 0.15) + (Latency × 0.10)
+
+Max score = 10.0
+Pass threshold = configurable (default: 7.0)
+```
+
+**Verdict per test:**
+- `PASS` — composite score ≥ threshold AND no Pass/Fail dimension failed
+- `FAIL` — composite score < threshold OR any Pass/Fail dimension failed
+- `CRITICAL FAIL` — any invariant violated (overrides all other scores)
+- `BLOCKED` — agent safety filter refused the adversarial test input (not a failure)
+- `ERROR` — agent crashed or returned non-200; not scored, flagged separately
+
+**Aggregate Run Score:**
+```
+Run Score = average composite score across all PASS + FAIL tests (BLOCKED/ERROR excluded)
+Category Score = average per test category (Happy Path, Edge Cases, etc.)
+```
+
+**Score Thresholds (configurable):**
+- `≥ 9.0` — Excellent
+- `7.0–8.9` — Good (default pass)
+- `5.0–6.9` — Needs improvement
+- `< 5.0` — Poor (auto-flag for immediate review)
+
+- Invariant checker — `CRITICAL FAIL` if any invariant is violated, regardless of score
 
 #### Report Agent
 - Aggregate pass/fail and scores per category and per dimension
@@ -132,16 +204,17 @@ A production-ready testing framework that works against **any** AI agent regardl
 |---|---|---|
 | D1 | Input Handler | Accepts API/manual and Git repo inputs, outputs `AgentSpec` |
 | D2 | Repo Parser | Clones and reads a Git repo, extracts agent spec automatically |
-| D3 | Orchestrator | State machine coordinating the full pipeline with retry + resume |
-| D4 | Test Case Writer | LLM-powered test generator covering all 5 categories |
-| D5 | Adapter Layer | REST, Anthropic, OpenAI, LangChain adapters |
-| D6 | Test Executor | Runs all test cases, logs results, integrates with Langfuse |
-| D7 | Trace Strategies | 4 trace visibility modes implemented and selectable via config |
-| D8 | Evaluation Layer | LLM judge + invariant checker scoring 6 dimensions |
-| D9 | Report Generator | Multi-format report output with regression diffing |
-| D10 | Storage Layer | PostgreSQL schema + Prisma models |
-| D11 | Config System | Per-agent `eval-config.yaml` support |
-| D12 | Documentation | Architecture, implementation plan, and usage guide |
+| D3 | Orchestrator | State machine with REVIEW_PENDING gate, retry + resume |
+| D4 | Test Case Writer | LLM-powered test + test script generator covering all 5 categories |
+| D5 | Human Review Gate | Review interface for test cases and scripts — approve / edit / reject |
+| D6 | Adapter Layer | REST, Anthropic, OpenAI, LangChain adapters |
+| D7 | Test Executor | Runs approved test cases, logs results, integrates with Langfuse |
+| D8 | Trace Strategies | 4 trace visibility modes implemented and selectable via config |
+| D9 | Evaluation Layer | LLM judge + weighted scoring + invariant checker across 6 dimensions |
+| D10 | Report Generator | Multi-format report output with per-test scores + regression diffing |
+| D11 | Storage Layer | PostgreSQL schema + Prisma models |
+| D12 | Config System | Per-agent `eval-config.yaml` support |
+| D13 | Documentation | Architecture, implementation plan, and usage guide |
 
 ---
 
@@ -155,30 +228,30 @@ Build the input handler, Repo Parser, and storage schema. At the end of this pha
 ---
 
 ### Phase 2 — Core Pipeline *(MVP loop)*
-Build the Orchestrator, Writer, REST Executor (single adapter), and basic LLM judge (2 dimensions). At the end of this phase, the full end-to-end loop works for a single REST agent — no trace visibility, basic scoring.
+Build the Orchestrator, Writer (test cases + scripts), Human Review Gate, REST Executor, and basic LLM judge (2 dimensions). At the end of this phase, the full end-to-end loop works — user can review and approve tests before execution.
 
-**Deliverables:** D3 (partial), D4, D5 (REST only), D6 (no trace), D8 (partial)
+**Deliverables:** D3 (partial), D4, D5, D6 (REST only), D7 (no trace), D9 (partial)
 
 ---
 
 ### Phase 3 — Full Execution Layer
 Add remaining adapters (Anthropic, OpenAI, LangChain), multi-turn support, Langfuse integration, and all 4 trace strategies.
 
-**Deliverables:** D5 (complete), D6 (complete), D7
+**Deliverables:** D6 (complete), D7 (complete), D8
 
 ---
 
 ### Phase 4 — Full Evaluation & Reporting
-Complete the LLM judge with all 6 dimensions, invariant checker, full report generator with regression diffing, all output formats.
+Complete the LLM judge with all 6 dimensions and weighted scoring, invariant checker, full report generator with per-test score cards and regression diffing, all output formats.
 
-**Deliverables:** D3 (complete), D8 (complete), D9
+**Deliverables:** D3 (complete), D9 (complete), D10
 
 ---
 
 ### Phase 5 — Configuration & Polish
 Add the config system, full error handling, retry logic, resumable runs, and documentation.
 
-**Deliverables:** D11, D12
+**Deliverables:** D12, D13
 
 ---
 
