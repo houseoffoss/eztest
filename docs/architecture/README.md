@@ -333,3 +333,6 @@ See [Security Documentation](./security.md) for details.
 - [Database Schema](./database.md)
 - [Security](./security.md)
 - [Code Patterns](./patterns.md)
+- [Autonomous AI Agent Testing Framework](./ai-agent-testing-framework.md)
+- [AI Agent Testing — Implementation Plan](./ai-agent-testing-implementation-plan.md)
+- [AI Agent Testing — Scope of Work](./ai-agent-testing-scope-of-work.md)
