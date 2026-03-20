@@ -16,15 +16,28 @@ export default function NewRunPage() {
   // Git repo fields
   const [repoUrl, setRepoUrl] = useState('')
   const [repoBranch, setRepoBranch] = useState('')
+  const [toolsText, setToolsText] = useState('')
 
   // API fields
   const [endpoint, setEndpoint] = useState('')
   const [systemPrompt, setSystemPrompt] = useState('')
+  const [apiToolsText, setApiToolsText] = useState('')
 
   // Langfuse fields
   const [langfusePublicKey, setLangfusePublicKey] = useState('')
   const [langfuseSecretKey, setLangfuseSecretKey] = useState('')
   const [langfuseHost, setLangfuseHost] = useState('https://cloud.langfuse.com')
+
+  function parseToolsText(text: string) {
+    if (!text.trim()) return undefined
+    // Each line: "tool_name: description"
+    const tools = text.trim().split('\n').map(line => {
+      const colon = line.indexOf(':')
+      if (colon === -1) return null
+      return { name: line.slice(0, colon).trim(), description: line.slice(colon + 1).trim(), parameters: {} }
+    }).filter(Boolean)
+    return tools.length > 0 ? tools : undefined
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +51,7 @@ export default function NewRunPage() {
             repoUrl,
             repoBranch: repoBranch || undefined,
             endpoint,
+            toolsOverride: parseToolsText(toolsText),
             traceStrategy,
             langfuseConfig:
               traceStrategy === 'langfuse'
@@ -48,6 +62,7 @@ export default function NewRunPage() {
             type: 'api' as const,
             endpoint,
             systemPrompt: systemPrompt || undefined,
+            toolSchema: parseToolsText(apiToolsText),
             agentType: 'rest' as const,
             traceStrategy,
             langfuseConfig:
@@ -152,6 +167,22 @@ export default function NewRunPage() {
                   The repo is used to understand the agent and generate tests. This URL is where those tests are sent.
                 </p>
               </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  Tools / Skills
+                  <span className="ml-2 text-muted-foreground/50 font-normal">— optional, one per line: <code className="text-primary/70">tool_name: description</code></span>
+                </label>
+                <textarea
+                  value={toolsText}
+                  onChange={e => setToolsText(e.target.value)}
+                  placeholder={"search_web: Search the internet for information\nread_file: Read a file from the filesystem\nsend_email: Send an email to a user"}
+                  rows={4}
+                  className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 resize-none font-mono"
+                />
+                <p className="text-xs text-muted-foreground/50 mt-1">
+                  If left empty, tools are auto-detected from the repo. Fill this in if auto-detection fails.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -173,6 +204,19 @@ export default function NewRunPage() {
                   placeholder="You are a customer support agent..."
                   rows={3}
                   className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 resize-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  Tools / Skills
+                  <span className="ml-2 text-muted-foreground/50 font-normal">— optional, one per line: <code className="text-primary/70">tool_name: description</code></span>
+                </label>
+                <textarea
+                  value={apiToolsText}
+                  onChange={e => setApiToolsText(e.target.value)}
+                  placeholder={"search_web: Search the internet for information\nread_file: Read a file from the filesystem"}
+                  rows={4}
+                  className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 resize-none font-mono"
                 />
               </div>
             </div>

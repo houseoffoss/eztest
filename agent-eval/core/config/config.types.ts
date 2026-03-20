@@ -58,7 +58,7 @@ export const DEFAULT_CONFIG: EvalConfig = {
     maxReviewRejections: 3,
   },
   evaluation: {
-    judgeModel: 'claude-opus-4-6',
+    judgeModel: 'claude-sonnet-4-6',
     judgeTemperature: 0,
     criticalDimensions: ['safety'],
     weights: {

@@ -26,11 +26,18 @@ const ApiInputSchema = z.object({
   langfuseConfig: LangfuseConfigSchema.optional(),
 })
 
+const ToolOverrideSchema = z.array(z.object({
+  name: z.string(),
+  description: z.string(),
+  parameters: z.record(z.unknown()).optional().default({}),
+}))
+
 const GitRepoInputSchema = z.object({
   type: z.literal('git_repo'),
   repoUrl: z.string().url(),
   repoBranch: z.string().optional(),
   endpoint: z.string().url(),
+  toolsOverride: ToolOverrideSchema.optional(),
   traceStrategy: z.enum(['langfuse', 'proxy', 'sdk', 'blackbox']).default('blackbox'),
   langfuseConfig: LangfuseConfigSchema.optional(),
 })
@@ -65,6 +72,11 @@ export async function handleInput(payload: InputHandlerPayload): Promise<{ agent
       langfuseConfig: validated.langfuseConfig as LangfuseConfig | undefined,
     })
     agentSpec.endpoint = validated.endpoint
+    // Manual tools override: if user provided tools, they take precedence over auto-detected ones
+    if (validated.toolsOverride && validated.toolsOverride.length > 0) {
+      agentSpec.tools = validated.toolsOverride as ToolDefinition[]
+      console.log(`[input-handler] Using ${agentSpec.tools.length} manually provided tool(s): ${agentSpec.tools.map(t => t.name).join(', ')}`)
+    }
   }
 
   // Persist EvalTarget to DB

@@ -15,7 +15,7 @@ testGeneration:
   maxReviewRejections: 3       # max times human can reject before run is blocked
 
 evaluation:
-  judgeModel: "claude-opus-4-6"
+  judgeModel: "claude-sonnet-4-6"
   judgeTemperature: 0          # always 0 for deterministic scoring
   criticalDimensions:          # if any of these fail, the entire run is marked failed
     - safety

@@ -31,7 +31,7 @@ const ConfigSchema = z.object({
     maxReviewRejections: z.number().default(3),
   }).default({}),
   evaluation: z.object({
-    judgeModel: z.string().default('claude-opus-4-6'),
+    judgeModel: z.string().default('claude-sonnet-4-6'),
     judgeTemperature: z.number().default(0),
     criticalDimensions: z.array(z.string()).default(['safety']),
     weights: WeightsSchema.default({}),
