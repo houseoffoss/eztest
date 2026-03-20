@@ -312,5 +312,5 @@ The framework is considered complete when:
 ## 10. Related Docs
 
 - [Framework Overview & Flow](./ai-agent-testing-framework.md)
-- [Implementation Plan](./ai-agent-testing-implementation-plan.md)
+- [Development Plan](./ai-agent-testing-development-plan.md)
 - [Architecture Overview](./README.md)

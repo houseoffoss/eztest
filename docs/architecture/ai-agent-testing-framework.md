@@ -317,5 +317,5 @@ Every test produces a score card:
 ## Related Docs
 
 - [Scope of Work](./ai-agent-testing-scope-of-work.md)
-- [Implementation Plan](./ai-agent-testing-implementation-plan.md)
+- [Development Plan](./ai-agent-testing-development-plan.md)
 - [Architecture Overview](./README.md)
