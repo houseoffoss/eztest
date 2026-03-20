@@ -576,3 +576,107 @@ model TestCaseDefect {
   @@index([testCaseId])
   @@index([defectId])
 }
+
+// ====================================
+// Agent Eval Framework
+// ====================================
+
+model EvalTarget {
+  id            String     @id @default(cuid())
+  name          String
+  inputType     String     // "api" | "git_repo"
+  endpoint      String?
+  repoUrl       String?
+  repoBranch    String?
+  systemPrompt  String?
+  toolSchema    Json?
+  agentType     String?    // "rest" | "anthropic" | "openai" | "langchain"
+  traceStrategy String?    // "langfuse" | "proxy" | "sdk" | "blackbox"
+  langfuseKey   String?
+  configYaml    String?
+  createdAt     DateTime   @default(now())
+  runs          EvalRun[]
+}
+
+model EvalRun {
+  id             String         @id @default(cuid())
+  targetId       String
+  target         EvalTarget     @relation(fields: [targetId], references: [id])
+  status         String         // "running" | "review_pending" | "completed" | "failed" | "aborted"
+  agentState     Json?
+  compositeScore Float?
+  verdict        String?
+  startedAt      DateTime       @default(now())
+  completedAt    DateTime?
+  testCases      EvalTestCase[]
+  reviewSessions EvalReview[]
+  report         EvalReport?
+
+  @@index([targetId])
+}
+
+model EvalTestCase {
+  id             String      @id @default(cuid())
+  runId          String
+  run            EvalRun     @relation(fields: [runId], references: [id])
+  category       String      // "happy_path" | "edge_case" | "adversarial" | "tool_use" | "multi_turn"
+  title          String
+  rationale      String
+  input          Json
+  expectedTools  Json?
+  expectedOutput String?
+  invariants     Json?
+  status         String      // "pending_review" | "approved" | "rejected" | "executed"
+  executionResult EvalResult?
+  createdAt      DateTime    @default(now())
+
+  @@index([runId])
+}
+
+model EvalReview {
+  id          String   @id @default(cuid())
+  runId       String
+  run         EvalRun  @relation(fields: [runId], references: [id])
+  decision    String   // "approve_all" | "approve_with_edits" | "reject" | "delete"
+  feedback    String?
+  editedTests Json?
+  reviewedAt  DateTime @default(now())
+  reviewedBy  String?
+
+  @@index([runId])
+}
+
+model EvalResult {
+  id                   String       @id @default(cuid())
+  testCaseId           String       @unique
+  testCase             EvalTestCase @relation(fields: [testCaseId], references: [id])
+  verdict              String       // "PASS" | "FAIL" | "CRITICAL_FAIL" | "BLOCKED" | "ERROR"
+  compositeScore       Float?
+  factualAccuracy      Float?
+  toolUseCorrectness   Boolean?
+  instructionFollowing Float?
+  safety               Boolean?
+  consistency          Float?
+  latency              Boolean?
+  latencyMs            Int?
+  rawResponse          String?
+  traceData            Json?
+  judgeReasoning       String?
+  invariantViolation   String?
+  executedAt           DateTime     @default(now())
+}
+
+model EvalReport {
+  id              String   @id @default(cuid())
+  runId           String   @unique
+  run             EvalRun  @relation(fields: [runId], references: [id])
+  runScore        Float
+  categoryScores  Json
+  failurePatterns Json
+  suggestions     String
+  regressionDiff  Json?
+  markdownPath    String?
+  htmlPath        String?
+  jsonPath        String?
+  generatedAt     DateTime @default(now())
+}

@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+**/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -47,3 +48,10 @@ next-env.d.ts
 
 # uploads
 /uploads
+
+# agent-eval
+/agent-eval/dist
+/agent-eval/reports
+
+# Agent eval SQLite checkpoints
+/data/

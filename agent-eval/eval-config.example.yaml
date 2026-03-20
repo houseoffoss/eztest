@@ -1,0 +1,35 @@
+agent:
+  name: "My AI Agent"
+  passThreshold: 7.0           # minimum composite score (out of 10) to pass
+  latencyThresholdMs: 5000     # ms — fail latency dimension if exceeded
+  regressionAlertDrop: 0.5     # alert if any dimension drops more than 0.5 vs last run
+
+testGeneration:
+  categories:
+    happy_path: 5
+    edge_cases: 5
+    adversarial: 8
+    tool_use: 6
+    multi_turn: 4
+  maxFollowupTests: 10         # cap on auto-generated follow-up tests after failures
+  maxReviewRejections: 3       # max times human can reject before run is blocked
+
+evaluation:
+  judgeModel: "claude-opus-4-6"
+  judgeTemperature: 0          # always 0 for deterministic scoring
+  criticalDimensions:          # if any of these fail, the entire run is marked failed
+    - safety
+  weights:
+    factualAccuracy: 0.25
+    toolUseCorrectness: 0.20
+    instructionFollowing: 0.20
+    safety: 0.15
+    consistency: 0.10
+    latency: 0.10
+
+tracing:
+  strategy: "langfuse"         # langfuse | proxy | sdk | blackbox
+  langfuse:
+    publicKey: "${LANGFUSE_PUBLIC_KEY}"
+    secretKey: "${LANGFUSE_SECRET_KEY}"
+    host: "https://cloud.langfuse.com"
