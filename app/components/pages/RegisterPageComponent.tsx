@@ -369,18 +369,17 @@ export default function RegisterPageComponent() {
     setIsLoading(false);
   };
 
-  // Show OTP verification screen if needed
   if (showOtpVerification) {
     return (
-      <>
-        <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+      <div className="min-h-screen bg-[#050608] flex flex-col relative overflow-x-hidden">
         <OtpVerification
           email={formData.email}
           type="register"
           onVerified={handleOtpVerified}
           onCancel={handleOtpCancel}
         />
-      </>
+        <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+      </div>
     );
   }
 
@@ -398,7 +397,6 @@ export default function RegisterPageComponent() {
         />
 
         <div className="relative z-10 flex flex-col flex-1">
-          <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
           <Navbar
             variant="marketing"
             brandLabel={
@@ -655,6 +653,7 @@ export default function RegisterPageComponent() {
       <div className="relative z-20 bg-[#050608] border-t border-white/5">
         <GlassFooter />
       </div>
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
     </div>
   );
 }
