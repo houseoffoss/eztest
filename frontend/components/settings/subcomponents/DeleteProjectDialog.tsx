@@ -43,10 +43,11 @@ export function DeleteProjectDialog({
           <div className="flex gap-3 justify-end">
             <Button
               type="button"
-              variant="ghost"
+              variant="glass"
               onClick={() => onOpenChange(false)}
               disabled={deleting}
               data-analytics-button="Delete Project Dialog (Settings) - Cancel"
+              className="cursor-pointer"
             >
               Cancel
             </Button>
