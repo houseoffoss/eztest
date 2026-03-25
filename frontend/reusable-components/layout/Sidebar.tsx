@@ -182,7 +182,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 </span>
               )}
               {/* Tooltip */}
-              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0b1028]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                 {item.label}
               </span>
             </Link>
@@ -200,7 +200,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                 </span>
               )}
               {/* Tooltip */}
-              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0b1028]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              <span className="absolute left-full ml-2 px-3 py-2 bg-[#0a0a0c]/95 backdrop-blur-xl border border-white/10 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                 {item.label}
               </span>
             </button>
@@ -352,7 +352,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
     >
       <aside
         className="h-full relative overflow-hidden flex flex-col rounded-3xl"
-        style={{ backgroundColor: '#0a1628' }}
+        style={{ backgroundColor: '#050608' }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
         <div className={cn(

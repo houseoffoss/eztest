@@ -259,8 +259,8 @@ export function FileUploadModal({
       style={{ zIndex: 9999, pointerEvents: 'auto' }}
       onClick={handleBackdropClick}
     >
-      <div 
-        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0d1229]/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl flex flex-col"
+      <div
+        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f0f12]/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl flex flex-col"
         style={{ pointerEvents: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >

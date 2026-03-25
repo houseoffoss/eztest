@@ -269,8 +269,8 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
         const isImage = attachment.mimeType.startsWith('image/');
         
         return createPortal(
-          <div 
-            className="fixed w-80 bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl overflow-hidden"
+          <div
+            className="fixed w-80 bg-[#0f0f12] border border-white/20 rounded-lg shadow-2xl overflow-hidden"
             style={{ 
               top: `${previewPosition.top}px`, 
               left: `${previewPosition.left}px`,
@@ -370,7 +370,7 @@ export function AttachmentDisplay({ attachments, showPreview = true, onDelete, s
         
         return createPortal(
           <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" style={{ zIndex: 10000 }}>
-            <div className="bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="bg-[#0f0f12] border border-white/20 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold text-white/90 mb-2">Delete Attachment</h3>
               <p className="text-white/70 mb-4">
                 Are you sure you want to delete <span className="font-medium text-white/90">{attachment.originalName || attachment.filename}</span>?

@@ -55,7 +55,7 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a1628]">
+      <div className="min-h-screen bg-[#050608]">
         <TopBar breadcrumbs={[{ label: 'Profile' }]} />
         <div className="max-w-4xl mx-auto px-8 pt-8">
           <div className="flex items-center justify-center h-64">
@@ -68,7 +68,7 @@ export default function UserProfilePage() {
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-[#0a1628]">
+      <div className="min-h-screen bg-[#050608]">
         <TopBar breadcrumbs={[{ label: 'Profile' }]} />
         <div className="max-w-4xl mx-auto px-8 pt-8">
           <Card variant="glass">
@@ -85,7 +85,7 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen bg-[#050608]">
       <TopBar
         breadcrumbs={[
           { label: 'Users' },

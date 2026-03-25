@@ -41,7 +41,7 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
         background: gradientStyle,
       }}
     >
-      <div className="relative overflow-hidden flex flex-col h-full rounded-3xl" style={{ backgroundColor: '#0a1628' }}>
+      <div className="relative overflow-hidden flex flex-col h-full rounded-3xl" style={{ backgroundColor: '#050608' }}>
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-white/[0.02] backdrop-blur-2xl shadow-lg shadow-black/30 before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.005),rgba(255,255,255,0.02))] pointer-events-none" />
         <div className="relative z-10 h-full flex flex-col">
       <nav className="space-y-1 p-4 flex-1">

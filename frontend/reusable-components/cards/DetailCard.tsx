@@ -42,7 +42,7 @@ export function DetailCard({
       className="rounded-3xl relative transition-all p-[1px]"
       style={{ background: gradientStyle }}
     >
-      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
         <Card 
           variant={variant} 
           className={`!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full ${className}`} 

@@ -122,7 +122,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
             background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
           }}
         >
-          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
             <Card
               variant="glass"
               className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
@@ -245,7 +245,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
             background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
           }}
         >
-          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
             <Card
               variant="glass"
               className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"

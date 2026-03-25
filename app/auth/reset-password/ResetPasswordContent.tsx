@@ -92,7 +92,7 @@ function ResetPasswordForm() {
 
   if (validating) {
     return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#0a1628]">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#050608]">
         <div className="w-full max-w-md">
           <div className="bg-white/[0.02] border-white/10 border-2 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8">
             <div className="space-y-4">
@@ -106,7 +106,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#0a1628]">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[#050608]">
       <div className="w-full max-w-md">
         {/* Card */}
         <GlassPanel contentClassName="p-8">
