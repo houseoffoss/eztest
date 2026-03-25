@@ -320,7 +320,7 @@ export function DropdownOptionsEditor({
                             value={option.value}
                             onChange={(e) => handleUpdateOption(index, { value: e.target.value })}
                             placeholder="VALUE"
-                            className="bg-[#0f172a] border-[#334155] text-sm"
+                            className="bg-[#0f0f12] border-[#2a2a2e] text-sm"
                             disabled={!option.isNew}
                           />
                           {!option.isNew && (
@@ -333,7 +333,7 @@ export function DropdownOptionsEditor({
                             value={option.label}
                             onChange={(e) => handleUpdateOption(index, { label: e.target.value })}
                             placeholder="Display Label"
-                            className="bg-[#0f172a] border-[#334155] text-sm"
+                            className="bg-[#0f0f12] border-[#2a2a2e] text-sm"
                           />
                         </div>
                       </div>
@@ -447,7 +447,7 @@ export function DropdownOptionsEditor({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
           <Button 
             type="button"
             variant="glass" 

@@ -91,10 +91,10 @@ export function Pagination({
             <select
               value={itemsPerPage}
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-              className="px-3 py-1.5 rounded border border-white/10 bg-[#1a2332] text-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer hover:bg-[#1f2937] transition-colors"
+              className="px-3 py-1.5 rounded border border-white/10 bg-[#0f0f12] text-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer hover:bg-[#1f2937] transition-colors"
             >
               {itemsPerPageOptions.map((option) => (
-                <option key={option} value={option} className="bg-[#1a2332] text-white">
+                <option key={option} value={option} className="bg-[#0f0f12] text-white">
                   {option}
                 </option>
               ))}

@@ -352,7 +352,7 @@ export const BaseDialog = <T = unknown,>({
           key={field.name}
           {...commonProps}
           rows={field.rows || 3}
-          className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${errorBorderClass}`}
+          className={`bg-[#0f0f12] border-[#2a2a2e] ${upperCaseClass} ${errorBorderClass}`}
         />
       );
     }
@@ -403,7 +403,7 @@ export const BaseDialog = <T = unknown,>({
             return newErrors;
           });
         }}>
-          <SelectTrigger className={`bg-[#0f172a] border-[#334155] ${errorBorderClass}`}>
+          <SelectTrigger className={`bg-[#0f0f12] border-[#2a2a2e] ${errorBorderClass}`}>
             <SelectValue placeholder={field.placeholder} />
           </SelectTrigger>
           <SelectContent variant="glass">
@@ -422,7 +422,7 @@ export const BaseDialog = <T = unknown,>({
         key={field.name}
         type={field.type === 'date' ? 'date' : field.type || 'text'}
         {...commonProps}
-        className={`bg-[#0f172a] border-[#334155] ${upperCaseClass} ${errorBorderClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
+        className={`bg-[#0f0f12] border-[#2a2a2e] ${upperCaseClass} ${errorBorderClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
       />
     );
   };
@@ -479,7 +479,7 @@ export const BaseDialog = <T = unknown,>({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
           <Button
             type="button"
             variant="glass"

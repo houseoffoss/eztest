@@ -225,7 +225,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
             </div>
           ) : comments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <div className="bg-gray-800/50 rounded-xl p-8 text-center">
+              <div className="bg-[#1a1a1e]/50 rounded-xl p-8 text-center">
                 <p className="text-base font-medium text-gray-300">No comments yet</p>
                 <p className="text-sm mt-2 text-gray-500">Be the first to share your thoughts</p>
               </div>
@@ -266,8 +266,8 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
                     <div
                       className={`rounded-2xl px-4 py-3 shadow-lg ${
                         isCurrentUser
-                          ? 'bg-gray-800/90 backdrop-blur-sm text-gray-100 border border-blue-500/30'
-                          : 'bg-gray-800/80 backdrop-blur-sm text-gray-100 border border-gray-700/50'
+                          ? 'bg-[#1a1a1e]/90 backdrop-blur-sm text-gray-100 border border-blue-500/30'
+                          : 'bg-[#1a1a1e]/80 backdrop-blur-sm text-gray-100 border border-[#2a2a2e]/50'
                       }`}
                     >
                       {comment.content && comment.content.trim() && (
@@ -292,7 +292,7 @@ export const DefectCommentsCard: React.FC<DefectCommentsCardProps> = ({
         </div>
 
         {/* Comment input */}
-        <div className="border-t border-gray-700/50 p-5 bg-gradient-to-b from-gray-900 to-gray-900/95">
+        <div className="border-t border-gray-700/50 p-5 bg-gradient-to-b from-[#0f0f12] to-[#0f0f12]/95">
           <form onSubmit={handleSubmitComment} className="space-y-3">
             <TextareaWithAttachments
               variant="glass"

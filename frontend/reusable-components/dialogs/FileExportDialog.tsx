@@ -88,7 +88,7 @@ export function FileExportDialog({
                 
                 {/* CSV Option */}
                 <div
-                  className={`p-4 border rounded-lg cursor-pointer transition-all bg-[#0f172a] ${
+                  className={`p-4 border rounded-lg cursor-pointer transition-all bg-[#0f0f12] ${
                     selectedFormat === 'csv'
                       ? 'border-primary bg-primary/10'
                       : 'border-white/20 hover:border-white/30 hover:bg-white/5'
@@ -119,7 +119,7 @@ export function FileExportDialog({
 
                 {/* Excel Option */}
                 <div
-                  className={`p-4 border rounded-lg cursor-pointer transition-all bg-[#0f172a] ${
+                  className={`p-4 border rounded-lg cursor-pointer transition-all bg-[#0f0f12] ${
                     selectedFormat === 'excel'
                       ? 'border-primary bg-primary/10'
                       : 'border-white/20 hover:border-white/30 hover:bg-white/5'
@@ -161,7 +161,7 @@ export function FileExportDialog({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
           <Button
             type="button"
             variant="glass"

@@ -120,7 +120,7 @@ export function SearchableSelect({
           onFocus={() => !disabled && setIsOpen(true)}
           disabled={disabled}
           className={cn(
-            'bg-[#101a2b]/70 border-white/15 text-white/90 backdrop-blur-xl pr-8',
+            'bg-[#0f0f12]/70 border-white/15 text-white/90 backdrop-blur-xl pr-8',
             disabled && 'cursor-not-allowed opacity-50'
           )}
         />
@@ -140,7 +140,7 @@ export function SearchableSelect({
       {isOpen && search && !disabled && (
         <div className="relative">
           {filteredOptions.length > 0 ? (
-            <div className="absolute top-0 left-0 right-0 z-50 bg-[#101a2b]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg max-h-60 overflow-y-auto custom-scrollbar p-1 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            <div className="absolute top-0 left-0 right-0 z-50 bg-[#0f0f12]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg max-h-60 overflow-y-auto custom-scrollbar p-1 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
               {filteredOptions.slice(0, maxResults).map((option) => (
                 <button
                   key={option.id}
@@ -156,7 +156,7 @@ export function SearchableSelect({
               ))}
             </div>
           ) : (
-            <div className="absolute top-0 left-0 right-0 z-50 bg-[#101a2b]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg px-4 py-3 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            <div className="absolute top-0 left-0 right-0 z-50 bg-[#0f0f12]/95 border border-white/20 backdrop-blur-xl rounded-lg shadow-lg px-4 py-3 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
               <div className="text-xs text-muted-foreground">
                 {emptyMessage} &quot;{search}&quot;
               </div>

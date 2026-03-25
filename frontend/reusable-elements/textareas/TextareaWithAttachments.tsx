@@ -311,7 +311,7 @@ function TextareaWithAttachments({
           className={cn(
             "placeholder:text-white/50 selection:bg-primary selection:text-primary-foreground flex min-h-24 max-h-48 w-full rounded-[10px] border px-4 py-3 text-base transition-all outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm backdrop-blur-xl resize-none overflow-y-auto custom-scrollbar",
             variant === "glass"
-              ? "bg-[#101a2b]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
+              ? "bg-[#0f0f12]/70 border-white/15 text-white/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] rounded-[10px]"
               : "border-border/40 bg-input",
             "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40",
             "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -327,7 +327,7 @@ function TextareaWithAttachments({
       
       {/* Attachment Display and Button - Below textarea */}
       {shouldShowAttachments && (
-        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#101a2b]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+        <div className="flex items-center justify-between w-full px-3 py-2 rounded-[10px] bg-[#0f0f12]/70 border border-white/20 text-sm shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
           {/* Left side - Attachment count display (non-clickable) */}
           <span className="text-white/60">{attachments.length} Attachment{attachments.length !== 1 ? 's' : ''}</span>
           
@@ -413,7 +413,7 @@ function TextareaWithAttachments({
       {/* Hover Preview Card */}
       {showAttachments && hoveredId && attachments.find(a => a.id === hoveredId) && (
         <div 
-          className="absolute bottom-16 left-2 z-50 w-80 bg-[#1a2332] border border-white/20 rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" 
+          className="absolute bottom-16 left-2 z-50 w-80 bg-[#0f0f12] border border-white/20 rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" 
         >
           {attachments.map((attachment) => {
             if (attachment.id !== hoveredId) return null;
