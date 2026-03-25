@@ -491,8 +491,8 @@ export function FileUploadModal({
 
         {/* Delete Confirmation Dialog - Rendered in separate portal for proper z-index */}
         {deleteConfirmOpen && mounted && createPortal(
-          <div 
-            className="fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             style={{ zIndex: 10000 }}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
@@ -500,36 +500,30 @@ export function FileUploadModal({
               }
             }}
           >
-            <div className="backdrop-blur-md rounded-xl border p-6 w-full max-w-[520px] bg-background/80 text-foreground shadow-2xl">
-              {/* Header */}
-              <div className="flex flex-col gap-2 text-center sm:text-left mb-5">
-                <h2 className="text-lg leading-none font-semibold text-primary">Delete Attachment</h2>
-                <p className="text-muted-foreground text-sm mt-2">
-                  This attachment will be deleted when you save the form. This action cannot be undone.
-                </p>
-              </div>
-              
-              {/* Actions */}
-              <div className="space-y-5">
-                <div className="flex gap-3 justify-end">
-                  <Button
-                    type="button"
-                    variant="glass"
-                    onClick={() => setDeleteConfirmOpen(false)}
-                    className="cursor-pointer"
-                  >
-                    Cancel
-                  </Button>
-                  <ButtonDestructive
-                    type="button"
-                    onClick={async () => {
-                      await handleDeleteConfirm();
-                    }}
-                    className="cursor-pointer"
-                  >
-                    Mark for Deletion
-                  </ButtonDestructive>
-                </div>
+            <div className="bg-[#0f0f12] border border-white/20 rounded-lg shadow-2xl p-6 w-full max-w-[520px] mx-4">
+              <h3 className="text-lg font-semibold text-white/90 mb-2">Delete Attachment</h3>
+              <p className="text-white/70 mb-4">
+                This attachment will be deleted when you save the form.
+              </p>
+              <p className="text-sm text-white/50 mb-6">This action cannot be undone.</p>
+              <div className="flex items-center gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="glass"
+                  onClick={() => setDeleteConfirmOpen(false)}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <ButtonDestructive
+                  type="button"
+                  onClick={async () => {
+                    await handleDeleteConfirm();
+                  }}
+                  className="cursor-pointer"
+                >
+                  Mark for Deletion
+                </ButtonDestructive>
               </div>
             </div>
           </div>,
