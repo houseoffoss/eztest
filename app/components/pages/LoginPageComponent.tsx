@@ -5,14 +5,13 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { LoginForm } from './subcomponents/LoginForm';
-import { LoginLeftPanel } from './subcomponents/LoginLeftPanel';
 import { OtpVerification } from '@/frontend/reusable-components/auth/OtpVerification';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { GlassFooter } from '@/frontend/reusable-components/layout/GlassFooter';
 
 const navItems: Array<{ label: string; href: string }> = [];
 
@@ -26,6 +25,34 @@ export default function LoginPageComponent() {
   const { trackButton } = useAnalytics();
   const [stars, setStars] = useState<number | null>(null);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      image: '/screenshots/TestCase_List_Page1.png',
+      title: 'Complete Control',
+      description: 'Self-host on your infrastructure, own your data completely',
+    },
+    {
+      image: '/screenshots/TestRun_List_Page.png',
+      title: 'Actionable Insights',
+      description: 'Get detailed reports and analytics for every test run',
+    },
+    {
+      image: '/screenshots/Defects_List_Page.png',
+      title: 'Streamlined Debugging',
+      description: 'Track and manage defects with ease and precision',
+    },
+    {
+      image: '/screenshots/Project_List_Page.png',
+      title: 'Effortless Organization',
+      description: 'Organize your testing projects in a structured way',
+    },
+  ];
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+
   const [formData, setFormData, clearFormData] = useFormPersistence('login-form', {
     email: '',
     password: '',
@@ -238,286 +265,291 @@ export default function LoginPageComponent() {
     setIsLoading(false);
   };
 
-  // Show OTP verification screen if needed
   if (showOtpVerification) {
     return (
-      <>
-        <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+      <div className="min-h-screen bg-[#050608] flex flex-col relative overflow-x-hidden">
         <OtpVerification
           email={formData.email}
           type="login"
           onVerified={handleOtpVerified}
           onCancel={handleOtpCancel}
         />
-      </>
+        <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050608] flex flex-col">
-      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
-      <Navbar
-        variant="marketing"
-        brandLabel={
-          <div 
-            className="flex items-center justify-center rounded-[59.79px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
-            style={{
-              width: '52px',
-              height: '52px',
-              background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
-            }}
-          >
-            <div className="flex items-center justify-center w-full h-full rounded-[59.79px]" style={{ backgroundColor: '#050608' }}>
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
+    <div className="min-h-screen bg-[#050608] flex flex-col relative overflow-x-hidden">
+      <div className="relative flex flex-col min-h-screen overflow-hidden">
+        {/* Blurred orange glow over grid */}
+        <div className="hero-grid-glow absolute inset-0 z-0 pointer-events-none" aria-hidden="true" />
+
+        {/* Grid image layer */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[280px] sm:h-[350px] md:h-[420px] bg-[url('/Grid.png')] bg-top bg-no-repeat bg-[length:min(1600px,100vw)_auto]"
+          style={{ transform: 'translateY(25%)' }}
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 flex flex-col flex-1">
+          <Navbar
+            variant="marketing"
+            brandLabel={
+              <div 
+                className="flex items-center justify-center rounded-[59.79px] backdrop-blur-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] p-[1px] relative transition-all"
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
+                }}
               >
-                <rect width="24" height="24" fill="url(#pattern0_105_611)" />
-                <defs>
-                  <pattern
-                    id="pattern0_105_611"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
+                <div className="flex items-center justify-center w-full h-full rounded-[59.79px]" style={{ backgroundColor: '#050608' }}>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlnsXlink="http://www.w3.org/1999/xlink"
                   >
-                    <use
-                      xlinkHref="#image0_105_611"
-                      transform="scale(0.03125 0.0344828)"
-                    />
-                  </pattern>
-                  <image
-                    id="image0_105_611"
-                    width="32"
-                    height="29"
-                    preserveAspectRatio="none"
-                    xlinkHref="data:image/png;base64,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"
-                  />
-                </defs>
-              </svg>
-            </div>
-          </div>
-        }
-        items={navItems}
-        breadcrumbs={
-          <>
-            <div className="relative inline-flex group">
-              <div
-                className="absolute -inset-[1px] rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity -z-10"
-                style={{
-                  background:
-                    'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
-                  mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  maskComposite: 'exclude',
-                  WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  WebkitMaskComposite: 'xor',
-                  padding: '1px',
-                }}
-              />
-              <a
-                href="https://github.com/houseoffoss/eztest"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full transition-all cursor-pointer inline-flex items-center gap-2 relative z-20 group"
-                style={{
-                  fontFamily: 'Inter',
-                  fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '100%',
-                  letterSpacing: '0.2px',
-                  verticalAlign: 'middle',
-                }}
-              >
-                <div
-                  className="absolute inset-0 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    backdropFilter: 'blur(36px) saturate(220%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(220%)',
-                    zIndex: 0,
-                  } as React.CSSProperties}
-                />
-                <span className="relative z-30 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: '#5C5C5C' }}>
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                      clipRule="evenodd"
-                    />
+                    <rect width="24" height="24" fill="url(#pattern0_105_611)" />
+                    <defs>
+                      <pattern
+                        id="pattern0_105_611"
+                        patternContentUnits="objectBoundingBox"
+                        width="1"
+                        height="1"
+                      >
+                        <use
+                          xlinkHref="#image0_105_611"
+                          transform="scale(0.03125 0.0344828)"
+                        />
+                      </pattern>
+                      <image
+                        id="image0_105_611"
+                        width="32"
+                        height="29"
+                        preserveAspectRatio="none"
+                        xlinkHref="data:image/png;base64,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"
+                      />
+                    </defs>
                   </svg>
-                  <span
+                </div>
+              </div>
+            }
+            items={navItems}
+            breadcrumbs={null}
+            actions={
+              <div className="flex items-center gap-2">
+                <Link href="/auth/register">
+                  <div 
+                    className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
                     style={{
-                      background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
-                      WebkitBackgroundClip: 'text',
-                      backgroundClip: 'text',
-                      color: 'transparent',
+                      height: '52px',
+                      backgroundColor: 'rgba(51, 51, 51, 0.10)',
+                      paddingTop: '6px',
+                      paddingRight: '10px',
+                      paddingBottom: '6px',
+                      paddingLeft: '10px',
+                      gap: '10px',
+                      backdropFilter: 'blur(40px)',
+                      boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+                      e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+                      e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
-                    GitHub
-                  </span>
-                </span>
-                {stars !== null && (
-                  <span className="relative z-30 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="#5C5C5C" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span
-                      className="text-sm font-semibold"
+                    <div
+                      className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
                       style={{
-                        background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
+                        background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        maskComposite: 'exclude',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        padding: '1px',
+                      }}
+                    />
+                    <span 
+                      className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
+                      style={{
+                        fontFamily: 'Inter',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        lineHeight: '21.85px',
+                        letterSpacing: '0.27px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
                         WebkitBackgroundClip: 'text',
                         backgroundClip: 'text',
                         color: 'transparent',
                       }}
                     >
-                      {stars.toLocaleString()}
+                      Sign up
                     </span>
-                  </span>
-                )}
-              </a>
-            </div>
-            <div className="relative inline-flex group">
-              <div
-                className="absolute -inset-[1px] rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity -z-10"
-                style={{
-                  background:
-                    'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
-                  mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  maskComposite: 'exclude',
-                  WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  WebkitMaskComposite: 'xor',
-                  padding: '1px',
-                }}
-              />
-              <Link
-                href="/houseoffoss"
-                className="px-4 py-2 text-sm rounded-full transition-all cursor-pointer inline-flex items-center gap-2 relative z-20 group"
-                onClick={async () => {
-                  await trackButton('Login Page - Self Host with House Of FOSS', { source: 'navbar' });
-                }}
-                style={{
-                  fontFamily: 'Inter',
-                  fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '100%',
-                  letterSpacing: '0.2px',
-                  verticalAlign: 'middle',
-                }}
-              >
-                <div
-                  className="absolute inset-0 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    backdropFilter: 'blur(36px) saturate(220%)',
-                    WebkitBackdropFilter: 'blur(36px) saturate(220%)',
-                    zIndex: 0,
-                  } as React.CSSProperties}
-                />
-                <span
-                  className="relative z-30 flex items-center gap-2"
-                  style={{
-                    background: 'linear-gradient(90deg, #F3F3F3 0%, #5C5C5C 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent',
-                  }}
-                >
-                  <span>Self host with</span>
-                  <Image
-                    src="/houseoffoss.jpg"
-                    alt="House Of FOSS"
-                    width={24}
-                    height={24}
-                    className="h-6 w-6 rounded object-cover"
-                  />
-                </span>
-              </Link>
-            </div>
-          </>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <Link href="/auth/register">
-              <div 
-                className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
-                style={{
-                  height: '52px',
-                  backgroundColor: 'rgba(51, 51, 51, 0.10)',
-                  paddingTop: '6px',
-                  paddingRight: '10px',
-                  paddingBottom: '6px',
-                  paddingLeft: '10px',
-                  gap: '10px',
-                  backdropFilter: 'blur(40px)',
-                  boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
-                  e.currentTarget.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
-                  e.currentTarget.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div
-                  className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
-                  style={{
-                    background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
-                    mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    maskComposite: 'exclude',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    padding: '1px',
-                  }}
-                />
-                <span 
-                  className="relative z-10 px-4 py-2 transition-colors cursor-pointer"
-                  style={{
-                    fontFamily: 'Inter',
-                    fontWeight: 500,
-                    fontSize: '14px',
-                    lineHeight: '21.85px',
-                    letterSpacing: '0.27px',
-                    textAlign: 'center',
-                    verticalAlign: 'middle',
-                    background: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent',
-                  }}
-                >
-                  Sign up
-                </span>
+                  </div>
+                </Link>
               </div>
-            </Link>
+            }
+          />
+          {/* Top Centered Content - Reduced padding to move content up */}
+          <div className="w-full text-center px-4 max-w-3xl mx-auto pt-2 pb-1">
+            <h2 
+              className="font-semibold text-[20px] leading-none tracking-normal mb-4 flex justify-center"
+              style={{ 
+                color: '#0B63FF',
+                filter: 'drop-shadow(0px 3.2px 3.2px rgba(0, 0, 0, 0.15))',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              EZTest
+            </h2>
+            <h1 
+              className="mb-3 text-[40px] font-semibold leading-[52px] tracking-[0.2px] text-white"
+              style={{ 
+                filter: 'drop-shadow(0px 4.66px 4.66px rgba(0, 0, 0, 0.15))',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              Start Testing Smarter
+            </h1>
+            <p 
+              className="max-w-xl mx-auto text-white font-medium text-[16px] leading-[28px] tracking-normal"
+              style={{ 
+                filter: 'drop-shadow(0px 4.66px 4.66px rgba(0, 0, 0, 0.15))',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              Join teams who have simplified their test management.
+              <br className="hidden sm:block" />
+              No credit card required, start for free today.
+            </p>
           </div>
-        }
-      />
-      {/* Split container: Left content, Right form aligned to Navbar width */}
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-8 gap-8">
-        <LoginLeftPanel />
 
-        {/* Right Side - Login Form */}
-        <div className="flex-1 flex items-center justify-center py-8">
-          <div className="w-full max-w-md">
-            <LoginForm
-              formData={formData}
-              error={error}
-              fieldErrors={fieldErrors}
-              isLoading={isLoading}
-              onFormDataChange={setFormData}
-              onFieldBlur={handleFieldBlur}
-              onSubmit={handleSubmit}
-            />
+          {/* Split container: Left content, Right form - Shifted more Left */}
+          <div className="flex flex-col lg:flex-row flex-1 max-w-[1240px] mx-auto w-full px-4 sm:px-6 lg:px-12 gap-4 lg:gap-20 items-center lg:items-start justify-start pb-4 overflow-hidden">
+            <div className="w-full lg:w-[52%] flex flex-col items-start">
+              <div className="relative w-full max-w-xl lg:ml-[-10px] hero-tilt-perspective hidden sm:block">
+                <div className="relative hero-zoom-target" style={{ '--hero-zoom': '0.85' } as React.CSSProperties}>
+                  <div className="hero-window-glow" aria-hidden="true" />
+                  <div className="hero-window relative group !border-none !shadow-none">
+                    <div className="hero-window-topbar">
+                      <div className="flex items-center gap-[5.66px]">
+                        <span className="hero-window-dot bg-[#F95959]" aria-hidden="true" />
+                        <span className="hero-window-dot bg-[#F8DB46]" aria-hidden="true" />
+                        <span className="hero-window-dot bg-[#41CC4F]" aria-hidden="true" />
+                      </div>
+                    </div>
+                    <div className="hero-window-content relative">
+                      <div className="overflow-hidden relative w-full aspect-video">
+                        <div 
+                          className="flex transition-transform duration-500 ease-in-out h-full"
+                          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                        >
+                          {slides.map((slide, index) => (
+                            <div key={index} className="min-w-full h-full relative">
+                              <Image
+                                src={slide.image}
+                                alt={slide.title}
+                                fill
+                                className="object-cover select-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Carousel controls - Fixed at the bottom of the section */}
+                <div className="mt-14 w-full flex flex-col items-start">
+                  <div className="mb-4 text-left h-20">
+                    <h3 className="font-semibold text-white text-[20px] mb-2 leading-none">{slides[currentSlide].title}</h3>
+                    <p className="text-white/60 text-[16px] leading-[24px] max-w-sm">{slides[currentSlide].description}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-6 mt-4">
+                    {/* Left Arrow */}
+                    <button 
+                      onClick={prevSlide}
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.5 15L7.5 10L12.5 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    
+                    {/* Dots */}
+                    <div className="flex gap-3">
+                      {slides.map((_, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => setCurrentSlide(index)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                            currentSlide === index ? 'bg-white scale-125' : 'bg-white/20'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Right Arrow */}
+                    <button 
+                      onClick={nextSlide}
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.5 5L12.5 10L7.5 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[40%] relative">
+              <div className="relative z-20 w-full rounded-[16px] sm:rounded-[20.6px] border border-[#BAB8B8]/60 bg-[rgba(13,13,13,0.04)] px-4 sm:px-6 md:px-[32px] py-6 sm:py-8 md:py-[40px] backdrop-blur-2xl transition-all">
+                <div className="mb-4 sm:mb-6 flex items-center gap-1.5 sm:gap-2">
+                  <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#FF5F57]" />
+                  <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#FEBC2E]" />
+                  <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#28C840]" />
+                </div>
+                <div className="mb-6 text-center sm:text-left">
+                  <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white">Sign in to your account</h2>
+                  <p className="text-white/60 text-sm">Access your test management workspace</p>
+                </div>
+                <LoginForm
+                  formData={formData}
+                  error={error}
+                  fieldErrors={fieldErrors}
+                  isLoading={isLoading}
+                  onFormDataChange={setFormData}
+                  onFieldBlur={handleFieldBlur}
+                  onSubmit={handleSubmit}
+                />
+                <div className="mt-6 text-center">
+                   <p className="text-xs text-white/50">
+                      Don&apos;t have an account? <Link href="/auth/register" className="text-white hover:text-blue-400 transition-colors">Sign up</Link>
+                   </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <div className="relative z-20 bg-[#050608] border-t border-white/5">
+        <GlassFooter />
+      </div>
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
     </div>
   );
 }
