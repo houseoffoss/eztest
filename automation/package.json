@@ -1,0 +1,19 @@
+{
+  "name": "eztest-automation",
+  "version": "0.1.0",
+  "description": "Playwright automation tests for EZTest",
+  "scripts": {
+    "test": "playwright test --headed --workers=1",
+    "test:watch": "playwright test --headed --workers=1",
+    "test:debug": "playwright test --debug --headed",
+    "test:headless": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:chrome": "playwright test --project=chromium --headed",
+    "test:firefox": "playwright test --project=firefox --headed",
+    "test:webkit": "playwright test --project=webkit --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
