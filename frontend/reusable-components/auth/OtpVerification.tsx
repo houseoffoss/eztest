@@ -190,7 +190,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
   };
 
   return (
-    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#050608] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <Card variant="glass">
           <CardHeader>

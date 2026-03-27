@@ -48,7 +48,7 @@ export function StatCard({
       style={{ background: gradientStyle }}
       {...props}
     >
-      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
         <Card 
           variant="glass" 
           className={cn(

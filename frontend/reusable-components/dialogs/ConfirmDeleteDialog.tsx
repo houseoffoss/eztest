@@ -57,15 +57,16 @@ export function ConfirmDeleteDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="glass"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
             data-analytics-button={`${dialogTrackingName} - Cancel`}
+            className="cursor-pointer"
           >
             {cancelLabel}
           </Button>
-          <ButtonDestructive 
+          <ButtonDestructive
             onClick={handleConfirm}
             disabled={isLoading}
             buttonName={`${dialogTrackingName} - ${confirmLabel}`}

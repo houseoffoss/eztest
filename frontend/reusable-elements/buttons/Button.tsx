@@ -23,9 +23,9 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        // Glass variants tuned to screenshot (moderate pill radius)
+        // Glass morphism style - matches ButtonPrimary/Secondary design
         glass:
-          "backdrop-blur-xl border border-white/20 text-foreground bg-white/8 shadow-md hover:bg-white/10 active:bg-white/12",
+          "backdrop-blur-[40px] rounded-[100px] text-foreground bg-[rgba(51,51,51,0.10)] border border-white/10 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] hover:bg-[rgba(51,51,51,0.32)] active:bg-[rgba(51,51,51,0.20)] transition-all hover:shadow-[0_18px_45px_-18px_rgba(0,0,0,0.95)] hover:translate-y-[-1px]",
         "glass-primary":
           "backdrop-blur-xl border border-primary/40 text-primary-foreground bg-primary/20 shadow-md hover:bg-primary/25 active:bg-primary/30",
         "glass-accent":

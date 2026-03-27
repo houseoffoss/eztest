@@ -31,6 +31,7 @@ interface TestCaseDetailsCardProps {
   // Attachments - consolidated
   commonAttachments?: Attachment[];
   onCommonAttachmentsChange?: (attachments: Attachment[]) => void;
+  onDeletedAttachments?: (deletedIds: string[]) => void;
 }
 
 export function TestCaseDetailsCard({
@@ -44,6 +45,7 @@ export function TestCaseDetailsCard({
   projectId,
   commonAttachments = [],
   onCommonAttachmentsChange,
+  onDeletedAttachments,
 }: TestCaseDetailsCardProps) {
   const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
 
@@ -57,6 +59,9 @@ export function TestCaseDetailsCard({
 
   // Create safe attachment handler with default no-op function
   const handleCommonAttachmentsChange = onCommonAttachmentsChange || (() => {});
+
+  // Create safe attachment deletion handler
+  const handleDeletedAttachments = onDeletedAttachments || (() => {});
 
   return (
     <DetailCard title="Details" contentClassName="space-y-4">
@@ -268,6 +273,7 @@ export function TestCaseDetailsCard({
                 onClose={() => setAttachmentModalOpen(false)}
                 attachments={commonAttachments}
                 onAttachmentsChange={handleCommonAttachmentsChange}
+                onDeleteMarked={handleDeletedAttachments}
                 fieldName="attachment"
                 entityType="testcase"
                 projectId={projectId}

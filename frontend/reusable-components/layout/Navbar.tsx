@@ -225,7 +225,7 @@ export function Navbar({
                 {renderedActions}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl p-1 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5 ml-auto">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-2xl px-3 py-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/5 ml-auto">
                 {items && items.length > 0 ? (
                   <nav className="hidden md:flex items-center gap-1">
                     {items.map((it) => {
@@ -250,7 +250,7 @@ export function Navbar({
                 ) : null}
 
                 {renderedActions ? (
-                  <div className="hidden sm:flex items-center gap-2 pl-1">
+                  <div className="hidden sm:flex items-center gap-2">
                     {renderedActions}
                   </div>
                 ) : null}
