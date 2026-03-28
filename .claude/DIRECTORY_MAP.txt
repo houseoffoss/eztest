@@ -1,0 +1,173 @@
+================================================================================
+                  CLAUDE CODE ORGANIZATION STRUCTURE
+                    EZTest Project - .claude/ Directory
+================================================================================
+
+.claude/
+|
+├── README.md ......................................... Overview & Quick Start
+│   └─ Start here! Explains the whole setup
+|
+├── ORGANIZATION.md .................................... How to Extend & Customize
+│   └─ Learn how to add new hooks and skills
+|
+├── STRUCTURE_SUMMARY.md ................................ This Summary
+│   └─ Visual guide to the new organization
+|
+├── settings.json (20 lines) ............................ Main Configuration
+│   ├─ Permissions
+│   ├─ Hook references
+│   └─ Global settings
+|
+├── hooks/ ............................................. Automated Workflows
+│   │
+│   └── post-commit-test-generation.json
+│       └─ Auto-triggers after git commits
+│          • Analyzes code changes
+│          • Suggests test generation
+│          • Non-blocking feedback
+|
+└── skills/ ............................................ User Commands & Features
+    │
+    ├── test-generator.md
+    │   └─ Documentation: How to generate Playwright tests
+    │      • Usage examples
+    │      • What it does
+    │      • Tips and tricks
+    │
+    └── code-reviewer.md
+        └─ Documentation: How to review code quality
+           • Usage examples
+           • What it checks
+           • Best practices
+
+================================================================================
+
+QUICK REFERENCE
+
+Location         Purpose                      Edit When
+───────────────────────────────────────────────────────────────────────────
+settings.json    Main configuration           Changing permissions/behavior
+hooks/           Hook definitions             Adjusting automation
+skills/          Skill documentation          Updating docs/examples
+README.md        Full overview               Need to understand setup
+ORGANIZATION.md  Extension guide             Adding new hooks/skills
+
+================================================================================
+
+HOW IT WORKS
+
+1. You commit code
+   ↓
+2. Git hook fires (.git/hooks/post-commit)
+   • Analyzes what changed
+   • Stores diff for Claude
+   • Prints suggestions
+   ↓
+3. Claude Code hook fires (hooks/post-commit-test-generation.json)
+   • Detects git commit
+   • Displays message
+   • Suggests test generation
+   ↓
+4. You ask Claude Code: "Generate tests for my changes"
+   ↓
+5. Tests are created (automation/tests/)
+   • Follows your patterns
+   • Ready to run
+   ↓
+6. Run with: npm test
+
+================================================================================
+
+KEY IMPROVEMENTS
+
+Before Organization:
+  • 900+ lines in one settings.json file
+  • Hard to find things
+  • Difficult to extend
+  • Version control shows entire file changes
+
+After Organization:
+  • settings.json: 20 lines (lean)
+  • hooks/: Individual hook files
+  • skills/: Individual skill documentation
+  • Each file has clear responsibility
+  • Version control shows targeted changes
+
+================================================================================
+
+FILE STATS
+
+Config:          20 lines    (settings.json)
+Hooks:           50 lines    (post-commit-test-generation.json)
+Skills:         150 lines    (test-generator.md + code-reviewer.md)
+Documentation: 600 lines    (README.md + ORGANIZATION.md + others)
+                ─────────────
+Total:          820 lines   (well-organized & searchable)
+
+================================================================================
+
+READING ORDER
+
+First Time?
+  1. This file (DIRECTORY_MAP.txt) ← Quick overview
+  2. README.md ← Full understanding
+  3. ORGANIZATION.md ← How to extend
+
+Regular Use?
+  1. settings.json for configuration
+  2. hooks/ for automation changes
+  3. skills/ for documentation updates
+
+Troubleshooting?
+  1. README.md (troubleshooting section)
+  2. Check file syntax with: jq .
+  3. Restart Claude Code
+
+================================================================================
+
+ADDING NEW THINGS
+
+To Add a Hook:
+  1. Create: .claude/hooks/my-new-hook.json
+  2. Define the configuration
+  3. Reference in settings.json (if needed)
+  4. Restart Claude Code
+
+To Add a Skill:
+  1. Create: .claude/skills/my-skill.md
+  2. Write documentation
+  3. Restart Claude Code
+  4. Use it: /my-skill
+
+================================================================================
+
+BENEFITS OF THIS ORGANIZATION
+
+✓ Cleaner            One file per responsibility
+✓ Searchable         Find things quickly
+✓ Maintainable       Easy to edit individual pieces
+✓ Scalable          Add hooks/skills without bloat
+✓ Team-Friendly     Clear structure for collaboration
+✓ Well-Documented   Guides for learning & extending
+✓ Version-Control   See targeted changes in diffs
+
+================================================================================
+
+NEXT STEPS
+
+→ Read README.md for full overview
+→ Try making a commit to see hooks fire
+→ Ask Claude Code to generate tests
+→ Explore and customize as needed
+
+================================================================================
+
+Questions? Check:
+  • README.md          - Overview & quick start
+  • ORGANIZATION.md    - How to extend
+  • settings.json      - Main configuration
+  • hooks/             - Automation logic
+  • skills/            - Skill documentation
+
+================================================================================

@@ -1,0 +1,117 @@
+diff --git a/app/test-hook-demo/page.tsx b/app/test-hook-demo/page.tsx
+new file mode 100644
+index 0000000..3a5a939
+--- /dev/null
++++ b/app/test-hook-demo/page.tsx
+@@ -0,0 +1,43 @@
++import { TestHookDemo } from '@/frontend/components/TestHookDemo';
++
++/**
++ * Demo page for testing automated test generation hook
++ * This page tests the post-commit hook functionality
++ */
++export default function TestHookDemoPage() {
++  return (
++    <div className="min-h-screen bg-gray-50 p-8">
++      <div className="max-w-2xl mx-auto">
++        <h1 className="text-4xl font-bold mb-2">🧪 Test Hook Demo</h1>
++        <p className="text-gray-600 mb-8">
++          This page was created to demonstrate automated test generation via the post-commit hook.
++          When you commit this page and component, the hook will analyze the changes and suggest tests.
++        </p>
++
++        <TestHookDemo />
++
++        <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
++          <h2 className="font-bold text-lg mb-2">📖 How This Works:</h2>
++          <ol className="space-y-2 text-sm list-decimal list-inside">
++            <li>Changes are committed (this page + component)</li>
++            <li>Post-commit hook runs automatically</li>
++            <li>Hook detects the new files and shows suggestions</li>
++            <li>Claude Code can generate matching Playwright tests</li>
++            <li>Tests cover user interactions on this page</li>
++          </ol>
++        </div>
++
++        <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
++          <h2 className="font-bold text-lg mb-2">✨ Expected Tests:</h2>
++          <ul className="space-y-1 text-sm list-disc list-inside">
++            <li>Page loads successfully</li>
++            <li>Counter increments on button click</li>
++            <li>Reset button clears counter</li>
++            <li>Name input captures user input</li>
++            <li>Greeting displays when name is entered</li>
++          </ul>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/components/TestHookDemo.tsx b/frontend/components/TestHookDemo.tsx
+new file mode 100644
+index 0000000..47c53e8
+--- /dev/null
++++ b/frontend/components/TestHookDemo.tsx
+@@ -0,0 +1,62 @@
++'use client';
++
++import { useState } from 'react';
++
++/**
++ * Demo component to test automated test generation
++ * This component showcases a simple feature that should have tests
++ */
++export function TestHookDemo() {
++  const [count, setCount] = useState(0);
++  const [name, setName] = useState('');
++
++  const handleIncrement = () => {
++    setCount(count + 1);
++  };
++
++  const handleReset = () => {
++    setCount(0);
++    setName('');
++  };
++
++  return (
++    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg">
++      <h2 className="text-2xl font-bold mb-4">Hook Test Demo</h2>
++
++      <div className="space-y-4">
++        {/* Counter Section */}
++        <div className="bg-white p-4 rounded-lg shadow">
++          <h3 className="font-semibold mb-2">Counter: {count}</h3>
++          <button
++            onClick={handleIncrement}
++            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
++            data-testid="increment-btn"
++          >
++            Increment
++          </button>
++          <button
++            onClick={handleReset}
++            className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
++            data-testid="reset-btn"
++          >
++            Reset
++          </button>
++        </div>
++
++        {/* Input Section */}
++        <div className="bg-white p-4 rounded-lg shadow">
++          <label className="block mb-2 font-semibold">Enter Name:</label>
++          <input
++            type="text"
++            value={name}
++            onChange={(e) => setName(e.target.value)}
++            placeholder="Your name"
++            className="px-3 py-2 border rounded w-full"
++            data-testid="name-input"
++          />
++          {name && <p className="mt-2 text-sm">Hello, {name}! 👋</p>}
++        </div>
++      </div>
++    </div>
++  );
++}
