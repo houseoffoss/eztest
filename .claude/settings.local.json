@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(git rm:*)",
+      "Bash(find /c/Users/Admin/Documents/Belsterns/applications/eztest/eztest/frontend/lib -type f -name *.ts -o -name *.tsx)",
+      "Bash(grep -l \"fetch\\\\|POST\\\\|GET\\\\|API\" /c/Users/Admin/Documents/Belsterns/applications/eztest/eztest/frontend/components/admin/dropdown-options/*.tsx)",
+      "Bash(find /c/Users/Admin/Documents/Belsterns/applications/eztest/eztest/hooks -name *.ts -o -name *.tsx)",
+      "Bash(ls .env*)",
+      "Bash(node -e \"const lg = require\\(''@langchain/langgraph''\\); console.log\\(Object.keys\\(lg\\).filter\\(k => [''StateGraph'',''MemorySaver'',''interrupt'',''Command'',''Annotation'',''MessagesAnnotation'',''END'',''START''].includes\\(k\\)\\)\\)\")",
+      "Bash(node -e \"const lg = require\\(''@langchain/langgraph/prebuilt''\\); console.log\\(Object.keys\\(lg\\)\\)\")",
+      "Bash(node -e \"const {ChatAnthropic} = require\\(''@langchain/anthropic''\\); console.log\\(typeof ChatAnthropic\\)\")",
+      "Bash(grep -rn \"from ''\\\\..*\\\\.js''\" /c/Users/Admin/Documents/Belsterns/applications/eztest/eztest/agent-eval/core/ --include=\"*.ts\" -l)",
+      "Bash(xargs sed:*)",
+      "Bash(npx tsc:*)",
+      "Bash(\"C:/Users/Admin/Documents/Belsterns/applications/eztest/eztest/.gitignore\")"
+    ]
+  }
+}
