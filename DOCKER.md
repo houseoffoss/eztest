@@ -83,10 +83,21 @@ NEXTAUTH_URL="https://your-domain.com"
 DATABASE_URL="postgresql://eztest:YOUR_STRONG_PASSWORD@postgres:5432/eztest?schema=public"
 ```
 
-### 3. Deploy with Docker Compose
+### 3. (Optional) Enable Sample Data Seeding
+
+To populate the database with sample data on first startup, add this to your `.env`:
+
+```env
+SEED_DATABASE=true
+```
+
+After the seed runs once, you can set it back to `false`.
+
+### 4. Deploy with Docker Compose
 
 ```bash
 # Build and start all services
+# Database migrations run automatically on first startup — no manual db push needed
 docker-compose up -d
 
 # View logs
@@ -96,11 +107,17 @@ docker-compose logs -f
 docker-compose ps
 ```
 
-### 4. Access the Application
+### 5. Access the Application
 
 Open your browser and navigate to:
 - Local: `http://localhost:3000`
 - Production: `https://your-domain.com`
+
+**Default Admin Credentials:**
+- **Email**: `admin@eztest.local`
+- **Password**: `Admin@123456`
+
+> 💡 Customize these by setting `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in your `.env` before starting.
 
 ## Architecture
 
@@ -340,6 +357,23 @@ Common issues:
 - Database not ready: Wait for postgres health check
 - Port conflict: Change port in docker-compose.yml
 - Memory limit: Increase in docker-compose.yml
+
+#### `exec /app/docker-entrypoint.sh: no such file or directory` (Windows)
+
+This error occurs when Git on Windows converts line endings to CRLF. Fix it by configuring Git before cloning:
+
+```bash
+git config --global core.autocrlf false
+git clone https://github.com/houseoffoss/eztest.git
+```
+
+If you already cloned the repo, do a full rebuild after fixing line endings:
+
+```bash
+docker-compose down -v
+docker-compose build --no-cache
+docker-compose up -d
+```
 
 ### Database Connection Failed
 
