@@ -116,10 +116,11 @@ export async function seedRBAC() {
   console.log('    ✅ ADMIN: Full access (all permissions)');
 
   // Assign permissions to PROJECT_MANAGER
-  // PROJECT_MANAGER can: view projects + all test operations + manage dropdowns (cannot update/delete projects or manage members)
+  // PROJECT_MANAGER can: view projects + all test operations + manage dropdowns + manage members (cannot update/delete projects)
   const pmPermissions = permissionRecords.filter((perm) =>
     [
       'projects:read',
+      'projects:manage_members',
       'testsuites:read',
       'testsuites:create',
       'testsuites:update',
@@ -154,7 +155,7 @@ export async function seedRBAC() {
     })),
     skipDuplicates: true,
   });
-  console.log('    ✅ PROJECT_MANAGER: Full access to test suites, test cases, test runs (cannot update/delete projects or manage members)');
+  console.log('    ✅ PROJECT_MANAGER: Full access to test suites, test cases, test runs, manage members (cannot update/delete projects)');
 
   // Assign permissions to TESTER
   // TESTER can: view projects + execute test operations (cannot create/update/delete projects)
