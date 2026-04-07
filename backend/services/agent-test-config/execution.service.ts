@@ -7,6 +7,7 @@ import {
 import { langfuseTraceService, type LangfuseTrace } from "./langfuse.service";
 import { agentTestScoringService } from "./scoring.service";
 import { agentTestAqsService } from "./aqs.service";
+import type { ApiContract } from "./generation.service";
 
 export interface AgentTestRunSummary {
   runId: string;
@@ -82,6 +83,7 @@ export class AgentTestExecutionService {
         agentApiUrl: true,
         langfusePublicKey: true,
         langfuseSecretKey: true,
+        apiContract: true,
       },
     });
 
@@ -163,11 +165,16 @@ export class AgentTestExecutionService {
     // Build a map from testCaseId → result DB id for stable lookups in _executeAll
     const resultIdMap = new Map(results.map((r) => [r.testCaseId, r.id]));
 
+    const apiContract: ApiContract | null = config.apiContract
+      ? (JSON.parse(config.apiContract) as ApiContract)
+      : null;
+
     const executionPromise = this._executeAll(
       run.id,
       config.agentApiUrl,
       config.langfusePublicKey,
       config.langfuseSecretKey,
+      apiContract,
       testCases,
       resultData,
       resultIdMap,
@@ -201,6 +208,7 @@ export class AgentTestExecutionService {
     agentApiUrl: string,
     langfusePublicKey: string,
     langfuseSecretKey: string,
+    apiContract: ApiContract | null,
     testCases: { id: string; input: string; rubric: string }[],
     resultData: { runId: string; testCaseId: string; sessionId: string }[],
     resultIdMap: Map<string, string>,
@@ -223,32 +231,46 @@ export class AgentTestExecutionService {
       let agentOk = false;
 
       const baseUrl = agentApiUrl.replace(/\/+$/, "");
-      const sessionStartUrl = baseUrl + "/api/session/start";
-      const chatUrl = baseUrl + "/api/chat";
 
-      // Start a session first so the agent can track conversation state
+      // Resolve paths from extracted API contract, no fallback assumptions
+      const chatPath = apiContract?.chatPath ?? "/api/chat";
+      const sessionStartPath = apiContract?.sessionStartPath ?? null;
+      const chatUrl = baseUrl + chatPath;
+
+      // Start a session if the contract specifies a session start path
       let agentSessionId: string = sessionId;
-      try {
-        const sessionRes = await fetch(sessionStartUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modelId: "claude-sonnet-4-5" }),
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (sessionRes.ok) {
-          const sessionData = await sessionRes.json();
-          if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
+      if (sessionStartPath) {
+        try {
+          const sessionRes = await fetch(baseUrl + sessionStartPath, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(30_000),
+          });
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
+          }
+        } catch {
+          // Non-fatal — fall back to using our own sessionId
         }
-      } catch {
-        // Non-fatal — fall back to using our own sessionId
       }
 
-      const requestBody = {
-        message: tc.input,
-        sessionId: agentSessionId,
-        modelId: "claude-sonnet-4-5",
-        userMessageId: sessionId, // use our UUID as a stable message ID
-      };
+      // Build request body from extracted contract, replacing placeholders
+      const requestBody = apiContract?.requestBody
+        ? Object.fromEntries(
+            Object.entries(apiContract.requestBody).map(([k, v]) => [
+              k,
+              v === "{{input}}"
+                ? tc.input
+                : v === "{{sessionId}}"
+                  ? agentSessionId
+                  : v,
+            ]),
+          )
+        : { message: tc.input, sessionId: agentSessionId };
+
+      // Build headers from extracted contract
+      const extraHeaders: Record<string, string> = apiContract?.headers ?? {};
 
       const t0 = Date.now();
       try {
@@ -257,9 +279,10 @@ export class AgentTestExecutionService {
           headers: {
             "Content-Type": "application/json",
             "X-Session-Id": agentSessionId,
+            ...extraHeaders,
           },
           body: JSON.stringify(requestBody),
-          signal: AbortSignal.timeout(60_000),
+          signal: AbortSignal.timeout(90_000),
         });
 
         latencyMs = Date.now() - t0;

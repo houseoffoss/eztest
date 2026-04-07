@@ -575,6 +575,7 @@ model AgentTestConfig {
   langfusePublicKey String
   langfuseSecretKey String
   systemPrompt    String   @db.Text
+  apiContract     String?  @db.Text
   createdById     String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

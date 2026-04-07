@@ -25,6 +25,18 @@ export interface GeneratedTestCase {
   expectedBehavior: string;
 }
 
+export interface ApiContract {
+  chatPath: string;
+  sessionStartPath: string | null;
+  requestBody: Record<string, string>;
+  headers: Record<string, string>;
+}
+
+export interface GenerationResult {
+  apiContract: ApiContract;
+  testCases: GeneratedTestCase[];
+}
+
 const CATEGORY_DESCRIPTIONS: Record<TestCategory, string> = {
   happy_path:
     "Standard, well-formed requests the agent should handle correctly",
@@ -39,37 +51,40 @@ const CATEGORY_DESCRIPTIONS: Record<TestCategory, string> = {
   regression: "Common failure patterns agents typically struggle with",
 };
 
-function buildGenerationPrompt(
-  agentDescription: string,
-  chatUrl: string,
-): string {
-  return `You are an expert AI quality assurance engineer. Your task is to generate a comprehensive test suite for an AI agent.
+function buildGenerationPrompt(agentDescription: string): string {
+  return `You are an expert AI quality assurance engineer. Your task is to analyse an agent description and produce two things: the agent's API contract and a comprehensive test suite.
 
-The agent's chat endpoint is: ${chatUrl}
-
-Here is a full description of the agent — this may include its role, available tools, skills, API endpoints, supported models, or any other details provided by the developer:
+Here is a full description of the agent — this may include its role, available tools, skills, API endpoints, request/response formats, auth headers, supported models, or any other details provided by the developer:
 <agent_description>
 ${agentDescription}
 </agent_description>
 
-## Step 1 — Extract agent capabilities
+## Step 1 — Extract the API contract
 
-Before generating any test cases, carefully read the description and identify:
+Read the description carefully and extract ONLY what is explicitly stated. Do not assume or invent values. Extract:
+
+- \`chatPath\`: the URL path to send chat/query messages to (e.g. "/api/chat", "/v1/ask"). Extract exactly as described.
+- \`sessionStartPath\`: the URL path to start a session before chatting, if mentioned. Set to null if not mentioned.
+- \`requestBody\`: the exact request body shape as a flat key-value object. For the field that carries the user message, use the placeholder \`{{input}}\`. For the session/conversation ID field, use \`{{sessionId}}\`. For any other dynamic value described (e.g. model name, user ID), use the exact value from the description as a string. Only include fields that are explicitly described.
+- \`headers\`: any HTTP headers required (e.g. Authorization, API keys). Use exact values from the description. If no headers are described, return an empty object.
+
+## Step 2 — Extract agent capabilities
+
+Identify:
 - The agent's primary domain and purpose
-- EVERY tool the agent has available (list each by its exact name as mentioned in the description)
-- EVERY skill the agent has available (list each by its exact name)
+- EVERY tool the agent has available (exact names)
+- EVERY skill the agent has available (exact names)
 - Any constraints, refusal policies, or out-of-scope behaviours
-- Expected input/output patterns
 
-## Step 2 — Generate test cases
+## Step 3 — Generate test cases
 
 Generate test cases for each of the following 7 categories:
 ${TEST_CATEGORIES.map((c) => `- ${c}: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
 ### Tool and skill coverage rules (MANDATORY)
-- Every tool and skill identified in Step 1 MUST appear in at least one test case's rubric criterion using its exact name (e.g. "Calls <tool_name> tool").
-- The \`tool_use\` category must contain one test case per tool/skill, up to a maximum of 5. If there are more than 5 tools/skills, cover the 5 most important ones in \`tool_use\` and ensure the remaining ones appear in rubric criteria of other categories.
-- In the rubric for ANY category, if the correct agent behavior involves calling a specific tool, name that tool explicitly (e.g. "Calls search_web tool|Returns results from tool output").
+- Every tool and skill MUST appear in at least one test case's rubric criterion using its exact name (e.g. "Calls <tool_name> tool").
+- The \`tool_use\` category must contain one test case per tool/skill, up to a maximum of 5.
+- In the rubric for ANY category, if the correct agent behavior involves calling a specific tool, name that tool explicitly.
 
 ### Category quotas
 - \`tool_use\`: exactly max(3, number_of_tools_and_skills) cases, up to a maximum of 5
@@ -79,14 +94,26 @@ ${TEST_CATEGORIES.map((c) => `- ${c}: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 ### Per test case fields
 - category: one of [${TEST_CATEGORIES.join(", ")}]
 - title: short descriptive title (max 80 chars)
-- input: the exact user message to send to the agent
+- input: the exact user message to send to the agent — must be compatible with the \`{{input}}\` field in the extracted requestBody
 - expectedBehavior: what the agent should do (1-3 sentences, concrete and observable)
-- rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria — always name the specific tool or skill when tool invocation is expected, e.g. "Calls get_order_status tool|Returns order details|Does not hallucinate status"
+- rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria
 
 Make every test case specific to the agent's actual capabilities. Reference real tool names, skill names, and domain concepts from the description. Do not produce generic tests.
 
-Respond with a JSON array only — no markdown, no explanation, no wrapper object. Example format:
-[{"category":"happy_path","title":"...","input":"...","expectedBehavior":"...","rubric":"..."}]`;
+## Output format
+
+Respond with a single JSON object only — no markdown, no explanation. Exact format:
+{
+  "apiContract": {
+    "chatPath": "...",
+    "sessionStartPath": "..." or null,
+    "requestBody": { "key": "value or {{input}} or {{sessionId}}" },
+    "headers": { "HeaderName": "value" }
+  },
+  "testCases": [
+    {"category":"happy_path","title":"...","input":"...","expectedBehavior":"...","rubric":"..."}
+  ]
+}`;
 }
 
 export class AgentTestGenerationService {
@@ -105,14 +132,12 @@ export class AgentTestGenerationService {
   async generateForConfig(configId: string, userId: string) {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
-      select: { id: true, systemPrompt: true, agentApiUrl: true },
+      select: { id: true, systemPrompt: true },
     });
 
     if (!config) {
       throw new NotFoundException("Agent test configuration not found");
     }
-
-    const chatUrl = config.agentApiUrl.replace(/\/+$/, "") + "/api/chat";
 
     let message: Awaited<ReturnType<typeof this.client.messages.create>>;
     try {
@@ -122,7 +147,7 @@ export class AgentTestGenerationService {
         messages: [
           {
             role: "user",
-            content: buildGenerationPrompt(config.systemPrompt, chatUrl),
+            content: buildGenerationPrompt(config.systemPrompt),
           },
         ],
       });
@@ -147,29 +172,41 @@ export class AgentTestGenerationService {
       throw new InternalServerException("Unexpected response from Claude API");
     }
 
-    let testCases: GeneratedTestCase[];
+    let parsed: GenerationResult;
     try {
       // Strip markdown code fences if Claude wraps response despite instructions
       const raw = content.text
         .replace(/^```(?:json)?\s*/i, "")
         .replace(/\s*```$/, "")
         .trim();
-      testCases = JSON.parse(raw);
+      parsed = JSON.parse(raw);
     } catch {
       throw new InternalServerException(
-        "Failed to parse test cases from Claude response",
+        "Failed to parse generation response from Claude",
       );
     }
 
-    if (!Array.isArray(testCases) || testCases.length === 0) {
-      throw new InternalServerException("Claude returned no test cases");
+    if (
+      !parsed.apiContract ||
+      !Array.isArray(parsed.testCases) ||
+      parsed.testCases.length === 0
+    ) {
+      throw new InternalServerException(
+        "Claude returned an incomplete generation response",
+      );
     }
+
+    // Persist the extracted API contract on the config
+    await prisma.agentTestConfig.update({
+      where: { id: configId },
+      data: { apiContract: JSON.stringify(parsed.apiContract) },
+    });
 
     // Delete previous generation for this config before saving new ones
     await prisma.agentTestCase.deleteMany({ where: { configId } });
 
     await prisma.agentTestCase.createMany({
-      data: testCases.map((tc) => ({
+      data: parsed.testCases.map((tc) => ({
         configId,
         category: tc.category,
         title: tc.title,
