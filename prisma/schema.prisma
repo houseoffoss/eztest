@@ -48,6 +48,8 @@ model User {
   defectAttachments DefectAttachment[]
   commentAttachments CommentAttachment[]
   defectWatchers  DefectWatcher[]
+  agentTestConfigs AgentTestConfig[]
+  agentTestRuns   AgentTestRun[]
 
   @@index([email])
   @@index([roleId])
@@ -560,6 +562,97 @@ model CommentAttachment {
 
   @@index([commentId])
   @@index([uploadedById])
+}
+
+// ====================================
+// AI Agent Testing
+// ====================================
+
+model AgentTestConfig {
+  id              String   @id @default(cuid())
+  name            String
+  agentApiUrl     String
+  langfusePublicKey String
+  langfuseSecretKey String
+  systemPrompt    String   @db.Text
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy       User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  testCases       AgentTestCase[]
+  testRuns        AgentTestRun[]
+
+  @@index([createdById])
+}
+
+model AgentTestCase {
+  id              String   @id @default(cuid())
+  configId        String
+  category        String
+  title           String
+  input           String   @db.Text
+  rubric          String   @db.Text
+  expectedBehavior String  @db.Text
+  generatedAt     DateTime @default(now())
+
+  config          AgentTestConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  results         AgentTestResult[]
+
+  @@index([configId])
+}
+
+// A single "Run All Tests" invocation for a config
+model AgentTestRun {
+  id          String   @id @default(cuid())
+  configId    String
+  status      String   @default("pending") // pending | running | completed | failed
+  totalCases  Int      @default(0)
+  completedCases Int   @default(0)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  createdById String
+
+  config      AgentTestConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
+  createdBy   User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  results     AgentTestResult[]
+
+  @@index([configId])
+  @@index([createdById])
+}
+
+// Result of calling the agent for a single test case
+model AgentTestResult {
+  id               String    @id @default(cuid())
+  runId            String
+  testCaseId       String
+  sessionId        String    @unique // UUID sent as session_id to agent & Langfuse
+  status           String    @default("pending") // pending | success | error
+  agentResponse    String?   @db.Text // Raw response body from agent API
+  httpStatus       Int?      // HTTP status code returned by agent
+  latencyMs        Int?      // Round-trip time in milliseconds
+  errorMessage     String?   // Error detail if call failed
+  executedAt       DateTime  @default(now())
+
+  // Langfuse trace (Step 4a)
+  langfuseTraceId  String?   // Trace ID resolved from Langfuse
+  traceJson        String?   @db.Text // Full trace JSON from Langfuse API
+  traceFetchedAt   DateTime? // When trace was last fetched
+  traceFetchError  String?   // Error if trace fetch failed
+
+  // Rubric scoring (Step 4b)
+  rubricScores     String?   @db.Text // JSON: { criterion, pass, reason }[]
+  passCount        Int?      // Number of rubric criteria that passed
+  failCount        Int?      // Number of rubric criteria that failed
+  scoredAt         DateTime? // When scoring completed
+  scoreError       String?   // Error if scoring failed
+
+  run              AgentTestRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  testCase         AgentTestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([testCaseId])
+  @@index([sessionId])
 }
 
 // Join table for many-to-many relationship between TestCase and Defect
