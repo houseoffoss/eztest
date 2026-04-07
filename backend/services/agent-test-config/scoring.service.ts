@@ -110,11 +110,15 @@ Evaluate each criterion and return the JSON array.`;
       lines.push(`Total latency: ${trace.latency}ms`);
     }
 
+    // Match any SPAN that looks like a tool call: either named "*tool*" or
+    // any SPAN with a non-null input (framework-specific span names like
+    // "web_search", "get_order", "calculator" won't contain the word "tool").
     const toolCalls = (trace.observations ?? []).filter(
       (o) =>
         o.type === "SPAN" &&
-        typeof o.name === "string" &&
-        o.name.toLowerCase().includes("tool"),
+        (o.input != null ||
+          (typeof o.name === "string" &&
+            o.name.toLowerCase().includes("tool"))),
     );
 
     if (toolCalls.length > 0) {

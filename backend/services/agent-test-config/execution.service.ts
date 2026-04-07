@@ -160,6 +160,9 @@ export class AgentTestExecutionService {
       aqsRegressionDelta: null,
     };
 
+    // Build a map from testCaseId → result DB id for stable lookups in _executeAll
+    const resultIdMap = new Map(results.map((r) => [r.testCaseId, r.id]));
+
     const executionPromise = this._executeAll(
       run.id,
       config.agentApiUrl,
@@ -167,6 +170,7 @@ export class AgentTestExecutionService {
       config.langfuseSecretKey,
       testCases,
       resultData,
+      resultIdMap,
     ).catch((err) =>
       console.error("[AgentTestExecution] background execution failed:", err),
     );
@@ -199,6 +203,7 @@ export class AgentTestExecutionService {
     langfuseSecretKey: string,
     testCases: { id: string; input: string; rubric: string }[],
     resultData: { runId: string; testCaseId: string; sessionId: string }[],
+    resultIdMap: Map<string, string>,
   ): Promise<void> {
     const sessionMap = new Map(
       resultData.map((r) => [r.testCaseId, r.sessionId]),
@@ -208,6 +213,7 @@ export class AgentTestExecutionService {
 
     for (const tc of testCases) {
       const sessionId = sessionMap.get(tc.id)!;
+      const resultId = resultIdMap.get(tc.id)!;
 
       // ── Step A: call the agent API ────────────────────────────────────────
       let agentResponse: string | null = null;
@@ -276,9 +282,11 @@ export class AgentTestExecutionService {
       }
 
       // Persist agent call result immediately so polling reflects progress
+      // Also update sessionId to the agent's actual session ID so Langfuse lookup works
       await prisma.agentTestResult.update({
         where: { sessionId },
         data: {
+          sessionId: agentSessionId, // overwrite with the agent's real session ID
           status: agentOk ? "success" : "error",
           httpStatus,
           requestPayload: JSON.stringify({ url: chatUrl, body: requestBody }),
@@ -294,8 +302,9 @@ export class AgentTestExecutionService {
       let traceFetchError: string | null = null;
 
       try {
+        // Use the agent's actual session ID — that's what Langfuse has on record
         trace = await langfuseTraceService.fetchTraceBySessionId(
-          sessionId,
+          agentSessionId,
           langfusePublicKey,
           langfuseSecretKey,
         );
@@ -307,7 +316,7 @@ export class AgentTestExecutionService {
       }
 
       await prisma.agentTestResult.update({
-        where: { sessionId },
+        where: { id: resultId },
         data: {
           langfuseTraceId,
           traceJson: trace ? JSON.stringify(trace).slice(0, 65_535) : null,
@@ -341,7 +350,7 @@ export class AgentTestExecutionService {
 
       // ── Step D: persist scoring results ──────────────────────────────────
       await prisma.agentTestResult.update({
-        where: { sessionId },
+        where: { id: resultId },
         data: {
           rubricScores,
           passCount,

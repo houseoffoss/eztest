@@ -52,23 +52,38 @@ Here is a full description of the agent — this may include its role, available
 ${agentDescription}
 </agent_description>
 
-Read the entire description carefully and extract:
+## Step 1 — Extract agent capabilities
+
+Before generating any test cases, carefully read the description and identify:
 - The agent's primary domain and purpose
-- Every tool and skill it has available
+- EVERY tool the agent has available (list each by its exact name as mentioned in the description)
+- EVERY skill the agent has available (list each by its exact name)
 - Any constraints, refusal policies, or out-of-scope behaviours
 - Expected input/output patterns
 
-Then generate exactly 3 test cases for each of the following 7 categories (21 total):
+## Step 2 — Generate test cases
+
+Generate test cases for each of the following 7 categories:
 ${TEST_CATEGORIES.map((c) => `- ${c}: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
-For each test case produce a JSON object with these exact fields:
+### Tool and skill coverage rules (MANDATORY)
+- Every tool and skill identified in Step 1 MUST appear in at least one test case's rubric criterion using its exact name (e.g. "Calls <tool_name> tool").
+- The \`tool_use\` category must contain one test case per tool/skill, up to a maximum of 5. If there are more than 5 tools/skills, cover the 5 most important ones in \`tool_use\` and ensure the remaining ones appear in rubric criteria of other categories.
+- In the rubric for ANY category, if the correct agent behavior involves calling a specific tool, name that tool explicitly (e.g. "Calls search_web tool|Returns results from tool output").
+
+### Category quotas
+- \`tool_use\`: exactly max(3, number_of_tools_and_skills) cases, up to a maximum of 5
+- All other categories: exactly 3 cases each
+- Minimum total: 21 test cases
+
+### Per test case fields
 - category: one of [${TEST_CATEGORIES.join(", ")}]
 - title: short descriptive title (max 80 chars)
 - input: the exact user message to send to the agent
 - expectedBehavior: what the agent should do (1-3 sentences, concrete and observable)
-- rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria, e.g. "Calls get_order_status tool|Returns order details|Does not hallucinate status"
+- rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria — always name the specific tool or skill when tool invocation is expected, e.g. "Calls get_order_status tool|Returns order details|Does not hallucinate status"
 
-Make test cases specific to the agent's actual capabilities and domain described above. Reference real tool names, skill names, and domain concepts from the description. Do not produce generic tests.
+Make every test case specific to the agent's actual capabilities. Reference real tool names, skill names, and domain concepts from the description. Do not produce generic tests.
 
 Respond with a JSON array only — no markdown, no explanation, no wrapper object. Example format:
 [{"category":"happy_path","title":"...","input":"...","expectedBehavior":"...","rubric":"..."}]`;
@@ -87,10 +102,7 @@ export class AgentTestGenerationService {
     this.client = new Anthropic({ apiKey });
   }
 
-  async generateForConfig(
-    configId: string,
-    userId: string,
-  ): Promise<GeneratedTestCase[]> {
+  async generateForConfig(configId: string, userId: string) {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
       select: { id: true, systemPrompt: true, agentApiUrl: true },
@@ -102,16 +114,33 @@ export class AgentTestGenerationService {
 
     const chatUrl = config.agentApiUrl.replace(/\/+$/, "") + "/api/chat";
 
-    const message = await this.client.messages.create({
-      model: "claude-opus-4-6",
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: buildGenerationPrompt(config.systemPrompt, chatUrl),
-        },
-      ],
-    });
+    let message: Awaited<ReturnType<typeof this.client.messages.create>>;
+    try {
+      message = await this.client.messages.create({
+        model: "claude-opus-4-6",
+        max_tokens: 8192,
+        messages: [
+          {
+            role: "user",
+            content: buildGenerationPrompt(config.systemPrompt, chatUrl),
+          },
+        ],
+      });
+    } catch (err: unknown) {
+      if (err instanceof Anthropic.APIError) {
+        if (err.status === 400 && err.message.includes("content filtering")) {
+          throw new InternalServerException(
+            "Test case generation was blocked by content filtering. Your agent description may contain content that triggers safety filters. Try rephrasing your system prompt and regenerate.",
+          );
+        }
+        throw new InternalServerException(
+          `Claude API error (${err.status}): ${err.message}`,
+        );
+      }
+      throw new InternalServerException(
+        "Unexpected error while calling Claude API",
+      );
+    }
 
     const content = message.content[0];
     if (content.type !== "text") {
@@ -150,7 +179,10 @@ export class AgentTestGenerationService {
       })),
     });
 
-    return testCases;
+    return prisma.agentTestCase.findMany({
+      where: { configId },
+      orderBy: { generatedAt: "asc" },
+    });
   }
 
   async getTestCases(configId: string, userId: string) {

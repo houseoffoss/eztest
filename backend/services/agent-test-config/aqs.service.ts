@@ -103,11 +103,16 @@ export class AgentTestAqsService {
           const trace = JSON.parse(r.traceJson) as {
             observations?: { type?: string; name?: string }[];
           };
+          // Same broadened detection as scoring.service: any SPAN with a
+          // non-null input is treated as a tool call, since agents often
+          // name their tool spans after the tool itself ("web_search",
+          // "get_order") rather than using a generic "tool_call" name.
           return (trace.observations ?? []).some(
             (o) =>
               o.type === "SPAN" &&
-              typeof o.name === "string" &&
-              o.name.toLowerCase().includes("tool"),
+              (o.input != null ||
+                (typeof o.name === "string" &&
+                  o.name.toLowerCase().includes("tool"))),
           );
         } catch {
           return false;
