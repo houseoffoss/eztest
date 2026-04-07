@@ -39,15 +39,26 @@ const CATEGORY_DESCRIPTIONS: Record<TestCategory, string> = {
   regression: "Common failure patterns agents typically struggle with",
 };
 
-function buildGenerationPrompt(systemPrompt: string): string {
+function buildGenerationPrompt(
+  agentDescription: string,
+  chatUrl: string,
+): string {
   return `You are an expert AI quality assurance engineer. Your task is to generate a comprehensive test suite for an AI agent.
 
-Here is the agent's system prompt:
-<system_prompt>
-${systemPrompt}
-</system_prompt>
+The agent's chat endpoint is: ${chatUrl}
 
-Generate exactly 3 test cases for each of the following 7 categories (21 total):
+Here is a full description of the agent — this may include its role, available tools, skills, API endpoints, supported models, or any other details provided by the developer:
+<agent_description>
+${agentDescription}
+</agent_description>
+
+Read the entire description carefully and extract:
+- The agent's primary domain and purpose
+- Every tool and skill it has available
+- Any constraints, refusal policies, or out-of-scope behaviours
+- Expected input/output patterns
+
+Then generate exactly 3 test cases for each of the following 7 categories (21 total):
 ${TEST_CATEGORIES.map((c) => `- ${c}: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
 For each test case produce a JSON object with these exact fields:
@@ -57,7 +68,7 @@ For each test case produce a JSON object with these exact fields:
 - expectedBehavior: what the agent should do (1-3 sentences, concrete and observable)
 - rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria, e.g. "Calls get_order_status tool|Returns order details|Does not hallucinate status"
 
-Make test cases specific to the agent's actual capabilities and domain described in the system prompt. Do not produce generic tests.
+Make test cases specific to the agent's actual capabilities and domain described above. Reference real tool names, skill names, and domain concepts from the description. Do not produce generic tests.
 
 Respond with a JSON array only — no markdown, no explanation, no wrapper object. Example format:
 [{"category":"happy_path","title":"...","input":"...","expectedBehavior":"...","rubric":"..."}]`;
@@ -82,12 +93,14 @@ export class AgentTestGenerationService {
   ): Promise<GeneratedTestCase[]> {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
-      select: { id: true, systemPrompt: true },
+      select: { id: true, systemPrompt: true, agentApiUrl: true },
     });
 
     if (!config) {
       throw new NotFoundException("Agent test configuration not found");
     }
+
+    const chatUrl = config.agentApiUrl.replace(/\/+$/, "") + "/api/chat";
 
     const message = await this.client.messages.create({
       model: "claude-opus-4-6",
@@ -95,7 +108,7 @@ export class AgentTestGenerationService {
       messages: [
         {
           role: "user",
-          content: buildGenerationPrompt(config.systemPrompt),
+          content: buildGenerationPrompt(config.systemPrompt, chatUrl),
         },
       ],
     });
@@ -107,7 +120,12 @@ export class AgentTestGenerationService {
 
     let testCases: GeneratedTestCase[];
     try {
-      testCases = JSON.parse(content.text);
+      // Strip markdown code fences if Claude wraps response despite instructions
+      const raw = content.text
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim();
+      testCases = JSON.parse(raw);
     } catch {
       throw new InternalServerException(
         "Failed to parse test cases from Claude response",

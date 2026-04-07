@@ -57,6 +57,7 @@ interface AgentTestResultSummary {
   testCaseId: string;
   sessionId: string;
   status: "pending" | "success" | "error";
+  requestPayload: string | null;
   agentResponse: string | null;
   httpStatus: number | null;
   latencyMs: number | null;
@@ -332,16 +333,24 @@ export default function AgentTestSetup() {
 
       // Poll until completed
       const poll = async (runId: string, configId: string) => {
-        const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
-        if (!pollRes.ok) return;
-        const pollData = await pollRes.json();
-        const updated: AgentTestRunState = pollData.data;
-        setActiveRun((prev) => ({ ...prev, [configId]: updated }));
-        if (updated.status === "running" || updated.status === "pending") {
-          setTimeout(() => poll(runId, configId), 2500);
-        } else {
-          setRunningFor(null);
+        try {
+          const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
+          if (pollRes.ok) {
+            const pollData = await pollRes.json();
+            const updated: AgentTestRunState = pollData.data;
+            setActiveRun((prev) => ({ ...prev, [configId]: updated }));
+            if (updated.status === "running" || updated.status === "pending") {
+              setTimeout(() => poll(runId, configId), 2000);
+            } else {
+              setRunningFor(null);
+            }
+            return;
+          }
+        } catch {
+          // network hiccup — retry
         }
+        // retry on any error so we don't silently stop polling
+        setTimeout(() => poll(runId, configId), 3000);
       };
 
       if (run.status === "running" || run.status === "pending") {
@@ -415,8 +424,8 @@ export default function AgentTestSetup() {
               </h1>
             </div>
             <p className="text-white/60 ml-14">
-              Configure your agent API endpoint, Langfuse keys, and system
-              prompt. Each configuration is used to generate test cases and
+              Configure your agent API endpoint, Langfuse keys, and agent
+              description. Each configuration is used to generate test cases and
               score agent responses.
             </p>
           </div>
@@ -452,8 +461,13 @@ export default function AgentTestSetup() {
                   {/* Agent API URL */}
                   <div className="space-y-2">
                     <Label htmlFor="agent-api-url">
-                      Agent API Endpoint <span className="text-red-400">*</span>
+                      Agent Base URL <span className="text-red-400">*</span>
                     </Label>
+                    <p className="text-xs text-white/40">
+                      The root URL of your agent. Test cases will be sent to{" "}
+                      <span className="text-white/60 font-mono">/api/chat</span>{" "}
+                      on this base URL.
+                    </p>
                     <Input
                       id="agent-api-url"
                       type="url"
@@ -462,7 +476,7 @@ export default function AgentTestSetup() {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, agentApiUrl: e.target.value }))
                       }
-                      placeholder="https://your-agent.example.com/api/chat"
+                      placeholder="https://your-agent.example.com"
                     />
                     {fieldErrors.agentApiUrl && (
                       <p className="text-xs text-red-400">
@@ -523,20 +537,21 @@ export default function AgentTestSetup() {
                     </div>
                   </div>
 
-                  {/* System Prompt */}
+                  {/* System Prompt / Agent Description */}
                   <div className="space-y-2">
                     <Label htmlFor="system-prompt">
-                      System Prompt <span className="text-red-400">*</span>
+                      Agent Description <span className="text-red-400">*</span>
                     </Label>
                     <p className="text-xs text-white/40">
-                      Describe the agent&apos;s role, available tools, and
-                      expected behaviour. This is used to generate skill-aware
-                      test cases across all 7 test categories.
+                      Paste anything that describes your agent — system prompt,
+                      tool list, skill catalogue, API docs, or all of the above.
+                      The more detail you provide, the more accurate and
+                      domain-specific the generated test cases will be.
                     </p>
                     <Textarea
                       id="system-prompt"
                       variant="glass"
-                      rows={8}
+                      rows={10}
                       value={form.systemPrompt}
                       onChange={(e) =>
                         setForm((f) => ({
@@ -544,7 +559,7 @@ export default function AgentTestSetup() {
                           systemPrompt: e.target.value,
                         }))
                       }
-                      placeholder="You are a helpful customer support agent with access to the following tools: get_order_status, create_refund_request, escalate_to_human..."
+                      placeholder="Paste your agent's full description here — system prompt, available tools, skills, API endpoints, supported models, constraints, etc."
                     />
                     {fieldErrors.systemPrompt && (
                       <p className="text-xs text-red-400">
@@ -620,6 +635,10 @@ export default function AgentTestSetup() {
                 const isRunning = runningFor === config.id;
                 const run = activeRun[config.id] ?? null;
                 const grouped = groupByCategory(cases);
+                const inProgressResult =
+                  run?.status === "running"
+                    ? (run.results.find((r) => r.status === "pending") ?? null)
+                    : null;
 
                 return (
                   <DetailCard key={config.id} contentClassName="">
@@ -726,7 +745,7 @@ export default function AgentTestSetup() {
                     {/* Run Progress + Results Panel */}
                     {run && (
                       <div className="mt-4 pt-4 border-t border-white/10">
-                        {/* Progress bar */}
+                        {/* Progress bar + View Results link */}
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
                             <div
@@ -745,8 +764,44 @@ export default function AgentTestSetup() {
                                 done
                               </span>
                             )}
+                            {run.status === "failed" && (
+                              <span className="ml-1.5 text-red-400">
+                                failed
+                              </span>
+                            )}
                           </span>
+                          {run.status === "completed" && (
+                            <button
+                              onClick={() =>
+                                router.push(`/agent-testing/runs/${run.runId}`)
+                              }
+                              className="cursor-pointer flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-colors shrink-0"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Results
+                            </button>
+                          )}
                         </div>
+
+                        {/* Live "currently testing" banner */}
+                        {inProgressResult && (
+                          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-yellow-500/8 border border-yellow-500/20">
+                            <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin shrink-0" />
+                            <span className="text-xs text-yellow-300/80 truncate">
+                              Testing:{" "}
+                              <span className="font-medium text-yellow-300">
+                                {inProgressResult.testCase.title}
+                              </span>
+                            </span>
+                            <span
+                              className={`ml-auto shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[inProgressResult.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                            >
+                              {CATEGORY_LABELS[
+                                inProgressResult.testCase.category
+                              ] ?? inProgressResult.testCase.category}
+                            </span>
+                          </div>
+                        )}
 
                         {/* Per-result rows */}
                         <div className="space-y-1.5">
@@ -767,13 +822,14 @@ export default function AgentTestSetup() {
                                 >
                                   {/* Status icon */}
                                   <span className="shrink-0">
-                                    {result.status === "pending" && (
+                                    {result.status === "pending" &&
+                                    inProgressResult?.id === result.id ? (
+                                      <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
+                                    ) : result.status === "pending" ? (
                                       <Clock className="w-3.5 h-3.5 text-white/30" />
-                                    )}
-                                    {result.status === "success" && (
+                                    ) : result.status === "success" ? (
                                       <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                                    )}
-                                    {result.status === "error" && (
+                                    ) : (
                                       <XCircle className="w-3.5 h-3.5 text-red-400" />
                                     )}
                                   </span>
@@ -813,45 +869,89 @@ export default function AgentTestSetup() {
 
                                 {isResultOpen && (
                                   <div className="px-4 pb-4 pt-3 border-t border-white/8 space-y-3">
+                                    {/* Request */}
                                     <div>
-                                      <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                        Input sent
+                                      <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wider mb-1.5">
+                                        Request
                                       </p>
-                                      <p className="text-xs text-white/70 font-mono bg-white/5 rounded px-3 py-2 whitespace-pre-wrap">
-                                        {result.testCase.input}
-                                      </p>
-                                    </div>
-
-                                    <div>
-                                      <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                        Session ID
-                                      </p>
-                                      <p className="text-xs text-white/50 font-mono">
-                                        {result.sessionId}
-                                      </p>
-                                    </div>
-
-                                    {result.agentResponse && (
-                                      <div>
-                                        <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                          Agent Response
+                                      {result.requestPayload ? (
+                                        (() => {
+                                          try {
+                                            const parsed = JSON.parse(
+                                              result.requestPayload,
+                                            );
+                                            return (
+                                              <div className="space-y-1.5">
+                                                <p className="text-xs text-white/40 font-mono bg-white/5 rounded px-3 py-1.5">
+                                                  POST {parsed.url}
+                                                </p>
+                                                <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
+                                                  {JSON.stringify(
+                                                    parsed.body,
+                                                    null,
+                                                    2,
+                                                  )}
+                                                </pre>
+                                              </div>
+                                            );
+                                          } catch {
+                                            return (
+                                              <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
+                                                {result.requestPayload}
+                                              </pre>
+                                            );
+                                          }
+                                        })()
+                                      ) : (
+                                        <p className="text-xs text-white/30 italic">
+                                          Not yet sent
                                         </p>
+                                      )}
+                                    </div>
+
+                                    {/* Response */}
+                                    <div>
+                                      <p className="text-xs font-medium text-green-400/70 uppercase tracking-wider mb-1.5">
+                                        Response
+                                        {result.httpStatus != null && (
+                                          <span
+                                            className={`ml-2 font-mono ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                                          >
+                                            {result.httpStatus}
+                                          </span>
+                                        )}
+                                        {result.latencyMs != null && (
+                                          <span className="ml-2 text-white/30 font-mono">
+                                            {result.latencyMs}ms
+                                          </span>
+                                        )}
+                                      </p>
+                                      {result.agentResponse ? (
                                         <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48">
-                                          {result.agentResponse}
+                                          {(() => {
+                                            try {
+                                              return JSON.stringify(
+                                                JSON.parse(
+                                                  result.agentResponse,
+                                                ),
+                                                null,
+                                                2,
+                                              );
+                                            } catch {
+                                              return result.agentResponse;
+                                            }
+                                          })()}
                                         </pre>
-                                      </div>
-                                    )}
-
-                                    {result.errorMessage && (
-                                      <div>
-                                        <p className="text-xs font-medium text-red-400/60 uppercase tracking-wider mb-1">
-                                          Error
-                                        </p>
+                                      ) : result.errorMessage ? (
                                         <p className="text-xs text-red-300 bg-red-500/10 rounded px-3 py-2">
                                           {result.errorMessage}
                                         </p>
-                                      </div>
-                                    )}
+                                      ) : (
+                                        <p className="text-xs text-white/30 italic">
+                                          Waiting for response...
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -920,6 +1020,20 @@ export default function AgentTestSetup() {
                                         {isOpen && (
                                           <div className="px-4 pb-4 space-y-3 border-t border-white/8">
                                             <div className="pt-3">
+                                              <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
+                                                Target URL
+                                              </p>
+                                              <a
+                                                href={config.agentApiUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline font-mono bg-white/5 rounded-md px-3 py-2 w-full truncate cursor-pointer"
+                                              >
+                                                <ExternalLink className="w-3 h-3 shrink-0" />
+                                                {config.agentApiUrl}
+                                              </a>
+                                            </div>
+                                            <div>
                                               <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
                                                 Input
                                               </p>

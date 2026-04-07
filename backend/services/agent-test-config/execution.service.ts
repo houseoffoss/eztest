@@ -6,15 +6,28 @@ import {
 } from "@/backend/utils/exceptions";
 import { langfuseTraceService, type LangfuseTrace } from "./langfuse.service";
 import { agentTestScoringService } from "./scoring.service";
+import { agentTestAqsService } from "./aqs.service";
 
 export interface AgentTestRunSummary {
   runId: string;
+  configId: string;
+  configName: string;
+  agentApiUrl: string;
   status: string;
   totalCases: number;
   completedCases: number;
   startedAt: Date;
   completedAt: Date | null;
   results: AgentTestResultSummary[];
+  // AQS
+  aqsScore: number | null;
+  aqsCorrectness: number | null;
+  aqsToolUse: number | null;
+  aqsLatency: number | null;
+  aqsErrorRate: number | null;
+  aqsTraceCoverage: number | null;
+  aqsComputedAt: Date | null;
+  aqsRegressionDelta: number | null;
 }
 
 export interface AgentTestResultSummary {
@@ -22,6 +35,7 @@ export interface AgentTestResultSummary {
   testCaseId: string;
   sessionId: string;
   status: string;
+  requestPayload: string | null;
   agentResponse: string | null;
   httpStatus: number | null;
   latencyMs: number | null;
@@ -29,6 +43,7 @@ export interface AgentTestResultSummary {
   executedAt: Date;
   // Langfuse + scoring
   langfuseTraceId: string | null;
+  traceJson: string | null;
   traceFetchedAt: Date | null;
   traceFetchError: string | null;
   rubricScores: string | null;
@@ -47,18 +62,23 @@ export interface AgentTestResultSummary {
 
 export class AgentTestExecutionService {
   /**
-   * Start a new test run: creates AgentTestRun + AgentTestResult rows (pending),
-   * then fires-and-forgets the actual HTTP calls so the API responds immediately.
+   * Prepare a new test run: creates AgentTestRun + AgentTestResult rows (pending).
+   * Returns the summary AND the execution promise so the caller can register it
+   * with Next.js `after()` to keep it alive after the response is sent.
    */
-  async startRun(
+  async prepareRun(
     configId: string,
     userId: string,
-  ): Promise<AgentTestRunSummary> {
+  ): Promise<{
+    summary: AgentTestRunSummary;
+    executionPromise: Promise<void>;
+  }> {
     // Verify config belongs to user — fetch Langfuse keys too
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
       select: {
         id: true,
+        name: true,
         agentApiUrl: true,
         langfusePublicKey: true,
         langfuseSecretKey: true,
@@ -102,7 +122,7 @@ export class AgentTestExecutionService {
 
     await prisma.agentTestResult.createMany({ data: resultData });
 
-    // Fetch the full result rows so we can return them and drive the async execution
+    // Fetch the full result rows so we can return them
     const results = await prisma.agentTestResult.findMany({
       where: { runId: run.id },
       include: {
@@ -119,8 +139,28 @@ export class AgentTestExecutionService {
       orderBy: { executedAt: "asc" },
     });
 
-    // Fire-and-forget: execute calls in the background
-    this._executeAll(
+    const summary: AgentTestRunSummary = {
+      runId: run.id,
+      configId: config.id,
+      configName: config.name,
+      agentApiUrl: config.agentApiUrl,
+      status: run.status,
+      totalCases: run.totalCases,
+      completedCases: run.completedCases,
+      startedAt: run.startedAt,
+      completedAt: run.completedAt,
+      results: results.map((r) => this._toSummary(r)),
+      aqsScore: null,
+      aqsCorrectness: null,
+      aqsToolUse: null,
+      aqsLatency: null,
+      aqsErrorRate: null,
+      aqsTraceCoverage: null,
+      aqsComputedAt: null,
+      aqsRegressionDelta: null,
+    };
+
+    const executionPromise = this._executeAll(
       run.id,
       config.agentApiUrl,
       config.langfusePublicKey,
@@ -131,15 +171,16 @@ export class AgentTestExecutionService {
       console.error("[AgentTestExecution] background execution failed:", err),
     );
 
-    return {
-      runId: run.id,
-      status: run.status,
-      totalCases: run.totalCases,
-      completedCases: run.completedCases,
-      startedAt: run.startedAt,
-      completedAt: run.completedAt,
-      results: results.map((r) => this._toSummary(r)),
-    };
+    return { summary, executionPromise };
+  }
+
+  /** @deprecated Use prepareRun instead */
+  async startRun(
+    configId: string,
+    userId: string,
+  ): Promise<AgentTestRunSummary> {
+    const { summary } = await this.prepareRun(configId, userId);
+    return summary;
   }
 
   /**
@@ -175,16 +216,44 @@ export class AgentTestExecutionService {
       let agentError: string | null = null;
       let agentOk = false;
 
+      const baseUrl = agentApiUrl.replace(/\/+$/, "");
+      const sessionStartUrl = baseUrl + "/api/session/start";
+      const chatUrl = baseUrl + "/api/chat";
+
+      // Start a session first so the agent can track conversation state
+      let agentSessionId: string = sessionId;
+      try {
+        const sessionRes = await fetch(sessionStartUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ modelId: "claude-sonnet-4-5" }),
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
+        }
+      } catch {
+        // Non-fatal — fall back to using our own sessionId
+      }
+
+      const requestBody = {
+        message: tc.input,
+        sessionId: agentSessionId,
+        modelId: "claude-sonnet-4-5",
+        userMessageId: sessionId, // use our UUID as a stable message ID
+      };
+
       const t0 = Date.now();
       try {
-        const response = await fetch(agentApiUrl, {
+        const response = await fetch(chatUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Session-Id": sessionId,
+            "X-Session-Id": agentSessionId,
           },
-          body: JSON.stringify({ message: tc.input, session_id: sessionId }),
-          signal: AbortSignal.timeout(30_000),
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(60_000),
         });
 
         latencyMs = Date.now() - t0;
@@ -212,6 +281,7 @@ export class AgentTestExecutionService {
         data: {
           status: agentOk ? "success" : "error",
           httpStatus,
+          requestPayload: JSON.stringify({ url: chatUrl, body: requestBody }),
           agentResponse,
           latencyMs,
           errorMessage: agentError,
@@ -289,10 +359,22 @@ export class AgentTestExecutionService {
     }
 
     // Mark run as completed
-    await prisma.agentTestRun.update({
+    const completedRun = await prisma.agentTestRun.update({
       where: { id: runId },
       data: { status: "completed", completedAt: new Date() },
+      select: { createdById: true },
     });
+
+    // ── Step 5: compute AQS ───────────────────────────────────────────────────
+    try {
+      await agentTestAqsService.computeAndPersist(
+        runId,
+        completedRun.createdById,
+      );
+    } catch (err: unknown) {
+      console.error("[AgentTestExecution] AQS computation failed:", err);
+      // Non-fatal — run result is still stored; AQS can be re-triggered via API
+    }
   }
 
   /**
@@ -384,12 +466,13 @@ export class AgentTestExecutionService {
   }
 
   /**
-   * Get the current state of a run (used for polling).
+   * Get the current state of a run (used for polling and results dashboard).
    */
   async getRun(runId: string, userId: string): Promise<AgentTestRunSummary> {
     const run = await prisma.agentTestRun.findFirst({
       where: { id: runId, createdById: userId },
       include: {
+        config: { select: { id: true, name: true, agentApiUrl: true } },
         results: {
           include: {
             testCase: {
@@ -413,12 +496,23 @@ export class AgentTestExecutionService {
 
     return {
       runId: run.id,
+      configId: run.configId,
+      configName: run.config.name,
+      agentApiUrl: run.config.agentApiUrl,
       status: run.status,
       totalCases: run.totalCases,
       completedCases: run.completedCases,
       startedAt: run.startedAt,
       completedAt: run.completedAt,
       results: run.results.map((r) => this._toSummary(r)),
+      aqsScore: run.aqsScore,
+      aqsCorrectness: run.aqsCorrectness,
+      aqsToolUse: run.aqsToolUse,
+      aqsLatency: run.aqsLatency,
+      aqsErrorRate: run.aqsErrorRate,
+      aqsTraceCoverage: run.aqsTraceCoverage,
+      aqsComputedAt: run.aqsComputedAt,
+      aqsRegressionDelta: run.aqsRegressionDelta,
     };
   }
 
@@ -454,12 +548,14 @@ export class AgentTestExecutionService {
     testCaseId: string;
     sessionId: string;
     status: string;
+    requestPayload: string | null;
     agentResponse: string | null;
     httpStatus: number | null;
     latencyMs: number | null;
     errorMessage: string | null;
     executedAt: Date;
     langfuseTraceId: string | null;
+    traceJson: string | null;
     traceFetchedAt: Date | null;
     traceFetchError: string | null;
     rubricScores: string | null;
@@ -480,12 +576,14 @@ export class AgentTestExecutionService {
       testCaseId: r.testCaseId,
       sessionId: r.sessionId,
       status: r.status,
+      requestPayload: r.requestPayload,
       agentResponse: r.agentResponse,
       httpStatus: r.httpStatus,
       latencyMs: r.latencyMs,
       errorMessage: r.errorMessage,
       executedAt: r.executedAt,
       langfuseTraceId: r.langfuseTraceId,
+      traceJson: r.traceJson,
       traceFetchedAt: r.traceFetchedAt,
       traceFetchError: r.traceFetchError,
       rubricScores: r.rubricScores,

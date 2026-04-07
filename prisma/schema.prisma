@@ -613,6 +613,17 @@ model AgentTestRun {
   completedAt DateTime?
   createdById String
 
+  // AQS (Agent Quality Score) — computed after all results are scored
+  // Composite score 0-100 and 5 dimension scores (each 0-100)
+  aqsScore             Float?    // Composite AQS (weighted average of 5 dimensions)
+  aqsCorrectness       Float?    // Dimension: rubric pass rate
+  aqsToolUse          Float?    // Dimension: correct tool-call behaviour
+  aqsLatency          Float?    // Dimension: response speed (inverted / normalised)
+  aqsErrorRate        Float?    // Dimension: HTTP error rate (inverted)
+  aqsTraceCoverage    Float?    // Dimension: Langfuse trace availability
+  aqsComputedAt       DateTime? // When AQS was last computed
+  aqsRegressionDelta  Float?    // aqsScore minus previous completed run's aqsScore
+
   config      AgentTestConfig  @relation(fields: [configId], references: [id], onDelete: Cascade)
   createdBy   User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
   results     AgentTestResult[]
@@ -628,6 +639,7 @@ model AgentTestResult {
   testCaseId       String
   sessionId        String    @unique // UUID sent as session_id to agent & Langfuse
   status           String    @default("pending") // pending | success | error
+  requestPayload   String?   @db.Text // JSON body sent to agent API
   agentResponse    String?   @db.Text // Raw response body from agent API
   httpStatus       Int?      // HTTP status code returned by agent
   latencyMs        Int?      // Round-trip time in milliseconds

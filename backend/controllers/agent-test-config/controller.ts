@@ -1,6 +1,8 @@
+import { after } from "next/server";
 import { agentTestConfigService } from "@/backend/services/agent-test-config/service";
 import { agentTestGenerationService } from "@/backend/services/agent-test-config/generation.service";
 import { agentTestExecutionService } from "@/backend/services/agent-test-config/execution.service";
+import { agentTestAqsService } from "@/backend/services/agent-test-config/aqs.service";
 import { CustomRequest } from "@/backend/utils/interceptor";
 
 export class AgentTestConfigController {
@@ -58,11 +60,12 @@ export class AgentTestConfigController {
   }
 
   async startRun(request: CustomRequest, id: string) {
-    const run = await agentTestExecutionService.startRun(
-      id,
-      request.userInfo.id,
-    );
-    return { data: run, statusCode: 202 };
+    const { summary, executionPromise } =
+      await agentTestExecutionService.prepareRun(id, request.userInfo.id);
+    // Register the execution promise with Next.js so it survives after the
+    // response is sent. Without this, Next.js cancels the background work.
+    after(executionPromise);
+    return { data: summary, statusCode: 202 };
   }
 
   async getRun(request: CustomRequest, runId: string) {
@@ -87,6 +90,19 @@ export class AgentTestConfigController {
       request.userInfo.id,
     );
     return { message: "Re-score completed successfully" };
+  }
+
+  async getAqs(request: CustomRequest, runId: string) {
+    const aqs = await agentTestAqsService.getForRun(runId, request.userInfo.id);
+    return { data: aqs };
+  }
+
+  async computeAqs(request: CustomRequest, runId: string) {
+    const aqs = await agentTestAqsService.computeAndPersist(
+      runId,
+      request.userInfo.id,
+    );
+    return { data: aqs };
   }
 }
 
