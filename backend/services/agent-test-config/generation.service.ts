@@ -117,16 +117,19 @@ Respond with a single JSON object only — no markdown, no explanation. Exact fo
 }
 
 export class AgentTestGenerationService {
-  private client: Anthropic;
+  private _client: Anthropic | null = null;
 
-  constructor() {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      throw new InternalServerException(
-        "ANTHROPIC_API_KEY environment variable is not set",
-      );
+  private get client(): Anthropic {
+    if (!this._client) {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new InternalServerException(
+          "ANTHROPIC_API_KEY environment variable is not set",
+        );
+      }
+      this._client = new Anthropic({ apiKey });
     }
-    this.client = new Anthropic({ apiKey });
+    return this._client;
   }
 
   async generateForConfig(configId: string, userId: string) {

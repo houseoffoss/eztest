@@ -14,9 +14,22 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { InternalServerException } from "@/backend/utils/exceptions";
 import type { LangfuseTrace } from "./langfuse.service";
 
-const anthropic = new Anthropic();
+let _anthropic: Anthropic | null = null;
+function getAnthropicClient(): Anthropic {
+  if (!_anthropic) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new InternalServerException(
+        "ANTHROPIC_API_KEY environment variable is not set",
+      );
+    }
+    _anthropic = new Anthropic({ apiKey });
+  }
+  return _anthropic;
+}
 
 export interface RubricScore {
   criterion: string;
@@ -82,7 +95,7 @@ ${criteria.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
 Evaluate each criterion and return the JSON array.`;
 
-    const message = await anthropic.messages.create({
+    const message = await getAnthropicClient().messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
       system: systemPrompt,

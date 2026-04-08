@@ -101,7 +101,7 @@ export class AgentTestAqsService {
         if (!r.traceJson) return false;
         try {
           const trace = JSON.parse(r.traceJson) as {
-            observations?: { type?: string; name?: string }[];
+            observations?: { type?: string; name?: string; input?: unknown }[];
           };
           // Same broadened detection as scoring.service: any SPAN with a
           // non-null input is treated as a tool call, since agents often
