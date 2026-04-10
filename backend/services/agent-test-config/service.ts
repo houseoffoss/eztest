@@ -16,6 +16,7 @@ const CONFIG_SELECT = {
   langfusePublicKey: true,
   systemPrompt: true,
   aiProvider: true,
+  aiModel: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -51,6 +52,7 @@ export class AgentTestConfigService {
       langfuseSecretKey,
       systemPrompt,
       aiProvider,
+      aiModel,
       aiApiKey,
     } = result.data;
     return prisma.agentTestConfig.create({
@@ -61,6 +63,7 @@ export class AgentTestConfigService {
         langfuseSecretKey,
         systemPrompt,
         aiProvider,
+        aiModel: aiModel ?? null,
         aiApiKey,
         createdById: userId,
       },

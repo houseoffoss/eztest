@@ -577,6 +577,7 @@ model AgentTestConfig {
   systemPrompt    String   @db.Text
   apiContract     String?  @db.Text
   aiProvider      String   @default("anthropic") // anthropic | google
+  aiModel         String?  // optional model override; if null, use provider default
   aiApiKey        String?  @db.Text
   createdById     String
   createdAt       DateTime @default(now())

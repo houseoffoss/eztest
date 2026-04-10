@@ -14,6 +14,7 @@ export interface AgentTestConfig {
   langfusePublicKey: string;
   systemPrompt: string;
   aiProvider: AiProvider;
+  aiModel: string | null;
   createdAt: string;
   updatedAt: string;
 }

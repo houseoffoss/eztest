@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { callAi, type AiProvider } from "@/lib/ai-provider";
+import { callAi, getEnvDefaults, type AiProvider } from "@/lib/ai-provider";
 import {
   NotFoundException,
   InternalServerException,
@@ -124,6 +124,7 @@ export class AgentTestGenerationService {
         id: true,
         systemPrompt: true,
         aiProvider: true,
+        aiModel: true,
         aiApiKey: true,
       },
     });
@@ -132,14 +133,16 @@ export class AgentTestGenerationService {
       throw new NotFoundException("Agent test configuration not found");
     }
 
-    const provider = (config.aiProvider ?? "anthropic") as AiProvider;
-    const apiKey = config.aiApiKey ?? process.env.ANTHROPIC_API_KEY ?? "";
+    const envDefaults = getEnvDefaults();
+    const provider = (config.aiProvider ?? envDefaults.provider) as AiProvider;
+    const apiKey = config.aiApiKey ?? envDefaults.apiKey ?? "";
+    const model = config.aiModel ?? envDefaults.model ?? undefined;
 
     if (!apiKey) {
       throw new InternalServerException(
         provider === "google"
-          ? "Google AI API key is not configured for this agent test config."
-          : "ANTHROPIC_API_KEY environment variable is not set",
+          ? "Google AI API key is not configured. Set it on the config or via GOOGLE_API_KEY env var."
+          : "Anthropic API key is not configured. Set it on the config or via ANTHROPIC_API_KEY env var.",
       );
     }
 
@@ -147,6 +150,7 @@ export class AgentTestGenerationService {
       provider,
       apiKey,
       purpose: "generation",
+      model,
       messages: [
         {
           role: "user",

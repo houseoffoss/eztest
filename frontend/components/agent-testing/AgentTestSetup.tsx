@@ -31,6 +31,7 @@ import {
   Clock,
   Loader2,
 } from "lucide-react";
+import { ANTHROPIC_MODELS, GOOGLE_MODELS } from "@/lib/ai-provider";
 
 type AiProvider = "anthropic" | "google";
 
@@ -41,6 +42,7 @@ interface AgentTestConfig {
   langfusePublicKey: string;
   systemPrompt: string;
   aiProvider: AiProvider;
+  aiModel: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -93,8 +95,11 @@ interface SetupFormData {
   langfuseSecretKey: string;
   systemPrompt: string;
   aiProvider: AiProvider;
+  aiModel: string;
   aiApiKey: string;
 }
+
+const CUSTOM_MODEL_VALUE = "__custom__";
 
 const emptyForm: SetupFormData = {
   name: "",
@@ -103,6 +108,7 @@ const emptyForm: SetupFormData = {
   langfuseSecretKey: "",
   systemPrompt: "",
   aiProvider: "anthropic",
+  aiModel: ANTHROPIC_MODELS[0].value,
   aiApiKey: "",
 };
 
@@ -145,6 +151,10 @@ export default function AgentTestSetup() {
   );
   const [expandedConfig, setExpandedConfig] = useState<string | null>(null);
   const [expandedTestCase, setExpandedTestCase] = useState<string | null>(null);
+
+  // Custom model input state (for create/edit forms)
+  const [customModel, setCustomModel] = useState("");
+  const [editCustomModel, setEditCustomModel] = useState("");
 
   // Edit state
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
@@ -235,10 +245,12 @@ export default function AgentTestSetup() {
 
     setSubmitting(true);
     try {
+      const resolvedModel =
+        form.aiModel === CUSTOM_MODEL_VALUE ? customModel.trim() : form.aiModel;
       const res = await fetch("/api/agent-test-configs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, aiModel: resolvedModel || undefined }),
       });
       const data = await res.json();
       if (!res.ok)
@@ -296,6 +308,15 @@ export default function AgentTestSetup() {
 
   const handleStartEdit = (config: AgentTestConfig) => {
     setEditingConfigId(config.id);
+    const knownModels =
+      config.aiProvider === "anthropic" ? ANTHROPIC_MODELS : GOOGLE_MODELS;
+    const isKnown = knownModels.some((m) => m.value === config.aiModel);
+    const modelValue =
+      config.aiModel == null
+        ? knownModels[0].value
+        : isKnown
+          ? config.aiModel
+          : CUSTOM_MODEL_VALUE;
     setEditForm({
       name: config.name,
       agentApiUrl: config.agentApiUrl,
@@ -303,14 +324,19 @@ export default function AgentTestSetup() {
       langfuseSecretKey: "",
       systemPrompt: config.systemPrompt,
       aiProvider: config.aiProvider,
+      aiModel: modelValue,
       aiApiKey: "",
     });
+    setEditCustomModel(
+      isKnown || config.aiModel == null ? "" : (config.aiModel ?? ""),
+    );
     setEditFieldErrors({});
   };
 
   const handleCancelEdit = () => {
     setEditingConfigId(null);
     setEditForm(emptyForm);
+    setEditCustomModel("");
     setEditFieldErrors({});
   };
 
@@ -340,12 +366,17 @@ export default function AgentTestSetup() {
 
     setEditSubmitting(true);
     try {
-      const body: Partial<SetupFormData> = {
+      const resolvedEditModel =
+        editForm.aiModel === CUSTOM_MODEL_VALUE
+          ? editCustomModel.trim()
+          : editForm.aiModel;
+      const body: Partial<SetupFormData> & { aiModel?: string } = {
         name: editForm.name,
         agentApiUrl: editForm.agentApiUrl,
         langfusePublicKey: editForm.langfusePublicKey,
         systemPrompt: editForm.systemPrompt,
         aiProvider: editForm.aiProvider,
+        aiModel: resolvedEditModel || undefined,
       };
       // Only send secrets if the user typed a new value
       if (editForm.langfuseSecretKey.trim())
@@ -645,47 +676,78 @@ export default function AgentTestSetup() {
                     </div>
                   </div>
 
-                  {/* AI Provider */}
-                  <div className="space-y-3">
-                    <Label>
-                      AI Provider for Test Generation &amp; Scoring{" "}
-                      <span className="text-red-400">*</span>
-                    </Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {(
-                        [
-                          {
-                            value: "anthropic",
-                            label: "Anthropic",
-                            sublabel: "Claude (Opus / Haiku)",
-                            placeholder: "sk-ant-api03-...",
-                          },
-                          {
-                            value: "google",
-                            label: "Google AI Studio",
-                            sublabel: "Gemini (Pro / Flash)",
-                            placeholder: "AIza...",
-                          },
-                        ] as const
-                      ).map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() =>
-                            setForm((f) => ({ ...f, aiProvider: opt.value }))
-                          }
-                          className={`cursor-pointer text-left px-4 py-3 rounded-lg border transition-colors ${
-                            form.aiProvider === opt.value
-                              ? "border-blue-500/60 bg-blue-500/10 text-white"
-                              : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
-                          }`}
+                  {/* AI Provider + Model */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ai-provider">
+                        AI Provider <span className="text-red-400">*</span>
+                      </Label>
+                      <div className="relative">
+                        <select
+                          id="ai-provider"
+                          value={form.aiProvider}
+                          onChange={(e) => {
+                            const p = e.target.value as AiProvider;
+                            const defaultModel =
+                              p === "anthropic"
+                                ? ANTHROPIC_MODELS[0].value
+                                : GOOGLE_MODELS[0].value;
+                            setForm((f) => ({
+                              ...f,
+                              aiProvider: p,
+                              aiModel: defaultModel,
+                            }));
+                            setCustomModel("");
+                          }}
+                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
                         >
-                          <div className="font-medium text-sm">{opt.label}</div>
-                          <div className="text-xs mt-0.5 opacity-60">
-                            {opt.sublabel}
-                          </div>
-                        </button>
-                      ))}
+                          <option value="anthropic">Anthropic (Claude)</option>
+                          <option value="google">
+                            Google AI Studio (Gemini)
+                          </option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ai-model">
+                        Model <span className="text-red-400">*</span>
+                      </Label>
+                      <div className="relative">
+                        <select
+                          id="ai-model"
+                          value={form.aiModel}
+                          onChange={(e) => {
+                            setForm((f) => ({ ...f, aiModel: e.target.value }));
+                            if (e.target.value !== CUSTOM_MODEL_VALUE)
+                              setCustomModel("");
+                          }}
+                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        >
+                          {(form.aiProvider === "anthropic"
+                            ? ANTHROPIC_MODELS
+                            : GOOGLE_MODELS
+                          ).map((m) => (
+                            <option key={m.value} value={m.value}>
+                              {m.label}
+                            </option>
+                          ))}
+                          <option value={CUSTOM_MODEL_VALUE}>
+                            Custom model…
+                          </option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                      </div>
+                      {form.aiModel === CUSTOM_MODEL_VALUE && (
+                        <Input
+                          type="text"
+                          variant="glass"
+                          value={customModel}
+                          onChange={(e) => setCustomModel(e.target.value)}
+                          placeholder="e.g. claude-opus-4-6"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -760,6 +822,7 @@ export default function AgentTestSetup() {
                       onClick={() => {
                         setShowForm(false);
                         setForm(emptyForm);
+                        setCustomModel("");
                         setFieldErrors({});
                       }}
                     >
@@ -841,9 +904,10 @@ export default function AgentTestSetup() {
                                 : "bg-orange-500/10 text-orange-400 border-orange-500/20"
                             }`}
                           >
-                            {config.aiProvider === "google"
-                              ? "Gemini"
-                              : "Claude"}
+                            {config.aiModel ??
+                              (config.aiProvider === "google"
+                                ? "Gemini"
+                                : "Claude")}
                           </span>
                           {cases.length > 0 && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -1061,50 +1125,86 @@ export default function AgentTestSetup() {
                             </div>
                           </div>
 
-                          {/* AI Provider */}
-                          <div className="space-y-3">
-                            <Label>
-                              AI Provider for Test Generation &amp; Scoring{" "}
-                              <span className="text-red-400">*</span>
-                            </Label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {(
-                                [
-                                  {
-                                    value: "anthropic",
-                                    label: "Anthropic",
-                                    sublabel: "Claude (Opus / Haiku)",
-                                  },
-                                  {
-                                    value: "google",
-                                    label: "Google AI Studio",
-                                    sublabel: "Gemini (Pro / Flash)",
-                                  },
-                                ] as const
-                              ).map((opt) => (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  onClick={() =>
+                          {/* AI Provider + Model */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-provider-${config.id}`}>
+                                AI Provider{" "}
+                                <span className="text-red-400">*</span>
+                              </Label>
+                              <div className="relative">
+                                <select
+                                  id={`edit-provider-${config.id}`}
+                                  value={editForm.aiProvider}
+                                  onChange={(e) => {
+                                    const p = e.target.value as AiProvider;
+                                    const defaultModel =
+                                      p === "anthropic"
+                                        ? ANTHROPIC_MODELS[0].value
+                                        : GOOGLE_MODELS[0].value;
                                     setEditForm((f) => ({
                                       ...f,
-                                      aiProvider: opt.value,
-                                    }))
-                                  }
-                                  className={`cursor-pointer text-left px-4 py-3 rounded-lg border transition-colors ${
-                                    editForm.aiProvider === opt.value
-                                      ? "border-blue-500/60 bg-blue-500/10 text-white"
-                                      : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
-                                  }`}
+                                      aiProvider: p,
+                                      aiModel: defaultModel,
+                                    }));
+                                    setEditCustomModel("");
+                                  }}
+                                  className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
                                 >
-                                  <div className="font-medium text-sm">
-                                    {opt.label}
-                                  </div>
-                                  <div className="text-xs mt-0.5 opacity-60">
-                                    {opt.sublabel}
-                                  </div>
-                                </button>
-                              ))}
+                                  <option value="anthropic">
+                                    Anthropic (Claude)
+                                  </option>
+                                  <option value="google">
+                                    Google AI Studio (Gemini)
+                                  </option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-model-${config.id}`}>
+                                Model <span className="text-red-400">*</span>
+                              </Label>
+                              <div className="relative">
+                                <select
+                                  id={`edit-model-${config.id}`}
+                                  value={editForm.aiModel}
+                                  onChange={(e) => {
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      aiModel: e.target.value,
+                                    }));
+                                    if (e.target.value !== CUSTOM_MODEL_VALUE)
+                                      setEditCustomModel("");
+                                  }}
+                                  className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                                >
+                                  {(editForm.aiProvider === "anthropic"
+                                    ? ANTHROPIC_MODELS
+                                    : GOOGLE_MODELS
+                                  ).map((m) => (
+                                    <option key={m.value} value={m.value}>
+                                      {m.label}
+                                    </option>
+                                  ))}
+                                  <option value={CUSTOM_MODEL_VALUE}>
+                                    Custom model…
+                                  </option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                              </div>
+                              {editForm.aiModel === CUSTOM_MODEL_VALUE && (
+                                <Input
+                                  type="text"
+                                  variant="glass"
+                                  value={editCustomModel}
+                                  onChange={(e) =>
+                                    setEditCustomModel(e.target.value)
+                                  }
+                                  placeholder="e.g. claude-opus-4-6"
+                                />
+                              )}
                             </div>
                           </div>
 

@@ -8,6 +8,7 @@ import { langfuseTraceService, type LangfuseTrace } from "./langfuse.service";
 import { agentTestScoringService } from "./scoring.service";
 import { agentTestAqsService } from "./aqs.service";
 import type { ApiContract } from "./generation.service";
+import { getEnvDefaults } from "@/lib/ai-provider";
 
 export interface AgentTestRunSummary {
   runId: string;
@@ -85,6 +86,7 @@ export class AgentTestExecutionService {
         langfuseSecretKey: true,
         apiContract: true,
         aiProvider: true,
+        aiModel: true,
         aiApiKey: true,
       },
     });
@@ -171,6 +173,7 @@ export class AgentTestExecutionService {
       ? (JSON.parse(config.apiContract) as ApiContract)
       : null;
 
+    const envDefaults = getEnvDefaults();
     const executionPromise = this._executeAll(
       run.id,
       config.agentApiUrl,
@@ -180,8 +183,9 @@ export class AgentTestExecutionService {
       testCases,
       resultData,
       resultIdMap,
-      (config.aiProvider ?? "anthropic") as "anthropic" | "google",
-      config.aiApiKey ?? undefined,
+      (config.aiProvider ?? envDefaults.provider) as "anthropic" | "google",
+      config.aiApiKey ?? envDefaults.apiKey,
+      config.aiModel ?? envDefaults.model,
     ).catch((err) =>
       console.error("[AgentTestExecution] background execution failed:", err),
     );
@@ -218,6 +222,7 @@ export class AgentTestExecutionService {
     resultIdMap: Map<string, string>,
     aiProvider: "anthropic" | "google" = "anthropic",
     aiApiKey?: string,
+    aiModel?: string,
   ): Promise<void> {
     const sessionMap = new Map(
       resultData.map((r) => [r.testCaseId, r.sessionId]),
@@ -368,6 +373,7 @@ export class AgentTestExecutionService {
             trace,
             aiProvider,
             aiApiKey,
+            aiModel,
           );
           rubricScores = JSON.stringify(result.scores);
           passCount = result.passCount;
@@ -433,6 +439,7 @@ export class AgentTestExecutionService {
                 langfusePublicKey: true,
                 langfuseSecretKey: true,
                 aiProvider: true,
+                aiModel: true,
                 aiApiKey: true,
               },
             },
@@ -445,8 +452,14 @@ export class AgentTestExecutionService {
       throw new NotFoundException("Test result not found");
     }
 
-    const { langfusePublicKey, langfuseSecretKey, aiProvider, aiApiKey } =
-      result.run.config;
+    const {
+      langfusePublicKey,
+      langfuseSecretKey,
+      aiProvider,
+      aiModel,
+      aiApiKey,
+    } = result.run.config;
+    const rescoreEnvDefaults = getEnvDefaults();
 
     // Re-fetch trace
     let trace: LangfuseTrace | null = null;
@@ -488,8 +501,9 @@ export class AgentTestExecutionService {
           result.testCase.rubric,
           result.agentResponse,
           trace,
-          (aiProvider ?? "anthropic") as "anthropic" | "google",
-          aiApiKey ?? undefined,
+          (aiProvider ?? rescoreEnvDefaults.provider) as "anthropic" | "google",
+          aiApiKey ?? rescoreEnvDefaults.apiKey,
+          aiModel ?? rescoreEnvDefaults.model,
         );
         rubricScores = JSON.stringify(scoring.scores);
         passCount = scoring.passCount;

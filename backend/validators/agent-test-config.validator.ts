@@ -17,6 +17,7 @@ export const createAgentTestConfigSchema = z.object({
     .trim(),
   systemPrompt: z.string().min(1, "System prompt is required"),
   aiProvider: z.enum(["anthropic", "google"]).default("anthropic"),
+  aiModel: z.string().trim().optional(),
   aiApiKey: z.string().min(1, "AI API key is required").trim(),
 });
 

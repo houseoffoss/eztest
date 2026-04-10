@@ -28,13 +28,36 @@ export interface AiCallOptions {
   maxTokens?: number;
 }
 
-// ── Anthropic defaults ────────────────────────────────────────────────────────
-const ANTHROPIC_GENERATION_MODEL = "claude-opus-4-6";
-const ANTHROPIC_SCORING_MODEL = "claude-haiku-4-5-20251001";
+// ── Anthropic model catalogue ─────────────────────────────────────────────────
+export const ANTHROPIC_MODELS: { value: string; label: string }[] = [
+  { value: "claude-opus-4-6", label: "Claude Opus 4.6" },
+  { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  { value: "claude-opus-4-5", label: "Claude Opus 4.5" },
+  { value: "claude-sonnet-4-5", label: "Claude Sonnet 4.5" },
+];
 
-// ── Google defaults ───────────────────────────────────────────────────────────
-const GOOGLE_GENERATION_MODEL = "gemini-3-flash-preview";
-const GOOGLE_SCORING_MODEL = "gemini-3-flash-preview";
+// ── Google model catalogue ────────────────────────────────────────────────────
+export const GOOGLE_MODELS: { value: string; label: string }[] = [
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+  { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+  { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+];
+
+/** Return known models for a given provider */
+export function getModelsForProvider(
+  provider: AiProvider,
+): { value: string; label: string }[] {
+  return provider === "anthropic" ? ANTHROPIC_MODELS : GOOGLE_MODELS;
+}
+
+// ── Fallback defaults (used when no model is stored on the config) ────────────
+const ANTHROPIC_DEFAULT_GENERATION_MODEL = "claude-opus-4-6";
+const ANTHROPIC_DEFAULT_SCORING_MODEL = "claude-haiku-4-5-20251001";
+const GOOGLE_DEFAULT_GENERATION_MODEL = "gemini-2.5-pro";
+const GOOGLE_DEFAULT_SCORING_MODEL = "gemini-2.5-pro";
 
 export function getDefaultModel(
   provider: AiProvider,
@@ -42,22 +65,52 @@ export function getDefaultModel(
 ): string {
   if (provider === "anthropic") {
     return purpose === "generation"
-      ? ANTHROPIC_GENERATION_MODEL
-      : ANTHROPIC_SCORING_MODEL;
+      ? ANTHROPIC_DEFAULT_GENERATION_MODEL
+      : ANTHROPIC_DEFAULT_SCORING_MODEL;
   }
   return purpose === "generation"
-    ? GOOGLE_GENERATION_MODEL
-    : GOOGLE_SCORING_MODEL;
+    ? GOOGLE_DEFAULT_GENERATION_MODEL
+    : GOOGLE_DEFAULT_SCORING_MODEL;
+}
+
+/**
+ * Env-level defaults — last-resort fallback when a config has no stored
+ * provider / model / API key.
+ *
+ * Reads:
+ *   AI_PROVIDER       "anthropic" | "google"   (default: "anthropic")
+ *   AI_MODEL          any model string          (default: provider built-in)
+ *   ANTHROPIC_API_KEY used when provider is anthropic
+ *   GOOGLE_API_KEY    used when provider is google
+ */
+export function getEnvDefaults(): {
+  provider: AiProvider;
+  model: string | undefined;
+  apiKey: string | undefined;
+} {
+  const raw = process.env.AI_PROVIDER?.trim().toLowerCase();
+  const provider: AiProvider = raw === "google" ? "google" : "anthropic";
+  const model = process.env.AI_MODEL?.trim() || undefined;
+  const apiKey =
+    provider === "google"
+      ? process.env.GOOGLE_API_KEY?.trim() || undefined
+      : process.env.ANTHROPIC_API_KEY?.trim() || undefined;
+  return { provider, model, apiKey };
 }
 
 /**
  * Call the AI provider and return the text response.
+ * Pass `model` to override the default for the provider/purpose pair.
  * Throws InternalServerException on provider errors.
  */
 export async function callAi(
-  opts: AiCallOptions & { purpose: "generation" | "scoring" },
+  opts: AiCallOptions & {
+    purpose: "generation" | "scoring";
+    /** Explicit model override (stored in AgentTestConfig.aiModel) */
+    model?: string;
+  },
 ): Promise<string> {
-  const model = getDefaultModel(opts.provider, opts.purpose);
+  const model = opts.model ?? getDefaultModel(opts.provider, opts.purpose);
 
   if (opts.provider === "anthropic") {
     return callAnthropic({ ...opts, model });

@@ -46,6 +46,7 @@ export class AgentTestScoringService {
     trace: LangfuseTrace | null,
     provider: AiProvider = "anthropic",
     apiKey?: string,
+    model?: string,
   ): Promise<ScoringResult> {
     const criteria = rubric
       .split("|")
@@ -101,6 +102,7 @@ Evaluate each criterion and return the JSON array.`;
       provider,
       apiKey: resolvedApiKey,
       purpose: "scoring",
+      model,
       system: systemPrompt,
       messages: [{ role: "user", content: userMessage }],
       maxTokens: 1024,
