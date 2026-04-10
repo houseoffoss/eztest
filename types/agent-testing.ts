@@ -1,11 +1,19 @@
 // ─── Shared types for Agent Testing (used by both frontend and API layers) ────
 
+export type AiProvider = "anthropic" | "google";
+
+export const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
+  anthropic: "Anthropic (Claude)",
+  google: "Google AI Studio (Gemini)",
+};
+
 export interface AgentTestConfig {
   id: string;
   name: string;
   agentApiUrl: string;
   langfusePublicKey: string;
   systemPrompt: string;
+  aiProvider: AiProvider;
   createdAt: string;
   updatedAt: string;
 }

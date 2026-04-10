@@ -1,5 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import { callAi, type AiProvider } from "@/lib/ai-provider";
 import {
   NotFoundException,
   InternalServerException,
@@ -117,75 +117,55 @@ Respond with a single JSON object only — no markdown, no explanation. Exact fo
 }
 
 export class AgentTestGenerationService {
-  private _client: Anthropic | null = null;
-
-  private get client(): Anthropic {
-    if (!this._client) {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
-      if (!apiKey) {
-        throw new InternalServerException(
-          "ANTHROPIC_API_KEY environment variable is not set",
-        );
-      }
-      this._client = new Anthropic({ apiKey });
-    }
-    return this._client;
-  }
-
   async generateForConfig(configId: string, userId: string) {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
-      select: { id: true, systemPrompt: true },
+      select: {
+        id: true,
+        systemPrompt: true,
+        aiProvider: true,
+        aiApiKey: true,
+      },
     });
 
     if (!config) {
       throw new NotFoundException("Agent test configuration not found");
     }
 
-    let message: Awaited<ReturnType<typeof this.client.messages.create>>;
-    try {
-      message = await this.client.messages.create({
-        model: "claude-opus-4-6",
-        max_tokens: 8192,
-        messages: [
-          {
-            role: "user",
-            content: buildGenerationPrompt(config.systemPrompt),
-          },
-        ],
-      });
-    } catch (err: unknown) {
-      if (err instanceof Anthropic.APIError) {
-        if (err.status === 400 && err.message.includes("content filtering")) {
-          throw new InternalServerException(
-            "Test case generation was blocked by content filtering. Your agent description may contain content that triggers safety filters. Try rephrasing your system prompt and regenerate.",
-          );
-        }
-        throw new InternalServerException(
-          `Claude API error (${err.status}): ${err.message}`,
-        );
-      }
+    const provider = (config.aiProvider ?? "anthropic") as AiProvider;
+    const apiKey = config.aiApiKey ?? process.env.ANTHROPIC_API_KEY ?? "";
+
+    if (!apiKey) {
       throw new InternalServerException(
-        "Unexpected error while calling Claude API",
+        provider === "google"
+          ? "Google AI API key is not configured for this agent test config."
+          : "ANTHROPIC_API_KEY environment variable is not set",
       );
     }
 
-    const content = message.content[0];
-    if (content.type !== "text") {
-      throw new InternalServerException("Unexpected response from Claude API");
-    }
+    const rawText = await callAi({
+      provider,
+      apiKey,
+      purpose: "generation",
+      messages: [
+        {
+          role: "user",
+          content: buildGenerationPrompt(config.systemPrompt),
+        },
+      ],
+    });
 
     let parsed: GenerationResult;
     try {
-      // Strip markdown code fences if Claude wraps response despite instructions
-      const raw = content.text
+      // Strip markdown code fences if the model wraps response despite instructions
+      const raw = rawText
         .replace(/^```(?:json)?\s*/i, "")
         .replace(/\s*```$/, "")
         .trim();
       parsed = JSON.parse(raw);
     } catch {
       throw new InternalServerException(
-        "Failed to parse generation response from Claude",
+        "Failed to parse generation response from AI provider",
       );
     }
 
@@ -195,7 +175,7 @@ export class AgentTestGenerationService {
       parsed.testCases.length === 0
     ) {
       throw new InternalServerException(
-        "Claude returned an incomplete generation response",
+        "AI provider returned an incomplete generation response",
       );
     }
 

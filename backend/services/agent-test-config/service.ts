@@ -8,37 +8,31 @@ import {
   updateAgentTestConfigSchema,
 } from "@/backend/validators/agent-test-config.validator";
 
+// Fields returned to the client — never expose aiApiKey or langfuseSecretKey
+const CONFIG_SELECT = {
+  id: true,
+  name: true,
+  agentApiUrl: true,
+  langfusePublicKey: true,
+  systemPrompt: true,
+  aiProvider: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 export class AgentTestConfigService {
   async list(userId: string) {
     return prisma.agentTestConfig.findMany({
       where: { createdById: userId },
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        agentApiUrl: true,
-        langfusePublicKey: true,
-        systemPrompt: true,
-        createdAt: true,
-        updatedAt: true,
-        // langfuseSecretKey intentionally excluded from list responses
-      },
+      select: CONFIG_SELECT,
     });
   }
 
   async getById(id: string, userId: string) {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id, createdById: userId },
-      select: {
-        id: true,
-        name: true,
-        agentApiUrl: true,
-        langfusePublicKey: true,
-        systemPrompt: true,
-        createdAt: true,
-        updatedAt: true,
-        // langfuseSecretKey intentionally excluded from read responses
-      },
+      select: CONFIG_SELECT,
     });
     if (!config)
       throw new NotFoundException("Agent test configuration not found");
@@ -56,6 +50,8 @@ export class AgentTestConfigService {
       langfusePublicKey,
       langfuseSecretKey,
       systemPrompt,
+      aiProvider,
+      aiApiKey,
     } = result.data;
     return prisma.agentTestConfig.create({
       data: {
@@ -64,17 +60,11 @@ export class AgentTestConfigService {
         langfusePublicKey,
         langfuseSecretKey,
         systemPrompt,
+        aiProvider,
+        aiApiKey,
         createdById: userId,
       },
-      select: {
-        id: true,
-        name: true,
-        agentApiUrl: true,
-        langfusePublicKey: true,
-        systemPrompt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: CONFIG_SELECT,
     });
   }
 
@@ -87,15 +77,7 @@ export class AgentTestConfigService {
     return prisma.agentTestConfig.update({
       where: { id },
       data: result.data,
-      select: {
-        id: true,
-        name: true,
-        agentApiUrl: true,
-        langfusePublicKey: true,
-        systemPrompt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: CONFIG_SELECT,
     });
   }
 

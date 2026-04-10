@@ -1,35 +1,22 @@
 /**
  * AgentTestScoringService
  *
- * Scores an agent's response against the test case rubric using Claude.
+ * Scores an agent's response against the test case rubric using the configured
+ * AI provider (Anthropic or Google AI Studio).
  *
  * Each rubric is a pipe-separated list of pass/fail criteria, e.g.:
  *   "Calls get_order_status tool|Returns order details|Does not hallucinate status"
  *
- * For each criterion Claude returns:
+ * For each criterion the model returns:
  *   { criterion: string, pass: boolean, reason: string }
  *
  * The service also incorporates the Langfuse trace (tool calls, model usage,
  * latency) so the scorer can evaluate tool-use criteria accurately.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { callAi, type AiProvider } from "@/lib/ai-provider";
 import { InternalServerException } from "@/backend/utils/exceptions";
 import type { LangfuseTrace } from "./langfuse.service";
-
-let _anthropic: Anthropic | null = null;
-function getAnthropicClient(): Anthropic {
-  if (!_anthropic) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      throw new InternalServerException(
-        "ANTHROPIC_API_KEY environment variable is not set",
-      );
-    }
-    _anthropic = new Anthropic({ apiKey });
-  }
-  return _anthropic;
-}
 
 export interface RubricScore {
   criterion: string;
@@ -47,14 +34,18 @@ export class AgentTestScoringService {
   /**
    * Score a single test result against its rubric.
    *
-   * @param rubric       Pipe-separated criteria string from AgentTestCase
+   * @param rubric        Pipe-separated criteria string from AgentTestCase
    * @param agentResponse Raw response body from the agent API call
-   * @param trace        Langfuse trace (may be null if fetch failed)
+   * @param trace         Langfuse trace (may be null if fetch failed)
+   * @param provider      AI provider to use for scoring (default: anthropic)
+   * @param apiKey        API key for the provider
    */
   async score(
     rubric: string,
     agentResponse: string,
     trace: LangfuseTrace | null,
+    provider: AiProvider = "anthropic",
+    apiKey?: string,
   ): Promise<ScoringResult> {
     const criteria = rubric
       .split("|")
@@ -63,6 +54,17 @@ export class AgentTestScoringService {
 
     if (criteria.length === 0) {
       return { scores: [], passCount: 0, failCount: 0 };
+    }
+
+    const resolvedApiKey =
+      apiKey ?? (provider === "anthropic" ? process.env.ANTHROPIC_API_KEY : "");
+
+    if (!resolvedApiKey) {
+      throw new InternalServerException(
+        provider === "google"
+          ? "Google AI API key is not configured for this agent test config."
+          : "ANTHROPIC_API_KEY environment variable is not set",
+      );
     }
 
     const traceSection = trace
@@ -95,15 +97,14 @@ ${criteria.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
 Evaluate each criterion and return the JSON array.`;
 
-    const message = await getAnthropicClient().messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
+    const rawText = await callAi({
+      provider,
+      apiKey: resolvedApiKey,
+      purpose: "scoring",
       system: systemPrompt,
       messages: [{ role: "user", content: userMessage }],
+      maxTokens: 1024,
     });
-
-    const rawText =
-      message.content[0]?.type === "text" ? message.content[0].text : "[]";
 
     const scores = this._parseScores(rawText, criteria);
     const passCount = scores.filter((s) => s.pass).length;
@@ -176,12 +177,12 @@ Evaluate each criterion and return the JSON array.`;
   }
 
   /**
-   * Parse Claude's JSON response into RubricScore[].
+   * Parse the model's JSON response into RubricScore[].
    * Falls back gracefully if the response is malformed.
    */
   private _parseScores(raw: string, criteria: string[]): RubricScore[] {
     try {
-      // Extract JSON array even if Claude wraps it in markdown fences
+      // Extract JSON array even if the model wraps it in markdown fences
       const match = raw.match(/\[[\s\S]*\]/);
       if (!match) throw new Error("No JSON array found");
 

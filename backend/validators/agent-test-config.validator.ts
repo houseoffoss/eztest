@@ -16,6 +16,8 @@ export const createAgentTestConfigSchema = z.object({
     .min(1, "Langfuse secret key is required")
     .trim(),
   systemPrompt: z.string().min(1, "System prompt is required"),
+  aiProvider: z.enum(["anthropic", "google"]).default("anthropic"),
+  aiApiKey: z.string().min(1, "AI API key is required").trim(),
 });
 
 export const updateAgentTestConfigSchema =

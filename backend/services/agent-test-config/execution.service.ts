@@ -84,6 +84,8 @@ export class AgentTestExecutionService {
         langfusePublicKey: true,
         langfuseSecretKey: true,
         apiContract: true,
+        aiProvider: true,
+        aiApiKey: true,
       },
     });
 
@@ -178,6 +180,8 @@ export class AgentTestExecutionService {
       testCases,
       resultData,
       resultIdMap,
+      (config.aiProvider ?? "anthropic") as "anthropic" | "google",
+      config.aiApiKey ?? undefined,
     ).catch((err) =>
       console.error("[AgentTestExecution] background execution failed:", err),
     );
@@ -212,6 +216,8 @@ export class AgentTestExecutionService {
     testCases: { id: string; input: string; rubric: string }[],
     resultData: { runId: string; testCaseId: string; sessionId: string }[],
     resultIdMap: Map<string, string>,
+    aiProvider: "anthropic" | "google" = "anthropic",
+    aiApiKey?: string,
   ): Promise<void> {
     const sessionMap = new Map(
       resultData.map((r) => [r.testCaseId, r.sessionId]),
@@ -360,6 +366,8 @@ export class AgentTestExecutionService {
             tc.rubric,
             agentResponse,
             trace,
+            aiProvider,
+            aiApiKey,
           );
           rubricScores = JSON.stringify(result.scores);
           passCount = result.passCount;
@@ -421,7 +429,12 @@ export class AgentTestExecutionService {
         run: {
           include: {
             config: {
-              select: { langfusePublicKey: true, langfuseSecretKey: true },
+              select: {
+                langfusePublicKey: true,
+                langfuseSecretKey: true,
+                aiProvider: true,
+                aiApiKey: true,
+              },
             },
           },
         },
@@ -432,7 +445,8 @@ export class AgentTestExecutionService {
       throw new NotFoundException("Test result not found");
     }
 
-    const { langfusePublicKey, langfuseSecretKey } = result.run.config;
+    const { langfusePublicKey, langfuseSecretKey, aiProvider, aiApiKey } =
+      result.run.config;
 
     // Re-fetch trace
     let trace: LangfuseTrace | null = null;
@@ -474,6 +488,8 @@ export class AgentTestExecutionService {
           result.testCase.rubric,
           result.agentResponse,
           trace,
+          (aiProvider ?? "anthropic") as "anthropic" | "google",
+          aiApiKey ?? undefined,
         );
         rubricScores = JSON.stringify(scoring.scores);
         passCount = scoring.passCount;

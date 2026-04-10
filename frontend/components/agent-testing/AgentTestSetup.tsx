@@ -18,6 +18,7 @@ import {
   Bot,
   Plus,
   Trash2,
+  Pencil,
   ExternalLink,
   ChevronRight,
   Sparkles,
@@ -31,12 +32,15 @@ import {
   Loader2,
 } from "lucide-react";
 
+type AiProvider = "anthropic" | "google";
+
 interface AgentTestConfig {
   id: string;
   name: string;
   agentApiUrl: string;
   langfusePublicKey: string;
   systemPrompt: string;
+  aiProvider: AiProvider;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,6 +92,8 @@ interface SetupFormData {
   langfusePublicKey: string;
   langfuseSecretKey: string;
   systemPrompt: string;
+  aiProvider: AiProvider;
+  aiApiKey: string;
 }
 
 const emptyForm: SetupFormData = {
@@ -96,6 +102,8 @@ const emptyForm: SetupFormData = {
   langfusePublicKey: "",
   langfuseSecretKey: "",
   systemPrompt: "",
+  aiProvider: "anthropic",
+  aiApiKey: "",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -137,6 +145,14 @@ export default function AgentTestSetup() {
   );
   const [expandedConfig, setExpandedConfig] = useState<string | null>(null);
   const [expandedTestCase, setExpandedTestCase] = useState<string | null>(null);
+
+  // Edit state
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<SetupFormData>(emptyForm);
+  const [editFieldErrors, setEditFieldErrors] = useState<
+    Partial<SetupFormData>
+  >({});
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Test run state
   const [activeRun, setActiveRun] = useState<Record<string, AgentTestRunState>>(
@@ -208,6 +224,7 @@ export default function AgentTestSetup() {
       errors.langfuseSecretKey = "Langfuse secret key is required";
     if (!form.systemPrompt.trim())
       errors.systemPrompt = "System prompt is required";
+    if (!form.aiApiKey.trim()) errors.aiApiKey = "AI API key is required";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -274,6 +291,97 @@ export default function AgentTestSetup() {
         title: "Error",
         message: "Failed to delete configuration.",
       });
+    }
+  };
+
+  const handleStartEdit = (config: AgentTestConfig) => {
+    setEditingConfigId(config.id);
+    setEditForm({
+      name: config.name,
+      agentApiUrl: config.agentApiUrl,
+      langfusePublicKey: config.langfusePublicKey,
+      langfuseSecretKey: "",
+      systemPrompt: config.systemPrompt,
+      aiProvider: config.aiProvider,
+      aiApiKey: "",
+    });
+    setEditFieldErrors({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingConfigId(null);
+    setEditForm(emptyForm);
+    setEditFieldErrors({});
+  };
+
+  const validateEdit = (): boolean => {
+    const errors: Partial<SetupFormData> = {};
+    if (!editForm.name.trim()) errors.name = "Name is required";
+    if (!editForm.agentApiUrl.trim()) {
+      errors.agentApiUrl = "Agent API URL is required";
+    } else {
+      try {
+        new URL(editForm.agentApiUrl);
+      } catch {
+        errors.agentApiUrl = "Must be a valid URL";
+      }
+    }
+    if (!editForm.langfusePublicKey.trim())
+      errors.langfusePublicKey = "Langfuse public key is required";
+    if (!editForm.systemPrompt.trim())
+      errors.systemPrompt = "System prompt is required";
+    setEditFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent, configId: string) => {
+    e.preventDefault();
+    if (!validateEdit()) return;
+
+    setEditSubmitting(true);
+    try {
+      const body: Partial<SetupFormData> = {
+        name: editForm.name,
+        agentApiUrl: editForm.agentApiUrl,
+        langfusePublicKey: editForm.langfusePublicKey,
+        systemPrompt: editForm.systemPrompt,
+        aiProvider: editForm.aiProvider,
+      };
+      // Only send secrets if the user typed a new value
+      if (editForm.langfuseSecretKey.trim())
+        body.langfuseSecretKey = editForm.langfuseSecretKey;
+      if (editForm.aiApiKey.trim()) body.aiApiKey = editForm.aiApiKey;
+
+      const res = await fetch(`/api/agent-test-configs/${configId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update configuration");
+
+      setConfigs((prev) =>
+        prev.map((c) => (c.id === configId ? data.data : c)),
+      );
+      setEditingConfigId(null);
+      setEditForm(emptyForm);
+      setAlert({
+        type: "success",
+        title: "Updated",
+        message: `"${data.data.name}" updated successfully.`,
+      });
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Failed to update configuration.",
+      });
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -537,6 +645,82 @@ export default function AgentTestSetup() {
                     </div>
                   </div>
 
+                  {/* AI Provider */}
+                  <div className="space-y-3">
+                    <Label>
+                      AI Provider for Test Generation &amp; Scoring{" "}
+                      <span className="text-red-400">*</span>
+                    </Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(
+                        [
+                          {
+                            value: "anthropic",
+                            label: "Anthropic",
+                            sublabel: "Claude (Opus / Haiku)",
+                            placeholder: "sk-ant-api03-...",
+                          },
+                          {
+                            value: "google",
+                            label: "Google AI Studio",
+                            sublabel: "Gemini (Pro / Flash)",
+                            placeholder: "AIza...",
+                          },
+                        ] as const
+                      ).map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({ ...f, aiProvider: opt.value }))
+                          }
+                          className={`cursor-pointer text-left px-4 py-3 rounded-lg border transition-colors ${
+                            form.aiProvider === opt.value
+                              ? "border-blue-500/60 bg-blue-500/10 text-white"
+                              : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
+                          }`}
+                        >
+                          <div className="font-medium text-sm">{opt.label}</div>
+                          <div className="text-xs mt-0.5 opacity-60">
+                            {opt.sublabel}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI API Key */}
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-api-key">
+                      {form.aiProvider === "google"
+                        ? "Google AI Studio API Key"
+                        : "Anthropic API Key"}{" "}
+                      <span className="text-red-400">*</span>
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      {form.aiProvider === "google"
+                        ? "Your Google AI Studio API key — used to generate test cases and score agent responses with Gemini."
+                        : "Your Anthropic API key — used to generate test cases and score agent responses with Claude."}
+                    </p>
+                    <Input
+                      id="ai-api-key"
+                      type="password"
+                      variant="glass"
+                      value={form.aiApiKey}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, aiApiKey: e.target.value }))
+                      }
+                      placeholder={
+                        form.aiProvider === "google" ? "AIza..." : "sk-ant-..."
+                      }
+                    />
+                    {fieldErrors.aiApiKey && (
+                      <p className="text-xs text-red-400">
+                        {fieldErrors.aiApiKey}
+                      </p>
+                    )}
+                  </div>
+
                   {/* System Prompt / Agent Description */}
                   <div className="space-y-2">
                     <Label htmlFor="system-prompt">
@@ -633,6 +817,7 @@ export default function AgentTestSetup() {
                 const isExpanded = expandedConfig === config.id;
                 const isGenerating = generatingFor === config.id;
                 const isRunning = runningFor === config.id;
+                const isEditing = editingConfigId === config.id;
                 const run = activeRun[config.id] ?? null;
                 const grouped = groupByCategory(cases);
                 const inProgressResult =
@@ -648,6 +833,17 @@ export default function AgentTestSetup() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-white truncate">
                             {config.name}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${
+                              config.aiProvider === "google"
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                : "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                            }`}
+                          >
+                            {config.aiProvider === "google"
+                              ? "Gemini"
+                              : "Claude"}
                           </span>
                           {cases.length > 0 && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -733,6 +929,24 @@ export default function AgentTestSetup() {
                         )}
 
                         <button
+                          onClick={() =>
+                            isEditing
+                              ? handleCancelEdit()
+                              : handleStartEdit(config)
+                          }
+                          className={`cursor-pointer p-2 rounded-lg transition-colors ${
+                            isEditing
+                              ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
+                              : "text-white/30 hover:text-blue-400 hover:bg-blue-500/10"
+                          }`}
+                          title={
+                            isEditing ? "Cancel edit" : "Edit configuration"
+                          }
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+
+                        <button
                           onClick={() => handleDelete(config.id, config.name)}
                           className="cursor-pointer p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                           title="Delete configuration"
@@ -741,6 +955,234 @@ export default function AgentTestSetup() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Inline Edit Form */}
+                    {isEditing && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <form
+                          onSubmit={(e) => handleEditSubmit(e, config.id)}
+                          className="space-y-5"
+                        >
+                          {/* Name */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-name-${config.id}`}>
+                              Configuration Name{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Input
+                              id={`edit-name-${config.id}`}
+                              type="text"
+                              variant="glass"
+                              value={editForm.name}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  name: e.target.value,
+                                }))
+                              }
+                              placeholder="e.g. Customer Support Agent v2"
+                            />
+                            {editFieldErrors.name && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.name}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Agent API URL */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-url-${config.id}`}>
+                              Agent Base URL{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Input
+                              id={`edit-url-${config.id}`}
+                              type="url"
+                              variant="glass"
+                              value={editForm.agentApiUrl}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  agentApiUrl: e.target.value,
+                                }))
+                              }
+                              placeholder="https://your-agent.example.com"
+                            />
+                            {editFieldErrors.agentApiUrl && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.agentApiUrl}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Langfuse Keys */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-lf-pub-${config.id}`}>
+                                Langfuse Public Key{" "}
+                                <span className="text-red-400">*</span>
+                              </Label>
+                              <Input
+                                id={`edit-lf-pub-${config.id}`}
+                                type="text"
+                                variant="glass"
+                                value={editForm.langfusePublicKey}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    langfusePublicKey: e.target.value,
+                                  }))
+                                }
+                                placeholder="pk-lf-..."
+                              />
+                              {editFieldErrors.langfusePublicKey && (
+                                <p className="text-xs text-red-400">
+                                  {editFieldErrors.langfusePublicKey}
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-lf-sec-${config.id}`}>
+                                Langfuse Secret Key
+                              </Label>
+                              <Input
+                                id={`edit-lf-sec-${config.id}`}
+                                type="password"
+                                variant="glass"
+                                value={editForm.langfuseSecretKey}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    langfuseSecretKey: e.target.value,
+                                  }))
+                                }
+                                placeholder="Leave blank to keep existing"
+                              />
+                            </div>
+                          </div>
+
+                          {/* AI Provider */}
+                          <div className="space-y-3">
+                            <Label>
+                              AI Provider for Test Generation &amp; Scoring{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {(
+                                [
+                                  {
+                                    value: "anthropic",
+                                    label: "Anthropic",
+                                    sublabel: "Claude (Opus / Haiku)",
+                                  },
+                                  {
+                                    value: "google",
+                                    label: "Google AI Studio",
+                                    sublabel: "Gemini (Pro / Flash)",
+                                  },
+                                ] as const
+                              ).map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() =>
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      aiProvider: opt.value,
+                                    }))
+                                  }
+                                  className={`cursor-pointer text-left px-4 py-3 rounded-lg border transition-colors ${
+                                    editForm.aiProvider === opt.value
+                                      ? "border-blue-500/60 bg-blue-500/10 text-white"
+                                      : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
+                                  }`}
+                                >
+                                  <div className="font-medium text-sm">
+                                    {opt.label}
+                                  </div>
+                                  <div className="text-xs mt-0.5 opacity-60">
+                                    {opt.sublabel}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* AI API Key */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-ai-key-${config.id}`}>
+                              {editForm.aiProvider === "google"
+                                ? "Google AI Studio API Key"
+                                : "Anthropic API Key"}
+                            </Label>
+                            <Input
+                              id={`edit-ai-key-${config.id}`}
+                              type="password"
+                              variant="glass"
+                              value={editForm.aiApiKey}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  aiApiKey: e.target.value,
+                                }))
+                              }
+                              placeholder="Leave blank to keep existing"
+                            />
+                          </div>
+
+                          {/* System Prompt */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-prompt-${config.id}`}>
+                              Agent Description{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Textarea
+                              id={`edit-prompt-${config.id}`}
+                              variant="glass"
+                              rows={10}
+                              value={editForm.systemPrompt}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  systemPrompt: e.target.value,
+                                }))
+                              }
+                              placeholder="Paste your agent's full description here..."
+                            />
+                            {editFieldErrors.systemPrompt && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.systemPrompt}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex justify-end gap-3 pt-2">
+                            <ButtonPrimary
+                              type="button"
+                              variant="ghost"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </ButtonPrimary>
+                            <ButtonPrimary
+                              type="submit"
+                              disabled={editSubmitting}
+                              buttonName="Agent Test Setup - Save Edit"
+                            >
+                              {editSubmitting ? (
+                                <>
+                                  <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                "Save Changes"
+                              )}
+                            </ButtonPrimary>
+                          </div>
+                        </form>
+                      </div>
+                    )}
 
                     {/* Run Progress + Results Panel */}
                     {run && (
