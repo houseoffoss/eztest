@@ -59,6 +59,34 @@ export class AgentTestConfigController {
     return { data: testCases };
   }
 
+  async createTestCase(request: CustomRequest, configId: string) {
+    const body = await request.json();
+    const testCase = await agentTestGenerationService.createTestCase(
+      configId,
+      request.userInfo.id,
+      body,
+    );
+    return { data: testCase, statusCode: 201 };
+  }
+
+  async updateTestCase(request: CustomRequest, testCaseId: string) {
+    const body = await request.json();
+    const testCase = await agentTestGenerationService.updateTestCase(
+      testCaseId,
+      request.userInfo.id,
+      body,
+    );
+    return { data: testCase };
+  }
+
+  async deleteTestCase(request: CustomRequest, testCaseId: string) {
+    await agentTestGenerationService.deleteTestCase(
+      testCaseId,
+      request.userInfo.id,
+    );
+    return { message: "Test case deleted successfully" };
+  }
+
   async startRun(request: CustomRequest, id: string) {
     const { summary, executionPromise } =
       await agentTestExecutionService.prepareRun(id, request.userInfo.id);

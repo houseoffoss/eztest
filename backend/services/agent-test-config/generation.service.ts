@@ -224,6 +224,73 @@ export class AgentTestGenerationService {
       orderBy: { generatedAt: "asc" },
     });
   }
+
+  async createTestCase(
+    configId: string,
+    userId: string,
+    data: {
+      category: string;
+      title: string;
+      input: string;
+      rubric: string;
+      expectedBehavior: string;
+    },
+  ) {
+    const config = await prisma.agentTestConfig.findFirst({
+      where: { id: configId, createdById: userId },
+      select: { id: true },
+    });
+    if (!config) throw new NotFoundException("Agent test configuration not found");
+
+    return prisma.agentTestCase.create({
+      data: {
+        configId,
+        category: data.category,
+        title: data.title,
+        input: data.input,
+        rubric: data.rubric,
+        expectedBehavior: data.expectedBehavior,
+      },
+    });
+  }
+
+  async updateTestCase(
+    testCaseId: string,
+    userId: string,
+    data: Partial<{
+      category: string;
+      title: string;
+      input: string;
+      rubric: string;
+      expectedBehavior: string;
+    }>,
+  ) {
+    // Verify the test case belongs to a config owned by this user
+    const testCase = await prisma.agentTestCase.findFirst({
+      where: { id: testCaseId },
+      include: { config: { select: { createdById: true } } },
+    });
+    if (!testCase || testCase.config.createdById !== userId) {
+      throw new NotFoundException("Test case not found");
+    }
+
+    return prisma.agentTestCase.update({
+      where: { id: testCaseId },
+      data,
+    });
+  }
+
+  async deleteTestCase(testCaseId: string, userId: string) {
+    const testCase = await prisma.agentTestCase.findFirst({
+      where: { id: testCaseId },
+      include: { config: { select: { createdById: true } } },
+    });
+    if (!testCase || testCase.config.createdById !== userId) {
+      throw new NotFoundException("Test case not found");
+    }
+
+    await prisma.agentTestCase.delete({ where: { id: testCaseId } });
+  }
 }
 
 export const agentTestGenerationService = new AgentTestGenerationService();

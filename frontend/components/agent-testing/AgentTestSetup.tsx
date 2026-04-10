@@ -149,8 +149,7 @@ export default function AgentTestSetup() {
   const [testCases, setTestCases] = useState<Record<string, AgentTestCase[]>>(
     {},
   );
-  const [expandedConfig, setExpandedConfig] = useState<string | null>(null);
-  const [expandedTestCase, setExpandedTestCase] = useState<string | null>(null);
+  const [regenConfirmId, setRegenConfirmId] = useState<string | null>(null);
 
   // Custom model input state (for create/edit forms)
   const [customModel, setCustomModel] = useState("");
@@ -189,7 +188,29 @@ export default function AgentTestSetup() {
       const res = await fetch("/api/agent-test-configs");
       if (!res.ok) throw new Error("Failed to load configurations");
       const data = await res.json();
-      setConfigs(data?.data ?? []);
+      const loadedConfigs: AgentTestConfig[] = data?.data ?? [];
+      setConfigs(loadedConfigs);
+
+      // Eagerly load test cases for all configs so they survive page refresh
+      if (loadedConfigs.length > 0) {
+        const caseResults = await Promise.allSettled(
+          loadedConfigs.map((c) =>
+            fetch(`/api/agent-test-configs/${c.id}/generate-tests`).then(
+              (r) => (r.ok ? r.json() : null),
+            ),
+          ),
+        );
+        const caseMap: Record<string, AgentTestCase[]> = {};
+        caseResults.forEach((result, idx) => {
+          if (
+            result.status === "fulfilled" &&
+            result.value?.data?.length
+          ) {
+            caseMap[loadedConfigs[idx].id] = result.value.data;
+          }
+        });
+        setTestCases(caseMap);
+      }
     } catch {
       setAlert({
         type: "error",
@@ -201,20 +222,6 @@ export default function AgentTestSetup() {
     }
   };
 
-  const fetchTestCases = async (configId: string) => {
-    try {
-      const res = await fetch(
-        `/api/agent-test-configs/${configId}/generate-tests`,
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data?.data?.length) {
-        setTestCases((prev) => ({ ...prev, [configId]: data.data }));
-      }
-    } catch {
-      // silently ignore — no prior test cases is fine
-    }
-  };
 
   const validate = (): boolean => {
     const errors: Partial<SetupFormData> = {};
@@ -291,7 +298,6 @@ export default function AgentTestSetup() {
         delete next[id];
         return next;
       });
-      if (expandedConfig === id) setExpandedConfig(null);
       setAlert({
         type: "success",
         title: "Deleted",
@@ -428,7 +434,6 @@ export default function AgentTestSetup() {
         throw new Error(data.message || "Failed to generate test cases");
 
       setTestCases((prev) => ({ ...prev, [config.id]: data.data }));
-      setExpandedConfig(config.id);
       setAlert({
         type: "success",
         title: "Generated",
@@ -443,17 +448,6 @@ export default function AgentTestSetup() {
       });
     } finally {
       setGeneratingFor(null);
-    }
-  };
-
-  const handleToggleExpand = async (configId: string) => {
-    if (expandedConfig === configId) {
-      setExpandedConfig(null);
-      return;
-    }
-    setExpandedConfig(configId);
-    if (!testCases[configId]) {
-      await fetchTestCases(configId);
     }
   };
 
@@ -508,18 +502,6 @@ export default function AgentTestSetup() {
     }
   };
 
-  // Group test cases by category
-  const groupByCategory = (cases: AgentTestCase[]) => {
-    return cases.reduce(
-      (acc, tc) => {
-        if (!acc[tc.category]) acc[tc.category] = [];
-        acc[tc.category].push(tc);
-        return acc;
-      },
-      {} as Record<string, AgentTestCase[]>,
-    );
-  };
-
   const navbarActions = [
     {
       type: "action" as const,
@@ -537,6 +519,51 @@ export default function AgentTestSetup() {
 
   return (
     <div className="flex-1">
+      {/* Re-generate confirmation modal */}
+      {regenConfirmId && (() => {
+        const regenConfig = configs.find((c) => c.id === regenConfirmId);
+        const count = testCases[regenConfirmId]?.length ?? 0;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-[#0f0f12] border border-white/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-yellow-500/10 shrink-0">
+                  <Sparkles className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <p className="font-medium text-white">Re-generate Test Cases?</p>
+                  <p className="text-sm text-white/50 mt-1">
+                    This will permanently delete all {count} existing test cases
+                    for <span className="text-white/80">{regenConfig?.name}</span> and
+                    replace them with newly generated ones.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <ButtonPrimary
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setRegenConfirmId(null)}
+                >
+                  Cancel
+                </ButtonPrimary>
+                <button
+                  onClick={() => {
+                    const cfg = configs.find((c) => c.id === regenConfirmId);
+                    setRegenConfirmId(null);
+                    if (cfg) handleGenerateTests(cfg);
+                  }}
+                  className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Yes, Re-generate
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <Navbar
         brandLabel={null}
         items={[]}
@@ -877,12 +904,10 @@ export default function AgentTestSetup() {
             <div className="space-y-4">
               {configs.map((config) => {
                 const cases = testCases[config.id] ?? [];
-                const isExpanded = expandedConfig === config.id;
                 const isGenerating = generatingFor === config.id;
                 const isRunning = runningFor === config.id;
                 const isEditing = editingConfigId === config.id;
                 const run = activeRun[config.id] ?? null;
-                const grouped = groupByCategory(cases);
                 const inProgressResult =
                   run?.status === "running"
                     ? (run.results.find((r) => r.status === "pending") ?? null)
@@ -932,7 +957,13 @@ export default function AgentTestSetup() {
                       <div className="flex items-center gap-2 shrink-0">
                         {/* Generate Tests Button */}
                         <button
-                          onClick={() => handleGenerateTests(config)}
+                          onClick={() => {
+                            if (cases.length > 0) {
+                              setRegenConfirmId(config.id);
+                            } else {
+                              handleGenerateTests(config);
+                            }
+                          }}
                           disabled={isGenerating}
                           className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Generate test cases from system prompt"
@@ -952,45 +983,21 @@ export default function AgentTestSetup() {
                           )}
                         </button>
 
-                        {/* Run Tests Button */}
-                        {cases.length > 0 && (
-                          <button
-                            onClick={() => handleRunTests(config)}
-                            disabled={isRunning || run?.status === "running"}
-                            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Call agent API with each test case"
-                          >
-                            {isRunning || run?.status === "running" ? (
-                              <>
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                                Running...
-                              </>
-                            ) : (
-                              <>
-                                <Play className="w-3 h-3" />
-                                {run?.status === "completed"
-                                  ? "Re-run"
-                                  : "Run Tests"}
-                              </>
-                            )}
-                          </button>
-                        )}
-
-                        {/* Expand/Collapse test cases */}
-                        {cases.length > 0 && (
-                          <button
-                            onClick={() => handleToggleExpand(config.id)}
-                            className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/60 hover:bg-white/10 border border-white/10 transition-colors"
-                            title={isExpanded ? "Hide tests" : "View tests"}
-                          >
-                            <FlaskConical className="w-3 h-3" />
-                            {isExpanded ? (
-                              <ChevronUp className="w-3 h-3" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3" />
-                            )}
-                          </button>
-                        )}
+                        {/* View Test Cases button — navigates to dedicated page */}
+                        <button
+                          onClick={() =>
+                            router.push(
+                              `/agent-testing/configs/${config.id}/test-cases`,
+                            )
+                          }
+                          className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/60 hover:bg-white/10 border border-white/10 transition-colors"
+                          title="View and manage test cases"
+                        >
+                          <FlaskConical className="w-3 h-3" />
+                          {cases.length > 0
+                            ? `${cases.length} Tests`
+                            : "Test Cases"}
+                        </button>
 
                         <button
                           onClick={() =>
@@ -1503,124 +1510,6 @@ export default function AgentTestSetup() {
                       </div>
                     )}
 
-                    {/* Test Cases Panel */}
-                    {isExpanded && cases.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="flex items-center gap-2 mb-4">
-                          <FlaskConical className="w-4 h-4 text-white/40" />
-                          <span className="text-sm font-medium text-white/70">
-                            Generated Test Cases
-                          </span>
-                          <span className="text-xs text-white/30">
-                            ({cases.length} across {Object.keys(grouped).length}{" "}
-                            categories)
-                          </span>
-                        </div>
-
-                        <div className="space-y-4">
-                          {Object.entries(grouped).map(
-                            ([category, categoryCases]) => (
-                              <div key={category}>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span
-                                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[category] ?? "bg-white/5 text-white/50 border-white/10"}`}
-                                  >
-                                    {CATEGORY_LABELS[category] ?? category}
-                                  </span>
-                                  <span className="text-xs text-white/30">
-                                    {categoryCases.length} test
-                                    {categoryCases.length !== 1 ? "s" : ""}
-                                  </span>
-                                </div>
-
-                                <div className="space-y-2 ml-1">
-                                  {categoryCases.map((tc) => {
-                                    const isOpen = expandedTestCase === tc.id;
-                                    return (
-                                      <div
-                                        key={tc.id}
-                                        className="rounded-lg border border-white/8 bg-white/3 overflow-hidden"
-                                      >
-                                        <button
-                                          onClick={() =>
-                                            setExpandedTestCase(
-                                              isOpen ? null : tc.id,
-                                            )
-                                          }
-                                          className="cursor-pointer w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
-                                        >
-                                          <span className="text-sm text-white/80 font-medium">
-                                            {tc.title}
-                                          </span>
-                                          {isOpen ? (
-                                            <ChevronUp className="w-3.5 h-3.5 text-white/30 shrink-0" />
-                                          ) : (
-                                            <ChevronDown className="w-3.5 h-3.5 text-white/30 shrink-0" />
-                                          )}
-                                        </button>
-
-                                        {isOpen && (
-                                          <div className="px-4 pb-4 space-y-3 border-t border-white/8">
-                                            <div className="pt-3">
-                                              <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                                Target URL
-                                              </p>
-                                              <a
-                                                href={config.agentApiUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline font-mono bg-white/5 rounded-md px-3 py-2 w-full truncate cursor-pointer"
-                                              >
-                                                <ExternalLink className="w-3 h-3 shrink-0" />
-                                                {config.agentApiUrl}
-                                              </a>
-                                            </div>
-                                            <div>
-                                              <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                                Input
-                                              </p>
-                                              <p className="text-sm text-white/80 bg-white/5 rounded-md px-3 py-2 font-mono whitespace-pre-wrap">
-                                                {tc.input}
-                                              </p>
-                                            </div>
-                                            <div>
-                                              <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                                Expected Behavior
-                                              </p>
-                                              <p className="text-sm text-white/70">
-                                                {tc.expectedBehavior}
-                                              </p>
-                                            </div>
-                                            <div>
-                                              <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-1">
-                                                Rubric
-                                              </p>
-                                              <ul className="space-y-1">
-                                                {tc.rubric
-                                                  .split("|")
-                                                  .map((criterion, i) => (
-                                                    <li
-                                                      key={i}
-                                                      className="flex items-start gap-2 text-sm text-white/60"
-                                                    >
-                                                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/20 shrink-0" />
-                                                      {criterion.trim()}
-                                                    </li>
-                                                  ))}
-                                              </ul>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </DetailCard>
                 );
               })}
