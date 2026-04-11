@@ -191,25 +191,87 @@ export default function AgentTestSetup() {
       const loadedConfigs: AgentTestConfig[] = data?.data ?? [];
       setConfigs(loadedConfigs);
 
-      // Eagerly load test cases for all configs so they survive page refresh
+      // Eagerly load test cases and latest run state for all configs so they survive page refresh
       if (loadedConfigs.length > 0) {
-        const caseResults = await Promise.allSettled(
-          loadedConfigs.map((c) =>
-            fetch(`/api/agent-test-configs/${c.id}/generate-tests`).then(
-              (r) => (r.ok ? r.json() : null),
+        const [caseResults, runResults] = await Promise.all([
+          Promise.allSettled(
+            loadedConfigs.map((c) =>
+              fetch(`/api/agent-test-configs/${c.id}/generate-tests`).then(
+                (r) => (r.ok ? r.json() : null),
+              ),
             ),
           ),
-        );
+          Promise.allSettled(
+            loadedConfigs.map((c) =>
+              fetch(`/api/agent-test-configs/${c.id}/run-tests`).then((r) =>
+                r.ok ? r.json() : null,
+              ),
+            ),
+          ),
+        ]);
+
         const caseMap: Record<string, AgentTestCase[]> = {};
         caseResults.forEach((result, idx) => {
-          if (
-            result.status === "fulfilled" &&
-            result.value?.data?.length
-          ) {
+          if (result.status === "fulfilled" && result.value?.data?.length) {
             caseMap[loadedConfigs[idx].id] = result.value.data;
           }
         });
         setTestCases(caseMap);
+
+        // Restore the latest run for each config
+        const runStateMap: Record<string, AgentTestRunState> = {};
+        const inProgressConfigs: { configId: string; runId: string }[] = [];
+        await Promise.allSettled(
+          runResults.map(async (result, idx) => {
+            if (result.status !== "fulfilled" || !result.value?.data?.length)
+              return;
+            const latest: { runId: string; status: string } =
+              result.value.data[0];
+            const runRes = await fetch(`/api/agent-test-runs/${latest.runId}`);
+            if (!runRes.ok) return;
+            const runData = await runRes.json();
+            const run: AgentTestRunState = runData.data;
+            runStateMap[loadedConfigs[idx].id] = run;
+            if (run.status === "running" || run.status === "pending") {
+              inProgressConfigs.push({
+                configId: loadedConfigs[idx].id,
+                runId: run.runId,
+              });
+            }
+          }),
+        );
+
+        if (Object.keys(runStateMap).length > 0) {
+          setActiveRun((prev) => ({ ...prev, ...runStateMap }));
+        }
+
+        // Resume polling for any in-progress runs
+        for (const { configId, runId } of inProgressConfigs) {
+          setRunningFor(configId);
+          const resumePoll = async (rId: string, cId: string) => {
+            try {
+              const pollRes = await fetch(`/api/agent-test-runs/${rId}`);
+              if (pollRes.ok) {
+                const pollData = await pollRes.json();
+                const updated: AgentTestRunState = pollData.data;
+                setActiveRun((prev) => ({ ...prev, [cId]: updated }));
+                if (
+                  updated.status === "running" ||
+                  updated.status === "pending"
+                ) {
+                  setTimeout(() => resumePoll(rId, cId), 2000);
+                } else {
+                  setRunningFor((cur) => (cur === cId ? null : cur));
+                }
+                return;
+              }
+            } catch {
+              // network hiccup — retry
+            }
+            setTimeout(() => resumePoll(rId, cId), 3000);
+          };
+          setTimeout(() => resumePoll(runId, configId), 2000);
+        }
       }
     } catch {
       setAlert({
@@ -221,7 +283,6 @@ export default function AgentTestSetup() {
       setLoading(false);
     }
   };
-
 
   const validate = (): boolean => {
     const errors: Partial<SetupFormData> = {};
@@ -520,49 +581,53 @@ export default function AgentTestSetup() {
   return (
     <div className="flex-1">
       {/* Re-generate confirmation modal */}
-      {regenConfirmId && (() => {
-        const regenConfig = configs.find((c) => c.id === regenConfirmId);
-        const count = testCases[regenConfirmId]?.length ?? 0;
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="bg-[#0f0f12] border border-white/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-yellow-500/10 shrink-0">
-                  <Sparkles className="w-5 h-5 text-yellow-400" />
+      {regenConfirmId &&
+        (() => {
+          const regenConfig = configs.find((c) => c.id === regenConfirmId);
+          const count = testCases[regenConfirmId]?.length ?? 0;
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="bg-[#0f0f12] border border-white/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-yellow-500/10 shrink-0">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">
+                      Re-generate Test Cases?
+                    </p>
+                    <p className="text-sm text-white/50 mt-1">
+                      This will permanently delete all {count} existing test
+                      cases for{" "}
+                      <span className="text-white/80">{regenConfig?.name}</span>{" "}
+                      and replace them with newly generated ones.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-white">Re-generate Test Cases?</p>
-                  <p className="text-sm text-white/50 mt-1">
-                    This will permanently delete all {count} existing test cases
-                    for <span className="text-white/80">{regenConfig?.name}</span> and
-                    replace them with newly generated ones.
-                  </p>
+                <div className="flex justify-end gap-3">
+                  <ButtonPrimary
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setRegenConfirmId(null)}
+                  >
+                    Cancel
+                  </ButtonPrimary>
+                  <button
+                    onClick={() => {
+                      const cfg = configs.find((c) => c.id === regenConfirmId);
+                      setRegenConfirmId(null);
+                      if (cfg) handleGenerateTests(cfg);
+                    }}
+                    className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Yes, Re-generate
+                  </button>
                 </div>
-              </div>
-              <div className="flex justify-end gap-3">
-                <ButtonPrimary
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setRegenConfirmId(null)}
-                >
-                  Cancel
-                </ButtonPrimary>
-                <button
-                  onClick={() => {
-                    const cfg = configs.find((c) => c.id === regenConfirmId);
-                    setRegenConfirmId(null);
-                    if (cfg) handleGenerateTests(cfg);
-                  }}
-                  className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Yes, Re-generate
-                </button>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       <Navbar
         brandLabel={null}
@@ -1509,7 +1574,6 @@ export default function AgentTestSetup() {
                         </div>
                       </div>
                     )}
-
                   </DetailCard>
                 );
               })}

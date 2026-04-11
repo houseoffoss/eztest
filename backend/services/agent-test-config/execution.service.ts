@@ -207,6 +207,9 @@ export class AgentTestExecutionService {
    *
    * For each test case:
    *   Step A — call the agent API, record response + latency
+   *             • On timeout: retry twice (max 3 attempts total)
+   *             • On network fetch failure: increment consecutive-failure counter;
+   *               if counter reaches 3, abort the entire run
    *   Step B — wait 2 s, then fetch Langfuse trace by session_id (with retries)
    *   Step C — score the response + trace against the rubric with Claude
    *   Step D — persist all results, increment completedCases
@@ -229,6 +232,9 @@ export class AgentTestExecutionService {
     );
 
     let completed = 0;
+    /** Tracks consecutive network-level fetch failures (resets on any success). */
+    let consecutiveFetchFailures = 0;
+    const MAX_CONSECUTIVE_FETCH_FAILURES = 3;
 
     for (const tc of testCases) {
       const sessionId = sessionMap.get(tc.id)!;
@@ -283,36 +289,61 @@ export class AgentTestExecutionService {
       // Build headers from extracted contract
       const extraHeaders: Record<string, string> = apiContract?.headers ?? {};
 
-      const t0 = Date.now();
-      try {
-        const response = await fetch(chatUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Session-Id": agentSessionId,
-            ...extraHeaders,
-          },
-          body: JSON.stringify(requestBody),
-          signal: AbortSignal.timeout(90_000),
-        });
+      // Attempt the agent call — retry twice on timeout, abort run on 3+ consecutive fetch failures
+      const MAX_ATTEMPTS = 3;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const t0 = Date.now();
+        try {
+          const response = await fetch(chatUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Session-Id": agentSessionId,
+              ...extraHeaders,
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(90_000),
+          });
 
-        latencyMs = Date.now() - t0;
-        const rawBody = await response.text();
+          latencyMs = Date.now() - t0;
+          const rawBody = await response.text();
 
-        httpStatus = response.status;
-        agentResponse = rawBody.slice(0, 65_535);
-        agentOk = response.ok;
+          httpStatus = response.status;
+          agentResponse = rawBody.slice(0, 65_535);
+          agentOk = response.ok;
 
-        if (!response.ok) {
-          agentError = `Agent returned HTTP ${response.status}`;
+          if (!response.ok) {
+            agentError = `Agent returned HTTP ${response.status}`;
+          }
+
+          // Any HTTP response (even non-2xx) counts as a successful fetch
+          consecutiveFetchFailures = 0;
+          break; // done — no retry needed
+        } catch (err: unknown) {
+          latencyMs = Date.now() - t0;
+          const isTimeout =
+            err instanceof Error &&
+            (err.name === "TimeoutError" || err.name === "AbortError");
+
+          if (isTimeout && attempt < MAX_ATTEMPTS) {
+            // Timeout on first attempt — retry once
+            agentError = null;
+            agentOk = false;
+            continue;
+          }
+
+          agentError =
+            err instanceof Error
+              ? err.message
+              : "Unknown error during agent call";
+          agentError = agentError.slice(0, 1_000);
+
+          if (!isTimeout) {
+            // Network-level failure (fetch failed, DNS, connection refused, etc.)
+            consecutiveFetchFailures += 1;
+          }
+          break;
         }
-      } catch (err: unknown) {
-        latencyMs = Date.now() - t0;
-        agentError =
-          err instanceof Error
-            ? err.message
-            : "Unknown error during agent call";
-        agentError = agentError.slice(0, 1_000);
       }
 
       // Persist agent call result immediately so polling reflects progress
@@ -329,6 +360,21 @@ export class AgentTestExecutionService {
           errorMessage: agentError,
         },
       });
+
+      // If we've hit 3+ consecutive network failures, abort the run
+      if (consecutiveFetchFailures >= MAX_CONSECUTIVE_FETCH_FAILURES) {
+        console.error(
+          `[AgentTestExecution] Run ${runId} aborted: ${consecutiveFetchFailures} consecutive fetch failures.`,
+        );
+        await prisma.agentTestRun.update({
+          where: { id: runId },
+          data: {
+            status: "failed",
+            completedAt: new Date(),
+          },
+        });
+        return;
+      }
 
       // ── Step B: fetch Langfuse trace ──────────────────────────────────────
       let trace: LangfuseTrace | null = null;

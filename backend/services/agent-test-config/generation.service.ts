@@ -52,57 +52,100 @@ const CATEGORY_DESCRIPTIONS: Record<TestCategory, string> = {
 };
 
 function buildGenerationPrompt(agentDescription: string): string {
-  return `You are an expert AI quality assurance engineer. Your task is to analyse an agent description and produce two things: the agent's API contract and a comprehensive test suite.
+  return `You are a senior AI quality assurance engineer specialising in LLM agent evaluation. Your task is to analyse an agent description and produce two things: the agent's API contract and a high-quality, executable test suite.
 
-Here is a full description of the agent — this may include its role, available tools, skills, API endpoints, request/response formats, auth headers, supported models, or any other details provided by the developer:
+Here is the full description of the agent — this may include its role, available tools, skills, API endpoints, request/response formats, auth headers, supported models, or any other details provided by the developer:
 <agent_description>
 ${agentDescription}
 </agent_description>
 
+---
+
 ## Step 1 — Extract the API contract
 
-Read the description carefully and extract ONLY what is explicitly stated. Do not assume or invent values. Extract:
+Read the description carefully and extract ONLY what is explicitly stated. Do NOT assume or invent values.
 
-- \`chatPath\`: the URL path to send chat/query messages to (e.g. "/api/chat", "/v1/ask"). Extract exactly as described.
-- \`sessionStartPath\`: the URL path to start a session before chatting, if mentioned. Set to null if not mentioned.
-- \`requestBody\`: the exact request body shape as a flat key-value object. For the field that carries the user message, use the placeholder \`{{input}}\`. For the session/conversation ID field, use \`{{sessionId}}\`. For any other dynamic value described (e.g. model name, user ID), use the exact value from the description as a string. Only include fields that are explicitly described.
-- \`headers\`: any HTTP headers required (e.g. Authorization, API keys). Use exact values from the description. If no headers are described, return an empty object.
+- \`chatPath\`: URL path to send chat/query messages to (e.g. "/api/chat", "/v1/ask"). Copy exactly as written.
+- \`sessionStartPath\`: URL path to initialise a session before chatting, if mentioned. Set to null if not mentioned.
+- \`requestBody\`: the exact request body shape as a flat key→value object.
+  - Use \`{{input}}\` for the field that carries the user message.
+  - Use \`{{sessionId}}\` for the session/conversation ID field.
+  - Use the literal value from the description for all other fields (model name, user ID, etc.).
+  - Include ONLY fields that are explicitly described.
+- \`headers\`: HTTP headers required (e.g. Authorization, API keys). Use exact values. Return \`{}\` if none are described.
+
+---
 
 ## Step 2 — Extract agent capabilities
 
-Identify:
-- The agent's primary domain and purpose
-- EVERY tool the agent has available (exact names)
-- EVERY skill the agent has available (exact names)
-- Any constraints, refusal policies, or out-of-scope behaviours
+Before writing any test, identify:
+
+1. **Primary domain and purpose** — one sentence describing what this agent does.
+2. **Every tool** the agent can call — list exact names as they appear in the description.
+3. **Every skill** the agent has — list exact names.
+4. **Hard constraints and refusal policies** — topics, actions, or request types the agent must decline.
+5. **Known failure modes** — any fragile behaviours, known edge cases, or caveats mentioned by the developer.
+
+---
 
 ## Step 3 — Generate test cases
 
-Generate test cases for each of the following 7 categories:
-${TEST_CATEGORIES.map((c) => `- ${c}: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
+Generate test cases across the following 7 categories:
+${TEST_CATEGORIES.map((c) => `- **${c}**: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
-### Tool and skill coverage rules (MANDATORY)
-- Every tool and skill MUST appear in at least one test case's rubric criterion using its exact name (e.g. "Calls <tool_name> tool").
-- The \`tool_use\` category must contain one test case per tool/skill, up to a maximum of 5.
-- In the rubric for ANY category, if the correct agent behavior involves calling a specific tool, name that tool explicitly.
+### Category quotas (STRICT)
+- \`tool_use\`: one test case per distinct tool or skill (no cap). Every tool and skill must have its own dedicated test case.
+- All other categories: at least 3 cases each. Generate as many as the agent's complexity justifies — more capabilities, more domain concepts, more constraints = more test cases.
+- **There is no upper limit. Cover the agent thoroughly. Do not stop early.**
 
-### Category quotas
-- \`tool_use\`: exactly max(3, number_of_tools_and_skills) cases, up to a maximum of 5
-- All other categories: exactly 3 cases each
-- Minimum total: 21 test cases
+### Tool and skill coverage (MANDATORY)
+- Every tool and every skill MUST be named explicitly in at least one rubric criterion (e.g. "Calls the \`search_web\` tool").
+- Each \`tool_use\` test case must target a single, distinct tool or skill.
+- In any category, if the correct response requires calling a specific tool, name that tool in the rubric.
+
+### Input quality rules
+- Each \`input\` must be a realistic, natural-language message a real user would send — no meta-commentary, no placeholders.
+- Vary phrasing across test cases. Do not reuse the same sentence structure.
+- For \`multi_turn\` tests, the \`input\` represents the **opening message** of the conversation. In \`expectedBehavior\`, describe the full intended multi-turn flow (e.g. "User asks X → agent clarifies Y → user provides Y → agent returns Z").
+- For \`refusal\` tests, craft inputs that are genuinely boundary-pushing — not obviously off-topic, but close enough to the agent's domain to require a deliberate policy decision.
+- For \`ambiguity\` tests, the input must be underspecified in a way that has multiple plausible interpretations relevant to the agent's domain.
+- For \`regression\` tests, target real failure modes: instruction-following breakdown, hallucination of tool outputs, losing context mid-conversation, ignoring user constraints, over-refusal, etc.
+
+### Rubric quality rules (CRITICAL)
+The rubric is the only mechanism used to score the agent. Vague criteria produce useless scores.
+
+**Each rubric criterion MUST be:**
+- A specific, binary pass/fail statement a third-party evaluator can check from the response text alone.
+- Grounded in the agent's actual output — what it says, what it does NOT say, whether it called a tool, whether it asked a question, etc.
+- Free of subjective language like "appropriate", "good", "correct", or "reasonable".
+
+**Good rubric examples:**
+- "Response contains a numbered step-by-step plan with at least 3 steps"
+- "Calls the \`get_weather\` tool with a city parameter matching the user's request"
+- "Response does not mention or attempt to answer questions about competitor products"
+- "Asks the user at least one clarifying question before providing a recommendation"
+- "Response includes a disclaimer that it cannot access real-time data"
+
+**Bad rubric examples (DO NOT USE):**
+- "Responds correctly" — not verifiable
+- "Provides a helpful answer" — subjective
+- "Handles the request well" — meaningless
+- "Uses the tool appropriately" — does not name the tool or describe what 'appropriate' means
+
+Each test case must have 3–5 rubric criteria separated by " | " (space-pipe-space).
 
 ### Per test case fields
-- category: one of [${TEST_CATEGORIES.join(", ")}]
-- title: short descriptive title (max 80 chars)
-- input: the exact user message to send to the agent — must be compatible with the \`{{input}}\` field in the extracted requestBody
-- expectedBehavior: what the agent should do (1-3 sentences, concrete and observable)
-- rubric: scoring criteria as a pipe-separated list of 3-5 pass/fail criteria
+- \`category\`: one of [${TEST_CATEGORIES.join(", ")}]
+- \`title\`: short, descriptive, and unique — max 80 characters. No generic titles like "Happy path test 1".
+- \`input\`: the exact user message to send — realistic, natural language, no placeholders.
+- \`expectedBehavior\`: 2–4 sentences describing the ideal agent response in observable, concrete terms. State what the agent should say, do, call, or avoid.
+- \`rubric\`: 3–5 specific binary pass/fail criteria separated by " | ".
 
-Make every test case specific to the agent's actual capabilities. Reference real tool names, skill names, and domain concepts from the description. Do not produce generic tests.
+---
 
 ## Output format
 
-Respond with a single JSON object only — no markdown, no explanation. Exact format:
+Respond with a single valid JSON object — no markdown fences, no prose, no explanation. Use this exact structure:
 {
   "apiContract": {
     "chatPath": "...",
@@ -111,9 +154,48 @@ Respond with a single JSON object only — no markdown, no explanation. Exact fo
     "headers": { "HeaderName": "value" }
   },
   "testCases": [
-    {"category":"happy_path","title":"...","input":"...","expectedBehavior":"...","rubric":"..."}
+    {
+      "category": "happy_path",
+      "title": "Descriptive unique title",
+      "input": "Realistic user message here",
+      "expectedBehavior": "The agent should... (2-4 sentences, observable and concrete)",
+      "rubric": "Criterion one | Criterion two | Criterion three"
+    }
   ]
 }`;
+}
+
+/**
+ * Extract the first valid JSON object from a model response string.
+ * Handles markdown code fences, leading/trailing prose, and extra whitespace.
+ */
+function extractJson(raw: string): GenerationResult {
+  // 1. Try direct parse first (model obeyed instructions)
+  const trimmed = raw.trim();
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // fall through
+  }
+
+  // 2. Strip a single markdown code fence wrapping the whole response
+  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenceMatch) {
+    try {
+      return JSON.parse(fenceMatch[1]);
+    } catch {
+      // fall through to brace extraction
+    }
+  }
+
+  // 3. Extract the first {...} block from the response (handles leading prose)
+  const braceStart = trimmed.indexOf("{");
+  const braceEnd = trimmed.lastIndexOf("}");
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    return JSON.parse(trimmed.slice(braceStart, braceEnd + 1));
+  }
+
+  throw new Error("No JSON object found in response");
 }
 
 export class AgentTestGenerationService {
@@ -151,6 +233,7 @@ export class AgentTestGenerationService {
       apiKey,
       purpose: "generation",
       model,
+      maxTokens: 16000,
       messages: [
         {
           role: "user",
@@ -161,13 +244,13 @@ export class AgentTestGenerationService {
 
     let parsed: GenerationResult;
     try {
-      // Strip markdown code fences if the model wraps response despite instructions
-      const raw = rawText
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/, "")
-        .trim();
-      parsed = JSON.parse(raw);
-    } catch {
+      parsed = extractJson(rawText);
+    } catch (parseErr) {
+      console.error(
+        "[generation] JSON parse failed. Raw AI response (first 2000 chars):\n",
+        rawText?.slice(0, 2000),
+      );
+      console.error("[generation] Parse error:", parseErr);
       throw new InternalServerException(
         "Failed to parse generation response from AI provider",
       );
@@ -240,7 +323,8 @@ export class AgentTestGenerationService {
       where: { id: configId, createdById: userId },
       select: { id: true },
     });
-    if (!config) throw new NotFoundException("Agent test configuration not found");
+    if (!config)
+      throw new NotFoundException("Agent test configuration not found");
 
     return prisma.agentTestCase.create({
       data: {

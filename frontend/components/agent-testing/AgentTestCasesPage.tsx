@@ -138,12 +138,36 @@ export default function AgentTestCasesPage({ configId }: Props) {
     }
   }, [status, configId]);
 
+  const poll = (runId: string) => {
+    const doPoll = async () => {
+      try {
+        const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
+        if (pollRes.ok) {
+          const pollData = await pollRes.json();
+          const updated: AgentTestRunSummary = pollData.data;
+          setActiveRun(updated);
+          if (updated.status === "running" || updated.status === "pending") {
+            setTimeout(doPoll, 2000);
+          } else {
+            setRunning(false);
+          }
+          return;
+        }
+      } catch {
+        // network hiccup — retry
+      }
+      setTimeout(doPoll, 3000);
+    };
+    setTimeout(doPoll, 2000);
+  };
+
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [configRes, casesRes] = await Promise.all([
+      const [configRes, casesRes, runsRes] = await Promise.all([
         fetch(`/api/agent-test-configs/${configId}`),
         fetch(`/api/agent-test-configs/${configId}/generate-tests`),
+        fetch(`/api/agent-test-configs/${configId}/run-tests`),
       ]);
       if (!configRes.ok) throw new Error("Config not found");
       const configData = await configRes.json();
@@ -151,6 +175,24 @@ export default function AgentTestCasesPage({ configId }: Props) {
       if (casesRes.ok) {
         const casesData = await casesRes.json();
         setTestCases(casesData.data ?? []);
+      }
+      // Restore the latest run state so a page refresh doesn't lose partial results
+      if (runsRes.ok) {
+        const runsData = await runsRes.json();
+        const runs: { runId: string; status: string }[] = runsData.data ?? [];
+        const latest = runs[0];
+        if (latest) {
+          const runRes = await fetch(`/api/agent-test-runs/${latest.runId}`);
+          if (runRes.ok) {
+            const runData = await runRes.json();
+            const run: AgentTestRunSummary = runData.data;
+            setActiveRun(run);
+            if (run.status === "running" || run.status === "pending") {
+              setRunning(true);
+              poll(run.runId);
+            }
+          }
+        }
       }
     } catch {
       setAlert({
@@ -195,7 +237,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
         },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create test case");
+      if (!res.ok)
+        throw new Error(data.message || "Failed to create test case");
       setTestCases((prev) => [...prev, data.data]);
       setAddForm(emptyForm);
       setAddErrors({});
@@ -209,7 +252,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
       setAlert({
         type: "error",
         title: "Error",
-        message: err instanceof Error ? err.message : "Failed to create test case.",
+        message:
+          err instanceof Error ? err.message : "Failed to create test case.",
       });
     } finally {
       setAddSubmitting(false);
@@ -246,7 +290,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
         body: JSON.stringify(editForm),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update test case");
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update test case");
       setTestCases((prev) =>
         prev.map((tc) => (tc.id === tcId ? data.data : tc)),
       );
@@ -260,7 +305,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
       setAlert({
         type: "error",
         title: "Error",
-        message: err instanceof Error ? err.message : "Failed to update test case.",
+        message:
+          err instanceof Error ? err.message : "Failed to update test case.",
       });
     } finally {
       setEditSubmitting(false);
@@ -317,7 +363,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
       setAlert({
         type: "error",
         title: "Generation Failed",
-        message: err instanceof Error ? err.message : "Failed to generate test cases.",
+        message:
+          err instanceof Error ? err.message : "Failed to generate test cases.",
       });
     } finally {
       setGenerating(false);
@@ -329,38 +376,17 @@ export default function AgentTestCasesPage({ configId }: Props) {
   const handleRunTests = async () => {
     setRunning(true);
     try {
-      const res = await fetch(
-        `/api/agent-test-configs/${configId}/run-tests`,
-        { method: "POST" },
-      );
+      const res = await fetch(`/api/agent-test-configs/${configId}/run-tests`, {
+        method: "POST",
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to start test run");
 
       const run: AgentTestRunSummary = data.data;
       setActiveRun(run);
 
-      const poll = async (runId: string) => {
-        try {
-          const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
-          if (pollRes.ok) {
-            const pollData = await pollRes.json();
-            const updated: AgentTestRunSummary = pollData.data;
-            setActiveRun(updated);
-            if (updated.status === "running" || updated.status === "pending") {
-              setTimeout(() => poll(runId), 2000);
-            } else {
-              setRunning(false);
-            }
-            return;
-          }
-        } catch {
-          // network hiccup — retry
-        }
-        setTimeout(() => poll(runId), 3000);
-      };
-
       if (run.status === "running" || run.status === "pending") {
-        setTimeout(() => poll(run.runId), 2500);
+        poll(run.runId);
       } else {
         setRunning(false);
       }
@@ -369,7 +395,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
       setAlert({
         type: "error",
         title: "Run Failed",
-        message: err instanceof Error ? err.message : "Failed to start test run.",
+        message:
+          err instanceof Error ? err.message : "Failed to start test run.",
       });
     }
   };
@@ -394,9 +421,7 @@ export default function AgentTestCasesPage({ configId }: Props) {
       ? (activeRun.results.find((r) => r.status === "pending") ?? null)
       : null;
 
-  const navbarActions = [
-    { type: "signout" as const, showConfirmation: true },
-  ];
+  const navbarActions = [{ type: "signout" as const, showConfirmation: true }];
 
   if (status === "loading" || loading) {
     return <Loader fullScreen text="Loading test cases..." />;
@@ -448,7 +473,9 @@ export default function AgentTestCasesPage({ configId }: Props) {
                 <AlertTriangle className="w-5 h-5 text-yellow-400" />
               </div>
               <div>
-                <p className="font-medium text-white">Re-generate Test Cases?</p>
+                <p className="font-medium text-white">
+                  Re-generate Test Cases?
+                </p>
                 <p className="text-sm text-white/50 mt-1">
                   This will permanently delete all {testCases.length} existing
                   test cases and replace them with newly generated ones.
@@ -576,7 +603,9 @@ export default function AgentTestCasesPage({ configId }: Props) {
                     ) : (
                       <>
                         <Play className="w-3 h-3" />
-                        {activeRun?.status === "completed" ? "Re-run" : "Run Tests"}
+                        {activeRun?.status === "completed"
+                          ? "Re-run"
+                          : "Run Tests"}
                       </>
                     )}
                   </button>
@@ -688,7 +717,10 @@ export default function AgentTestCasesPage({ configId }: Props) {
           {/* Add form */}
           {showAddForm && (
             <div className="mb-6">
-              <DetailCard title="Add Test Case Manually" contentClassName="space-y-4">
+              <DetailCard
+                title="Add Test Case Manually"
+                contentClassName="space-y-4"
+              >
                 <form onSubmit={handleAddSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Category */}
@@ -731,7 +763,9 @@ export default function AgentTestCasesPage({ configId }: Props) {
                         placeholder="Short descriptive title"
                       />
                       {addErrors.title && (
-                        <p className="text-xs text-red-400">{addErrors.title}</p>
+                        <p className="text-xs text-red-400">
+                          {addErrors.title}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -792,7 +826,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
                     <p className="text-xs text-white/40">
                       Pipe-separated pass/fail criteria, e.g.{" "}
                       <span className="font-mono text-white/50">
-                        Mentions refund window | Does not hallucinate | Offers next steps
+                        Mentions refund window | Does not hallucinate | Offers
+                        next steps
                       </span>
                     </p>
                     <Textarea
@@ -883,8 +918,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
                 <div>
                   <p className="font-medium text-white/70">No test cases yet</p>
                   <p className="text-sm text-white/40 mt-1">
-                    Generate test cases automatically from your agent description,
-                    or add them manually.
+                    Generate test cases automatically from your agent
+                    description, or add them manually.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 mt-2">
@@ -947,7 +982,9 @@ export default function AgentTestCasesPage({ configId }: Props) {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor={`edit-cat-${tc.id}`}>Category</Label>
+                            <Label htmlFor={`edit-cat-${tc.id}`}>
+                              Category
+                            </Label>
                             <div className="relative">
                               <select
                                 id={`edit-cat-${tc.id}`}
