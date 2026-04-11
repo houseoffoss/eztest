@@ -1,11 +1,12 @@
 /**
  * Validators Index
- * 
+ *
  * Central export file for all validators
  */
 
-export * from './project.validator';
-export * from './testcase.validator';
-export * from './module.validator';
-export * from './testrun.validator';
-export * from './attachment.validator';
+export * from "./project.validator";
+export * from "./testcase.validator";
+export * from "./module.validator";
+export * from "./testrun.validator";
+export * from "./attachment.validator";
+export * from "./agent-test-config.validator";

@@ -1,0 +1,1588 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Navbar } from "@/frontend/reusable-components/layout/Navbar";
+import {
+  FloatingAlert,
+  type FloatingAlertMessage,
+} from "@/frontend/reusable-components/alerts/FloatingAlert";
+import { Loader } from "@/frontend/reusable-elements/loaders/Loader";
+import { DetailCard } from "@/frontend/reusable-components/cards/DetailCard";
+import { Input } from "@/frontend/reusable-elements/inputs/Input";
+import { Textarea } from "@/frontend/reusable-elements/textareas/Textarea";
+import { Label } from "@/frontend/reusable-elements/labels/Label";
+import { ButtonPrimary } from "@/frontend/reusable-elements/buttons/ButtonPrimary";
+import {
+  Bot,
+  Plus,
+  Trash2,
+  Pencil,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Play,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import { ANTHROPIC_MODELS, GOOGLE_MODELS } from "@/lib/ai-provider";
+
+type AiProvider = "anthropic" | "google";
+
+interface AgentTestConfig {
+  id: string;
+  name: string;
+  agentApiUrl: string;
+  langfusePublicKey: string;
+  systemPrompt: string;
+  aiProvider: AiProvider;
+  aiModel: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AgentTestCase {
+  id: string;
+  configId: string;
+  category: string;
+  title: string;
+  input: string;
+  rubric: string;
+  expectedBehavior: string;
+  generatedAt: string;
+}
+
+interface AgentTestResultSummary {
+  id: string;
+  testCaseId: string;
+  sessionId: string;
+  status: "pending" | "success" | "error";
+  requestPayload: string | null;
+  agentResponse: string | null;
+  httpStatus: number | null;
+  latencyMs: number | null;
+  errorMessage: string | null;
+  executedAt: string;
+  testCase: {
+    title: string;
+    category: string;
+    input: string;
+    expectedBehavior: string;
+    rubric: string;
+  };
+}
+
+interface AgentTestRunState {
+  runId: string;
+  status: "pending" | "running" | "completed" | "failed";
+  totalCases: number;
+  completedCases: number;
+  startedAt: string;
+  completedAt: string | null;
+  results: AgentTestResultSummary[];
+}
+
+interface SetupFormData {
+  name: string;
+  agentApiUrl: string;
+  langfusePublicKey: string;
+  langfuseSecretKey: string;
+  systemPrompt: string;
+  aiProvider: AiProvider;
+  aiModel: string;
+  aiApiKey: string;
+}
+
+const CUSTOM_MODEL_VALUE = "__custom__";
+
+const emptyForm: SetupFormData = {
+  name: "",
+  agentApiUrl: "",
+  langfusePublicKey: "",
+  langfuseSecretKey: "",
+  systemPrompt: "",
+  aiProvider: "anthropic",
+  aiModel: ANTHROPIC_MODELS[0].value,
+  aiApiKey: "",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  happy_path: "Happy Path",
+  edge_case: "Edge Case",
+  tool_use: "Tool Use",
+  refusal: "Refusal",
+  ambiguity: "Ambiguity",
+  multi_turn: "Multi-Turn",
+  regression: "Regression",
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  happy_path: "bg-green-500/10 text-green-400 border-green-500/20",
+  edge_case: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  tool_use: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  refusal: "bg-red-500/10 text-red-400 border-red-500/20",
+  ambiguity: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  multi_turn: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  regression: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+};
+
+export default function AgentTestSetup() {
+  const router = useRouter();
+  const { status } = useSession();
+
+  const [configs, setConfigs] = useState<AgentTestConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<SetupFormData>(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Partial<SetupFormData>>({});
+  const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+
+  // Test case generation state
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [testCases, setTestCases] = useState<Record<string, AgentTestCase[]>>(
+    {},
+  );
+  const [regenConfirmId, setRegenConfirmId] = useState<string | null>(null);
+
+  // Custom model input state (for create/edit forms)
+  const [customModel, setCustomModel] = useState("");
+  const [editCustomModel, setEditCustomModel] = useState("");
+
+  // Edit state
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<SetupFormData>(emptyForm);
+  const [editFieldErrors, setEditFieldErrors] = useState<
+    Partial<SetupFormData>
+  >({});
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  // Test run state
+  const [activeRun, setActiveRun] = useState<Record<string, AgentTestRunState>>(
+    {},
+  );
+  const [runningFor, setRunningFor] = useState<string | null>(null);
+  const [expandedResult, setExpandedResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchConfigs();
+    }
+  }, [status]);
+
+  const fetchConfigs = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/agent-test-configs");
+      if (!res.ok) throw new Error("Failed to load configurations");
+      const data = await res.json();
+      const loadedConfigs: AgentTestConfig[] = data?.data ?? [];
+      setConfigs(loadedConfigs);
+
+      // Eagerly load test cases and latest run state for all configs so they survive page refresh
+      if (loadedConfigs.length > 0) {
+        const [caseResults, runResults] = await Promise.all([
+          Promise.allSettled(
+            loadedConfigs.map((c) =>
+              fetch(`/api/agent-test-configs/${c.id}/generate-tests`).then(
+                (r) => (r.ok ? r.json() : null),
+              ),
+            ),
+          ),
+          Promise.allSettled(
+            loadedConfigs.map((c) =>
+              fetch(`/api/agent-test-configs/${c.id}/run-tests`).then((r) =>
+                r.ok ? r.json() : null,
+              ),
+            ),
+          ),
+        ]);
+
+        const caseMap: Record<string, AgentTestCase[]> = {};
+        caseResults.forEach((result, idx) => {
+          if (result.status === "fulfilled" && result.value?.data?.length) {
+            caseMap[loadedConfigs[idx].id] = result.value.data;
+          }
+        });
+        setTestCases(caseMap);
+
+        // Restore the latest run for each config
+        const runStateMap: Record<string, AgentTestRunState> = {};
+        const inProgressConfigs: { configId: string; runId: string }[] = [];
+        await Promise.allSettled(
+          runResults.map(async (result, idx) => {
+            if (result.status !== "fulfilled" || !result.value?.data?.length)
+              return;
+            const latest: { runId: string; status: string } =
+              result.value.data[0];
+            const runRes = await fetch(`/api/agent-test-runs/${latest.runId}`);
+            if (!runRes.ok) return;
+            const runData = await runRes.json();
+            const run: AgentTestRunState = runData.data;
+            runStateMap[loadedConfigs[idx].id] = run;
+            if (run.status === "running" || run.status === "pending") {
+              inProgressConfigs.push({
+                configId: loadedConfigs[idx].id,
+                runId: run.runId,
+              });
+            }
+          }),
+        );
+
+        if (Object.keys(runStateMap).length > 0) {
+          setActiveRun((prev) => ({ ...prev, ...runStateMap }));
+        }
+
+        // Resume polling for any in-progress runs
+        for (const { configId, runId } of inProgressConfigs) {
+          setRunningFor(configId);
+          const resumePoll = async (rId: string, cId: string) => {
+            try {
+              const pollRes = await fetch(`/api/agent-test-runs/${rId}`);
+              if (pollRes.ok) {
+                const pollData = await pollRes.json();
+                const updated: AgentTestRunState = pollData.data;
+                setActiveRun((prev) => ({ ...prev, [cId]: updated }));
+                if (
+                  updated.status === "running" ||
+                  updated.status === "pending"
+                ) {
+                  setTimeout(() => resumePoll(rId, cId), 2000);
+                } else {
+                  setRunningFor((cur) => (cur === cId ? null : cur));
+                }
+                return;
+              }
+            } catch {
+              // network hiccup — retry
+            }
+            setTimeout(() => resumePoll(rId, cId), 3000);
+          };
+          setTimeout(() => resumePoll(runId, configId), 2000);
+        }
+      }
+    } catch {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message: "Failed to load agent test configurations.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validate = (): boolean => {
+    const errors: Partial<SetupFormData> = {};
+    if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.agentApiUrl.trim()) {
+      errors.agentApiUrl = "Agent API URL is required";
+    } else {
+      try {
+        new URL(form.agentApiUrl);
+      } catch {
+        errors.agentApiUrl = "Must be a valid URL";
+      }
+    }
+    if (!form.langfusePublicKey.trim())
+      errors.langfusePublicKey = "Langfuse public key is required";
+    if (!form.langfuseSecretKey.trim())
+      errors.langfuseSecretKey = "Langfuse secret key is required";
+    if (!form.systemPrompt.trim())
+      errors.systemPrompt = "System prompt is required";
+    if (!form.aiApiKey.trim()) errors.aiApiKey = "AI API key is required";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setSubmitting(true);
+    try {
+      const resolvedModel =
+        form.aiModel === CUSTOM_MODEL_VALUE ? customModel.trim() : form.aiModel;
+      const res = await fetch("/api/agent-test-configs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, aiModel: resolvedModel || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to create configuration");
+
+      setConfigs((prev) => [data.data, ...prev]);
+      setForm(emptyForm);
+      setFieldErrors({});
+      setShowForm(false);
+      setAlert({
+        type: "success",
+        title: "Saved",
+        message: `"${data.data.name}" configuration saved successfully.`,
+      });
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message:
+          err instanceof Error ? err.message : "Failed to save configuration.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete configuration "${name}"? This cannot be undone.`))
+      return;
+    try {
+      const res = await fetch(`/api/agent-test-configs/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete configuration");
+      setConfigs((prev) => prev.filter((c) => c.id !== id));
+      setTestCases((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      setAlert({
+        type: "success",
+        title: "Deleted",
+        message: `"${name}" deleted successfully.`,
+      });
+    } catch {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message: "Failed to delete configuration.",
+      });
+    }
+  };
+
+  const handleStartEdit = (config: AgentTestConfig) => {
+    setEditingConfigId(config.id);
+    const knownModels =
+      config.aiProvider === "anthropic" ? ANTHROPIC_MODELS : GOOGLE_MODELS;
+    const isKnown = knownModels.some((m) => m.value === config.aiModel);
+    const modelValue =
+      config.aiModel == null
+        ? knownModels[0].value
+        : isKnown
+          ? config.aiModel
+          : CUSTOM_MODEL_VALUE;
+    setEditForm({
+      name: config.name,
+      agentApiUrl: config.agentApiUrl,
+      langfusePublicKey: config.langfusePublicKey,
+      langfuseSecretKey: "",
+      systemPrompt: config.systemPrompt,
+      aiProvider: config.aiProvider,
+      aiModel: modelValue,
+      aiApiKey: "",
+    });
+    setEditCustomModel(
+      isKnown || config.aiModel == null ? "" : (config.aiModel ?? ""),
+    );
+    setEditFieldErrors({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingConfigId(null);
+    setEditForm(emptyForm);
+    setEditCustomModel("");
+    setEditFieldErrors({});
+  };
+
+  const validateEdit = (): boolean => {
+    const errors: Partial<SetupFormData> = {};
+    if (!editForm.name.trim()) errors.name = "Name is required";
+    if (!editForm.agentApiUrl.trim()) {
+      errors.agentApiUrl = "Agent API URL is required";
+    } else {
+      try {
+        new URL(editForm.agentApiUrl);
+      } catch {
+        errors.agentApiUrl = "Must be a valid URL";
+      }
+    }
+    if (!editForm.langfusePublicKey.trim())
+      errors.langfusePublicKey = "Langfuse public key is required";
+    if (!editForm.systemPrompt.trim())
+      errors.systemPrompt = "System prompt is required";
+    setEditFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent, configId: string) => {
+    e.preventDefault();
+    if (!validateEdit()) return;
+
+    setEditSubmitting(true);
+    try {
+      const resolvedEditModel =
+        editForm.aiModel === CUSTOM_MODEL_VALUE
+          ? editCustomModel.trim()
+          : editForm.aiModel;
+      const body: Partial<SetupFormData> & { aiModel?: string } = {
+        name: editForm.name,
+        agentApiUrl: editForm.agentApiUrl,
+        langfusePublicKey: editForm.langfusePublicKey,
+        systemPrompt: editForm.systemPrompt,
+        aiProvider: editForm.aiProvider,
+        aiModel: resolvedEditModel || undefined,
+      };
+      // Only send secrets if the user typed a new value
+      if (editForm.langfuseSecretKey.trim())
+        body.langfuseSecretKey = editForm.langfuseSecretKey;
+      if (editForm.aiApiKey.trim()) body.aiApiKey = editForm.aiApiKey;
+
+      const res = await fetch(`/api/agent-test-configs/${configId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update configuration");
+
+      setConfigs((prev) =>
+        prev.map((c) => (c.id === configId ? data.data : c)),
+      );
+      setEditingConfigId(null);
+      setEditForm(emptyForm);
+      setAlert({
+        type: "success",
+        title: "Updated",
+        message: `"${data.data.name}" updated successfully.`,
+      });
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Failed to update configuration.",
+      });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleGenerateTests = async (config: AgentTestConfig) => {
+    setGeneratingFor(config.id);
+    try {
+      const res = await fetch(
+        `/api/agent-test-configs/${config.id}/generate-tests`,
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to generate test cases");
+
+      setTestCases((prev) => ({ ...prev, [config.id]: data.data }));
+      setAlert({
+        type: "success",
+        title: "Generated",
+        message: `${data.data.length} test cases generated for "${config.name}".`,
+      });
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Generation Failed",
+        message:
+          err instanceof Error ? err.message : "Failed to generate test cases.",
+      });
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
+
+  const handleRunTests = async (config: AgentTestConfig) => {
+    setRunningFor(config.id);
+    try {
+      const res = await fetch(
+        `/api/agent-test-configs/${config.id}/run-tests`,
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to start test run");
+
+      const run: AgentTestRunState = data.data;
+      setActiveRun((prev) => ({ ...prev, [config.id]: run }));
+
+      // Poll until completed
+      const poll = async (runId: string, configId: string) => {
+        try {
+          const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
+          if (pollRes.ok) {
+            const pollData = await pollRes.json();
+            const updated: AgentTestRunState = pollData.data;
+            setActiveRun((prev) => ({ ...prev, [configId]: updated }));
+            if (updated.status === "running" || updated.status === "pending") {
+              setTimeout(() => poll(runId, configId), 2000);
+            } else {
+              setRunningFor(null);
+            }
+            return;
+          }
+        } catch {
+          // network hiccup — retry
+        }
+        // retry on any error so we don't silently stop polling
+        setTimeout(() => poll(runId, configId), 3000);
+      };
+
+      if (run.status === "running" || run.status === "pending") {
+        setTimeout(() => poll(run.runId, config.id), 2500);
+      } else {
+        setRunningFor(null);
+      }
+    } catch (err) {
+      setRunningFor(null);
+      setAlert({
+        type: "error",
+        title: "Run Failed",
+        message:
+          err instanceof Error ? err.message : "Failed to start test run.",
+      });
+    }
+  };
+
+  const navbarActions = [
+    {
+      type: "action" as const,
+      label: "+ New Configuration",
+      onClick: () => setShowForm(true),
+      variant: "primary" as const,
+      buttonName: "Agent Test Setup - New Configuration",
+    },
+    { type: "signout" as const, showConfirmation: true },
+  ];
+
+  if (status === "loading" || loading) {
+    return <Loader fullScreen text="Loading configurations..." />;
+  }
+
+  return (
+    <div className="flex-1">
+      {/* Re-generate confirmation modal */}
+      {regenConfirmId &&
+        (() => {
+          const regenConfig = configs.find((c) => c.id === regenConfirmId);
+          const count = testCases[regenConfirmId]?.length ?? 0;
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="bg-[#0f0f12] border border-white/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-yellow-500/10 shrink-0">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">
+                      Re-generate Test Cases?
+                    </p>
+                    <p className="text-sm text-white/50 mt-1">
+                      This will permanently delete all {count} existing test
+                      cases for{" "}
+                      <span className="text-white/80">{regenConfig?.name}</span>{" "}
+                      and replace them with newly generated ones.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <ButtonPrimary
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setRegenConfirmId(null)}
+                  >
+                    Cancel
+                  </ButtonPrimary>
+                  <button
+                    onClick={() => {
+                      const cfg = configs.find((c) => c.id === regenConfirmId);
+                      setRegenConfirmId(null);
+                      if (cfg) handleGenerateTests(cfg);
+                    }}
+                    className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Yes, Re-generate
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+      <Navbar
+        brandLabel={null}
+        items={[]}
+        breadcrumbs={
+          <span className="flex items-center gap-1 text-sm text-white/50">
+            <span>Agent Testing</span>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-white/90 font-medium">Setup</span>
+          </span>
+        }
+        actions={navbarActions}
+      />
+
+      <div className="px-8 pt-8 pb-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Bot className="w-6 h-6 text-blue-400" />
+              </div>
+              <h1 className="text-3xl font-bold text-white">
+                Agent Testing Setup
+              </h1>
+            </div>
+            <p className="text-white/60 ml-14">
+              Configure your agent API endpoint, Langfuse keys, and agent
+              description. Each configuration is used to generate test cases and
+              score agent responses.
+            </p>
+          </div>
+
+          {/* Setup Form */}
+          {showForm && (
+            <div className="mb-8">
+              <DetailCard
+                title="New Configuration"
+                contentClassName="space-y-5"
+              >
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="config-name">
+                      Configuration Name <span className="text-red-400">*</span>
+                    </Label>
+                    <Input
+                      id="config-name"
+                      type="text"
+                      variant="glass"
+                      value={form.name}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, name: e.target.value }))
+                      }
+                      placeholder="e.g. Customer Support Agent v2"
+                    />
+                    {fieldErrors.name && (
+                      <p className="text-xs text-red-400">{fieldErrors.name}</p>
+                    )}
+                  </div>
+
+                  {/* Agent API URL */}
+                  <div className="space-y-2">
+                    <Label htmlFor="agent-api-url">
+                      Agent Base URL <span className="text-red-400">*</span>
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      The root URL of your agent. Test cases will be sent to{" "}
+                      <span className="text-white/60 font-mono">/api/chat</span>{" "}
+                      on this base URL.
+                    </p>
+                    <Input
+                      id="agent-api-url"
+                      type="url"
+                      variant="glass"
+                      value={form.agentApiUrl}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, agentApiUrl: e.target.value }))
+                      }
+                      placeholder="https://your-agent.example.com"
+                    />
+                    {fieldErrors.agentApiUrl && (
+                      <p className="text-xs text-red-400">
+                        {fieldErrors.agentApiUrl}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Langfuse Keys */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="langfuse-public-key">
+                        Langfuse Public Key{" "}
+                        <span className="text-red-400">*</span>
+                      </Label>
+                      <Input
+                        id="langfuse-public-key"
+                        type="text"
+                        variant="glass"
+                        value={form.langfusePublicKey}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            langfusePublicKey: e.target.value,
+                          }))
+                        }
+                        placeholder="pk-lf-..."
+                      />
+                      {fieldErrors.langfusePublicKey && (
+                        <p className="text-xs text-red-400">
+                          {fieldErrors.langfusePublicKey}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="langfuse-secret-key">
+                        Langfuse Secret Key{" "}
+                        <span className="text-red-400">*</span>
+                      </Label>
+                      <Input
+                        id="langfuse-secret-key"
+                        type="password"
+                        variant="glass"
+                        value={form.langfuseSecretKey}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            langfuseSecretKey: e.target.value,
+                          }))
+                        }
+                        placeholder="sk-lf-..."
+                      />
+                      {fieldErrors.langfuseSecretKey && (
+                        <p className="text-xs text-red-400">
+                          {fieldErrors.langfuseSecretKey}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* AI Provider + Model */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ai-provider">
+                        AI Provider <span className="text-red-400">*</span>
+                      </Label>
+                      <div className="relative">
+                        <select
+                          id="ai-provider"
+                          value={form.aiProvider}
+                          onChange={(e) => {
+                            const p = e.target.value as AiProvider;
+                            const defaultModel =
+                              p === "anthropic"
+                                ? ANTHROPIC_MODELS[0].value
+                                : GOOGLE_MODELS[0].value;
+                            setForm((f) => ({
+                              ...f,
+                              aiProvider: p,
+                              aiModel: defaultModel,
+                            }));
+                            setCustomModel("");
+                          }}
+                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        >
+                          <option value="anthropic">Anthropic (Claude)</option>
+                          <option value="google">
+                            Google AI Studio (Gemini)
+                          </option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ai-model">
+                        Model <span className="text-red-400">*</span>
+                      </Label>
+                      <div className="relative">
+                        <select
+                          id="ai-model"
+                          value={form.aiModel}
+                          onChange={(e) => {
+                            setForm((f) => ({ ...f, aiModel: e.target.value }));
+                            if (e.target.value !== CUSTOM_MODEL_VALUE)
+                              setCustomModel("");
+                          }}
+                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        >
+                          {(form.aiProvider === "anthropic"
+                            ? ANTHROPIC_MODELS
+                            : GOOGLE_MODELS
+                          ).map((m) => (
+                            <option key={m.value} value={m.value}>
+                              {m.label}
+                            </option>
+                          ))}
+                          <option value={CUSTOM_MODEL_VALUE}>
+                            Custom model…
+                          </option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                      </div>
+                      {form.aiModel === CUSTOM_MODEL_VALUE && (
+                        <Input
+                          type="text"
+                          variant="glass"
+                          value={customModel}
+                          onChange={(e) => setCustomModel(e.target.value)}
+                          placeholder="e.g. claude-opus-4-6"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* AI API Key */}
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-api-key">
+                      {form.aiProvider === "google"
+                        ? "Google AI Studio API Key"
+                        : "Anthropic API Key"}{" "}
+                      <span className="text-red-400">*</span>
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      {form.aiProvider === "google"
+                        ? "Your Google AI Studio API key — used to generate test cases and score agent responses with Gemini."
+                        : "Your Anthropic API key — used to generate test cases and score agent responses with Claude."}
+                    </p>
+                    <Input
+                      id="ai-api-key"
+                      type="password"
+                      variant="glass"
+                      value={form.aiApiKey}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, aiApiKey: e.target.value }))
+                      }
+                      placeholder={
+                        form.aiProvider === "google" ? "AIza..." : "sk-ant-..."
+                      }
+                    />
+                    {fieldErrors.aiApiKey && (
+                      <p className="text-xs text-red-400">
+                        {fieldErrors.aiApiKey}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* System Prompt / Agent Description */}
+                  <div className="space-y-2">
+                    <Label htmlFor="system-prompt">
+                      Agent Description <span className="text-red-400">*</span>
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      Paste anything that describes your agent — system prompt,
+                      tool list, skill catalogue, API docs, or all of the above.
+                      The more detail you provide, the more accurate and
+                      domain-specific the generated test cases will be.
+                    </p>
+                    <Textarea
+                      id="system-prompt"
+                      variant="glass"
+                      rows={10}
+                      value={form.systemPrompt}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          systemPrompt: e.target.value,
+                        }))
+                      }
+                      placeholder="Paste your agent's full description here — system prompt, available tools, skills, API endpoints, supported models, constraints, etc."
+                    />
+                    {fieldErrors.systemPrompt && (
+                      <p className="text-xs text-red-400">
+                        {fieldErrors.systemPrompt}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-3 pt-2">
+                    <ButtonPrimary
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setShowForm(false);
+                        setForm(emptyForm);
+                        setCustomModel("");
+                        setFieldErrors({});
+                      }}
+                    >
+                      Cancel
+                    </ButtonPrimary>
+                    <ButtonPrimary
+                      type="submit"
+                      disabled={submitting}
+                      buttonName="Agent Test Setup - Save Configuration"
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Configuration"
+                      )}
+                    </ButtonPrimary>
+                  </div>
+                </form>
+              </DetailCard>
+            </div>
+          )}
+
+          {/* Configurations List */}
+          {configs.length === 0 && !showForm ? (
+            <DetailCard contentClassName="">
+              <div className="py-12 flex flex-col items-center gap-4 text-center">
+                <div className="p-3 rounded-full bg-white/5">
+                  <Bot className="w-8 h-8 text-white/30" />
+                </div>
+                <div>
+                  <p className="font-medium text-white/70">
+                    No configurations yet
+                  </p>
+                  <p className="text-sm text-white/40 mt-1">
+                    Add your first agent configuration to get started.
+                  </p>
+                </div>
+                <ButtonPrimary
+                  onClick={() => setShowForm(true)}
+                  buttonName="Agent Test Setup - New Configuration (empty state)"
+                  className="mt-2 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Configuration
+                </ButtonPrimary>
+              </div>
+            </DetailCard>
+          ) : (
+            <div className="space-y-4">
+              {configs.map((config) => {
+                const cases = testCases[config.id] ?? [];
+                const isGenerating = generatingFor === config.id;
+                const isRunning = runningFor === config.id;
+                const isEditing = editingConfigId === config.id;
+                const run = activeRun[config.id] ?? null;
+                const inProgressResult =
+                  run?.status === "running"
+                    ? (run.results.find((r) => r.status === "pending") ?? null)
+                    : null;
+
+                return (
+                  <DetailCard key={config.id} contentClassName="">
+                    {/* Config Header */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-white truncate">
+                            {config.name}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${
+                              config.aiProvider === "google"
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                : "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                            }`}
+                          >
+                            {config.aiModel ??
+                              (config.aiProvider === "google"
+                                ? "Gemini"
+                                : "Claude")}
+                          </span>
+                          {cases.length > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                              {cases.length} tests
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={config.agentApiUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-blue-400 hover:underline truncate max-w-sm cursor-pointer"
+                        >
+                          {config.agentApiUrl}
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                        <p className="mt-2 text-xs text-white/40 line-clamp-2">
+                          {config.systemPrompt}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Generate Tests Button */}
+                        <button
+                          onClick={() => {
+                            if (cases.length > 0) {
+                              setRegenConfirmId(config.id);
+                            } else {
+                              handleGenerateTests(config);
+                            }
+                          }}
+                          disabled={isGenerating}
+                          className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Generate test cases from system prompt"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3" />
+                              {cases.length > 0
+                                ? "Re-generate"
+                                : "Generate Tests"}
+                            </>
+                          )}
+                        </button>
+
+                        {/* View Test Cases button — navigates to dedicated page */}
+                        <button
+                          onClick={() =>
+                            router.push(
+                              `/agent-testing/configs/${config.id}/test-cases`,
+                            )
+                          }
+                          className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/60 hover:bg-white/10 border border-white/10 transition-colors"
+                          title="View and manage test cases"
+                        >
+                          <FlaskConical className="w-3 h-3" />
+                          {cases.length > 0
+                            ? `${cases.length} Tests`
+                            : "Test Cases"}
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            isEditing
+                              ? handleCancelEdit()
+                              : handleStartEdit(config)
+                          }
+                          className={`cursor-pointer p-2 rounded-lg transition-colors ${
+                            isEditing
+                              ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
+                              : "text-white/30 hover:text-blue-400 hover:bg-blue-500/10"
+                          }`}
+                          title={
+                            isEditing ? "Cancel edit" : "Edit configuration"
+                          }
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(config.id, config.name)}
+                          className="cursor-pointer p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          title="Delete configuration"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Inline Edit Form */}
+                    {isEditing && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <form
+                          onSubmit={(e) => handleEditSubmit(e, config.id)}
+                          className="space-y-5"
+                        >
+                          {/* Name */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-name-${config.id}`}>
+                              Configuration Name{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Input
+                              id={`edit-name-${config.id}`}
+                              type="text"
+                              variant="glass"
+                              value={editForm.name}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  name: e.target.value,
+                                }))
+                              }
+                              placeholder="e.g. Customer Support Agent v2"
+                            />
+                            {editFieldErrors.name && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.name}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Agent API URL */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-url-${config.id}`}>
+                              Agent Base URL{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Input
+                              id={`edit-url-${config.id}`}
+                              type="url"
+                              variant="glass"
+                              value={editForm.agentApiUrl}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  agentApiUrl: e.target.value,
+                                }))
+                              }
+                              placeholder="https://your-agent.example.com"
+                            />
+                            {editFieldErrors.agentApiUrl && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.agentApiUrl}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Langfuse Keys */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-lf-pub-${config.id}`}>
+                                Langfuse Public Key{" "}
+                                <span className="text-red-400">*</span>
+                              </Label>
+                              <Input
+                                id={`edit-lf-pub-${config.id}`}
+                                type="text"
+                                variant="glass"
+                                value={editForm.langfusePublicKey}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    langfusePublicKey: e.target.value,
+                                  }))
+                                }
+                                placeholder="pk-lf-..."
+                              />
+                              {editFieldErrors.langfusePublicKey && (
+                                <p className="text-xs text-red-400">
+                                  {editFieldErrors.langfusePublicKey}
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-lf-sec-${config.id}`}>
+                                Langfuse Secret Key
+                              </Label>
+                              <Input
+                                id={`edit-lf-sec-${config.id}`}
+                                type="password"
+                                variant="glass"
+                                value={editForm.langfuseSecretKey}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    langfuseSecretKey: e.target.value,
+                                  }))
+                                }
+                                placeholder="Leave blank to keep existing"
+                              />
+                            </div>
+                          </div>
+
+                          {/* AI Provider + Model */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-provider-${config.id}`}>
+                                AI Provider{" "}
+                                <span className="text-red-400">*</span>
+                              </Label>
+                              <div className="relative">
+                                <select
+                                  id={`edit-provider-${config.id}`}
+                                  value={editForm.aiProvider}
+                                  onChange={(e) => {
+                                    const p = e.target.value as AiProvider;
+                                    const defaultModel =
+                                      p === "anthropic"
+                                        ? ANTHROPIC_MODELS[0].value
+                                        : GOOGLE_MODELS[0].value;
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      aiProvider: p,
+                                      aiModel: defaultModel,
+                                    }));
+                                    setEditCustomModel("");
+                                  }}
+                                  className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                                >
+                                  <option value="anthropic">
+                                    Anthropic (Claude)
+                                  </option>
+                                  <option value="google">
+                                    Google AI Studio (Gemini)
+                                  </option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-model-${config.id}`}>
+                                Model <span className="text-red-400">*</span>
+                              </Label>
+                              <div className="relative">
+                                <select
+                                  id={`edit-model-${config.id}`}
+                                  value={editForm.aiModel}
+                                  onChange={(e) => {
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      aiModel: e.target.value,
+                                    }));
+                                    if (e.target.value !== CUSTOM_MODEL_VALUE)
+                                      setEditCustomModel("");
+                                  }}
+                                  className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                                >
+                                  {(editForm.aiProvider === "anthropic"
+                                    ? ANTHROPIC_MODELS
+                                    : GOOGLE_MODELS
+                                  ).map((m) => (
+                                    <option key={m.value} value={m.value}>
+                                      {m.label}
+                                    </option>
+                                  ))}
+                                  <option value={CUSTOM_MODEL_VALUE}>
+                                    Custom model…
+                                  </option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                              </div>
+                              {editForm.aiModel === CUSTOM_MODEL_VALUE && (
+                                <Input
+                                  type="text"
+                                  variant="glass"
+                                  value={editCustomModel}
+                                  onChange={(e) =>
+                                    setEditCustomModel(e.target.value)
+                                  }
+                                  placeholder="e.g. claude-opus-4-6"
+                                />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* AI API Key */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-ai-key-${config.id}`}>
+                              {editForm.aiProvider === "google"
+                                ? "Google AI Studio API Key"
+                                : "Anthropic API Key"}
+                            </Label>
+                            <Input
+                              id={`edit-ai-key-${config.id}`}
+                              type="password"
+                              variant="glass"
+                              value={editForm.aiApiKey}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  aiApiKey: e.target.value,
+                                }))
+                              }
+                              placeholder="Leave blank to keep existing"
+                            />
+                          </div>
+
+                          {/* System Prompt */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-prompt-${config.id}`}>
+                              Agent Description{" "}
+                              <span className="text-red-400">*</span>
+                            </Label>
+                            <Textarea
+                              id={`edit-prompt-${config.id}`}
+                              variant="glass"
+                              rows={10}
+                              value={editForm.systemPrompt}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  systemPrompt: e.target.value,
+                                }))
+                              }
+                              placeholder="Paste your agent's full description here..."
+                            />
+                            {editFieldErrors.systemPrompt && (
+                              <p className="text-xs text-red-400">
+                                {editFieldErrors.systemPrompt}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex justify-end gap-3 pt-2">
+                            <ButtonPrimary
+                              type="button"
+                              variant="ghost"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </ButtonPrimary>
+                            <ButtonPrimary
+                              type="submit"
+                              disabled={editSubmitting}
+                              buttonName="Agent Test Setup - Save Edit"
+                            >
+                              {editSubmitting ? (
+                                <>
+                                  <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                "Save Changes"
+                              )}
+                            </ButtonPrimary>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {/* Run Progress + Results Panel */}
+                    {run && (
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        {/* Progress bar + View Results link */}
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-green-500 transition-all duration-500"
+                              style={{
+                                width: run.totalCases
+                                  ? `${(run.completedCases / run.totalCases) * 100}%`
+                                  : "0%",
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs text-white/40 shrink-0">
+                            {run.completedCases}/{run.totalCases}
+                            {run.status === "completed" && (
+                              <span className="ml-1.5 text-green-400">
+                                done
+                              </span>
+                            )}
+                            {run.status === "failed" && (
+                              <span className="ml-1.5 text-red-400">
+                                failed
+                              </span>
+                            )}
+                          </span>
+                          {run.status === "completed" && (
+                            <button
+                              onClick={() =>
+                                router.push(`/agent-testing/runs/${run.runId}`)
+                              }
+                              className="cursor-pointer flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-colors shrink-0"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View Results
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Live "currently testing" banner */}
+                        {inProgressResult && (
+                          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-yellow-500/8 border border-yellow-500/20">
+                            <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin shrink-0" />
+                            <span className="text-xs text-yellow-300/80 truncate">
+                              Testing:{" "}
+                              <span className="font-medium text-yellow-300">
+                                {inProgressResult.testCase.title}
+                              </span>
+                            </span>
+                            <span
+                              className={`ml-auto shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[inProgressResult.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                            >
+                              {CATEGORY_LABELS[
+                                inProgressResult.testCase.category
+                              ] ?? inProgressResult.testCase.category}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Per-result rows */}
+                        <div className="space-y-1.5">
+                          {run.results.map((result) => {
+                            const isResultOpen = expandedResult === result.id;
+                            return (
+                              <div
+                                key={result.id}
+                                className="rounded-lg border border-white/8 bg-white/3 overflow-hidden"
+                              >
+                                <button
+                                  onClick={() =>
+                                    setExpandedResult(
+                                      isResultOpen ? null : result.id,
+                                    )
+                                  }
+                                  className="cursor-pointer w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
+                                >
+                                  {/* Status icon */}
+                                  <span className="shrink-0">
+                                    {result.status === "pending" &&
+                                    inProgressResult?.id === result.id ? (
+                                      <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
+                                    ) : result.status === "pending" ? (
+                                      <Clock className="w-3.5 h-3.5 text-white/30" />
+                                    ) : result.status === "success" ? (
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                    ) : (
+                                      <XCircle className="w-3.5 h-3.5 text-red-400" />
+                                    )}
+                                  </span>
+
+                                  <span className="flex-1 text-xs text-white/75 truncate">
+                                    {result.testCase.title}
+                                  </span>
+
+                                  <span
+                                    className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[result.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                                  >
+                                    {CATEGORY_LABELS[
+                                      result.testCase.category
+                                    ] ?? result.testCase.category}
+                                  </span>
+
+                                  {result.latencyMs != null && (
+                                    <span className="shrink-0 text-xs text-white/30">
+                                      {result.latencyMs}ms
+                                    </span>
+                                  )}
+
+                                  {result.httpStatus != null && (
+                                    <span
+                                      className={`shrink-0 text-xs font-mono ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                                    >
+                                      {result.httpStatus}
+                                    </span>
+                                  )}
+
+                                  {isResultOpen ? (
+                                    <ChevronUp className="w-3 h-3 text-white/30 shrink-0" />
+                                  ) : (
+                                    <ChevronDown className="w-3 h-3 text-white/30 shrink-0" />
+                                  )}
+                                </button>
+
+                                {isResultOpen && (
+                                  <div className="px-4 pb-4 pt-3 border-t border-white/8 space-y-3">
+                                    {/* Request */}
+                                    <div>
+                                      <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wider mb-1.5">
+                                        Request
+                                      </p>
+                                      {result.requestPayload ? (
+                                        (() => {
+                                          try {
+                                            const parsed = JSON.parse(
+                                              result.requestPayload,
+                                            );
+                                            return (
+                                              <div className="space-y-1.5">
+                                                <p className="text-xs text-white/40 font-mono bg-white/5 rounded px-3 py-1.5">
+                                                  POST {parsed.url}
+                                                </p>
+                                                <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
+                                                  {JSON.stringify(
+                                                    parsed.body,
+                                                    null,
+                                                    2,
+                                                  )}
+                                                </pre>
+                                              </div>
+                                            );
+                                          } catch {
+                                            return (
+                                              <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
+                                                {result.requestPayload}
+                                              </pre>
+                                            );
+                                          }
+                                        })()
+                                      ) : (
+                                        <p className="text-xs text-white/30 italic">
+                                          Not yet sent
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Response */}
+                                    <div>
+                                      <p className="text-xs font-medium text-green-400/70 uppercase tracking-wider mb-1.5">
+                                        Response
+                                        {result.httpStatus != null && (
+                                          <span
+                                            className={`ml-2 font-mono ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                                          >
+                                            {result.httpStatus}
+                                          </span>
+                                        )}
+                                        {result.latencyMs != null && (
+                                          <span className="ml-2 text-white/30 font-mono">
+                                            {result.latencyMs}ms
+                                          </span>
+                                        )}
+                                      </p>
+                                      {result.agentResponse ? (
+                                        <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48">
+                                          {(() => {
+                                            try {
+                                              return JSON.stringify(
+                                                JSON.parse(
+                                                  result.agentResponse,
+                                                ),
+                                                null,
+                                                2,
+                                              );
+                                            } catch {
+                                              return result.agentResponse;
+                                            }
+                                          })()}
+                                        </pre>
+                                      ) : result.errorMessage ? (
+                                        <p className="text-xs text-red-300 bg-red-500/10 rounded px-3 py-2">
+                                          {result.errorMessage}
+                                        </p>
+                                      ) : (
+                                        <p className="text-xs text-white/30 italic">
+                                          Waiting for response...
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </DetailCard>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <FloatingAlert alert={alert} onClose={() => setAlert(null)} />
+    </div>
+  );
+}
