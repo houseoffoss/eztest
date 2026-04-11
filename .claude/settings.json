@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "comment": "EZTest Project Configuration - See .claude/README.md for details. Enhanced with auto-test generation after commits.",
+
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(npx:*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(git commit:*)",
+            "prompt": "A git commit just happened. Check if .claude/commit_analysis.json exists and read it. If hasTestOpportunities is true, analyze the detected changes (api_routes, components, backend, database counts). Ask the user: 'I detected code changes that may need test coverage:\\n\\n' + [list what changed like 'API Routes: 2 files' if api_routes > 0] + '\\n\\nWould you like me to generate comprehensive Playwright E2E tests for these changes? I will create or update tests in automation/tests/ to match your existing test patterns.'\\n\\nIf user confirms, read .claude/last_commit_diff.txt and generate complete E2E test files covering all the changed components, APIs, and features with happy path, error cases, and edge cases. After generating or updating tests, show a summary of what was created/updated. Do NOT run npm test - the tests are ready for the user to run manually when they want.",
+            "statusMessage": "🔍 Analyzing commit changes and checking for test opportunities...",
+            "timeout": 120,
+            "model": "claude-opus-4-6"
+          }
+        ]
+      }
+    ]
+  }
+}

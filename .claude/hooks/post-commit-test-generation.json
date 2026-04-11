@@ -1,0 +1,17 @@
+{
+  "name": "Post-Commit Test Generation with Auto-Ask",
+  "description": "Detects code changes and asks permission to auto-generate Playwright tests",
+  "event": "PostToolUse",
+  "matcher": "Bash",
+  "condition": "git commit",
+  "hooks": [
+    {
+      "type": "agent",
+      "if": "Bash(git commit:*)",
+      "prompt": "A git commit was just made in the EZTest project. Check if .claude/commit_analysis.json exists and read it. If it shows test opportunities (hasTestOpportunities is true), analyze what changed and ask the user: 'I detected code changes that need test coverage. Would you like me to generate Playwright tests for the following changes: [list the specific API routes, components, or features changed]? This will create tests in automation/tests/'. If user approves, generate comprehensive E2E tests that match the code changes detected. Use the diff in .claude/last_commit_diff.txt to understand what was changed.",
+      "statusMessage": "🔍 Analyzing commit for test opportunities...",
+      "timeout": 60,
+      "model": "claude-opus-4-6"
+    }
+  ]
+}

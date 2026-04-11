@@ -31,11 +31,17 @@ npm start                   # Start production server
 docker-compose up           # Builds and runs both app and database
 ```
 
-### Code Quality
+### Code Quality & Testing
 
 ```bash
 npm run lint                # Run ESLint
 npm run lint -- --fix       # Auto-fix linting issues
+
+# E2E Tests (Playwright)
+npm test                    # Run all tests (headed mode)
+npm test -- --ui           # Interactive test explorer
+npm test -- --debug        # Step through with debugger
+npm test -- auth.signin.spec.ts  # Run specific test file
 ```
 
 ### Database
@@ -364,6 +370,66 @@ export async function POST(request: Request) {
 
 ## Testing & Debugging
 
+### E2E Tests (Playwright)
+
+Tests are located in `automation/tests/` and use Playwright for browser automation testing.
+
+**Running Tests:**
+```bash
+# Default: run all tests in headed mode (browser visible) with single worker
+npm test
+
+# Run with UI explorer (interactive mode to select/run tests)
+npm test -- --ui
+
+# Run in debug mode (step through with debugger)
+npm test -- --debug
+
+# Run specific test file
+npm test -- auth.signin.spec.ts
+
+# Run tests matching a pattern/tag
+npm test -- --grep "signin"
+
+# Run in CI mode (headless, parallel workers)
+cd automation && playwright test
+
+# View HTML report of latest test run
+cd automation && npx playwright show-report
+```
+
+**Test Configuration:**
+- Tests run on `http://localhost:3001` (Playwright config)
+- Dev server is automatically started via webServer config in `automation/playwright.config.ts`
+- Screenshots captured on failure, traces on first retry
+- Works with Chromium (Firefox and Safari commented out)
+
+**Writing Tests (Examples):**
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('user can sign in', async ({ page }) => {
+  await page.goto('/signin');
+  await page.fill('input[name="email"]', 'user@example.com');
+  await page.fill('input[name="password"]', 'password');
+  await page.click('button[type="submit"]');
+
+  // Wait for redirect and verify
+  await page.waitForURL('/dashboard');
+  await expect(page).toHaveTitle(/Dashboard/);
+});
+
+// Common assertions
+await expect(locator).toBeVisible();
+await expect(locator).toContainText('Expected text');
+await expect(locator).toHaveAttribute('href', '/path');
+await expect(page).toHaveURL(/dashboard/);
+```
+
+**Test Helpers:**
+- `automation/tests/helpers.ts` - Shared utilities (auth flows, common actions)
+- Use helpers for repetitive actions like login
+
 ### Database Debugging
 
 ```bash
@@ -375,9 +441,28 @@ npx prisma studio    # Visual database explorer
 Copy `.env.example` to `.env` and configure:
 - `DATABASE_URL` - PostgreSQL connection
 - `NEXTAUTH_SECRET` - Auth secret (generate: `openssl rand -base64 32`)
-- `NEXTAUTH_URL` - Application URL
+- `NEXTAUTH_URL` - Application URL (http://localhost:3000 for dev server)
 - AWS S3 credentials (if using attachments)
 - SMTP settings (if using email)
+
+**Note:** E2E tests expect the dev server to run on port 3001, which is handled automatically by Playwright webServer config.
+
+### Automated Test Generation
+
+When you commit code changes, a post-commit hook automatically:
+- Detects new API routes, components, and features
+- Analyzes what changed
+- Suggests tests that should be written
+- Stores the diff for Claude Code analysis
+
+**Workflow:**
+1. Make and commit your feature changes → hook runs automatically
+2. See suggestions for test coverage in the commit output
+3. Ask Claude Code to generate tests from the commit
+4. Review and verify the generated tests
+5. Run `npm test` to validate
+
+📖 **Full guide:** [Automated Test Generation](./docs/TESTING_AUTOMATION.md)
 
 ### Docker Development
 
@@ -387,6 +472,29 @@ docker-compose -f docker-compose.dev.yml up
 ```
 
 Then run `npm run dev` locally.
+
+## Utility Scripts
+
+The `scripts/` directory contains helpful utilities for development and maintenance:
+
+- **`test.js`** - Smart Playwright test runner wrapper
+  - Used by `npm test` command
+  - Defaults to headed mode for development
+  - Passes arguments through to Playwright (--ui, --debug, etc.)
+
+- **`generate-tests.sh`** - Analyze commits and suggest tests
+  - Runs automatically via post-commit hook
+  - Shows which files changed and what tests might be needed
+  - Part of automated test generation workflow
+
+- **`check-deployment.sh`** - Deployment validation script
+  - Used in CI/CD pipelines
+
+- **`add-modules.ts`** - Database utility for adding modules
+
+- **`check-permissions.ts`** - RBAC debugging utility
+
+See `scripts/README.md` for more details.
 
 ## Code Conventions
 

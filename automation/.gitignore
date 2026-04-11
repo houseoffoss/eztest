@@ -1,0 +1,9 @@
+node_modules/
+/test-results/
+/html/
+/blob-report/
+/playwright-report/
+/test-results.json
+*.log
+.DS_Store
+.env.local
