@@ -561,11 +561,21 @@ export default function AgentTestRunResults({ runId }: Props) {
 
   // ── Stats ───────────────────────────────────────────────────────────────
 
-  const totalPass = allResults.reduce((s, r) => s + (r.passCount ?? 0), 0);
-  const totalFail = allResults.reduce((s, r) => s + (r.failCount ?? 0), 0);
+  const scoredResults = allResults.filter(
+    (r) => r.passCount != null && r.failCount != null,
+  );
+  const unscoredResults = allResults.filter(
+    (r) => r.passCount == null && r.failCount == null,
+  );
+  const scoringErrorResults = allResults.filter((r) => r.scoreError != null);
+
+  const totalPass = scoredResults.reduce((s, r) => s + (r.passCount ?? 0), 0);
+  const totalFail = scoredResults.reduce((s, r) => s + (r.failCount ?? 0), 0);
   const totalCriteria = totalPass + totalFail;
+  // Pass rate is calculated only over scored results — unscored results are
+  // explicitly excluded and surfaced as a warning so the number isn't misleading.
   const overallPassRate =
-    totalCriteria > 0 ? Math.round((totalPass / totalCriteria) * 100) : 0;
+    totalCriteria > 0 ? Math.round((totalPass / totalCriteria) * 100) : null;
 
   const categories = Array.from(
     new Set(allResults.map((r) => r.testCase.category)),
@@ -932,6 +942,27 @@ export default function AgentTestRunResults({ runId }: Props) {
             </DetailCard>
           </div>
 
+          {/* ── Scoring error warning banner ── */}
+          {scoringErrorResults.length > 0 && (
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-yellow-500/8 border border-yellow-500/20">
+              <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-yellow-300/80">
+                <span className="font-medium text-yellow-300">
+                  {scoringErrorResults.length} result
+                  {scoringErrorResults.length > 1 ? "s" : ""} could not be
+                  scored
+                </span>{" "}
+                — rubric evaluation failed (e.g. AI quota exceeded). The pass
+                rate below only counts the{" "}
+                <span className="font-medium">{scoredResults.length}</span>{" "}
+                result
+                {scoredResults.length !== 1 ? "s" : ""} that were scored
+                successfully. Re-score individual results using the re-score
+                button inside each result row.
+              </div>
+            </div>
+          )}
+
           {/* ── Summary stats row ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <DetailCard contentClassName="text-center">
@@ -941,12 +972,23 @@ export default function AgentTestRunResults({ runId }: Props) {
               <p className="text-xs text-white/40 mt-0.5">Total Tests</p>
             </DetailCard>
             <DetailCard contentClassName="text-center">
-              <p
-                className={`text-2xl font-bold ${overallPassRate >= 70 ? "text-green-400" : overallPassRate >= 40 ? "text-yellow-400" : "text-red-400"}`}
-              >
-                {overallPassRate}%
+              {overallPassRate !== null ? (
+                <p
+                  className={`text-2xl font-bold ${overallPassRate >= 70 ? "text-green-400" : overallPassRate >= 40 ? "text-yellow-400" : "text-red-400"}`}
+                >
+                  {overallPassRate}%
+                </p>
+              ) : (
+                <p className="text-2xl font-bold text-white/20">–</p>
+              )}
+              <p className="text-xs text-white/40 mt-0.5">
+                Criteria Pass Rate
+                {unscoredResults.length > 0 && overallPassRate !== null && (
+                  <span className="block text-yellow-400/60">
+                    ({scoredResults.length}/{allResults.length} scored)
+                  </span>
+                )}
               </p>
-              <p className="text-xs text-white/40 mt-0.5">Criteria Pass Rate</p>
             </DetailCard>
             <DetailCard contentClassName="text-center">
               <p className="text-2xl font-bold text-green-400">{totalPass}</p>
@@ -1023,8 +1065,14 @@ export default function AgentTestRunResults({ runId }: Props) {
                             <XCircle className="w-4 h-4 text-red-400" />
                           )}
                           {result.status === "success" &&
-                            scores.length === 0 && (
+                            scores.length === 0 &&
+                            !result.scoreError && (
                               <CheckCircle2 className="w-4 h-4 text-white/30" />
+                            )}
+                          {result.status === "success" &&
+                            scores.length === 0 &&
+                            result.scoreError && (
+                              <AlertTriangle className="w-4 h-4 text-yellow-400" />
                             )}
                           {result.status === "error" && (
                             <XCircle className="w-4 h-4 text-red-400" />
@@ -1051,6 +1099,11 @@ export default function AgentTestRunResults({ runId }: Props) {
                           >
                             {result.passCount}/
                             {(result.passCount ?? 0) + (result.failCount ?? 0)}
+                          </span>
+                        )}
+                        {scores.length === 0 && result.scoreError && (
+                          <span className="shrink-0 text-xs text-yellow-400/70 italic">
+                            scoring failed
                           </span>
                         )}
 

@@ -420,6 +420,7 @@ export class AgentTestExecutionService {
             aiProvider,
             aiApiKey,
             aiModel,
+            httpStatus,
           );
           rubricScores = JSON.stringify(result.scores);
           passCount = result.passCount;
@@ -550,6 +551,7 @@ export class AgentTestExecutionService {
           (aiProvider ?? rescoreEnvDefaults.provider) as "anthropic" | "google",
           aiApiKey ?? rescoreEnvDefaults.apiKey,
           aiModel ?? rescoreEnvDefaults.model,
+          result.httpStatus,
         );
         rubricScores = JSON.stringify(scoring.scores);
         passCount = scoring.passCount;
@@ -647,6 +649,13 @@ export class AgentTestExecutionService {
         completedCases: true,
         startedAt: true,
         completedAt: true,
+        aqsScore: true,
+        aqsCorrectness: true,
+        aqsToolUse: true,
+        aqsLatency: true,
+        aqsErrorRate: true,
+        aqsTraceCoverage: true,
+        aqsRegressionDelta: true,
       },
     });
   }

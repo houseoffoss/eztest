@@ -30,6 +30,7 @@ import {
   XCircle,
   Clock,
   Loader2,
+  BarChart2,
 } from "lucide-react";
 import { ANTHROPIC_MODELS, GOOGLE_MODELS } from "@/lib/ai-provider";
 
@@ -1062,6 +1063,30 @@ export default function AgentTestSetup() {
                           {cases.length > 0
                             ? `${cases.length} Tests`
                             : "Test Cases"}
+                        </button>
+
+                        {/* View Results button — always visible, navigates to last run or empty state */}
+                        <button
+                          onClick={() =>
+                            run
+                              ? router.push(`/agent-testing/runs/${run.runId}`)
+                              : router.push(
+                                  `/agent-testing/configs/${config.id}/results`,
+                                )
+                          }
+                          className={`cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                            !run
+                              ? "bg-white/5 text-white/40 hover:bg-white/10 border-white/10"
+                              : run.status === "completed"
+                                ? "bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20"
+                                : run.status === "failed"
+                                  ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
+                                  : "bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border-yellow-500/20"
+                          }`}
+                          title="View last run results"
+                        >
+                          <BarChart2 className="w-3 h-3" />
+                          View Results
                         </button>
 
                         <button

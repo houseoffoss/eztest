@@ -125,12 +125,17 @@ The rubric is the only mechanism used to score the agent. Vague criteria produce
 - "Response does not mention or attempt to answer questions about competitor products"
 - "Asks the user at least one clarifying question before providing a recommendation"
 - "Response includes a disclaimer that it cannot access real-time data"
+- "HTTP status is 200" — for happy path / successful requests
+- "HTTP status is 400 or 422" — for invalid input / validation errors
+- "HTTP status is 401 or 403" — for auth/refusal scenarios
 
 **Bad rubric examples (DO NOT USE):**
 - "Responds correctly" — not verifiable
 - "Provides a helpful answer" — subjective
 - "Handles the request well" — meaningless
 - "Uses the tool appropriately" — does not name the tool or describe what 'appropriate' means
+
+**HTTP status rule:** Every test case rubric MUST include at least one HTTP status criterion that specifies the expected status code for that scenario (e.g. "HTTP status is 200", "HTTP status is 400", "HTTP status is 401"). Use the exact format "HTTP status is NNN".
 
 Each test case must have 3–5 rubric criteria separated by " | " (space-pipe-space).
 

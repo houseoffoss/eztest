@@ -76,101 +76,102 @@ export class AgentTestAqsService {
     }
 
     const results = run.results;
+    const total = results.length;
+
+    if (total === 0) {
+      throw new NotFoundException("No results found for this run");
+    }
+
+    // All 5 dimensions use `total` (results.length) as the denominator.
+    // A result that is missing data — because the agent errored, the AI scorer
+    // hit a quota limit, or Langfuse was unreachable — contributes 0 to the
+    // numerator. This is the only honest interpretation: if a test could not be
+    // evaluated, it did not pass.
 
     // ── 1. Correctness ────────────────────────────────────────────────────────
-    // Fraction of rubric criteria that passed, averaged across all scored results.
-    const scored = results.filter(
-      (r) => r.passCount != null && r.failCount != null,
-    );
-    let correctness = 0;
-    if (scored.length > 0) {
-      const totalCriteria = scored.reduce(
-        (sum, r) => sum + (r.passCount ?? 0) + (r.failCount ?? 0),
-        0,
-      );
-      const totalPass = scored.reduce((sum, r) => sum + (r.passCount ?? 0), 0);
-      correctness = totalCriteria > 0 ? (totalPass / totalCriteria) * 100 : 0;
+    // Per-result score = passCount / (passCount + failCount), clamped to [0,1].
+    // Results with no scoring data (scoreError, quota exhausted, etc.) = 0.
+    let correctnessSum = 0;
+    for (const r of results) {
+      const pass = r.passCount ?? 0;
+      const fail = r.failCount ?? 0;
+      const criteria = pass + fail;
+      // Only add a non-zero contribution if scoring actually ran
+      if (criteria > 0) {
+        correctnessSum += pass / criteria;
+      }
+      // else: scoring failed or never ran → contributes 0
     }
+    const correctness = (correctnessSum / total) * 100;
 
     // ── 2. Tool Use ───────────────────────────────────────────────────────────
-    // Fraction of results where the agent made ≥1 tool call (visible in trace).
-    const withTrace = results.filter((r) => r.langfuseTraceId != null);
-    let toolUse = 0;
-    if (withTrace.length > 0) {
-      const withToolCalls = withTrace.filter((r) => {
-        if (!r.traceJson) return false;
-        try {
-          const trace = JSON.parse(r.traceJson) as {
-            observations?: { type?: string; name?: string; input?: unknown }[];
-          };
-          // Same broadened detection as scoring.service: any SPAN with a
-          // non-null input is treated as a tool call, since agents often
-          // name their tool spans after the tool itself ("web_search",
-          // "get_order") rather than using a generic "tool_call" name.
-          return (trace.observations ?? []).some(
-            (o) =>
-              o.type === "SPAN" &&
-              (o.input != null ||
-                (typeof o.name === "string" &&
-                  o.name.toLowerCase().includes("tool"))),
-          );
-        } catch {
-          return false;
-        }
-      });
-      toolUse = (withToolCalls.length / withTrace.length) * 100;
+    // Fraction of ALL results (not just traced ones) where the agent made ≥1
+    // tool call visible in the Langfuse trace.
+    // Results with no trace (fetch failed, agent errored) = did not use tools.
+    let toolUseCount = 0;
+    for (const r of results) {
+      if (!r.langfuseTraceId || !r.traceJson) continue;
+      try {
+        const trace = JSON.parse(r.traceJson) as {
+          observations?: { type?: string; name?: string; input?: unknown }[];
+        };
+        const hasToolCall = (trace.observations ?? []).some(
+          (o) =>
+            o.type === "SPAN" &&
+            (o.input != null ||
+              (typeof o.name === "string" &&
+                o.name.toLowerCase().includes("tool"))),
+        );
+        if (hasToolCall) toolUseCount += 1;
+      } catch {
+        // malformed trace JSON — treat as no tool call
+      }
     }
+    const toolUse = (toolUseCount / total) * 100;
 
     // ── 3. Latency ────────────────────────────────────────────────────────────
-    // Score based on median latency across successful results.
-    const latencies = results
-      .filter((r) => r.latencyMs != null && r.status === "success")
-      .map((r) => r.latencyMs as number)
-      .sort((a, b) => a - b);
-
-    let latency = 0;
-    if (latencies.length > 0) {
-      const mid = Math.floor(latencies.length / 2);
-      const median =
-        latencies.length % 2 === 0
-          ? (latencies[mid - 1] + latencies[mid]) / 2
-          : latencies[mid];
-
-      if (median <= LATENCY_EXCELLENT_MS) {
-        latency = 100;
-      } else if (median >= LATENCY_POOR_MS) {
-        latency = 0;
+    // Per-result latency score mapped to [0,100] using the thresholds below.
+    // Results with no latency data (network failure before any response) = 0.
+    // Timeout results that recorded a latency >= LATENCY_POOR_MS also score 0.
+    let latencySum = 0;
+    for (const r of results) {
+      if (r.latencyMs == null) {
+        // No response received at all → worst score
+        latencySum += 0;
+        continue;
+      }
+      const ms = r.latencyMs;
+      if (ms <= LATENCY_EXCELLENT_MS) {
+        latencySum += 100;
+      } else if (ms >= LATENCY_POOR_MS) {
+        latencySum += 0;
       } else {
-        // Linear interpolation between excellent and poor
-        latency =
+        latencySum +=
           100 *
           (1 -
-            (median - LATENCY_EXCELLENT_MS) /
+            (ms - LATENCY_EXCELLENT_MS) /
               (LATENCY_POOR_MS - LATENCY_EXCELLENT_MS));
       }
     }
+    const latency = latencySum / total;
 
     // ── 4. Error Rate ─────────────────────────────────────────────────────────
-    // 100 − (fraction of non-2xx responses × 100).
-    // Only results that actually received an HTTP status are counted.
-    const withHttp = results.filter((r) => r.httpStatus != null);
-    let errorRate = 100; // assume perfect if no HTTP data
-    if (withHttp.length > 0) {
-      const errors = withHttp.filter(
-        (r) =>
-          (r.httpStatus as number) < 200 || (r.httpStatus as number) >= 300,
-      );
-      errorRate = 100 - (errors.length / withHttp.length) * 100;
+    // Fraction of results that returned a 2xx HTTP status.
+    // Results with no HTTP status (network-level failure, no response) = failure.
+    let httpSuccessCount = 0;
+    for (const r of results) {
+      const s = r.httpStatus;
+      if (s != null && s >= 200 && s < 300) {
+        httpSuccessCount += 1;
+      }
+      // null httpStatus (network failure) and non-2xx both count as 0
     }
+    const errorRate = (httpSuccessCount / total) * 100;
 
     // ── 5. Trace Coverage ─────────────────────────────────────────────────────
-    // Fraction of results for which a Langfuse trace was successfully fetched.
+    // Fraction of results with a successfully fetched Langfuse trace.
     const traceCoverage =
-      results.length > 0
-        ? (results.filter((r) => r.langfuseTraceId != null).length /
-            results.length) *
-          100
-        : 0;
+      (results.filter((r) => r.langfuseTraceId != null).length / total) * 100;
 
     // ── Composite AQS ─────────────────────────────────────────────────────────
     const score =

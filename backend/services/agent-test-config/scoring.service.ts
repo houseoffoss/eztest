@@ -47,6 +47,7 @@ export class AgentTestScoringService {
     provider: AiProvider = "anthropic",
     apiKey?: string,
     model?: string,
+    httpStatus?: number | null,
   ): Promise<ScoringResult> {
     const criteria = rubric
       .split("|")
@@ -73,19 +74,30 @@ export class AgentTestScoringService {
       : "(Langfuse trace unavailable)";
 
     const systemPrompt = `You are an objective AI test evaluator. You will be given:
-1. An agent's raw API response
-2. A Langfuse execution trace (tool calls, LLM generations, latency)
-3. A list of pass/fail rubric criteria
+1. The HTTP response status code returned by the agent API
+2. An agent's raw API response body
+3. A Langfuse execution trace (tool calls, LLM generations, latency)
+4. A list of pass/fail rubric criteria
 
 For EACH criterion, output a JSON object with exactly these fields:
 - "criterion": the exact criterion text (string)
 - "pass": true if the criterion is met, false if not (boolean)
 - "reason": one concise sentence explaining your decision (string)
 
+For criteria that reference HTTP status codes (e.g. "HTTP status is 200"), evaluate them using the HTTP Response Status provided — not from the response body text.
+
 Return a JSON array containing one object per criterion, in the same order as provided.
 Do not include any text outside the JSON array.`;
 
-    const userMessage = `## Agent Response
+    const statusLine =
+      httpStatus != null
+        ? `HTTP ${httpStatus} ${httpStatus >= 200 && httpStatus < 300 ? "(success)" : "(non-2xx)"}`
+        : "HTTP status unknown";
+
+    const userMessage = `## HTTP Response Status
+${statusLine}
+
+## Agent Response Body
 \`\`\`
 ${agentResponse.slice(0, 8_000)}
 \`\`\`

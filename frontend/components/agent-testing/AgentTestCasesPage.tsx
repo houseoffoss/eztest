@@ -179,10 +179,10 @@ export default function AgentTestCasesPage({ configId }: Props) {
       // Restore the latest run state so a page refresh doesn't lose partial results
       if (runsRes.ok) {
         const runsData = await runsRes.json();
-        const runs: { runId: string; status: string }[] = runsData.data ?? [];
+        const runs: { id: string; status: string }[] = runsData.data ?? [];
         const latest = runs[0];
         if (latest) {
-          const runRes = await fetch(`/api/agent-test-runs/${latest.runId}`);
+          const runRes = await fetch(`/api/agent-test-runs/${latest.id}`);
           if (runRes.ok) {
             const runData = await runRes.json();
             const run: AgentTestRunSummary = runData.data;
@@ -623,6 +623,17 @@ export default function AgentTestCasesPage({ configId }: Props) {
                     View Results
                   </button>
                 )}
+
+                {/* Run history */}
+                <button
+                  onClick={() =>
+                    router.push(`/agent-testing/configs/${configId}/results`)
+                  }
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/50 hover:bg-white/10 border border-white/10 transition-colors"
+                >
+                  <FlaskConical className="w-3 h-3" />
+                  History
+                </button>
               </div>
             </div>
           </div>
