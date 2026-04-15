@@ -44,9 +44,17 @@ export class AgentTestConfigController {
   }
 
   async generateTests(request: CustomRequest, id: string) {
+    const url = new URL(request.url);
+    const maxTestCasesParam = url.searchParams.get("maxTestCases");
+    const MAX_ALLOWED = 20;
+    const parsed = maxTestCasesParam ? parseInt(maxTestCasesParam, 10) : NaN;
+    const maxTestCases =
+      !isNaN(parsed) && parsed > 0 ? Math.min(parsed, MAX_ALLOWED) : undefined;
+
     const testCases = await agentTestGenerationService.generateForConfig(
       id,
       request.userInfo.id,
+      maxTestCases !== undefined ? { maxTestCases } : undefined,
     );
     return { data: testCases, statusCode: 201 };
   }
@@ -110,6 +118,21 @@ export class AgentTestConfigController {
       request.userInfo.id,
     );
     return { data: runs };
+  }
+
+  async stopRun(request: CustomRequest, runId: string) {
+    await agentTestExecutionService.stopRun(runId, request.userInfo.id);
+    return { message: "Test run stopped" };
+  }
+
+  async pauseRun(request: CustomRequest, runId: string) {
+    await agentTestExecutionService.pauseRun(runId, request.userInfo.id);
+    return { message: "Test run paused" };
+  }
+
+  async resumeRun(request: CustomRequest, runId: string) {
+    await agentTestExecutionService.resumeRun(runId, request.userInfo.id);
+    return { message: "Test run resumed" };
   }
 
   async rescoreResult(request: CustomRequest, resultId: string) {

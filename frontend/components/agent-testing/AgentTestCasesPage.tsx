@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/frontend/reusable-components/layout/Navbar";
@@ -22,6 +22,8 @@ import {
   Trash2,
   Pencil,
   Play,
+  Pause,
+  Square,
   Loader2,
   X,
   Check,
@@ -55,7 +57,7 @@ type Category = (typeof CATEGORIES)[number];
 
 interface AgentTestRunSummary {
   runId: string;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "pending" | "running" | "paused" | "stopped" | "completed" | "failed";
   totalCases: number;
   completedCases: number;
   startedAt: string;
@@ -118,10 +120,14 @@ export default function AgentTestCasesPage({ configId }: Props) {
   // Regenerate
   const [generating, setGenerating] = useState(false);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
+  const [maxTestCases, setMaxTestCases] = useState<string>("");
 
   // Run
   const [running, setRunning] = useState(false);
+  const [controllingRun, setControllingRun] = useState(false);
   const [activeRun, setActiveRun] = useState<AgentTestRunSummary | null>(null);
+  // When true the polling loop exits immediately on the next tick
+  const stopPollingRef = useRef(false);
 
   // Filter by category
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -136,27 +142,55 @@ export default function AgentTestCasesPage({ configId }: Props) {
     if (status === "authenticated") {
       loadAll();
     }
+    return () => {
+      // Stop any in-flight poll when the component unmounts or configId changes
+      stopPollingRef.current = true;
+    };
   }, [status, configId]);
 
   const poll = (runId: string) => {
+    stopPollingRef.current = false;
     const doPoll = async () => {
+      if (stopPollingRef.current) return;
       try {
         const pollRes = await fetch(`/api/agent-test-runs/${runId}`);
         if (pollRes.ok) {
           const pollData = await pollRes.json();
           const updated: AgentTestRunSummary = pollData.data;
-          setActiveRun(updated);
-          if (updated.status === "running" || updated.status === "pending") {
+          // Re-check after the async fetch — stop may have been triggered while
+          // this request was in-flight. Never let a stale poll overwrite a
+          // terminal state the user already triggered locally.
+          if (stopPollingRef.current) return;
+          setActiveRun((prev) => {
+            // If the local state is already terminal (stopped/completed/failed),
+            // don't overwrite it with a stale "running" response from the server.
+            const terminalLocally =
+              prev?.status === "stopped" ||
+              prev?.status === "completed" ||
+              prev?.status === "failed";
+            return terminalLocally ? prev : updated;
+          });
+          if (
+            updated.status === "running" ||
+            updated.status === "pending" ||
+            updated.status === "paused"
+          ) {
             setTimeout(doPoll, 2000);
           } else {
             setRunning(false);
           }
           return;
         }
+        // Run no longer exists (e.g. config was deleted) — stop polling
+        if (pollRes.status === 404) {
+          setRunning(false);
+          setActiveRun(null);
+          return;
+        }
       } catch {
         // network hiccup — retry
       }
-      setTimeout(doPoll, 3000);
+      if (!stopPollingRef.current) setTimeout(doPoll, 3000);
     };
     setTimeout(doPoll, 2000);
   };
@@ -187,7 +221,11 @@ export default function AgentTestCasesPage({ configId }: Props) {
             const runData = await runRes.json();
             const run: AgentTestRunSummary = runData.data;
             setActiveRun(run);
-            if (run.status === "running" || run.status === "pending") {
+            if (
+              run.status === "running" ||
+              run.status === "pending" ||
+              run.status === "paused"
+            ) {
               setRunning(true);
               poll(run.runId);
             }
@@ -346,8 +384,13 @@ export default function AgentTestCasesPage({ configId }: Props) {
     setShowRegenConfirm(false);
     setGenerating(true);
     try {
+      const parsed = parseInt(maxTestCases, 10);
+      const limitParam =
+        maxTestCases.trim() !== "" && !isNaN(parsed) && parsed > 0
+          ? `?maxTestCases=${parsed}`
+          : "";
       const res = await fetch(
-        `/api/agent-test-configs/${configId}/generate-tests`,
+        `/api/agent-test-configs/${configId}/generate-tests${limitParam}`,
         { method: "POST" },
       );
       const data = await res.json();
@@ -374,6 +417,7 @@ export default function AgentTestCasesPage({ configId }: Props) {
   // ─── Run tests ────────────────────────────────────────────────────────────
 
   const handleRunTests = async () => {
+    stopPollingRef.current = false;
     setRunning(true);
     try {
       const res = await fetch(`/api/agent-test-configs/${configId}/run-tests`, {
@@ -398,6 +442,83 @@ export default function AgentTestCasesPage({ configId }: Props) {
         message:
           err instanceof Error ? err.message : "Failed to start test run.",
       });
+    }
+  };
+
+  // ─── Stop / Pause / Resume ────────────────────────────────────────────────
+
+  const handleStopRun = async () => {
+    if (!activeRun) return;
+    // Kill the polling loop immediately so it can't overwrite the stopped state
+    stopPollingRef.current = true;
+    setControllingRun(true);
+    try {
+      const res = await fetch(`/api/agent-test-runs/${activeRun.runId}/stop`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to stop run");
+      }
+      setActiveRun((prev) => (prev ? { ...prev, status: "stopped" } : prev));
+      setRunning(false);
+    } catch (err) {
+      // Restore polling if the stop request failed
+      stopPollingRef.current = false;
+      setAlert({
+        type: "error",
+        title: "Error",
+        message: err instanceof Error ? err.message : "Failed to stop run.",
+      });
+    } finally {
+      setControllingRun(false);
+    }
+  };
+
+  const handlePauseRun = async () => {
+    if (!activeRun) return;
+    setControllingRun(true);
+    try {
+      const res = await fetch(`/api/agent-test-runs/${activeRun.runId}/pause`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to pause run");
+      }
+      setActiveRun((prev) => (prev ? { ...prev, status: "paused" } : prev));
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message: err instanceof Error ? err.message : "Failed to pause run.",
+      });
+    } finally {
+      setControllingRun(false);
+    }
+  };
+
+  const handleResumeRun = async () => {
+    if (!activeRun) return;
+    setControllingRun(true);
+    try {
+      const res = await fetch(
+        `/api/agent-test-runs/${activeRun.runId}/resume`,
+        { method: "POST" },
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to resume run");
+      }
+      setActiveRun((prev) => (prev ? { ...prev, status: "running" } : prev));
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Error",
+        message: err instanceof Error ? err.message : "Failed to resume run.",
+      });
+    } finally {
+      setControllingRun(false);
     }
   };
 
@@ -482,11 +603,28 @@ export default function AgentTestCasesPage({ configId }: Props) {
                 </p>
               </div>
             </div>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-white/50 mb-1.5">
+                Max test cases (optional)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                placeholder="Unlimited (max 20)"
+                value={maxTestCases}
+                onChange={(e) => setMaxTestCases(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/25"
+              />
+            </div>
             <div className="flex justify-end gap-3">
               <ButtonPrimary
                 type="button"
                 variant="ghost"
-                onClick={() => setShowRegenConfirm(false)}
+                onClick={() => {
+                  setShowRegenConfirm(false);
+                  setMaxTestCases("");
+                }}
               >
                 Cancel
               </ButtonPrimary>
@@ -589,7 +727,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
                     disabled={
                       running ||
                       activeRun?.status === "running" ||
-                      activeRun?.status === "pending"
+                      activeRun?.status === "pending" ||
+                      activeRun?.status === "paused"
                     }
                     className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -600,10 +739,16 @@ export default function AgentTestCasesPage({ configId }: Props) {
                         <Loader2 className="w-3 h-3 animate-spin" />
                         Running...
                       </>
+                    ) : activeRun?.status === "paused" ? (
+                      <>
+                        <Pause className="w-3 h-3" />
+                        Paused
+                      </>
                     ) : (
                       <>
                         <Play className="w-3 h-3" />
-                        {activeRun?.status === "completed"
+                        {activeRun?.status === "completed" ||
+                        activeRun?.status === "stopped"
                           ? "Re-run"
                           : "Run Tests"}
                       </>
@@ -643,10 +788,19 @@ export default function AgentTestCasesPage({ configId }: Props) {
             <div className="mb-6">
               <DetailCard contentClassName="">
                 <div className="space-y-3">
+                  {/* Progress bar + counter + run controls */}
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-green-500 transition-all duration-500"
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          activeRun.status === "stopped"
+                            ? "bg-red-500"
+                            : activeRun.status === "paused"
+                              ? "bg-yellow-500"
+                              : activeRun.status === "failed"
+                                ? "bg-red-500"
+                                : "bg-green-500"
+                        }`}
                         style={{
                           width: activeRun.totalCases
                             ? `${(activeRun.completedCases / activeRun.totalCases) * 100}%`
@@ -662,10 +816,80 @@ export default function AgentTestCasesPage({ configId }: Props) {
                       {activeRun.status === "failed" && (
                         <span className="ml-1.5 text-red-400">failed</span>
                       )}
+                      {activeRun.status === "stopped" && (
+                        <span className="ml-1.5 text-red-400">stopped</span>
+                      )}
+                      {activeRun.status === "paused" && (
+                        <span className="ml-1.5 text-yellow-400">paused</span>
+                      )}
                     </span>
+
+                    {/* Pause / Resume / Stop controls — shown while run is active */}
+                    {(activeRun.status === "running" ||
+                      activeRun.status === "paused") && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {activeRun.status === "running" ? (
+                          <button
+                            onClick={handlePauseRun}
+                            disabled={controllingRun}
+                            title="Pause run"
+                            className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {controllingRun ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Pause className="w-3 h-3" />
+                            )}
+                            Pause
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleResumeRun}
+                            disabled={controllingRun}
+                            title="Resume run"
+                            className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {controllingRun ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Play className="w-3 h-3" />
+                            )}
+                            Resume
+                          </button>
+                        )}
+                        <button
+                          onClick={handleStopRun}
+                          disabled={controllingRun}
+                          title="Stop run"
+                          className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {controllingRun ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Square className="w-3 h-3 fill-current" />
+                          )}
+                          Stop
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {inProgressResult && (
+                  {activeRun.status === "paused" && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/8 border border-yellow-500/20">
+                      <Pause className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                      <span className="text-xs text-yellow-300/80">
+                        Run is paused. Click{" "}
+                        <span className="font-medium text-yellow-300">
+                          Resume
+                        </span>{" "}
+                        to continue or{" "}
+                        <span className="font-medium text-red-300">Stop</span>{" "}
+                        to end the run.
+                      </span>
+                    </div>
+                  )}
+
+                  {inProgressResult && activeRun.status === "running" && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/8 border border-yellow-500/20">
                       <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin shrink-0" />
                       <span className="text-xs text-yellow-300/80 truncate">

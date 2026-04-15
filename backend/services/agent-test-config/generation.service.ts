@@ -51,7 +51,28 @@ const CATEGORY_DESCRIPTIONS: Record<TestCategory, string> = {
   regression: "Common failure patterns agents typically struggle with",
 };
 
-function buildGenerationPrompt(agentDescription: string): string {
+function buildGenerationPrompt(
+  agentDescription: string,
+  maxTestCases?: number,
+): string {
+  const hasLimit = maxTestCases !== undefined && maxTestCases > 0;
+  // Each of the 7 categories must have at least 1 test case; distribute the
+  // remainder as evenly as possible across categories.
+  const minPerCategory = hasLimit
+    ? Math.max(1, Math.floor(maxTestCases / TEST_CATEGORIES.length))
+    : 3;
+  const quotaSection = hasLimit
+    ? `### Category quotas (STRICT)
+- Total test cases across ALL categories MUST NOT exceed ${maxTestCases}.
+- Each of the 7 categories MUST have at least ${minPerCategory} test case(s) — do NOT skip any category.
+- Distribute remaining cases (after the minimum) to categories most relevant to the agent's capabilities.
+- For \`tool_use\`: limit to the most important tools/skills only — do not generate one per tool if it would exceed the total cap.
+- **You must generate at least ${TEST_CATEGORIES.length * minPerCategory} test cases total (${minPerCategory} per category × 7 categories). Stop only after you reach ${maxTestCases}.**`
+    : `### Category quotas (STRICT)
+- \`tool_use\`: one test case per distinct tool or skill (no cap). Every tool and skill must have its own dedicated test case.
+- All other categories: at least 3 cases each. Generate as many as the agent's complexity justifies — more capabilities, more domain concepts, more constraints = more test cases.
+- **There is no upper limit. Cover the agent thoroughly. Do not stop early.**`;
+
   return `You are a senior AI quality assurance engineer specialising in LLM agent evaluation. Your task is to analyse an agent description and produce two things: the agent's API contract and a high-quality, executable test suite.
 
 Here is the full description of the agent — this may include its role, available tools, skills, API endpoints, request/response formats, auth headers, supported models, or any other details provided by the developer:
@@ -93,10 +114,7 @@ Before writing any test, identify:
 Generate test cases across the following 7 categories:
 ${TEST_CATEGORIES.map((c) => `- **${c}**: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
-### Category quotas (STRICT)
-- \`tool_use\`: one test case per distinct tool or skill (no cap). Every tool and skill must have its own dedicated test case.
-- All other categories: at least 3 cases each. Generate as many as the agent's complexity justifies — more capabilities, more domain concepts, more constraints = more test cases.
-- **There is no upper limit. Cover the agent thoroughly. Do not stop early.**
+${quotaSection}
 
 ### Tool and skill coverage (MANDATORY)
 - Every tool and every skill MUST be named explicitly in at least one rubric criterion (e.g. "Calls the \`search_web\` tool").
@@ -171,8 +189,92 @@ Respond with a single valid JSON object — no markdown fences, no prose, no exp
 }
 
 /**
+ * Attempt to recover a truncated testCases array by dropping the last
+ * (incomplete) element and closing the JSON structure.
+ */
+function recoverTruncatedJson(raw: string): GenerationResult | null {
+  const braceStart = raw.indexOf("{");
+  if (braceStart === -1) return null;
+
+  const partial = raw.slice(braceStart);
+
+  // Find the testCases array start
+  const arrayStart = partial.indexOf('"testCases"');
+  if (arrayStart === -1) return null;
+
+  const bracketStart = partial.indexOf("[", arrayStart);
+  if (bracketStart === -1) return null;
+
+  // Walk the partial string keeping only fully-closed objects in the array.
+  // We collect complete {...} elements and stop at the first unclosed one.
+  const arrayContent = partial.slice(bracketStart + 1);
+  const completeElements: string[] = [];
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let elementStart = 0;
+  let i = 0;
+
+  // Skip leading whitespace before first element
+  while (i < arrayContent.length && /\s/.test(arrayContent[i])) i++;
+  elementStart = i;
+
+  for (; i < arrayContent.length; i++) {
+    const ch = arrayContent[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === "\\" && inString) {
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (ch === "{") {
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        // Closed one element
+        completeElements.push(arrayContent.slice(elementStart, i + 1));
+        // Advance past the element; next should be ',' or ']'
+        i++;
+        while (i < arrayContent.length && /[\s,]/.test(arrayContent[i])) i++;
+        if (arrayContent[i] === "]") break; // natural end
+        elementStart = i;
+        i--; // loop will i++
+      }
+    } else if (ch === "]" && depth === 0) {
+      break; // natural end of array with no pending element
+    }
+  }
+
+  if (completeElements.length === 0) return null;
+
+  // Extract the apiContract portion (everything before "testCases")
+  const beforeArray = partial.slice(0, bracketStart + 1);
+  const contractSection = beforeArray.slice(0, arrayStart);
+
+  // Re-assemble a valid JSON string
+  const repaired = `${contractSection}"testCases": [${completeElements.join(",")}]}`;
+
+  try {
+    return JSON.parse(repaired);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Extract the first valid JSON object from a model response string.
- * Handles markdown code fences, leading/trailing prose, and extra whitespace.
+ * Handles markdown code fences, leading/trailing prose, truncated responses,
+ * and extra whitespace.
  */
 function extractJson(raw: string): GenerationResult {
   // 1. Try direct parse first (model obeyed instructions)
@@ -197,14 +299,33 @@ function extractJson(raw: string): GenerationResult {
   const braceStart = trimmed.indexOf("{");
   const braceEnd = trimmed.lastIndexOf("}");
   if (braceStart !== -1 && braceEnd > braceStart) {
-    return JSON.parse(trimmed.slice(braceStart, braceEnd + 1));
+    try {
+      return JSON.parse(trimmed.slice(braceStart, braceEnd + 1));
+    } catch {
+      // fall through to truncation recovery
+    }
+  }
+
+  // 4. Response was truncated mid-JSON — recover all complete test cases
+  const recovered = recoverTruncatedJson(trimmed);
+  if (recovered) {
+    console.warn(
+      "[generation] Response was truncated; recovered",
+      recovered.testCases.length,
+      "complete test cases.",
+    );
+    return recovered;
   }
 
   throw new Error("No JSON object found in response");
 }
 
 export class AgentTestGenerationService {
-  async generateForConfig(configId: string, userId: string) {
+  async generateForConfig(
+    configId: string,
+    userId: string,
+    options?: { maxTestCases?: number },
+  ) {
     const config = await prisma.agentTestConfig.findFirst({
       where: { id: configId, createdById: userId },
       select: {
@@ -238,11 +359,14 @@ export class AgentTestGenerationService {
       apiKey,
       purpose: "generation",
       model,
-      maxTokens: 16000,
+      maxTokens: 65536,
       messages: [
         {
           role: "user",
-          content: buildGenerationPrompt(config.systemPrompt),
+          content: buildGenerationPrompt(
+            config.systemPrompt,
+            options?.maxTestCases,
+          ),
         },
       ],
     });

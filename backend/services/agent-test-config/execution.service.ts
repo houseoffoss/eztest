@@ -10,6 +10,36 @@ import { agentTestAqsService } from "./aqs.service";
 import type { ApiContract } from "./generation.service";
 import { getEnvDefaults } from "@/lib/ai-provider";
 
+/**
+ * In-memory control signals for active test runs.
+ * "stop"  — abort the run immediately after the current test case finishes.
+ * "pause" — pause before starting the next test case (worker polls until "resume").
+ * null    — no signal; run continues normally.
+ */
+const runControlSignals = new Map<string, "stop" | "pause" | null>();
+
+/** Send a control signal to an active run. */
+export function sendRunControlSignal(
+  runId: string,
+  signal: "stop" | "pause" | "resume",
+): void {
+  if (signal === "resume") {
+    runControlSignals.set(runId, null);
+  } else {
+    runControlSignals.set(runId, signal);
+  }
+}
+
+/** Block until the signal for this run is no longer "pause", then return the current signal. */
+async function waitWhilePaused(runId: string): Promise<"stop" | null> {
+  while (runControlSignals.get(runId) === "pause") {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  const signal = runControlSignals.get(runId) ?? null;
+  // After the while loop, signal is guaranteed to not be "pause"
+  return signal === "stop" ? "stop" : null;
+}
+
 export interface AgentTestRunSummary {
   runId: string;
   configId: string;
@@ -236,7 +266,22 @@ export class AgentTestExecutionService {
     let consecutiveFetchFailures = 0;
     const MAX_CONSECUTIVE_FETCH_FAILURES = 3;
 
+    // Initialise the signal slot (null = no pending signal)
+    runControlSignals.set(runId, null);
+
     for (const tc of testCases) {
+      // ── Control signal check (pause / stop) ────────────────────────────────
+      // First wait while paused, then check if a stop was issued.
+      const signal = await waitWhilePaused(runId);
+      if (signal === "stop") {
+        await prisma.agentTestRun.update({
+          where: { id: runId },
+          data: { status: "stopped", completedAt: new Date() },
+        });
+        runControlSignals.delete(runId);
+        return;
+      }
+
       const sessionId = sessionMap.get(tc.id)!;
       const resultId = resultIdMap.get(tc.id)!;
 
@@ -373,6 +418,7 @@ export class AgentTestExecutionService {
             completedAt: new Date(),
           },
         });
+        runControlSignals.delete(runId);
         return;
       }
 
@@ -452,6 +498,7 @@ export class AgentTestExecutionService {
     }
 
     // Mark run as completed
+    runControlSignals.delete(runId);
     const completedRun = await prisma.agentTestRun.update({
       where: { id: runId },
       data: { status: "completed", completedAt: new Date() },
@@ -468,6 +515,64 @@ export class AgentTestExecutionService {
       console.error("[AgentTestExecution] AQS computation failed:", err);
       // Non-fatal — run result is still stored; AQS can be re-triggered via API
     }
+  }
+
+  /**
+   * Stop a running test run. The background worker will abort after the
+   * current test case finishes. The run is marked "stopped" in the DB.
+   */
+  async stopRun(runId: string, userId: string): Promise<void> {
+    const run = await prisma.agentTestRun.findFirst({
+      where: { id: runId, config: { createdById: userId } },
+      select: { id: true, status: true },
+    });
+    if (!run) throw new NotFoundException("Test run not found");
+
+    // If the run is still active in this process, signal it
+    if (runControlSignals.has(runId)) {
+      sendRunControlSignal(runId, "stop");
+    } else {
+      // Run is in another process or already finished — update DB directly
+      await prisma.agentTestRun.update({
+        where: { id: runId },
+        data: { status: "stopped", completedAt: new Date() },
+      });
+    }
+  }
+
+  /**
+   * Pause a running test run. The background worker will pause before
+   * the next test case. The run is marked "paused" in the DB.
+   */
+  async pauseRun(runId: string, userId: string): Promise<void> {
+    const run = await prisma.agentTestRun.findFirst({
+      where: { id: runId, config: { createdById: userId } },
+      select: { id: true, status: true },
+    });
+    if (!run) throw new NotFoundException("Test run not found");
+
+    sendRunControlSignal(runId, "pause");
+    await prisma.agentTestRun.update({
+      where: { id: runId },
+      data: { status: "paused" },
+    });
+  }
+
+  /**
+   * Resume a paused test run.
+   */
+  async resumeRun(runId: string, userId: string): Promise<void> {
+    const run = await prisma.agentTestRun.findFirst({
+      where: { id: runId, config: { createdById: userId } },
+      select: { id: true, status: true },
+    });
+    if (!run) throw new NotFoundException("Test run not found");
+
+    sendRunControlSignal(runId, "resume");
+    await prisma.agentTestRun.update({
+      where: { id: runId },
+      data: { status: "running" },
+    });
   }
 
   /**
@@ -580,7 +685,10 @@ export class AgentTestExecutionService {
    */
   async getRun(runId: string, userId: string): Promise<AgentTestRunSummary> {
     const run = await prisma.agentTestRun.findFirst({
-      where: { id: runId, createdById: userId },
+      where: {
+        id: runId,
+        config: { createdById: userId },
+      },
       include: {
         config: { select: { id: true, name: true, agentApiUrl: true } },
         results: {

@@ -513,6 +513,11 @@ export default function AgentTestRunResults({ runId }: Props) {
   const fetchRun = useCallback(async () => {
     try {
       const res = await fetch(`/api/agent-test-runs/${runId}`);
+      if (res.status === 404) {
+        // Run was deleted (e.g. config was removed) — redirect to setup
+        router.replace("/agent-testing/setup");
+        return;
+      }
       if (!res.ok) throw new Error("Failed to load run");
       const data = await res.json();
       setRun(data.data as AgentTestRunState);
@@ -525,7 +530,7 @@ export default function AgentTestRunResults({ runId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [runId]);
+  }, [runId, router]);
 
   // Initial load + polling while running
   useEffect(() => {

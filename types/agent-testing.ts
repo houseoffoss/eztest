@@ -71,7 +71,7 @@ export interface AgentTestRunState {
   configId?: string;
   configName?: string;
   agentApiUrl?: string;
-  status: "pending" | "running" | "completed" | "failed";
+  status: "pending" | "running" | "paused" | "stopped" | "completed" | "failed";
   totalCases: number;
   completedCases: number;
   startedAt: string;

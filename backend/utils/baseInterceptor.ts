@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export type BaseApiMethod<T extends NextRequest = NextRequest> = (
   request: T,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  context: any
+  context: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => Promise<any>;
 
@@ -15,7 +15,7 @@ export type BaseApiMethod<T extends NextRequest = NextRequest> = (
 // }
 
 export function baseInterceptor<T extends NextRequest>(
-  apiMethod: BaseApiMethod<T>
+  apiMethod: BaseApiMethod<T>,
 ): BaseApiMethod<T> {
   return async (request, context) => {
     try {
@@ -32,33 +32,30 @@ export function baseInterceptor<T extends NextRequest>(
 
       return NextResponse.json(responseData, { status: statusCode });
     } catch (err: unknown) {
-      const error = err as { message?: string; statusCode?: number; data?: unknown };
-      // Log error
-      // const globalWithLogger = globalThis as unknown as GlobalWithLogger;
-      // if (globalWithLogger.logger) {
-      //   globalWithLogger.logger.error({
-      //     message: error.message || 'Unknown error',
-      //     err: err,
-      //     statusCode: error.statusCode || 500
-      //   });
-      // } else {
-        console.error('Error:', err);
-      // }
+      const error = err as {
+        message?: string;
+        statusCode?: number;
+        data?: unknown;
+      };
+      // Only log unexpected server errors — 4xx are normal application flow
+      if (!error.statusCode || error.statusCode >= 500) {
+        console.error("Error:", err);
+      }
 
       if (error.statusCode === 422) {
         return NextResponse.json(
           { message: error.message, data: error.data },
-          { status: error.statusCode }
+          { status: error.statusCode },
         );
       } else if (error.statusCode) {
         return NextResponse.json(
           { message: error.message, data: error.data || null },
-          { status: error.statusCode }
+          { status: error.statusCode },
         );
       } else {
         return NextResponse.json(
-          { message: error.message || 'Something went wrong' },
-          { status: 500 }
+          { message: error.message || "Something went wrong" },
+          { status: 500 },
         );
       }
     }
