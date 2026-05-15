@@ -10,6 +10,24 @@ import { agentTestAqsService } from "./aqs.service";
 import type { ApiContract } from "./generation.service";
 import { getEnvDefaults } from "@/lib/ai-provider";
 
+function buildAuthHeaders(
+  authType: string,
+  authKey: string | null,
+  authValue: string | null,
+): Record<string, string> {
+  if (!authType || authType === "none" || !authValue) return {};
+  switch (authType) {
+    case "bearer":
+      return { Authorization: `Bearer ${authValue}` };
+    case "apikey":
+      return { [authKey || "X-Api-Key"]: authValue };
+    case "cookie":
+      return { Cookie: `${authKey || "session"}=${authValue}` };
+    default:
+      return {};
+  }
+}
+
 /**
  * In-memory control signals for active test runs.
  * "stop"  — abort the run immediately after the current test case finishes.
@@ -118,6 +136,9 @@ export class AgentTestExecutionService {
         aiProvider: true,
         aiModel: true,
         aiApiKey: true,
+        agentAuthType: true,
+        agentAuthKey: true,
+        agentAuthValue: true,
       },
     });
 
@@ -216,6 +237,9 @@ export class AgentTestExecutionService {
       (config.aiProvider ?? envDefaults.provider) as "anthropic" | "google",
       config.aiApiKey ?? envDefaults.apiKey,
       config.aiModel ?? envDefaults.model,
+      config.agentAuthType ?? "none",
+      config.agentAuthKey ?? null,
+      config.agentAuthValue ?? null,
     ).catch((err) =>
       console.error("[AgentTestExecution] background execution failed:", err),
     );
@@ -256,6 +280,9 @@ export class AgentTestExecutionService {
     aiProvider: "anthropic" | "google" = "anthropic",
     aiApiKey?: string,
     aiModel?: string,
+    agentAuthType: string = "none",
+    agentAuthKey: string | null = null,
+    agentAuthValue: string | null = null,
   ): Promise<void> {
     const sessionMap = new Map(
       resultData.map((r) => [r.testCaseId, r.sessionId]),
@@ -299,13 +326,20 @@ export class AgentTestExecutionService {
       const sessionStartPath = apiContract?.sessionStartPath ?? null;
       const chatUrl = baseUrl + chatPath;
 
+      // Build auth headers once per test case
+      const authHeaders = buildAuthHeaders(
+        agentAuthType,
+        agentAuthKey,
+        agentAuthValue,
+      );
+
       // Start a session if the contract specifies a session start path
       let agentSessionId: string = sessionId;
       if (sessionStartPath) {
         try {
           const sessionRes = await fetch(baseUrl + sessionStartPath, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...authHeaders },
             signal: AbortSignal.timeout(30_000),
           });
           if (sessionRes.ok) {
@@ -345,6 +379,7 @@ export class AgentTestExecutionService {
               "Content-Type": "application/json",
               "X-Session-Id": agentSessionId,
               ...extraHeaders,
+              ...authHeaders,
             },
             body: JSON.stringify(requestBody),
             signal: AbortSignal.timeout(90_000),

@@ -579,6 +579,9 @@ model AgentTestConfig {
   aiProvider      String   @default("anthropic") // anthropic | google
   aiModel         String?  // optional model override; if null, use provider default
   aiApiKey        String?  @db.Text
+  agentAuthType   String?  // "none" | "bearer" | "apikey" | "cookie"
+  agentAuthKey    String?  // header name (apikey) or cookie name (cookie)
+  agentAuthValue  String?  @db.Text
   createdById     String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -7,6 +7,8 @@ export const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
   google: "Google AI Studio (Gemini)",
 };
 
+export type AgentAuthType = "none" | "bearer" | "apikey" | "cookie";
+
 export interface AgentTestConfig {
   id: string;
   name: string;
@@ -15,6 +17,9 @@ export interface AgentTestConfig {
   systemPrompt: string;
   aiProvider: AiProvider;
   aiModel: string | null;
+  agentAuthType: AgentAuthType | null;
+  agentAuthKey: string | null;
+  agentAuthValue: string | null;
   createdAt: string;
   updatedAt: string;
 }

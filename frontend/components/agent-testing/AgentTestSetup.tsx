@@ -36,6 +36,8 @@ import { ANTHROPIC_MODELS, GOOGLE_MODELS } from "@/lib/ai-provider";
 
 type AiProvider = "anthropic" | "google";
 
+type AgentAuthType = "none" | "bearer" | "apikey" | "cookie";
+
 interface AgentTestConfig {
   id: string;
   name: string;
@@ -44,6 +46,9 @@ interface AgentTestConfig {
   systemPrompt: string;
   aiProvider: AiProvider;
   aiModel: string | null;
+  agentAuthType: AgentAuthType | null;
+  agentAuthKey: string | null;
+  agentAuthValue: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,6 +103,9 @@ interface SetupFormData {
   aiProvider: AiProvider;
   aiModel: string;
   aiApiKey: string;
+  agentAuthType: AgentAuthType;
+  agentAuthKey: string;
+  agentAuthValue: string;
 }
 
 const CUSTOM_MODEL_VALUE = "__custom__";
@@ -111,6 +119,9 @@ const emptyForm: SetupFormData = {
   aiProvider: "anthropic",
   aiModel: ANTHROPIC_MODELS[0].value,
   aiApiKey: "",
+  agentAuthType: "none",
+  agentAuthKey: "",
+  agentAuthValue: "",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -394,6 +405,9 @@ export default function AgentTestSetup() {
       aiProvider: config.aiProvider,
       aiModel: modelValue,
       aiApiKey: "",
+      agentAuthType: config.agentAuthType ?? "none",
+      agentAuthKey: config.agentAuthKey ?? "",
+      agentAuthValue: config.agentAuthValue ?? "",
     });
     setEditCustomModel(
       isKnown || config.aiModel == null ? "" : (config.aiModel ?? ""),
@@ -445,6 +459,9 @@ export default function AgentTestSetup() {
         systemPrompt: editForm.systemPrompt,
         aiProvider: editForm.aiProvider,
         aiModel: resolvedEditModel || undefined,
+        agentAuthType: editForm.agentAuthType,
+        agentAuthKey: editForm.agentAuthKey || undefined,
+        agentAuthValue: editForm.agentAuthValue || undefined,
       };
       // Only send secrets if the user typed a new value
       if (editForm.langfuseSecretKey.trim())
@@ -714,6 +731,141 @@ export default function AgentTestSetup() {
                       <p className="text-xs text-red-400">
                         {fieldErrors.agentApiUrl}
                       </p>
+                    )}
+                  </div>
+
+                  {/* Agent Authentication */}
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="agent-auth-type">
+                        Agent Authentication
+                      </Label>
+                      <p className="text-xs text-white/40">
+                        If your agent API requires authentication, select the
+                        type and provide the credentials.
+                      </p>
+                      <div className="relative">
+                        <select
+                          id="agent-auth-type"
+                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                          value={form.agentAuthType}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              agentAuthType: e.target.value as AgentAuthType,
+                              agentAuthKey: "",
+                              agentAuthValue: "",
+                            }))
+                          }
+                        >
+                          <option value="none">None (public API)</option>
+                          <option value="bearer">Bearer Token</option>
+                          <option value="apikey">API Key Header</option>
+                          <option value="cookie">Cookie</option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                      </div>
+                    </div>
+                    {form.agentAuthType === "bearer" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="agent-auth-value-bearer">
+                          Bearer Token <span className="text-red-400">*</span>
+                        </Label>
+                        <Input
+                          id="agent-auth-value-bearer"
+                          type="password"
+                          variant="glass"
+                          value={form.agentAuthValue}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              agentAuthValue: e.target.value,
+                            }))
+                          }
+                          placeholder="your-bearer-token"
+                        />
+                      </div>
+                    )}
+                    {form.agentAuthType === "apikey" && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="agent-auth-key-apikey">
+                            Header Name <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            id="agent-auth-key-apikey"
+                            type="text"
+                            variant="glass"
+                            value={form.agentAuthKey}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                agentAuthKey: e.target.value,
+                              }))
+                            }
+                            placeholder="X-Api-Key"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="agent-auth-value-apikey">
+                            API Key Value{" "}
+                            <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            id="agent-auth-value-apikey"
+                            type="password"
+                            variant="glass"
+                            value={form.agentAuthValue}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                agentAuthValue: e.target.value,
+                              }))
+                            }
+                            placeholder="your-api-key"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {form.agentAuthType === "cookie" && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="agent-auth-key-cookie">
+                            Cookie Name <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            id="agent-auth-key-cookie"
+                            type="text"
+                            variant="glass"
+                            value={form.agentAuthKey}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                agentAuthKey: e.target.value,
+                              }))
+                            }
+                            placeholder="session"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="agent-auth-value-cookie">
+                            Cookie Value <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            id="agent-auth-value-cookie"
+                            type="password"
+                            variant="glass"
+                            value={form.agentAuthValue}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                agentAuthValue: e.target.value,
+                              }))
+                            }
+                            placeholder="your-cookie-value"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -1173,6 +1325,154 @@ export default function AgentTestSetup() {
                               <p className="text-xs text-red-400">
                                 {editFieldErrors.agentApiUrl}
                               </p>
+                            )}
+                          </div>
+
+                          {/* Agent Authentication */}
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-auth-type-${config.id}`}>
+                                Agent Authentication
+                              </Label>
+                              <div className="relative">
+                                <select
+                                  id={`edit-auth-type-${config.id}`}
+                                  className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                                  value={editForm.agentAuthType}
+                                  onChange={(e) =>
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      agentAuthType: e.target
+                                        .value as AgentAuthType,
+                                      agentAuthKey: "",
+                                      agentAuthValue: "",
+                                    }))
+                                  }
+                                >
+                                  <option value="none">
+                                    None (public API)
+                                  </option>
+                                  <option value="bearer">Bearer Token</option>
+                                  <option value="apikey">API Key Header</option>
+                                  <option value="cookie">Cookie</option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                              </div>
+                            </div>
+                            {editForm.agentAuthType === "bearer" && (
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor={`edit-auth-value-bearer-${config.id}`}
+                                >
+                                  Bearer Token{" "}
+                                  <span className="text-red-400">*</span>
+                                </Label>
+                                <Input
+                                  id={`edit-auth-value-bearer-${config.id}`}
+                                  type="password"
+                                  variant="glass"
+                                  value={editForm.agentAuthValue}
+                                  onChange={(e) =>
+                                    setEditForm((f) => ({
+                                      ...f,
+                                      agentAuthValue: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="your-bearer-token"
+                                />
+                              </div>
+                            )}
+                            {editForm.agentAuthType === "apikey" && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor={`edit-auth-key-apikey-${config.id}`}
+                                  >
+                                    Header Name{" "}
+                                    <span className="text-red-400">*</span>
+                                  </Label>
+                                  <Input
+                                    id={`edit-auth-key-apikey-${config.id}`}
+                                    type="text"
+                                    variant="glass"
+                                    value={editForm.agentAuthKey}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        agentAuthKey: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="X-Api-Key"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor={`edit-auth-value-apikey-${config.id}`}
+                                  >
+                                    API Key Value{" "}
+                                    <span className="text-red-400">*</span>
+                                  </Label>
+                                  <Input
+                                    id={`edit-auth-value-apikey-${config.id}`}
+                                    type="password"
+                                    variant="glass"
+                                    value={editForm.agentAuthValue}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        agentAuthValue: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="your-api-key"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {editForm.agentAuthType === "cookie" && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor={`edit-auth-key-cookie-${config.id}`}
+                                  >
+                                    Cookie Name{" "}
+                                    <span className="text-red-400">*</span>
+                                  </Label>
+                                  <Input
+                                    id={`edit-auth-key-cookie-${config.id}`}
+                                    type="text"
+                                    variant="glass"
+                                    value={editForm.agentAuthKey}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        agentAuthKey: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="session"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor={`edit-auth-value-cookie-${config.id}`}
+                                  >
+                                    Cookie Value{" "}
+                                    <span className="text-red-400">*</span>
+                                  </Label>
+                                  <Input
+                                    id={`edit-auth-value-cookie-${config.id}`}
+                                    type="password"
+                                    variant="glass"
+                                    value={editForm.agentAuthValue}
+                                    onChange={(e) =>
+                                      setEditForm((f) => ({
+                                        ...f,
+                                        agentAuthValue: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="your-cookie-value"
+                                  />
+                                </div>
+                              </div>
                             )}
                           </div>
 
