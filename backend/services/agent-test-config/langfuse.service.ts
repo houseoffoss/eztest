@@ -7,7 +7,6 @@
  *   GET /api/public/traces?sessionId={sessionId}
  *   Authorization: Basic base64(publicKey:secretKey)
  *
- * The agent embeds the session_id (UUID) in the trace when it calls Langfuse,
  * so we can correlate our AgentTestResult with the upstream trace.
  *
  * Retry strategy: up to MAX_ATTEMPTS with exponential back-off, because
