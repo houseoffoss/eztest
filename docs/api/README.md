@@ -433,8 +433,8 @@ GET /api/projects/:id/testcases?status=ACTIVE&priority=HIGH
 |--------|--------|-------------|
 | `status` | ACTIVE, DRAFT, DEPRECATED | Test case status |
 | `priority` | CRITICAL, HIGH, MEDIUM, LOW | Priority level |
-| `suiteId` | UUID | Filter by suite |
-| `assignedTo` | UUID | Filter by assignee |
+| `suiteId` | CUID | Filter by suite |
+| `assignedTo` | CUID | Filter by assignee |
 
 ---
 

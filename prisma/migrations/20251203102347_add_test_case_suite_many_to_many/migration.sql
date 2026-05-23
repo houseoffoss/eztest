@@ -25,6 +25,10 @@ ALTER TABLE "TestCaseSuite" ADD CONSTRAINT "TestCaseSuite_testSuiteId_fkey" FORE
 
 -- Migrate existing data from TestCase.suiteId to TestCaseSuite table
 INSERT INTO "TestCaseSuite" ("id", "testCaseId", "testSuiteId", "addedAt")
-SELECT gen_random_uuid(), "id", "suiteId", "createdAt"
+SELECT
+  substr(md5(random()::text || clock_timestamp()::text), 1, 24),
+  "id",
+  "suiteId",
+  "createdAt"
 FROM "TestCase"
 WHERE "suiteId" IS NOT NULL;

@@ -1,5 +1,5 @@
-import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { createId } from "@paralleldrive/cuid2";
 import {
   NotFoundException,
   InternalServerException,
@@ -122,7 +122,7 @@ export class AgentTestExecutionService {
     const resultData = testCases.map((tc) => ({
       runId: run.id,
       testCaseId: tc.id,
-      sessionId: randomUUID(),
+      sessionId: createId(),
       status: "pending" as const,
     }));
 

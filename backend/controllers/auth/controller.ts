@@ -1,14 +1,14 @@
-import { authService } from '@/backend/services/auth/services';
+import { authService } from "@/backend/services/auth/services";
 import {
   registerSchema,
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from '@/backend/validators/auth.validator';
-import { CustomRequest } from '@/backend/utils/interceptor';
-import { ValidationException } from '@/backend/utils/exceptions';
-import { sendPasswordResetEmail } from '@/lib/email-service';
-import { AuthMessages } from '@/backend/constants/static_messages';
+} from "@/backend/validators/auth.validator";
+import { CustomRequest } from "@/backend/utils/interceptor";
+import { ValidationException } from "@/backend/utils/exceptions";
+import { sendPasswordResetEmail } from "@/lib/email-service";
+import { AuthMessages } from "@/backend/constants/static_messages";
 
 export class AuthController {
   /**
@@ -18,8 +18,8 @@ export class AuthController {
     const validationResult = registerSchema.safeParse(body);
     if (!validationResult.success) {
       throw new ValidationException(
-        'Validation failed',
-        validationResult.error.issues
+        "Validation failed",
+        validationResult.error.issues,
       );
     }
 
@@ -33,7 +33,7 @@ export class AuthController {
         user,
       };
     } catch (error) {
-      if (error instanceof Error && error.message.includes('already exists')) {
+      if (error instanceof Error && error.message.includes("already exists")) {
         throw new ValidationException(AuthMessages.UserAlreadyExists);
       }
       throw error;
@@ -47,8 +47,8 @@ export class AuthController {
     const validationResult = changePasswordSchema.safeParse(body);
     if (!validationResult.success) {
       throw new ValidationException(
-        'Validation failed',
-        validationResult.error.issues
+        "Validation failed",
+        validationResult.error.issues,
       );
     }
 
@@ -66,14 +66,16 @@ export class AuthController {
       };
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('incorrect')) {
+        if (error.message.includes("incorrect")) {
           throw new ValidationException(AuthMessages.CurrentPasswordIncorrect);
         }
-        if (error.message.includes('different')) {
-          throw new ValidationException(AuthMessages.NewPasswordMustBeDifferent);
+        if (error.message.includes("different")) {
+          throw new ValidationException(
+            AuthMessages.NewPasswordMustBeDifferent,
+          );
         }
-        if (error.message.includes('not found')) {
-          throw new ValidationException('User not found');
+        if (error.message.includes("not found")) {
+          throw new ValidationException("User not found");
         }
       }
       throw error;
@@ -87,8 +89,8 @@ export class AuthController {
     const validationResult = forgotPasswordSchema.safeParse(body);
     if (!validationResult.success) {
       throw new ValidationException(
-        'Validation failed',
-        validationResult.error.issues
+        "Validation failed",
+        validationResult.error.issues,
       );
     }
 
@@ -99,17 +101,22 @@ export class AuthController {
 
       // Send email if token was generated
       if (result.token && result.user) {
-        const appUrl = process.env.APP_URL || 'http://localhost:3000';
+        const appUrl =
+          process.env.NEXTAUTH_URL ||
+          process.env.APP_URL ||
+          "http://localhost:3000";
         const resetLink = `${appUrl}/auth/reset-password?token=${result.token}`;
 
         const emailSent = await sendPasswordResetEmail(
           result.user.email,
           resetLink,
-          result.user.name || 'User'
+          result.user.name || "User",
         );
 
         if (!emailSent) {
-          console.error(`Failed to send password reset email to ${result.user.email}, but token was created`);
+          console.error(
+            `Failed to send password reset email to ${result.user.email}, but token was created`,
+          );
         } else {
           console.log(`Password reset email sent to ${result.user.email}`);
         }
@@ -134,8 +141,8 @@ export class AuthController {
     const validationResult = resetPasswordSchema.safeParse(body);
     if (!validationResult.success) {
       throw new ValidationException(
-        'Validation failed',
-        validationResult.error.issues
+        "Validation failed",
+        validationResult.error.issues,
       );
     }
 
@@ -168,8 +175,8 @@ export class AuthController {
         permissions: result.permissions,
       };
     } catch (error) {
-      if (error instanceof Error && error.message.includes('not found')) {
-        throw new ValidationException('User not found');
+      if (error instanceof Error && error.message.includes("not found")) {
+        throw new ValidationException("User not found");
       }
       throw error;
     }
