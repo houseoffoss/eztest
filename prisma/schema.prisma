@@ -641,7 +641,7 @@ model AgentTestResult {
   id               String    @id @default(cuid())
   runId            String
   testCaseId       String
-  sessionId        String    @unique // UUID sent as session_id to agent & Langfuse
+  sessionId        String    @unique @default(cuid()) // Session ID sent as session_id to agent & Langfuse
   status           String    @default("pending") // pending | success | error
   requestPayload   String?   @db.Text // JSON body sent to agent API
   agentResponse    String?   @db.Text // Raw response body from agent API
