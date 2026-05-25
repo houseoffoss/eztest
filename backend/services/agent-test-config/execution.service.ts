@@ -8,6 +8,7 @@ import { langfuseTraceService, type LangfuseTrace } from "./langfuse.service";
 import { agentTestScoringService } from "./scoring.service";
 import { agentTestAqsService } from "./aqs.service";
 import type { ApiContract } from "./generation.service";
+import type { AgentTestCaseTurn } from "@/types/agent-testing";
 import { getEnvDefaults } from "@/lib/ai-provider";
 
 export interface AgentTestRunSummary {
@@ -56,11 +57,14 @@ export interface AgentTestResultSummary {
   testCase: {
     title: string;
     category: string;
+    dimension: string | null;
     input: string;
     expectedBehavior: string;
     rubric: string;
+    turns: string | null;
   };
 }
+
 
 export class AgentTestExecutionService {
   /**
@@ -90,6 +94,8 @@ export class AgentTestExecutionService {
         aiApiKey: true,
         cookies: true,
         authHeaders: true,
+        testMode: true,
+        multiTurnSessionId: true,
       },
     });
 
@@ -101,6 +107,7 @@ export class AgentTestExecutionService {
     const testCases = await prisma.agentTestCase.findMany({
       where: { configId },
       orderBy: { generatedAt: "asc" },
+      select: { id: true, category: true, input: true, rubric: true, turns: true },
     });
 
     if (testCases.length === 0) {
@@ -120,13 +127,24 @@ export class AgentTestExecutionService {
       },
     });
 
-    // Pre-create all result rows with unique session IDs (pending)
-    const resultData = testCases.map((tc) => ({
-      runId: run.id,
-      testCaseId: tc.id,
-      sessionId: createId(),
-      status: "pending" as const,
-    }));
+    // Pre-create all result rows with session IDs (pending)
+    // Session assignment respects testMode and multi-turn category:
+    // - testMode: "multi_turn" + category: "multi_turn" → use config.multiTurnSessionId
+    // - testMode: "single_turn" → always fresh sessionId
+    // - testMode: "both" + category: "multi_turn" → use config.multiTurnSessionId; others → fresh
+    const resultData = testCases.map((tc) => {
+      const useMultiTurnSession =
+        (config.testMode === "both" || config.testMode === "multi_turn") &&
+        tc.category === "multi_turn" &&
+        config.multiTurnSessionId;
+
+      return {
+        runId: run.id,
+        testCaseId: tc.id,
+        sessionId: useMultiTurnSession ? config.multiTurnSessionId! : createId(),
+        status: "pending" as const,
+      };
+    });
 
     await prisma.agentTestResult.createMany({ data: resultData });
 
@@ -138,9 +156,11 @@ export class AgentTestExecutionService {
           select: {
             title: true,
             category: true,
+            dimension: true,
             input: true,
             expectedBehavior: true,
             rubric: true,
+            turns: true,
           },
         },
       },
@@ -232,7 +252,7 @@ export class AgentTestExecutionService {
     apiContract: ApiContract | null,
     cookies: Array<{ name: string; value: string }> = [],
     authHeaders: Record<string, string> = {},
-    testCases: { id: string; input: string; rubric: string }[],
+    testCases: { id: string; category: string; input: string; rubric: string; turns: string | null }[],
     resultData: { runId: string; testCaseId: string; sessionId: string }[],
     resultIdMap: Map<string, string>,
     aiProvider: "anthropic" | "google" = "anthropic",
@@ -252,137 +272,41 @@ export class AgentTestExecutionService {
       const sessionId = sessionMap.get(tc.id)!;
       const resultId = resultIdMap.get(tc.id)!;
 
-      // ── Step A: call the agent API ────────────────────────────────────────
-      let agentResponse: string | null = null;
-      let httpStatus: number | null = null;
-      let latencyMs: number | null = null;
-      let agentError: string | null = null;
-      let agentOk = false;
+      const isMultiTurn = tc.category === "multi_turn" && tc.turns != null;
 
-      const baseUrl = agentApiUrl.replace(/\/+$/, "");
-
-      // Resolve paths from extracted API contract, no fallback assumptions
-      const chatPath = apiContract?.chatPath ?? "/api/chat";
-      const sessionStartPath = apiContract?.sessionStartPath ?? null;
-      const chatUrl = baseUrl + chatPath;
-
-      // Start a session if the contract specifies a session start path
-      let agentSessionId: string = sessionId;
-      if (sessionStartPath) {
-        try {
-          const sessionRes = await fetch(baseUrl + sessionStartPath, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...authHeaders },
-            signal: AbortSignal.timeout(30_000),
-          });
-          if (sessionRes.ok) {
-            const sessionData = await sessionRes.json();
-            if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
-          }
-        } catch {
-          // Non-fatal — fall back to using our own sessionId
-        }
+      if (isMultiTurn) {
+        const fetchFailureDelta = await this._executeMultiTurn({
+          resultId,
+          sessionId,
+          tc: { id: tc.id, input: tc.input, rubric: tc.rubric, turns: tc.turns! },
+          agentApiUrl,
+          apiContract,
+          cookies,
+          authHeaders,
+          langfusePublicKey,
+          langfuseSecretKey,
+          aiProvider,
+          aiApiKey,
+          aiModel,
+        });
+        consecutiveFetchFailures += fetchFailureDelta;
+      } else {
+        const fetchFailureDelta = await this._executeSingleTurn({
+          resultId,
+          sessionId,
+          tc: { id: tc.id, input: tc.input, rubric: tc.rubric },
+          agentApiUrl,
+          apiContract,
+          cookies,
+          authHeaders,
+          langfusePublicKey,
+          langfuseSecretKey,
+          aiProvider,
+          aiApiKey,
+          aiModel,
+        });
+        consecutiveFetchFailures += fetchFailureDelta;
       }
-
-      // Build request body from extracted contract, replacing placeholders
-      const requestBody = apiContract?.requestBody
-        ? Object.fromEntries(
-            Object.entries(apiContract.requestBody).map(([k, v]) => [
-              k,
-              v === "{{input}}"
-                ? tc.input
-                : v === "{{sessionId}}"
-                  ? agentSessionId
-                  : v,
-            ]),
-          )
-        : { message: tc.input, sessionId: agentSessionId };
-
-      // Build headers from extracted contract
-      const extraHeaders: Record<string, string> = apiContract?.headers ?? {};
-
-      // Build Cookie header from cookies array
-      const cookieHeader = cookies.length > 0 ? cookies.map((c) => `${c.name}=${c.value}`).join("; ") : undefined;
-
-      console.log("[AgentTestExecution] authHeaders keys:", Object.keys(authHeaders), "| has Authorization:", !!authHeaders.Authorization);
-
-      // Attempt the agent call — retry twice on timeout, abort run on 3+ consecutive fetch failures
-      const MAX_ATTEMPTS = 3;
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        const t0 = Date.now();
-        try {
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-            "X-Session-Id": agentSessionId,
-            ...extraHeaders,
-            ...authHeaders,
-          };
-          if (cookieHeader) {
-            headers.Cookie = cookieHeader;
-          }
-
-          const response = await fetch(chatUrl, {
-            method: "POST",
-            headers,
-            body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(90_000),
-          });
-
-          latencyMs = Date.now() - t0;
-          const rawBody = await response.text();
-
-          httpStatus = response.status;
-          agentResponse = rawBody.slice(0, 65_535);
-          agentOk = response.ok;
-
-          if (!response.ok) {
-            agentError = `Agent returned HTTP ${response.status}`;
-          }
-
-          // Any HTTP response (even non-2xx) counts as a successful fetch
-          consecutiveFetchFailures = 0;
-          break; // done — no retry needed
-        } catch (err: unknown) {
-          latencyMs = Date.now() - t0;
-          const isTimeout =
-            err instanceof Error &&
-            (err.name === "TimeoutError" || err.name === "AbortError");
-
-          if (isTimeout && attempt < MAX_ATTEMPTS) {
-            // Timeout on first attempt — retry once
-            agentError = null;
-            agentOk = false;
-            continue;
-          }
-
-          agentError =
-            err instanceof Error
-              ? err.message
-              : "Unknown error during agent call";
-          agentError = agentError.slice(0, 1_000);
-
-          if (!isTimeout) {
-            // Network-level failure (fetch failed, DNS, connection refused, etc.)
-            consecutiveFetchFailures += 1;
-          }
-          break;
-        }
-      }
-
-      // Persist agent call result immediately so polling reflects progress
-      // Also update sessionId to the agent's actual session ID so Langfuse lookup works
-      await prisma.agentTestResult.update({
-        where: { sessionId },
-        data: {
-          sessionId: agentSessionId, // overwrite with the agent's real session ID
-          status: agentOk ? "success" : "error",
-          httpStatus,
-          requestPayload: JSON.stringify({ url: chatUrl, body: requestBody }),
-          agentResponse,
-          latencyMs,
-          errorMessage: agentError,
-        },
-      });
 
       // If we've hit 3+ consecutive network failures, abort the run
       if (consecutiveFetchFailures >= MAX_CONSECUTIVE_FETCH_FAILURES) {
@@ -391,80 +315,10 @@ export class AgentTestExecutionService {
         );
         await prisma.agentTestRun.update({
           where: { id: runId },
-          data: {
-            status: "failed",
-            completedAt: new Date(),
-          },
+          data: { status: "failed", completedAt: new Date() },
         });
         return;
       }
-
-      // ── Step B: fetch Langfuse trace ──────────────────────────────────────
-      let trace: LangfuseTrace | null = null;
-      let langfuseTraceId: string | null = null;
-      let traceFetchError: string | null = null;
-
-      try {
-        // Use the agent's actual session ID — that's what Langfuse has on record
-        trace = await langfuseTraceService.fetchTraceBySessionId(
-          agentSessionId,
-          langfusePublicKey,
-          langfuseSecretKey,
-        );
-        langfuseTraceId = trace.id;
-      } catch (err: unknown) {
-        traceFetchError =
-          err instanceof Error ? err.message : "Unknown Langfuse error";
-        traceFetchError = traceFetchError.slice(0, 1_000);
-      }
-
-      await prisma.agentTestResult.update({
-        where: { id: resultId },
-        data: {
-          langfuseTraceId,
-          traceJson: trace ? JSON.stringify(trace).slice(0, 65_535) : null,
-          traceFetchedAt: new Date(),
-          traceFetchError,
-        },
-      });
-
-      // ── Step C: score the response against the rubric ─────────────────────
-      let rubricScores: string | null = null;
-      let passCount: number | null = null;
-      let failCount: number | null = null;
-      let scoreError: string | null = null;
-
-      if (agentResponse && tc.rubric) {
-        try {
-          const result = await agentTestScoringService.score(
-            tc.rubric,
-            agentResponse,
-            trace,
-            aiProvider,
-            aiApiKey,
-            aiModel,
-          );
-          rubricScores = JSON.stringify(result.scores);
-          passCount = result.passCount;
-          failCount = result.failCount;
-        } catch (err: unknown) {
-          scoreError =
-            err instanceof Error ? err.message : "Unknown scoring error";
-          scoreError = scoreError.slice(0, 1_000);
-        }
-      }
-
-      // ── Step D: persist scoring results ──────────────────────────────────
-      await prisma.agentTestResult.update({
-        where: { id: resultId },
-        data: {
-          rubricScores,
-          passCount,
-          failCount,
-          scoredAt: new Date(),
-          scoreError,
-        },
-      });
 
       completed += 1;
       await prisma.agentTestRun.update({
@@ -596,6 +450,358 @@ export class AgentTestExecutionService {
     });
   }
 
+  // ─── Shared call params type ─────────────────────────────────────────────
+  private _buildChatUrl(agentApiUrl: string, apiContract: ApiContract | null) {
+    const base = agentApiUrl.replace(/\/+$/, "");
+    const chatPath = apiContract?.chatPath ?? "/api/chat";
+    return { base, chatUrl: base + chatPath };
+  }
+
+  private _buildRequestBody(
+    apiContract: ApiContract | null,
+    userMessage: string,
+    agentSessionId: string,
+  ) {
+    return apiContract?.requestBody
+      ? Object.fromEntries(
+          Object.entries(apiContract.requestBody).map(([k, v]) => [
+            k,
+            v === "{{input}}"
+              ? userMessage
+              : v === "{{sessionId}}"
+                ? agentSessionId
+                : v,
+          ]),
+        )
+      : { message: userMessage, sessionId: agentSessionId };
+  }
+
+  private _buildHeaders(
+    apiContract: ApiContract | null,
+    authHeaders: Record<string, string>,
+    agentSessionId: string,
+    cookies: Array<{ name: string; value: string }>,
+  ): Record<string, string> {
+    const extraHeaders: Record<string, string> = apiContract?.headers ?? {};
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Session-Id": agentSessionId,
+      ...extraHeaders,
+      ...authHeaders,
+    };
+    if (cookies.length > 0) {
+      headers.Cookie = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
+    }
+    return headers;
+  }
+
+  /** Make one HTTP POST to the agent, with retry on timeout. Returns { agentOk, httpStatus, latencyMs, agentResponse, agentError, fetchFailed } */
+  private async _callAgent(
+    chatUrl: string,
+    headers: Record<string, string>,
+    requestBody: Record<string, unknown>,
+  ): Promise<{
+    agentOk: boolean;
+    httpStatus: number | null;
+    latencyMs: number | null;
+    agentResponse: string | null;
+    agentError: string | null;
+    fetchFailed: boolean;
+  }> {
+    const MAX_ATTEMPTS = 3;
+    let agentOk = false;
+    let httpStatus: number | null = null;
+    let latencyMs: number | null = null;
+    let agentResponse: string | null = null;
+    let agentError: string | null = null;
+    let fetchFailed = false;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const t0 = Date.now();
+      try {
+        const response = await fetch(chatUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(90_000),
+        });
+        latencyMs = Date.now() - t0;
+        const rawBody = await response.text();
+        httpStatus = response.status;
+        agentResponse = rawBody.slice(0, 65_535);
+        agentOk = response.ok;
+        if (!response.ok) agentError = `Agent returned HTTP ${response.status}`;
+        break;
+      } catch (err: unknown) {
+        latencyMs = Date.now() - t0;
+        const isTimeout =
+          err instanceof Error &&
+          (err.name === "TimeoutError" || err.name === "AbortError");
+        if (isTimeout && attempt < MAX_ATTEMPTS) {
+          agentError = null;
+          agentOk = false;
+          continue;
+        }
+        agentError = err instanceof Error ? err.message : "Unknown error during agent call";
+        agentError = agentError.slice(0, 1_000);
+        if (!isTimeout) fetchFailed = true;
+        break;
+      }
+    }
+    return { agentOk, httpStatus, latencyMs, agentResponse, agentError, fetchFailed };
+  }
+
+  /**
+   * Execute a single-turn test case.
+   * Returns the number of consecutive fetch failures to add to the run counter (0 or 1).
+   */
+  private async _executeSingleTurn(params: {
+    resultId: string;
+    sessionId: string;
+    tc: { id: string; input: string; rubric: string };
+    agentApiUrl: string;
+    apiContract: ApiContract | null;
+    cookies: Array<{ name: string; value: string }>;
+    authHeaders: Record<string, string>;
+    langfusePublicKey: string;
+    langfuseSecretKey: string;
+    aiProvider: "anthropic" | "google";
+    aiApiKey?: string;
+    aiModel?: string;
+  }): Promise<number> {
+    const { resultId, sessionId, tc, agentApiUrl, apiContract, cookies, authHeaders,
+      langfusePublicKey, langfuseSecretKey, aiProvider, aiApiKey, aiModel } = params;
+
+    const { base, chatUrl } = this._buildChatUrl(agentApiUrl, apiContract);
+    const sessionStartPath = apiContract?.sessionStartPath ?? null;
+
+    let agentSessionId = sessionId;
+    if (sessionStartPath) {
+      try {
+        const sessionRes = await fetch(base + sessionStartPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
+        }
+      } catch { /* Non-fatal — fall back to our own sessionId */ }
+    }
+
+    console.log("[AgentTestExecution] authHeaders keys:", Object.keys(authHeaders), "| has Authorization:", !!authHeaders.Authorization);
+
+    const requestBody = this._buildRequestBody(apiContract, tc.input, agentSessionId);
+    const headers = this._buildHeaders(apiContract, authHeaders, agentSessionId, cookies);
+    const { agentOk, httpStatus, latencyMs, agentResponse, agentError, fetchFailed } =
+      await this._callAgent(chatUrl, headers, requestBody);
+
+    await prisma.agentTestResult.update({
+      where: { sessionId },
+      data: {
+        sessionId: agentSessionId,
+        status: agentOk ? "success" : "error",
+        httpStatus,
+        requestPayload: JSON.stringify({ url: chatUrl, body: requestBody }),
+        agentResponse,
+        latencyMs,
+        errorMessage: agentError,
+      },
+    });
+
+    // Step B: Langfuse trace
+    let trace: LangfuseTrace | null = null;
+    let langfuseTraceId: string | null = null;
+    let traceFetchError: string | null = null;
+    try {
+      trace = await langfuseTraceService.fetchTraceBySessionId(agentSessionId, langfusePublicKey, langfuseSecretKey);
+      langfuseTraceId = trace.id;
+    } catch (err: unknown) {
+      traceFetchError = (err instanceof Error ? err.message : "Unknown Langfuse error").slice(0, 1_000);
+    }
+    await prisma.agentTestResult.update({
+      where: { id: resultId },
+      data: { langfuseTraceId, traceJson: trace ? JSON.stringify(trace).slice(0, 65_535) : null, traceFetchedAt: new Date(), traceFetchError },
+    });
+
+    // Step C: Score
+    let rubricScores: string | null = null;
+    let passCount: number | null = null;
+    let failCount: number | null = null;
+    let scoreError: string | null = null;
+    if (agentResponse && tc.rubric) {
+      try {
+        const result = await agentTestScoringService.score(tc.rubric, agentResponse, trace, aiProvider, aiApiKey, aiModel);
+        rubricScores = JSON.stringify(result.scores);
+        passCount = result.passCount;
+        failCount = result.failCount;
+      } catch (err: unknown) {
+        scoreError = (err instanceof Error ? err.message : "Unknown scoring error").slice(0, 1_000);
+      }
+    }
+    await prisma.agentTestResult.update({
+      where: { id: resultId },
+      data: { rubricScores, passCount, failCount, scoredAt: new Date(), scoreError },
+    });
+
+    return fetchFailed ? 1 : 0;
+  }
+
+  /**
+   * Execute a multi-turn test case: sends Turn 1 (tc.input) then each subsequent
+   * turn from the parsed turns array using the same session. Turn 1 is not scored;
+   * turns 2+ are each scored against their individual rubric criteria.
+   * Returns the number of consecutive fetch failures to add to the run counter (0 or 1).
+   */
+  private async _executeMultiTurn(params: {
+    resultId: string; // kept for API consistency with _executeSingleTurn; not used internally
+    sessionId: string;
+    tc: { id: string; input: string; rubric: string; turns: string };
+    agentApiUrl: string;
+    apiContract: ApiContract | null;
+    cookies: Array<{ name: string; value: string }>;
+    authHeaders: Record<string, string>;
+    langfusePublicKey: string;
+    langfuseSecretKey: string;
+    aiProvider: "anthropic" | "google";
+    aiApiKey?: string;
+    aiModel?: string;
+  }): Promise<number> {
+    const { sessionId, tc, agentApiUrl, apiContract, cookies, authHeaders,
+      langfusePublicKey, langfuseSecretKey, aiProvider, aiApiKey, aiModel } = params;
+
+    const { base, chatUrl } = this._buildChatUrl(agentApiUrl, apiContract);
+    const sessionStartPath = apiContract?.sessionStartPath ?? null;
+
+    let agentSessionId = sessionId;
+    if (sessionStartPath) {
+      try {
+        const sessionRes = await fetch(base + sessionStartPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData?.sessionId) agentSessionId = sessionData.sessionId;
+        }
+      } catch { /* Non-fatal */ }
+    }
+
+    let parsedTurns: AgentTestCaseTurn[] = [];
+    try {
+      parsedTurns = JSON.parse(tc.turns) as AgentTestCaseTurn[];
+    } catch {
+      parsedTurns = [];
+    }
+
+    // Build ordered list: Turn 1 (no rubric) + subsequent turns
+    const allTurns: Array<{ turnNumber: number; userMessage: string; rubric: string }> = [
+      { turnNumber: 1, userMessage: tc.input, rubric: "" },
+      ...parsedTurns.map((t) => ({ turnNumber: t.turnNumber, userMessage: t.userMessage, rubric: t.rubric })),
+    ];
+
+    interface TurnExecResult {
+      turn: number;
+      userMessage: string;
+      httpStatus: number | null;
+      latencyMs: number | null;
+      response: string | null;
+      requestUrl: string;
+      requestBody: Record<string, unknown>;
+      errorMessage: string | null;
+    }
+    interface TurnScore {
+      turn: number;
+      scores: { criterion: string; pass: boolean; reason: string }[];
+      passCount: number;
+      failCount: number;
+    }
+
+    const turnResults: TurnExecResult[] = [];
+    const turnScores: TurnScore[] = [];
+    let totalPassCount = 0;
+    let totalFailCount = 0;
+    let totalLatencyMs = 0;
+    let finalHttpStatus: number | null = null;
+    let overallOk = true;
+    let fetchFailed = false;
+    let lastAgentResponse: string | null = null;
+    let lastTrace: LangfuseTrace | null = null;
+
+    for (const turn of allTurns) {
+      const requestBody = this._buildRequestBody(apiContract, turn.userMessage, agentSessionId);
+      const headers = this._buildHeaders(apiContract, authHeaders, agentSessionId, cookies);
+      const { agentOk, httpStatus, latencyMs, agentResponse, agentError, fetchFailed: turnFetchFailed } =
+        await this._callAgent(chatUrl, headers, requestBody);
+
+      turnResults.push({
+        turn: turn.turnNumber,
+        userMessage: turn.userMessage,
+        httpStatus,
+        latencyMs,
+        response: agentResponse,
+        requestUrl: chatUrl,
+        requestBody,
+        errorMessage: agentError,
+      });
+
+      totalLatencyMs += latencyMs ?? 0;
+      finalHttpStatus = httpStatus;
+      if (!agentOk) overallOk = false;
+      if (turnFetchFailed) { fetchFailed = true; break; }
+      lastAgentResponse = agentResponse;
+
+      // Score turns 2+ only (turn 1 establishes context, not scored)
+      if (turn.turnNumber > 1 && agentResponse && turn.rubric) {
+        try {
+          const result = await agentTestScoringService.score(turn.rubric, agentResponse, null, aiProvider, aiApiKey, aiModel);
+          turnScores.push({ turn: turn.turnNumber, scores: result.scores, passCount: result.passCount, failCount: result.failCount });
+          totalPassCount += result.passCount;
+          totalFailCount += result.failCount;
+        } catch { /* score error handled below via scoreError */ }
+      }
+    }
+
+    // Fetch Langfuse trace using final session ID (last turn's trace)
+    let langfuseTraceId: string | null = null;
+    let traceFetchError: string | null = null;
+    try {
+      lastTrace = await langfuseTraceService.fetchTraceBySessionId(agentSessionId, langfusePublicKey, langfuseSecretKey);
+      langfuseTraceId = lastTrace.id;
+    } catch (err: unknown) {
+      traceFetchError = (err instanceof Error ? err.message : "Unknown Langfuse error").slice(0, 1_000);
+    }
+
+    // Persist everything — store per-turn arrays in requestPayload / agentResponse / rubricScores
+    await prisma.agentTestResult.update({
+      where: { sessionId },
+      data: {
+        sessionId: agentSessionId,
+        status: overallOk ? "success" : "error",
+        httpStatus: finalHttpStatus,
+        latencyMs: totalLatencyMs,
+        requestPayload: JSON.stringify(turnResults.map((t) => ({ turn: t.turn, url: t.requestUrl, body: t.requestBody }))).slice(0, 65_535),
+        agentResponse: JSON.stringify(turnResults.map((t) => ({ turn: t.turn, userMessage: t.userMessage, response: t.response }))).slice(0, 65_535),
+        errorMessage: overallOk ? null : (turnResults.find((t) => t.errorMessage)?.errorMessage ?? null),
+        langfuseTraceId,
+        traceJson: lastTrace ? JSON.stringify(lastTrace).slice(0, 65_535) : null,
+        traceFetchedAt: new Date(),
+        traceFetchError,
+        rubricScores: JSON.stringify(turnScores),
+        passCount: totalPassCount,
+        failCount: totalFailCount,
+        scoredAt: new Date(),
+        scoreError: null,
+      },
+    });
+
+    void lastAgentResponse; // used implicitly via turnResults
+
+    return fetchFailed ? 1 : 0;
+  }
+
   /**
    * Get the current state of a run (used for polling and results dashboard).
    */
@@ -610,9 +816,11 @@ export class AgentTestExecutionService {
               select: {
                 title: true,
                 category: true,
+                dimension: true,
                 input: true,
                 expectedBehavior: true,
                 rubric: true,
+                turns: true,
               },
             },
           },
@@ -697,9 +905,11 @@ export class AgentTestExecutionService {
     testCase: {
       title: string;
       category: string;
+      dimension: string | null;
       input: string;
       expectedBehavior: string;
       rubric: string;
+      turns: string | null;
     };
   }): AgentTestResultSummary {
     return {

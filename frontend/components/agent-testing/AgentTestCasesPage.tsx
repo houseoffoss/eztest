@@ -15,7 +15,6 @@ import { Textarea } from "@/frontend/reusable-elements/textareas/Textarea";
 import { Label } from "@/frontend/reusable-elements/labels/Label";
 import { ButtonPrimary } from "@/frontend/reusable-elements/buttons/ButtonPrimary";
 import {
-  Bot,
   ChevronRight,
   Sparkles,
   Plus,
@@ -33,12 +32,18 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 import {
   type AgentTestCase,
   type AgentTestConfig,
+  type AgentTestCaseTurn,
+  type PerTurnResult,
+  type PerTurnRubricScore,
   CATEGORY_LABELS,
   CATEGORY_COLORS,
+  DIMENSION_LABELS,
+  DIMENSION_COLORS,
 } from "@/types/agent-testing";
 
 const CATEGORIES = [
@@ -69,29 +74,278 @@ interface AgentTestRunSummary {
     errorMessage: string | null;
     requestPayload: string | null;
     agentResponse: string | null;
-    testCase: { title: string; category: string };
+    testCase: { title: string; category: string; dimension: string | null; turns: string | null };
   }[];
 }
 
 interface TestCaseFormData {
   category: Category;
+  dimension: string | null;
   title: string;
   input: string;
   rubric: string;
   expectedBehavior: string;
+  turns: AgentTestCaseTurn[];
 }
 
 const emptyForm: TestCaseFormData = {
   category: "happy_path",
+  dimension: null,
   title: "",
   input: "",
   rubric: "",
   expectedBehavior: "",
+  turns: [],
 };
 
 interface Props {
   configId: string;
 }
+
+// ─── Multi-turn result panel ──────────────────────────────────────────────────
+
+function MultiTurnResultPanel({
+  requestPayload,
+  agentResponse,
+}: {
+  requestPayload: string | null;
+  agentResponse: string | null;
+}) {
+  let turnResults: PerTurnResult[] = [];
+  try {
+    if (agentResponse) {
+      const parsed = JSON.parse(agentResponse) as Array<{
+        turn: number;
+        userMessage: string;
+        response: string | null;
+      }>;
+      let requestParsed: Array<{
+        turn: number;
+        url: string;
+        body: unknown;
+      }> = [];
+      try {
+        if (requestPayload) requestParsed = JSON.parse(requestPayload);
+      } catch { /* */ }
+
+      turnResults = parsed.map((t) => {
+        const req = requestParsed.find((r) => r.turn === t.turn);
+        return {
+          turn: t.turn,
+          userMessage: t.userMessage,
+          httpStatus: null,
+          latencyMs: null,
+          response: t.response,
+          requestUrl: req?.url ?? null,
+          requestBody: req?.body ?? null,
+          errorMessage: null,
+        };
+      });
+    }
+  } catch { /* */ }
+
+  if (turnResults.length === 0) {
+    return (
+      <p className="text-xs text-white/25 italic px-4 py-3">
+        No turn data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="p-3 space-y-3">
+      {turnResults.map((t) => (
+        <div key={t.turn} className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-purple-400 uppercase tracking-wider">
+              Turn {t.turn}
+            </span>
+            {t.turn === 1 && (
+              <span className="text-xs text-white/30 italic">opening</span>
+            )}
+          </div>
+          {/* User message */}
+          <div className="rounded-lg bg-blue-500/8 border border-blue-500/15 px-3 py-2">
+            <p className="text-xs text-blue-300/60 font-medium mb-0.5">User</p>
+            <p className="text-xs text-white/70">{t.userMessage}</p>
+          </div>
+          {/* Agent response */}
+          <div className="rounded-lg bg-white/4 border border-white/8 px-3 py-2">
+            <p className="text-xs text-green-400/60 font-medium mb-0.5">
+              Agent
+            </p>
+            {t.response ? (
+              <pre className="text-xs text-white/65 whitespace-pre-wrap break-words font-mono leading-relaxed max-h-40 overflow-y-auto">
+                {t.response}
+              </pre>
+            ) : (
+              <p className="text-xs text-white/25 italic">No response</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Turns editor ─────────────────────────────────────────────────────────────
+
+function TurnsEditor({
+  turns,
+  onChange,
+  errors,
+}: {
+  turns: AgentTestCaseTurn[];
+  onChange: (turns: AgentTestCaseTurn[]) => void;
+  errors: Record<string, string>;
+}) {
+  const addTurn = () => {
+    onChange([
+      ...turns,
+      {
+        turnNumber: turns.length + 2,
+        userMessage: "",
+        expectedBehavior: "",
+        rubric: "",
+      },
+    ]);
+  };
+
+  const removeTurn = (index: number) => {
+    onChange(
+      turns
+        .filter((_, i) => i !== index)
+        .map((t, i) => ({ ...t, turnNumber: i + 2 })),
+    );
+  };
+
+  const updateTurn = (
+    index: number,
+    field: keyof AgentTestCaseTurn,
+    value: string,
+  ) => {
+    onChange(
+      turns.map((t, i) =>
+        i === index ? { ...t, [field]: value } : t,
+      ),
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Label>
+          Follow-up Turns{" "}
+          <span className="text-red-400">*</span>
+        </Label>
+        <button
+          type="button"
+          onClick={addTurn}
+          className="cursor-pointer flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        >
+          <Plus className="w-3 h-3" />
+          Add Turn
+        </button>
+      </div>
+      <p className="text-xs text-white/40">
+        Define each follow-up turn (Turn 2 onwards). Turn 1 is the opening
+        message above.
+      </p>
+      {errors.turns && (
+        <p className="text-xs text-red-400">{errors.turns}</p>
+      )}
+      {turns.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-white/15 py-6 flex flex-col items-center gap-2 text-center">
+          <MessageSquare className="w-5 h-5 text-white/20" />
+          <p className="text-xs text-white/30">
+            No follow-up turns yet — click &ldquo;Add Turn&rdquo; above
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {turns.map((turn, index) => (
+            <div
+              key={index}
+              className="rounded-xl border border-purple-500/20 bg-purple-500/3 p-3 space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-purple-400">
+                  Turn {turn.turnNumber}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeTurn(index)}
+                  className="cursor-pointer p-1 rounded text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor={`turn-${index}-msg`} className="text-xs">
+                  User Message <span className="text-red-400">*</span>
+                </Label>
+                <Textarea
+                  id={`turn-${index}-msg`}
+                  variant="glass"
+                  rows={2}
+                  value={turn.userMessage}
+                  onChange={(e) =>
+                    updateTurn(index, "userMessage", e.target.value)
+                  }
+                  placeholder={`What the user says in Turn ${turn.turnNumber}`}
+                />
+                {errors[`turns.${index}.userMessage`] && (
+                  <p className="text-xs text-red-400">
+                    {errors[`turns.${index}.userMessage`]}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor={`turn-${index}-exp`} className="text-xs">
+                  Expected Behavior
+                </Label>
+                <Textarea
+                  id={`turn-${index}-exp`}
+                  variant="glass"
+                  rows={2}
+                  value={turn.expectedBehavior}
+                  onChange={(e) =>
+                    updateTurn(index, "expectedBehavior", e.target.value)
+                  }
+                  placeholder="What the agent should do or say at this turn"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor={`turn-${index}-rubric`} className="text-xs">
+                  Rubric Criteria
+                </Label>
+                <p className="text-xs text-white/30">
+                  Pipe-separated criteria evaluated after this turn&apos;s
+                  response.
+                </p>
+                <Input
+                  id={`turn-${index}-rubric`}
+                  type="text"
+                  variant="glass"
+                  value={turn.rubric}
+                  onChange={(e) =>
+                    updateTurn(index, "rubric", e.target.value)
+                  }
+                  placeholder="Criterion 1 | Criterion 2"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AgentTestCasesPage({ configId }: Props) {
   const router = useRouter();
@@ -105,13 +359,13 @@ export default function AgentTestCasesPage({ configId }: Props) {
   // Add manual test case
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState<TestCaseFormData>(emptyForm);
-  const [addErrors, setAddErrors] = useState<Partial<TestCaseFormData>>({});
+  const [addErrors, setAddErrors] = useState<Record<string, string>>({});
   const [addSubmitting, setAddSubmitting] = useState(false);
 
   // Edit test case
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<TestCaseFormData>(emptyForm);
-  const [editErrors, setEditErrors] = useState<Partial<TestCaseFormData>>({});
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Expand test case details
@@ -179,7 +433,6 @@ export default function AgentTestCasesPage({ configId }: Props) {
         const casesData = await casesRes.json();
         setTestCases(casesData.data ?? []);
       }
-      // Restore the latest run state so a page refresh doesn't lose partial results
       if (runsRes.ok) {
         const runsData = await runsRes.json();
         const runs: { runId: string; status: string }[] = runsData.data ?? [];
@@ -210,13 +463,20 @@ export default function AgentTestCasesPage({ configId }: Props) {
 
   // ─── Validate ──────────────────────────────────────────────────────────────
 
-  const validateForm = (form: TestCaseFormData): Partial<TestCaseFormData> => {
-    const errors: Partial<TestCaseFormData> = {};
+  const validateForm = (form: TestCaseFormData): Record<string, string> => {
+    const errors: Record<string, string> = {};
     if (!form.title.trim()) errors.title = "Title is required";
-    if (!form.input.trim()) errors.input = "Input is required";
-    if (!form.rubric.trim()) errors.rubric = "Rubric is required";
+    if (!form.input.trim()) errors.input = "Opening message is required";
+    if (form.category !== "multi_turn" && !form.rubric.trim())
+      errors.rubric = "Rubric is required";
     if (!form.expectedBehavior.trim())
       errors.expectedBehavior = "Expected behavior is required";
+    if (form.category === "multi_turn" && form.turns.length === 0)
+      errors.turns = "At least one follow-up turn is required";
+    form.turns.forEach((t, i) => {
+      if (!t.userMessage.trim())
+        errors[`turns.${i}.userMessage`] = `Turn ${i + 2} message is required`;
+    });
     return errors;
   };
 
@@ -236,20 +496,31 @@ export default function AgentTestCasesPage({ configId }: Props) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(addForm),
+          body: JSON.stringify({
+            ...addForm,
+            turns:
+              addForm.category === "multi_turn" && addForm.turns.length > 0
+                ? addForm.turns
+                : null,
+          }),
         },
       );
       const data = await res.json();
       if (!res.ok)
         throw new Error(data.message || "Failed to create test case");
-      setTestCases((prev) => [...prev, data.data]);
+      // Normalise turns from DB (stored as JSON string, returned as string or null)
+      const tc: AgentTestCase = {
+        ...data.data,
+        turns: parseTurns(data.data.turns),
+      };
+      setTestCases((prev) => [...prev, tc]);
       setAddForm(emptyForm);
       setAddErrors({});
       setShowAddForm(false);
       setAlert({
         type: "success",
         title: "Created",
-        message: `Test case "${data.data.title}" created.`,
+        message: `Test case "${tc.title}" created.`,
       });
     } catch (err) {
       setAlert({
@@ -269,10 +540,12 @@ export default function AgentTestCasesPage({ configId }: Props) {
     setEditingId(tc.id);
     setEditForm({
       category: tc.category as Category,
+      dimension: tc.dimension ?? null,
       title: tc.title,
       input: tc.input,
       rubric: tc.rubric,
       expectedBehavior: tc.expectedBehavior,
+      turns: tc.turns ?? [],
     });
     setEditErrors({});
     setExpandedId(null);
@@ -290,19 +563,29 @@ export default function AgentTestCasesPage({ configId }: Props) {
       const res = await fetch(`/api/agent-test-cases/${tcId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          ...editForm,
+          turns:
+            editForm.category === "multi_turn" && editForm.turns.length > 0
+              ? editForm.turns
+              : null,
+        }),
       });
       const data = await res.json();
       if (!res.ok)
         throw new Error(data.message || "Failed to update test case");
+      const updated: AgentTestCase = {
+        ...data.data,
+        turns: parseTurns(data.data.turns),
+      };
       setTestCases((prev) =>
-        prev.map((tc) => (tc.id === tcId ? data.data : tc)),
+        prev.map((tc) => (tc.id === tcId ? updated : tc)),
       );
       setEditingId(null);
       setAlert({
         type: "success",
         title: "Updated",
-        message: `Test case "${data.data.title}" updated.`,
+        message: `Test case "${updated.title}" updated.`,
       });
     } catch (err) {
       setAlert({
@@ -356,7 +639,12 @@ export default function AgentTestCasesPage({ configId }: Props) {
       const data = await res.json();
       if (!res.ok)
         throw new Error(data.message || "Failed to generate test cases");
-      setTestCases(data.data);
+      setTestCases(
+        (data.data as AgentTestCase[]).map((tc) => ({
+          ...tc,
+          turns: parseTurns((tc as unknown as { turns: string | null }).turns),
+        })),
+      );
       setAlert({
         type: "success",
         title: "Generated",
@@ -384,10 +672,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to start test run");
-
       const run: AgentTestRunSummary = data.data;
       setActiveRun(run);
-
       if (run.status === "running" || run.status === "pending") {
         poll(run.runId);
       } else {
@@ -402,6 +688,21 @@ export default function AgentTestCasesPage({ configId }: Props) {
           err instanceof Error ? err.message : "Failed to start test run.",
       });
     }
+  };
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  const parseTurns = (raw: unknown): AgentTestCaseTurn[] | null => {
+    if (!raw) return null;
+    if (Array.isArray(raw)) return raw as AgentTestCaseTurn[];
+    if (typeof raw === "string") {
+      try {
+        return JSON.parse(raw) as AgentTestCaseTurn[];
+      } catch {
+        return null;
+      }
+    }
+    return null;
   };
 
   // ─── Derived ──────────────────────────────────────────────────────────────
@@ -437,6 +738,182 @@ export default function AgentTestCasesPage({ configId }: Props) {
       </div>
     );
   }
+
+  // ─── Shared form fields ───────────────────────────────────────────────────
+
+  const renderFormFields = (
+    form: TestCaseFormData,
+    setForm: React.Dispatch<React.SetStateAction<TestCaseFormData>>,
+    errors: Record<string, string>,
+    idPrefix: string,
+  ) => (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Category */}
+        <div className="space-y-2">
+          <Label htmlFor={`${idPrefix}-category`}>Category</Label>
+          <div className="relative">
+            <select
+              id={`${idPrefix}-category`}
+              value={form.category}
+              onChange={(e) => {
+                const cat = e.target.value as Category;
+                setForm((f) => ({
+                  ...f,
+                  category: cat,
+                  turns: cat === "multi_turn" ? f.turns : [],
+                }));
+              }}
+              className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {CATEGORY_LABELS[c]}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+          </div>
+        </div>
+        {/* Dimension */}
+        <div className="space-y-2">
+          <Label htmlFor={`${idPrefix}-dimension`}>QA Dimension</Label>
+          <div className="relative">
+            <select
+              id={`${idPrefix}-dimension`}
+              value={form.dimension ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, dimension: e.target.value || null }))}
+              className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+            >
+              <option value="">Not specified</option>
+              {Object.entries(DIMENSION_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Title */}
+        <div className="space-y-2">
+          <Label htmlFor={`${idPrefix}-title`}>
+            Title <span className="text-red-400">*</span>
+          </Label>
+          <Input
+            id={`${idPrefix}-title`}
+            type="text"
+            variant="glass"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="Short descriptive title"
+          />
+          {errors.title && (
+            <p className="text-xs text-red-400">{errors.title}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Input / opening message */}
+      <div className="space-y-2">
+        <Label htmlFor={`${idPrefix}-input`}>
+          {form.category === "multi_turn"
+            ? "Turn 1 — Opening Message"
+            : "User Input"}{" "}
+          <span className="text-red-400">*</span>
+        </Label>
+        {form.category === "multi_turn" && (
+          <p className="text-xs text-white/40">
+            The first message sent to the agent to start the conversation.
+          </p>
+        )}
+        {form.category !== "multi_turn" && (
+          <p className="text-xs text-white/40">
+            The exact message that will be sent to your agent.
+          </p>
+        )}
+        <Textarea
+          id={`${idPrefix}-input`}
+          variant="glass"
+          rows={3}
+          value={form.input}
+          onChange={(e) => setForm((f) => ({ ...f, input: e.target.value }))}
+          placeholder={
+            form.category === "multi_turn"
+              ? "e.g. I need help with the Grade 3 NIE Mathematics curriculum"
+              : "e.g. What is the refund policy for cancelled orders?"
+          }
+        />
+        {errors.input && (
+          <p className="text-xs text-red-400">{errors.input}</p>
+        )}
+      </div>
+
+      {/* Turns editor — only for multi_turn */}
+      {form.category === "multi_turn" && (
+        <TurnsEditor
+          turns={form.turns}
+          onChange={(turns) => setForm((f) => ({ ...f, turns }))}
+          errors={errors}
+        />
+      )}
+
+      {/* Expected behavior */}
+      <div className="space-y-2">
+        <Label htmlFor={`${idPrefix}-expected`}>
+          Expected Behavior <span className="text-red-400">*</span>
+        </Label>
+        <Textarea
+          id={`${idPrefix}-expected`}
+          variant="glass"
+          rows={3}
+          value={form.expectedBehavior}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, expectedBehavior: e.target.value }))
+          }
+          placeholder={
+            form.category === "multi_turn"
+              ? "Describe the overall goal: what the full conversation should achieve."
+              : "Describe what the agent should do or say."
+          }
+        />
+        {errors.expectedBehavior && (
+          <p className="text-xs text-red-400">{errors.expectedBehavior}</p>
+        )}
+      </div>
+
+      {/* Rubric — hidden for multi_turn (per-turn rubrics used instead) */}
+      {form.category !== "multi_turn" && (
+        <div className="space-y-2">
+          <Label htmlFor={`${idPrefix}-rubric`}>
+            Rubric Criteria <span className="text-red-400">*</span>
+          </Label>
+          <p className="text-xs text-white/40">
+            Pipe-separated pass/fail criteria, e.g.{" "}
+            <span className="font-mono text-white/50">
+              Mentions refund window | Does not hallucinate | Offers next steps
+            </span>
+          </p>
+          <Textarea
+            id={`${idPrefix}-rubric`}
+            variant="glass"
+            rows={3}
+            value={form.rubric}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, rubric: e.target.value }))
+            }
+            placeholder="Criterion 1 | Criterion 2 | Criterion 3"
+          />
+          {errors.rubric && (
+            <p className="text-xs text-red-400">{errors.rubric}</p>
+          )}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <div className="flex-1">
@@ -549,7 +1026,6 @@ export default function AgentTestCasesPage({ configId }: Props) {
 
               {/* Action buttons */}
               <div className="flex items-center gap-2 shrink-0">
-                {/* Regenerate */}
                 <button
                   onClick={() =>
                     testCases.length > 0
@@ -572,7 +1048,6 @@ export default function AgentTestCasesPage({ configId }: Props) {
                   )}
                 </button>
 
-                {/* Add manual */}
                 <button
                   onClick={() => {
                     setShowAddForm(true);
@@ -585,7 +1060,6 @@ export default function AgentTestCasesPage({ configId }: Props) {
                   Add Manually
                 </button>
 
-                {/* Run Tests */}
                 {testCases.length > 0 && (
                   <button
                     onClick={handleRunTests}
@@ -614,7 +1088,6 @@ export default function AgentTestCasesPage({ configId }: Props) {
                   </button>
                 )}
 
-                {/* View latest results */}
                 {activeRun?.status === "completed" && (
                   <button
                     onClick={() =>
@@ -672,16 +1145,31 @@ export default function AgentTestCasesPage({ configId }: Props) {
                   {/* Per-result rows */}
                   <div className="space-y-1.5">
                     {activeRun.results.map((r) => {
-                      const isDone = r.status === "success" || r.status === "error";
-                      const isRunning = r.status === "pending" && inProgressResult?.id === r.id;
-                      const isOpen = expandedResultId === r.id || (isDone && expandedResultId !== `closed-${r.id}`);
+                      const isDone =
+                        r.status === "success" || r.status === "error";
+                      const isRunning =
+                        r.status === "pending" &&
+                        inProgressResult?.id === r.id;
+                      const isOpen =
+                        expandedResultId === r.id ||
+                        (isDone &&
+                          expandedResultId !== `closed-${r.id}`);
+                      const isMultiTurn =
+                        r.testCase.category === "multi_turn";
 
-                      let parsedRequest: { url?: string; body?: unknown } | null = null;
-                      try { if (r.requestPayload) parsedRequest = JSON.parse(r.requestPayload); } catch { /* */ }
+                      let parsedRequest: { url?: string; body?: unknown } | null =
+                        null;
+                      try {
+                        if (r.requestPayload && !isMultiTurn)
+                          parsedRequest = JSON.parse(r.requestPayload);
+                      } catch { /* */ }
 
                       let parsedResponse: unknown = null;
                       const rawResponse = r.agentResponse ?? "";
-                      try { if (rawResponse) parsedResponse = JSON.parse(rawResponse); } catch { /* */ }
+                      try {
+                        if (rawResponse && !isMultiTurn)
+                          parsedResponse = JSON.parse(rawResponse);
+                      } catch { /* */ }
 
                       return (
                         <div
@@ -690,16 +1178,18 @@ export default function AgentTestCasesPage({ configId }: Props) {
                             r.status === "success"
                               ? "border-green-500/20 bg-green-500/3"
                               : r.status === "error"
-                              ? "border-red-500/20 bg-red-500/3"
-                              : isRunning
-                              ? "border-yellow-500/20 bg-yellow-500/3"
-                              : "border-white/8 bg-white/2"
+                                ? "border-red-500/20 bg-red-500/3"
+                                : isRunning
+                                  ? "border-yellow-500/20 bg-yellow-500/3"
+                                  : "border-white/8 bg-white/2"
                           }`}
                         >
                           {/* Header row */}
                           <button
                             onClick={() =>
-                              setExpandedResultId(isOpen ? `closed-${r.id}` : r.id)
+                              setExpandedResultId(
+                                isOpen ? `closed-${r.id}` : r.id,
+                              )
                             }
                             className="cursor-pointer w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/4 transition-colors"
                           >
@@ -717,18 +1207,29 @@ export default function AgentTestCasesPage({ configId }: Props) {
                             <span className="flex-1 text-xs text-white/80 truncate font-medium">
                               {r.testCase.title}
                             </span>
-                            <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[r.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}>
-                              {CATEGORY_LABELS[r.testCase.category] ?? r.testCase.category}
+                            <span
+                              className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[r.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                            >
+                              {CATEGORY_LABELS[r.testCase.category] ??
+                                r.testCase.category}
                             </span>
                             {r.httpStatus != null && (
-                              <span className={`shrink-0 text-xs font-mono px-1.5 py-0.5 rounded border ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400 bg-green-500/10 border-green-500/20" : "text-red-400 bg-red-500/10 border-red-500/20"}`}>
+                              <span
+                                className={`shrink-0 text-xs font-mono px-1.5 py-0.5 rounded border ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400 bg-green-500/10 border-green-500/20" : "text-red-400 bg-red-500/10 border-red-500/20"}`}
+                              >
                                 {r.httpStatus}
                               </span>
                             )}
                             {r.latencyMs != null && (
-                              <span className="shrink-0 text-xs text-white/30 font-mono">{r.latencyMs}ms</span>
+                              <span className="shrink-0 text-xs text-white/30 font-mono">
+                                {r.latencyMs}ms
+                              </span>
                             )}
-                            {isOpen ? <ChevronUp className="w-3 h-3 text-white/30 shrink-0" /> : <ChevronDown className="w-3 h-3 text-white/30 shrink-0" />}
+                            {isOpen ? (
+                              <ChevronUp className="w-3 h-3 text-white/30 shrink-0" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 text-white/30 shrink-0" />
+                            )}
                           </button>
 
                           {/* Request / Response panel */}
@@ -739,38 +1240,61 @@ export default function AgentTestCasesPage({ configId }: Props) {
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   Sending request...
                                 </div>
+                              ) : isMultiTurn ? (
+                                <MultiTurnResultPanel
+                                  requestPayload={r.requestPayload}
+                                  agentResponse={r.agentResponse}
+                                />
                               ) : (
                                 <div className="grid grid-cols-2 divide-x divide-white/8">
                                   {/* Request */}
                                   <div className="p-3 space-y-1.5">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Request</span>
+                                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                                        Request
+                                      </span>
                                       {parsedRequest?.url && (
-                                        <span className="text-xs font-mono text-white/30 truncate">POST {parsedRequest.url}</span>
+                                        <span className="text-xs font-mono text-white/30 truncate">
+                                          POST {parsedRequest.url}
+                                        </span>
                                       )}
                                     </div>
                                     {parsedRequest?.body ? (
                                       <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
-                                        {JSON.stringify(parsedRequest.body, null, 2)}
+                                        {JSON.stringify(
+                                          parsedRequest.body,
+                                          null,
+                                          2,
+                                        )}
                                       </pre>
                                     ) : r.requestPayload ? (
                                       <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
                                         {r.requestPayload}
                                       </pre>
                                     ) : (
-                                      <p className="text-xs text-white/25 italic">Not sent yet</p>
+                                      <p className="text-xs text-white/25 italic">
+                                        Not sent yet
+                                      </p>
                                     )}
                                   </div>
 
                                   {/* Response */}
                                   <div className="p-3 space-y-1.5">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Response</span>
+                                      <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">
+                                        Response
+                                      </span>
                                       {r.httpStatus != null && (
-                                        <span className={`text-xs font-mono font-semibold ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}>{r.httpStatus}</span>
+                                        <span
+                                          className={`text-xs font-mono font-semibold ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                                        >
+                                          {r.httpStatus}
+                                        </span>
                                       )}
                                       {r.latencyMs != null && (
-                                        <span className="text-xs text-white/30 font-mono ml-auto">{r.latencyMs}ms</span>
+                                        <span className="text-xs text-white/30 font-mono ml-auto">
+                                          {r.latencyMs}ms
+                                        </span>
                                       )}
                                     </div>
                                     {parsedResponse ? (
@@ -786,7 +1310,9 @@ export default function AgentTestCasesPage({ configId }: Props) {
                                         {r.errorMessage}
                                       </div>
                                     ) : (
-                                      <p className="text-xs text-white/25 italic">Waiting for response...</p>
+                                      <p className="text-xs text-white/25 italic">
+                                        Waiting for response...
+                                      </p>
                                     )}
                                   </div>
                                 </div>
@@ -810,129 +1336,7 @@ export default function AgentTestCasesPage({ configId }: Props) {
                 contentClassName="space-y-4"
               >
                 <form onSubmit={handleAddSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Category */}
-                    <div className="space-y-2">
-                      <Label htmlFor="add-category">Category</Label>
-                      <div className="relative">
-                        <select
-                          id="add-category"
-                          value={addForm.category}
-                          onChange={(e) =>
-                            setAddForm((f) => ({
-                              ...f,
-                              category: e.target.value as Category,
-                            }))
-                          }
-                          className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
-                        >
-                          {CATEGORIES.map((c) => (
-                            <option key={c} value={c}>
-                              {CATEGORY_LABELS[c]}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
-                      </div>
-                    </div>
-                    {/* Title */}
-                    <div className="space-y-2">
-                      <Label htmlFor="add-title">
-                        Title <span className="text-red-400">*</span>
-                      </Label>
-                      <Input
-                        id="add-title"
-                        type="text"
-                        variant="glass"
-                        value={addForm.title}
-                        onChange={(e) =>
-                          setAddForm((f) => ({ ...f, title: e.target.value }))
-                        }
-                        placeholder="Short descriptive title"
-                      />
-                      {addErrors.title && (
-                        <p className="text-xs text-red-400">
-                          {addErrors.title}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Input */}
-                  <div className="space-y-2">
-                    <Label htmlFor="add-input">
-                      User Input <span className="text-red-400">*</span>
-                    </Label>
-                    <p className="text-xs text-white/40">
-                      The exact message that will be sent to your agent.
-                    </p>
-                    <Textarea
-                      id="add-input"
-                      variant="glass"
-                      rows={3}
-                      value={addForm.input}
-                      onChange={(e) =>
-                        setAddForm((f) => ({ ...f, input: e.target.value }))
-                      }
-                      placeholder="e.g. What is the refund policy for cancelled orders?"
-                    />
-                    {addErrors.input && (
-                      <p className="text-xs text-red-400">{addErrors.input}</p>
-                    )}
-                  </div>
-
-                  {/* Expected behavior */}
-                  <div className="space-y-2">
-                    <Label htmlFor="add-expected">
-                      Expected Behavior <span className="text-red-400">*</span>
-                    </Label>
-                    <Textarea
-                      id="add-expected"
-                      variant="glass"
-                      rows={3}
-                      value={addForm.expectedBehavior}
-                      onChange={(e) =>
-                        setAddForm((f) => ({
-                          ...f,
-                          expectedBehavior: e.target.value,
-                        }))
-                      }
-                      placeholder="Describe what the agent should do or say."
-                    />
-                    {addErrors.expectedBehavior && (
-                      <p className="text-xs text-red-400">
-                        {addErrors.expectedBehavior}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Rubric */}
-                  <div className="space-y-2">
-                    <Label htmlFor="add-rubric">
-                      Rubric Criteria <span className="text-red-400">*</span>
-                    </Label>
-                    <p className="text-xs text-white/40">
-                      Pipe-separated pass/fail criteria, e.g.{" "}
-                      <span className="font-mono text-white/50">
-                        Mentions refund window | Does not hallucinate | Offers
-                        next steps
-                      </span>
-                    </p>
-                    <Textarea
-                      id="add-rubric"
-                      variant="glass"
-                      rows={3}
-                      value={addForm.rubric}
-                      onChange={(e) =>
-                        setAddForm((f) => ({ ...f, rubric: e.target.value }))
-                      }
-                      placeholder="Criterion 1 | Criterion 2 | Criterion 3"
-                    />
-                    {addErrors.rubric && (
-                      <p className="text-xs text-red-400">{addErrors.rubric}</p>
-                    )}
-                  </div>
-
+                  {renderFormFields(addForm, setAddForm, addErrors, "add")}
                   <div className="flex justify-end gap-3 pt-1">
                     <ButtonPrimary
                       type="button"
@@ -1047,6 +1451,8 @@ export default function AgentTestCasesPage({ configId }: Props) {
               {filtered.map((tc) => {
                 const isEditing = editingId === tc.id;
                 const isExpanded = expandedId === tc.id;
+                const isMultiTurn = tc.category === "multi_turn";
+                const parsedTurns = parseTurns(tc.turns) ?? [];
 
                 if (isEditing) {
                   return (
@@ -1068,129 +1474,12 @@ export default function AgentTestCasesPage({ configId }: Props) {
                           </button>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`edit-cat-${tc.id}`}>
-                              Category
-                            </Label>
-                            <div className="relative">
-                              <select
-                                id={`edit-cat-${tc.id}`}
-                                value={editForm.category}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    category: e.target.value as Category,
-                                  }))
-                                }
-                                className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
-                              >
-                                {CATEGORIES.map((c) => (
-                                  <option key={c} value={c}>
-                                    {CATEGORY_LABELS[c]}
-                                  </option>
-                                ))}
-                              </select>
-                              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`edit-title-${tc.id}`}>
-                              Title <span className="text-red-400">*</span>
-                            </Label>
-                            <Input
-                              id={`edit-title-${tc.id}`}
-                              type="text"
-                              variant="glass"
-                              value={editForm.title}
-                              onChange={(e) =>
-                                setEditForm((f) => ({
-                                  ...f,
-                                  title: e.target.value,
-                                }))
-                              }
-                            />
-                            {editErrors.title && (
-                              <p className="text-xs text-red-400">
-                                {editErrors.title}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-input-${tc.id}`}>
-                            User Input <span className="text-red-400">*</span>
-                          </Label>
-                          <Textarea
-                            id={`edit-input-${tc.id}`}
-                            variant="glass"
-                            rows={3}
-                            value={editForm.input}
-                            onChange={(e) =>
-                              setEditForm((f) => ({
-                                ...f,
-                                input: e.target.value,
-                              }))
-                            }
-                          />
-                          {editErrors.input && (
-                            <p className="text-xs text-red-400">
-                              {editErrors.input}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-expected-${tc.id}`}>
-                            Expected Behavior{" "}
-                            <span className="text-red-400">*</span>
-                          </Label>
-                          <Textarea
-                            id={`edit-expected-${tc.id}`}
-                            variant="glass"
-                            rows={3}
-                            value={editForm.expectedBehavior}
-                            onChange={(e) =>
-                              setEditForm((f) => ({
-                                ...f,
-                                expectedBehavior: e.target.value,
-                              }))
-                            }
-                          />
-                          {editErrors.expectedBehavior && (
-                            <p className="text-xs text-red-400">
-                              {editErrors.expectedBehavior}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor={`edit-rubric-${tc.id}`}>
-                            Rubric Criteria{" "}
-                            <span className="text-red-400">*</span>
-                          </Label>
-                          <p className="text-xs text-white/40">
-                            Pipe-separated pass/fail criteria.
-                          </p>
-                          <Textarea
-                            id={`edit-rubric-${tc.id}`}
-                            variant="glass"
-                            rows={3}
-                            value={editForm.rubric}
-                            onChange={(e) =>
-                              setEditForm((f) => ({
-                                ...f,
-                                rubric: e.target.value,
-                              }))
-                            }
-                          />
-                          {editErrors.rubric && (
-                            <p className="text-xs text-red-400">
-                              {editErrors.rubric}
-                            </p>
-                          )}
-                        </div>
+                        {renderFormFields(
+                          editForm,
+                          setEditForm,
+                          editErrors,
+                          `edit-${tc.id}`,
+                        )}
 
                         <div className="flex justify-end gap-3 pt-1">
                           <ButtonPrimary
@@ -1237,9 +1526,21 @@ export default function AgentTestCasesPage({ configId }: Props) {
                       >
                         {CATEGORY_LABELS[tc.category] ?? tc.category}
                       </span>
+                      {tc.dimension && (
+                        <span
+                          className={`shrink-0 text-xs px-2 py-0.5 rounded-full border font-medium ${DIMENSION_COLORS[tc.dimension] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                        >
+                          {DIMENSION_LABELS[tc.dimension] ?? tc.dimension}
+                        </span>
+                      )}
                       <span className="flex-1 text-sm text-white/85 truncate font-medium">
                         {tc.title}
                       </span>
+                      {isMultiTurn && parsedTurns.length > 0 && (
+                        <span className="shrink-0 text-xs text-purple-400/60 font-mono">
+                          {parsedTurns.length + 1} turns
+                        </span>
+                      )}
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() =>
@@ -1274,15 +1575,51 @@ export default function AgentTestCasesPage({ configId }: Props) {
                     {/* Expanded details */}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-2 border-t border-white/8 space-y-4">
-                        {/* Input */}
-                        <div>
-                          <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wider mb-1.5">
-                            User Input
-                          </p>
-                          <p className="text-sm text-white/75 bg-white/5 rounded-lg px-3 py-2">
-                            {tc.input}
-                          </p>
-                        </div>
+                        {/* Conversation flow (multi_turn) or single input */}
+                        {isMultiTurn ? (
+                          <div>
+                            <p className="text-xs font-medium text-purple-400/70 uppercase tracking-wider mb-2">
+                              Conversation Flow
+                            </p>
+                            <div className="space-y-2">
+                              <div className="rounded-lg bg-white/5 px-3 py-2 space-y-1">
+                                <p className="text-xs text-blue-400/70 font-medium">
+                                  Turn 1 — Opening
+                                </p>
+                                <p className="text-sm text-white/75">
+                                  {tc.input}
+                                </p>
+                              </div>
+                              {parsedTurns.map((turn) => (
+                                <div
+                                  key={turn.turnNumber}
+                                  className="rounded-lg bg-white/5 px-3 py-2 space-y-1"
+                                >
+                                  <p className="text-xs text-blue-400/70 font-medium">
+                                    Turn {turn.turnNumber}
+                                  </p>
+                                  <p className="text-sm text-white/75">
+                                    {turn.userMessage}
+                                  </p>
+                                  {turn.rubric && (
+                                    <p className="text-xs text-purple-300/50 mt-1">
+                                      Rubric: {turn.rubric}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wider mb-1.5">
+                              User Input
+                            </p>
+                            <p className="text-sm text-white/75 bg-white/5 rounded-lg px-3 py-2">
+                              {tc.input}
+                            </p>
+                          </div>
+                        )}
 
                         {/* Expected behavior */}
                         <div>
@@ -1294,23 +1631,25 @@ export default function AgentTestCasesPage({ configId }: Props) {
                           </p>
                         </div>
 
-                        {/* Rubric */}
-                        <div>
-                          <p className="text-xs font-medium text-purple-400/70 uppercase tracking-wider mb-1.5">
-                            Rubric Criteria
-                          </p>
-                          <ul className="space-y-1">
-                            {rubricItems.map((item, i) => (
-                              <li
-                                key={i}
-                                className="flex items-start gap-2 text-sm text-white/70"
-                              >
-                                <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                        {/* Rubric (single-turn only) */}
+                        {!isMultiTurn && rubricItems.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-purple-400/70 uppercase tracking-wider mb-1.5">
+                              Rubric Criteria
+                            </p>
+                            <ul className="space-y-1">
+                              {rubricItems.map((item, i) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-2 text-sm text-white/70"
+                                >
+                                  <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

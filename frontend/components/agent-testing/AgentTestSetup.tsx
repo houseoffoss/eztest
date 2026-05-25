@@ -43,6 +43,8 @@ interface AgentTestConfig {
   systemPrompt: string;
   aiProvider: AiProvider;
   aiModel: string | null;
+  testMode: "single_turn" | "multi_turn" | "both";
+  multiTurnSessionId: string | null;
   cookies?: string | null;
   authHeaders?: string | null;
   createdAt: string;
@@ -99,6 +101,7 @@ interface SetupFormData {
   aiProvider: AiProvider;
   aiModel: string;
   aiApiKey: string;
+  testMode: "single_turn" | "multi_turn" | "both"; // Control which test types to generate
   cookies: string; // JSON array of { name, value }
   authHeaders: string; // JSON object for Authorization header and other auth headers
   bearerToken: string; // UI-only: plain token, serialized to authHeaders on submit
@@ -115,6 +118,7 @@ const emptyForm: SetupFormData = {
   aiProvider: "anthropic",
   aiModel: ANTHROPIC_MODELS[0].value,
   aiApiKey: "",
+  testMode: "both",
   cookies: "",
   authHeaders: "",
   bearerToken: "",
@@ -407,6 +411,7 @@ export default function AgentTestSetup() {
       aiProvider: config.aiProvider,
       aiModel: modelValue,
       aiApiKey: "",
+      testMode: config.testMode,
       cookies: config.cookies ?? "",
       authHeaders: config.authHeaders ?? "",
       bearerToken: (() => {
@@ -467,6 +472,7 @@ export default function AgentTestSetup() {
         systemPrompt: editForm.systemPrompt,
         aiProvider: editForm.aiProvider,
         aiModel: resolvedEditModel || undefined,
+        testMode: editForm.testMode,
       };
       // Only send secrets if the user typed a new value
       if (editForm.langfuseSecretKey.trim())
@@ -904,6 +910,34 @@ export default function AgentTestSetup() {
                     )}
                   </div>
 
+                  {/* Test Mode */}
+                  <div className="space-y-2">
+                    <Label htmlFor="test-mode">
+                      Test Mode <span className="text-red-400">*</span>
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      Choose which test types to generate and execute for this configuration.
+                    </p>
+                    <div className="relative">
+                      <select
+                        id="test-mode"
+                        value={form.testMode}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            testMode: e.target.value as "single_turn" | "multi_turn" | "both",
+                          }))
+                        }
+                        className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                      >
+                        <option value="both">Both (Single & Multi-Turn)</option>
+                        <option value="single_turn">Single-Turn Only</option>
+                        <option value="multi_turn">Multi-Turn Only</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                    </div>
+                  </div>
+
                   {/* System Prompt / Agent Description */}
                   <div className="space-y-2">
                     <Label htmlFor="system-prompt">
@@ -1093,6 +1127,16 @@ export default function AgentTestSetup() {
                         <p className="mt-2 text-xs text-white/40 line-clamp-2">
                           {config.systemPrompt}
                         </p>
+                        {config.multiTurnSessionId && (
+                          <div className="mt-2 pt-2 border-t border-white/10">
+                            <p className="text-xs text-white/50 mb-1">
+                              Thread ID (Multi-Turn Session):
+                            </p>
+                            <code className="text-xs font-mono text-blue-400/80 break-all">
+                              {config.multiTurnSessionId}
+                            </code>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
@@ -1376,6 +1420,31 @@ export default function AgentTestSetup() {
                               }
                               placeholder="Leave blank to keep existing"
                             />
+                          </div>
+
+                          {/* Test Mode */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-test-mode-${config.id}`}>
+                              Test Mode <span className="text-red-400">*</span>
+                            </Label>
+                            <div className="relative">
+                              <select
+                                id={`edit-test-mode-${config.id}`}
+                                value={editForm.testMode}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    testMode: e.target.value as "single_turn" | "multi_turn" | "both",
+                                  }))
+                                }
+                                className="cursor-pointer w-full appearance-none rounded-full border border-white/15 bg-[#0f0f12] px-4 py-2 pr-8 text-sm text-white/90 focus:border-primary focus:outline-none shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                              >
+                                <option value="both">Both (Single & Multi-Turn)</option>
+                                <option value="single_turn">Single-Turn Only</option>
+                                <option value="multi_turn">Multi-Turn Only</option>
+                              </select>
+                              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                            </div>
                           </div>
 
                           {/* System Prompt */}

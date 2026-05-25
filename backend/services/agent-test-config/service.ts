@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { createId } from "@paralleldrive/cuid2";
 import {
   NotFoundException,
   ValidationException,
@@ -17,6 +18,8 @@ const CONFIG_SELECT = {
   systemPrompt: true,
   aiProvider: true,
   aiModel: true,
+  testMode: true,
+  multiTurnSessionId: true,
   cookies: true,
   authHeaders: true,
   createdAt: true,
@@ -56,9 +59,14 @@ export class AgentTestConfigService {
       aiProvider,
       aiModel,
       aiApiKey,
+      testMode,
       cookies,
       authHeaders,
     } = result.data;
+
+    // Generate multiTurnSessionId for configs that support multi-turn testing
+    const multiTurnSessionId = (testMode === "multi_turn" || testMode === "both") ? createId() : null;
+
     return prisma.agentTestConfig.create({
       data: {
         name,
@@ -69,6 +77,8 @@ export class AgentTestConfigService {
         aiProvider,
         aiModel: aiModel ?? null,
         aiApiKey,
+        testMode,
+        multiTurnSessionId,
         cookies: cookies ?? null,
         authHeaders: authHeaders ?? null,
         createdById: userId,

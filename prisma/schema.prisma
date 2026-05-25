@@ -581,6 +581,8 @@ model AgentTestConfig {
   aiApiKey        String?  @db.Text
   cookies         String?  @db.Text // JSON: { name: string, value: string }[] for HTTP authentication
   authHeaders     String?  @db.Text // JSON: { Authorization?: string, [key: string]: string } for Bearer tokens and custom headers
+  testMode        String   @default("both") // single_turn | multi_turn | both
+  multiTurnSessionId String? // Persistent session ID for multi-turn test runs; reused across all multi-turn tests
   createdById     String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -596,10 +598,12 @@ model AgentTestCase {
   id              String   @id @default(cuid())
   configId        String
   category        String
+  dimension       String? // One of: groundedness, tool_selection, trajectory, goal_completion, multi_turn_coherence, safety_refusal, operational_reliability; null for unspecified
   title           String
   input           String   @db.Text
   rubric          String   @db.Text
   expectedBehavior String  @db.Text
+  turns           String?  @db.Text // JSON: AgentTestCaseTurn[] | null — populated for multi_turn category
   generatedAt     DateTime @default(now())
 
   config          AgentTestConfig @relation(fields: [configId], references: [id], onDelete: Cascade)

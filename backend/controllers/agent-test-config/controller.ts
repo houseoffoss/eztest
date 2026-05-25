@@ -3,6 +3,10 @@ import { agentTestConfigService } from "@/backend/services/agent-test-config/ser
 import { agentTestGenerationService } from "@/backend/services/agent-test-config/generation.service";
 import { agentTestExecutionService } from "@/backend/services/agent-test-config/execution.service";
 import { agentTestAqsService } from "@/backend/services/agent-test-config/aqs.service";
+import {
+  createAgentTestCaseSchema,
+  updateAgentTestCaseSchema,
+} from "@/backend/validators/agent-test-config.validator";
 import { CustomRequest } from "@/backend/utils/interceptor";
 
 export class AgentTestConfigController {
@@ -61,20 +65,22 @@ export class AgentTestConfigController {
 
   async createTestCase(request: CustomRequest, configId: string) {
     const body = await request.json();
+    const parsed = createAgentTestCaseSchema.parse(body);
     const testCase = await agentTestGenerationService.createTestCase(
       configId,
       request.userInfo.id,
-      body,
+      parsed,
     );
     return { data: testCase, statusCode: 201 };
   }
 
   async updateTestCase(request: CustomRequest, testCaseId: string) {
     const body = await request.json();
+    const parsed = updateAgentTestCaseSchema.parse(body);
     const testCase = await agentTestGenerationService.updateTestCase(
       testCaseId,
       request.userInfo.id,
-      body,
+      parsed,
     );
     return { data: testCase };
   }
