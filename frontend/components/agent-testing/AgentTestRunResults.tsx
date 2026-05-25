@@ -460,6 +460,58 @@ function TraceDrawer({
             )}
           </section>
 
+          {/* Request / Response Panel */}
+          <section>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+              Request & Response
+            </h3>
+            <div className="grid grid-cols-2 divide-x divide-white/8 border border-white/8 rounded-lg overflow-hidden">
+              {/* Request */}
+              <div className="p-3 space-y-1.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                    Request
+                  </span>
+                </div>
+                <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                  {result.testCase.input}
+                </pre>
+              </div>
+
+              {/* Response */}
+              <div className="p-3 space-y-1.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">
+                    Response
+                  </span>
+                  {result.httpStatus != null && (
+                    <span
+                      className={`text-xs font-mono font-semibold ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                    >
+                      {result.httpStatus}
+                    </span>
+                  )}
+                  {result.latencyMs != null && (
+                    <span className="text-xs text-white/30 font-mono ml-auto">
+                      {result.latencyMs}ms
+                    </span>
+                  )}
+                </div>
+                {result.agentResponse ? (
+                  <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                    {result.agentResponse}
+                  </pre>
+                ) : result.errorMessage ? (
+                  <div className="text-xs text-red-300 bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">
+                    {result.errorMessage}
+                  </div>
+                ) : (
+                  <p className="text-xs text-white/25 italic">No response</p>
+                )}
+              </div>
+            </div>
+          </section>
+
           {/* Expected Behavior */}
           <section>
             <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-2">
@@ -1031,10 +1083,15 @@ export default function AgentTestRunResults({ runId }: Props) {
                           )}
                         </span>
 
-                        {/* Title */}
-                        <span className="flex-1 text-sm text-white/80 text-left truncate">
-                          {result.testCase.title}
-                        </span>
+                        {/* Title and Timestamp */}
+                        <div className="flex-1 text-left min-w-0">
+                          <span className="block text-sm text-white/80 truncate">
+                            {result.testCase.title}
+                          </span>
+                          <span className="block text-xs text-white/40 mt-0.5">
+                            {new Date(result.executedAt).toLocaleString()}
+                          </span>
+                        </div>
 
                         {/* Category badge */}
                         <span

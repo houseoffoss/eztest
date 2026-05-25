@@ -1028,6 +1028,18 @@ export default function AgentTestCasesPage({ configId }: Props) {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() =>
+                    router.push(
+                      `/agent-testing/configs/${configId}/results`
+                    )
+                  }
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-white/70 hover:bg-white/10 border border-white/10 transition-colors"
+                >
+                  <FlaskConical className="w-3 h-3" />
+                  Results History
+                </button>
+
+                <button
+                  onClick={() =>
                     testCases.length > 0
                       ? setShowRegenConfirm(true)
                       : handleRegenerate()
