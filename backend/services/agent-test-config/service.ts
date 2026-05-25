@@ -17,6 +17,8 @@ const CONFIG_SELECT = {
   systemPrompt: true,
   aiProvider: true,
   aiModel: true,
+  cookies: true,
+  authHeaders: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -54,6 +56,8 @@ export class AgentTestConfigService {
       aiProvider,
       aiModel,
       aiApiKey,
+      cookies,
+      authHeaders,
     } = result.data;
     return prisma.agentTestConfig.create({
       data: {
@@ -65,6 +69,8 @@ export class AgentTestConfigService {
         aiProvider,
         aiModel: aiModel ?? null,
         aiApiKey,
+        cookies: cookies ?? null,
+        authHeaders: authHeaders ?? null,
         createdById: userId,
       },
       select: CONFIG_SELECT,

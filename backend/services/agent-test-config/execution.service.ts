@@ -88,6 +88,8 @@ export class AgentTestExecutionService {
         aiProvider: true,
         aiModel: true,
         aiApiKey: true,
+        cookies: true,
+        authHeaders: true,
       },
     });
 
@@ -174,12 +176,20 @@ export class AgentTestExecutionService {
       : null;
 
     const envDefaults = getEnvDefaults();
+    const cookies = config.cookies
+      ? (JSON.parse(config.cookies) as Array<{ name: string; value: string }>)
+      : [];
+    const authHeaders = config.authHeaders
+      ? (JSON.parse(config.authHeaders) as Record<string, string>)
+      : {};
     const executionPromise = this._executeAll(
       run.id,
       config.agentApiUrl,
       config.langfusePublicKey,
       config.langfuseSecretKey,
       apiContract,
+      cookies,
+      authHeaders,
       testCases,
       resultData,
       resultIdMap,
@@ -220,6 +230,8 @@ export class AgentTestExecutionService {
     langfusePublicKey: string,
     langfuseSecretKey: string,
     apiContract: ApiContract | null,
+    cookies: Array<{ name: string; value: string }> = [],
+    authHeaders: Record<string, string> = {},
     testCases: { id: string; input: string; rubric: string }[],
     resultData: { runId: string; testCaseId: string; sessionId: string }[],
     resultIdMap: Map<string, string>,
@@ -260,7 +272,7 @@ export class AgentTestExecutionService {
         try {
           const sessionRes = await fetch(baseUrl + sessionStartPath, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...authHeaders },
             signal: AbortSignal.timeout(30_000),
           });
           if (sessionRes.ok) {
@@ -289,18 +301,29 @@ export class AgentTestExecutionService {
       // Build headers from extracted contract
       const extraHeaders: Record<string, string> = apiContract?.headers ?? {};
 
+      // Build Cookie header from cookies array
+      const cookieHeader = cookies.length > 0 ? cookies.map((c) => `${c.name}=${c.value}`).join("; ") : undefined;
+
+      console.log("[AgentTestExecution] authHeaders keys:", Object.keys(authHeaders), "| has Authorization:", !!authHeaders.Authorization);
+
       // Attempt the agent call — retry twice on timeout, abort run on 3+ consecutive fetch failures
       const MAX_ATTEMPTS = 3;
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         const t0 = Date.now();
         try {
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            "X-Session-Id": agentSessionId,
+            ...extraHeaders,
+            ...authHeaders,
+          };
+          if (cookieHeader) {
+            headers.Cookie = cookieHeader;
+          }
+
           const response = await fetch(chatUrl, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Session-Id": agentSessionId,
-              ...extraHeaders,
-            },
+            headers,
             body: JSON.stringify(requestBody),
             signal: AbortSignal.timeout(90_000),
           });

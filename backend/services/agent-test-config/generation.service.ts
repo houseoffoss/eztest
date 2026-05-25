@@ -94,9 +94,9 @@ Generate test cases across the following 7 categories:
 ${TEST_CATEGORIES.map((c) => `- **${c}**: ${CATEGORY_DESCRIPTIONS[c]}`).join("\n")}
 
 ### Category quotas (STRICT)
-- \`tool_use\`: one test case per distinct tool or skill (no cap). Every tool and skill must have its own dedicated test case.
+- \`tool_use\`: one test case per distinct tool or skill. Every tool and skill must have its own dedicated test case.
 - All other categories: at least 3 cases each. Generate as many as the agent's complexity justifies — more capabilities, more domain concepts, more constraints = more test cases.
-- **There is no upper limit. Cover the agent thoroughly. Do not stop early.**
+- **Generate comprehensive coverage without restriction. Cover the agent thoroughly. Do not stop early.**
 
 ### Tool and skill coverage (MANDATORY)
 - Every tool and every skill MUST be named explicitly in at least one rubric criterion (e.g. "Calls the \`search_web\` tool").

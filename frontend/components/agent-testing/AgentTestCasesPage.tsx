@@ -67,6 +67,8 @@ interface AgentTestRunSummary {
     latencyMs: number | null;
     httpStatus: number | null;
     errorMessage: string | null;
+    requestPayload: string | null;
+    agentResponse: string | null;
     testCase: { title: string; category: string };
   }[];
 }
@@ -122,6 +124,7 @@ export default function AgentTestCasesPage({ configId }: Props) {
   // Run
   const [running, setRunning] = useState(false);
   const [activeRun, setActiveRun] = useState<AgentTestRunSummary | null>(null);
+  const [expandedResultId, setExpandedResultId] = useState<string | null>(null);
 
   // Filter by category
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -667,47 +670,132 @@ export default function AgentTestCasesPage({ configId }: Props) {
                   )}
 
                   {/* Per-result rows */}
-                  <div className="space-y-1">
-                    {activeRun.results.map((r) => (
-                      <div
-                        key={r.id}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/3 border border-white/8 text-xs"
-                      >
-                        <span className="shrink-0">
-                          {r.status === "pending" &&
-                          inProgressResult?.id === r.id ? (
-                            <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
-                          ) : r.status === "pending" ? (
-                            <Clock className="w-3.5 h-3.5 text-white/30" />
-                          ) : r.status === "success" ? (
-                            <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                          ) : (
-                            <XCircle className="w-3.5 h-3.5 text-red-400" />
-                          )}
-                        </span>
-                        <span className="flex-1 text-white/75 truncate">
-                          {r.testCase.title}
-                        </span>
-                        <span
-                          className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[r.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                  <div className="space-y-1.5">
+                    {activeRun.results.map((r) => {
+                      const isDone = r.status === "success" || r.status === "error";
+                      const isRunning = r.status === "pending" && inProgressResult?.id === r.id;
+                      const isOpen = expandedResultId === r.id || (isDone && expandedResultId !== `closed-${r.id}`);
+
+                      let parsedRequest: { url?: string; body?: unknown } | null = null;
+                      try { if (r.requestPayload) parsedRequest = JSON.parse(r.requestPayload); } catch { /* */ }
+
+                      let parsedResponse: unknown = null;
+                      const rawResponse = r.agentResponse ?? "";
+                      try { if (rawResponse) parsedResponse = JSON.parse(rawResponse); } catch { /* */ }
+
+                      return (
+                        <div
+                          key={r.id}
+                          className={`rounded-xl border overflow-hidden transition-all ${
+                            r.status === "success"
+                              ? "border-green-500/20 bg-green-500/3"
+                              : r.status === "error"
+                              ? "border-red-500/20 bg-red-500/3"
+                              : isRunning
+                              ? "border-yellow-500/20 bg-yellow-500/3"
+                              : "border-white/8 bg-white/2"
+                          }`}
                         >
-                          {CATEGORY_LABELS[r.testCase.category] ??
-                            r.testCase.category}
-                        </span>
-                        {r.latencyMs != null && (
-                          <span className="shrink-0 text-white/30">
-                            {r.latencyMs}ms
-                          </span>
-                        )}
-                        {r.httpStatus != null && (
-                          <span
-                            className={`shrink-0 font-mono ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                          {/* Header row */}
+                          <button
+                            onClick={() =>
+                              setExpandedResultId(isOpen ? `closed-${r.id}` : r.id)
+                            }
+                            className="cursor-pointer w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/4 transition-colors"
                           >
-                            {r.httpStatus}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                            <span className="shrink-0">
+                              {isRunning ? (
+                                <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
+                              ) : r.status === "pending" ? (
+                                <Clock className="w-3.5 h-3.5 text-white/30" />
+                              ) : r.status === "success" ? (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                              ) : (
+                                <XCircle className="w-3.5 h-3.5 text-red-400" />
+                              )}
+                            </span>
+                            <span className="flex-1 text-xs text-white/80 truncate font-medium">
+                              {r.testCase.title}
+                            </span>
+                            <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[r.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}>
+                              {CATEGORY_LABELS[r.testCase.category] ?? r.testCase.category}
+                            </span>
+                            {r.httpStatus != null && (
+                              <span className={`shrink-0 text-xs font-mono px-1.5 py-0.5 rounded border ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400 bg-green-500/10 border-green-500/20" : "text-red-400 bg-red-500/10 border-red-500/20"}`}>
+                                {r.httpStatus}
+                              </span>
+                            )}
+                            {r.latencyMs != null && (
+                              <span className="shrink-0 text-xs text-white/30 font-mono">{r.latencyMs}ms</span>
+                            )}
+                            {isOpen ? <ChevronUp className="w-3 h-3 text-white/30 shrink-0" /> : <ChevronDown className="w-3 h-3 text-white/30 shrink-0" />}
+                          </button>
+
+                          {/* Request / Response panel */}
+                          {isOpen && (
+                            <div className="border-t border-white/8">
+                              {isRunning ? (
+                                <div className="flex items-center gap-2 px-4 py-3 text-xs text-yellow-300/70">
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  Sending request...
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-2 divide-x divide-white/8">
+                                  {/* Request */}
+                                  <div className="p-3 space-y-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Request</span>
+                                      {parsedRequest?.url && (
+                                        <span className="text-xs font-mono text-white/30 truncate">POST {parsedRequest.url}</span>
+                                      )}
+                                    </div>
+                                    {parsedRequest?.body ? (
+                                      <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                                        {JSON.stringify(parsedRequest.body, null, 2)}
+                                      </pre>
+                                    ) : r.requestPayload ? (
+                                      <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                                        {r.requestPayload}
+                                      </pre>
+                                    ) : (
+                                      <p className="text-xs text-white/25 italic">Not sent yet</p>
+                                    )}
+                                  </div>
+
+                                  {/* Response */}
+                                  <div className="p-3 space-y-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Response</span>
+                                      {r.httpStatus != null && (
+                                        <span className={`text-xs font-mono font-semibold ${r.httpStatus >= 200 && r.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}>{r.httpStatus}</span>
+                                      )}
+                                      {r.latencyMs != null && (
+                                        <span className="text-xs text-white/30 font-mono ml-auto">{r.latencyMs}ms</span>
+                                      )}
+                                    </div>
+                                    {parsedResponse ? (
+                                      <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                                        {JSON.stringify(parsedResponse, null, 2)}
+                                      </pre>
+                                    ) : rawResponse ? (
+                                      <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48 font-mono leading-relaxed">
+                                        {rawResponse}
+                                      </pre>
+                                    ) : r.errorMessage ? (
+                                      <div className="text-xs text-red-300 bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">
+                                        {r.errorMessage}
+                                      </div>
+                                    ) : (
+                                      <p className="text-xs text-white/25 italic">Waiting for response...</p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </DetailCard>

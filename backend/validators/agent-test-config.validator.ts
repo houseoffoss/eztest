@@ -17,8 +17,56 @@ export const createAgentTestConfigSchema = z.object({
     .trim(),
   systemPrompt: z.string().min(1, "System prompt is required"),
   aiProvider: z.enum(["anthropic", "google"]).default("anthropic"),
-  aiModel: z.string().trim().optional(),
+  aiModel: z
+    .string()
+    .trim()
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
   aiApiKey: z.string().min(1, "AI API key is required").trim(),
+  cookies: z
+    .union([z.string(), z.undefined(), z.null()])
+    .transform((val) => {
+      if (!val || val === "") return null;
+      return val;
+    })
+    .refine(
+      (val) => {
+        if (!val) return true;
+        try {
+          const parsed = JSON.parse(val);
+          return (
+            Array.isArray(parsed) &&
+            parsed.every(
+              (c) =>
+                typeof c === "object" &&
+                typeof c.name === "string" &&
+                typeof c.value === "string",
+            )
+          );
+        } catch {
+          return false;
+        }
+      },
+      "Cookies must be a valid JSON array with {name, value} objects",
+    ),
+  authHeaders: z
+    .union([z.string(), z.undefined(), z.null()])
+    .transform((val) => {
+      if (!val || val === "") return null;
+      return val;
+    })
+    .refine(
+      (val) => {
+        if (!val) return true;
+        try {
+          const parsed = JSON.parse(val);
+          return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
+        } catch {
+          return false;
+        }
+      },
+      "Auth headers must be a valid JSON object (e.g., {\"Authorization\": \"Bearer token\"})",
+    ),
 });
 
 export const updateAgentTestConfigSchema =

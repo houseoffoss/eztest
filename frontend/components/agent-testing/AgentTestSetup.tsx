@@ -43,6 +43,8 @@ interface AgentTestConfig {
   systemPrompt: string;
   aiProvider: AiProvider;
   aiModel: string | null;
+  cookies?: string | null;
+  authHeaders?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -97,6 +99,9 @@ interface SetupFormData {
   aiProvider: AiProvider;
   aiModel: string;
   aiApiKey: string;
+  cookies: string; // JSON array of { name, value }
+  authHeaders: string; // JSON object for Authorization header and other auth headers
+  bearerToken: string; // UI-only: plain token, serialized to authHeaders on submit
 }
 
 const CUSTOM_MODEL_VALUE = "__custom__";
@@ -110,6 +115,9 @@ const emptyForm: SetupFormData = {
   aiProvider: "anthropic",
   aiModel: ANTHROPIC_MODELS[0].value,
   aiApiKey: "",
+  cookies: "",
+  authHeaders: "",
+  bearerToken: "",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -315,10 +323,16 @@ export default function AgentTestSetup() {
     try {
       const resolvedModel =
         form.aiModel === CUSTOM_MODEL_VALUE ? customModel.trim() : form.aiModel;
+      const payload: any = { ...form, aiModel: resolvedModel || undefined };
+      if (!payload.aiModel) delete payload.aiModel;
+      if (form.bearerToken.trim()) {
+        payload.authHeaders = JSON.stringify({ Authorization: `Bearer ${form.bearerToken.trim()}` });
+      }
+      delete payload.bearerToken;
       const res = await fetch("/api/agent-test-configs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, aiModel: resolvedModel || undefined }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok)
@@ -393,6 +407,15 @@ export default function AgentTestSetup() {
       aiProvider: config.aiProvider,
       aiModel: modelValue,
       aiApiKey: "",
+      cookies: config.cookies ?? "",
+      authHeaders: config.authHeaders ?? "",
+      bearerToken: (() => {
+        try {
+          const h = config.authHeaders ? JSON.parse(config.authHeaders) : {};
+          const auth: string = h.Authorization ?? h.authorization ?? "";
+          return auth.startsWith("Bearer ") ? auth.slice(7) : auth;
+        } catch { return ""; }
+      })(),
     });
     setEditCustomModel(
       isKnown || config.aiModel == null ? "" : (config.aiModel ?? ""),
@@ -449,6 +472,12 @@ export default function AgentTestSetup() {
       if (editForm.langfuseSecretKey.trim())
         body.langfuseSecretKey = editForm.langfuseSecretKey;
       if (editForm.aiApiKey.trim()) body.aiApiKey = editForm.aiApiKey;
+      if (editForm.cookies.trim()) body.cookies = editForm.cookies;
+      if (editForm.bearerToken.trim()) {
+        body.authHeaders = JSON.stringify({ Authorization: `Bearer ${editForm.bearerToken.trim()}` });
+      } else if (editForm.authHeaders.trim()) {
+        body.authHeaders = editForm.authHeaders;
+      }
 
       const res = await fetch(`/api/agent-test-configs/${configId}`, {
         method: "PATCH",
@@ -906,6 +935,53 @@ export default function AgentTestSetup() {
                     )}
                   </div>
 
+                  {/* Cookies for Authentication */}
+                  <div className="space-y-2">
+                    <Label htmlFor="cookies">
+                      Authentication Cookies
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      Optional. Provide cookies for authenticated API testing.
+                      Format as JSON array: <span className="font-mono text-white/60">[{"{"}name: "sessionId", value: "abc123"{"}"}]</span>
+                    </p>
+                    <Textarea
+                      id="cookies"
+                      variant="glass"
+                      rows={3}
+                      value={form.cookies}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          cookies: e.target.value,
+                        }))
+                      }
+                      placeholder='[{"name": "session_id", "value": "your-session-value"}]'
+                    />
+                  </div>
+
+                  {/* Bearer Token */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bearer-token">
+                      Bearer Token
+                    </Label>
+                    <p className="text-xs text-white/40">
+                      Optional. Paste your access token — the <span className="font-mono text-white/60">Bearer </span> prefix is added automatically.
+                    </p>
+                    <Input
+                      id="bearer-token"
+                      type="password"
+                      variant="glass"
+                      value={form.bearerToken}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          bearerToken: e.target.value,
+                        }))
+                      }
+                      placeholder="Paste your token here"
+                    />
+                  </div>
+
                   {/* Actions */}
                   <div className="flex justify-end gap-3 pt-2">
                     <ButtonPrimary
@@ -1328,6 +1404,52 @@ export default function AgentTestSetup() {
                             )}
                           </div>
 
+                          {/* Cookies for Authentication */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-cookies-${config.id}`}>
+                              Authentication Cookies
+                            </Label>
+                            <p className="text-xs text-white/40">
+                              Optional. Format as JSON array.
+                            </p>
+                            <Textarea
+                              id={`edit-cookies-${config.id}`}
+                              variant="glass"
+                              rows={3}
+                              value={editForm.cookies}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  cookies: e.target.value,
+                                }))
+                              }
+                              placeholder='[{"name": "session_id", "value": "your-session-value"}]'
+                            />
+                          </div>
+
+                          {/* Bearer Token */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`edit-bearer-token-${config.id}`}>
+                              Bearer Token
+                            </Label>
+                            <p className="text-xs text-white/40">
+                              Leave blank to keep the existing token. The <span className="font-mono text-white/60">Bearer </span> prefix is added automatically.
+                            </p>
+                            <Input
+                              id={`edit-bearer-token-${config.id}`}
+                              type="password"
+                              variant="glass"
+                              value={editForm.bearerToken}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  bearerToken: e.target.value,
+                                }))
+                              }
+                              placeholder="Paste new token to update"
+                            />
+                          </div>
+
                           {/* Actions */}
                           <div className="flex justify-end gap-3 pt-2">
                             <ButtonPrimary
@@ -1418,154 +1540,152 @@ export default function AgentTestSetup() {
                         )}
 
                         {/* Per-result rows */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {run.results.map((result) => {
-                            const isResultOpen = expandedResult === result.id;
+                            const isDone = result.status === "success" || result.status === "error";
+                            const isResultOpen = expandedResult === result.id || (isDone && expandedResult !== `closed-${result.id}`);
+                            const isRunning = result.status === "pending" && inProgressResult?.id === result.id;
+
+                            let parsedRequest: { url?: string; body?: unknown } | null = null;
+                            try { if (result.requestPayload) parsedRequest = JSON.parse(result.requestPayload); } catch { /* */ }
+
+                            let parsedResponse: unknown = null;
+                            let rawResponse = result.agentResponse ?? "";
+                            try { if (rawResponse) parsedResponse = JSON.parse(rawResponse); } catch { /* */ }
+
                             return (
                               <div
                                 key={result.id}
-                                className="rounded-lg border border-white/8 bg-white/3 overflow-hidden"
+                                className={`rounded-xl border overflow-hidden transition-all ${
+                                  result.status === "success"
+                                    ? "border-green-500/20 bg-green-500/3"
+                                    : result.status === "error"
+                                    ? "border-red-500/20 bg-red-500/3"
+                                    : isRunning
+                                    ? "border-yellow-500/20 bg-yellow-500/3"
+                                    : "border-white/8 bg-white/2"
+                                }`}
                               >
+                                {/* Row header — always visible */}
                                 <button
                                   onClick={() =>
                                     setExpandedResult(
-                                      isResultOpen ? null : result.id,
+                                      isResultOpen ? `closed-${result.id}` : result.id,
                                     )
                                   }
-                                  className="cursor-pointer w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
+                                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/4 transition-colors"
                                 >
-                                  {/* Status icon */}
                                   <span className="shrink-0">
-                                    {result.status === "pending" &&
-                                    inProgressResult?.id === result.id ? (
-                                      <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
+                                    {isRunning ? (
+                                      <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
                                     ) : result.status === "pending" ? (
-                                      <Clock className="w-3.5 h-3.5 text-white/30" />
+                                      <Clock className="w-4 h-4 text-white/25" />
                                     ) : result.status === "success" ? (
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                      <CheckCircle2 className="w-4 h-4 text-green-400" />
                                     ) : (
-                                      <XCircle className="w-3.5 h-3.5 text-red-400" />
+                                      <XCircle className="w-4 h-4 text-red-400" />
                                     )}
                                   </span>
 
-                                  <span className="flex-1 text-xs text-white/75 truncate">
+                                  <span className="flex-1 text-sm text-white/80 truncate font-medium">
                                     {result.testCase.title}
                                   </span>
 
                                   <span
-                                    className={`shrink-0 text-xs px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[result.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
+                                    className={`shrink-0 text-xs px-2 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[result.testCase.category] ?? "bg-white/5 text-white/40 border-white/10"}`}
                                   >
-                                    {CATEGORY_LABELS[
-                                      result.testCase.category
-                                    ] ?? result.testCase.category}
+                                    {CATEGORY_LABELS[result.testCase.category] ?? result.testCase.category}
                                   </span>
-
-                                  {result.latencyMs != null && (
-                                    <span className="shrink-0 text-xs text-white/30">
-                                      {result.latencyMs}ms
-                                    </span>
-                                  )}
 
                                   {result.httpStatus != null && (
                                     <span
-                                      className={`shrink-0 text-xs font-mono ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
+                                      className={`shrink-0 text-xs font-mono px-2 py-0.5 rounded border ${
+                                        result.httpStatus >= 200 && result.httpStatus < 300
+                                          ? "text-green-400 bg-green-500/10 border-green-500/20"
+                                          : "text-red-400 bg-red-500/10 border-red-500/20"
+                                      }`}
                                     >
                                       {result.httpStatus}
                                     </span>
                                   )}
 
+                                  {result.latencyMs != null && (
+                                    <span className="shrink-0 text-xs text-white/35 font-mono">
+                                      {result.latencyMs}ms
+                                    </span>
+                                  )}
+
                                   {isResultOpen ? (
-                                    <ChevronUp className="w-3 h-3 text-white/30 shrink-0" />
+                                    <ChevronUp className="w-3.5 h-3.5 text-white/30 shrink-0" />
                                   ) : (
-                                    <ChevronDown className="w-3 h-3 text-white/30 shrink-0" />
+                                    <ChevronDown className="w-3.5 h-3.5 text-white/30 shrink-0" />
                                   )}
                                 </button>
 
+                                {/* Expanded: Request + Response */}
                                 {isResultOpen && (
-                                  <div className="px-4 pb-4 pt-3 border-t border-white/8 space-y-3">
-                                    {/* Request */}
-                                    <div>
-                                      <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wider mb-1.5">
-                                        Request
-                                      </p>
-                                      {result.requestPayload ? (
-                                        (() => {
-                                          try {
-                                            const parsed = JSON.parse(
-                                              result.requestPayload,
-                                            );
-                                            return (
-                                              <div className="space-y-1.5">
-                                                <p className="text-xs text-white/40 font-mono bg-white/5 rounded px-3 py-1.5">
-                                                  POST {parsed.url}
-                                                </p>
-                                                <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
-                                                  {JSON.stringify(
-                                                    parsed.body,
-                                                    null,
-                                                    2,
-                                                  )}
-                                                </pre>
-                                              </div>
-                                            );
-                                          } catch {
-                                            return (
-                                              <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-40">
-                                                {result.requestPayload}
-                                              </pre>
-                                            );
-                                          }
-                                        })()
-                                      ) : (
-                                        <p className="text-xs text-white/30 italic">
-                                          Not yet sent
-                                        </p>
-                                      )}
-                                    </div>
+                                  <div className="border-t border-white/8">
+                                    {isRunning ? (
+                                      <div className="flex items-center gap-2 px-4 py-3 text-xs text-yellow-300/70">
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        Sending request...
+                                      </div>
+                                    ) : (
+                                      <div className="grid grid-cols-2 divide-x divide-white/8">
 
-                                    {/* Response */}
-                                    <div>
-                                      <p className="text-xs font-medium text-green-400/70 uppercase tracking-wider mb-1.5">
-                                        Response
-                                        {result.httpStatus != null && (
-                                          <span
-                                            className={`ml-2 font-mono ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}
-                                          >
-                                            {result.httpStatus}
-                                          </span>
-                                        )}
-                                        {result.latencyMs != null && (
-                                          <span className="ml-2 text-white/30 font-mono">
-                                            {result.latencyMs}ms
-                                          </span>
-                                        )}
-                                      </p>
-                                      {result.agentResponse ? (
-                                        <pre className="text-xs text-white/70 bg-white/5 rounded px-3 py-2 overflow-x-auto whitespace-pre-wrap max-h-48">
-                                          {(() => {
-                                            try {
-                                              return JSON.stringify(
-                                                JSON.parse(
-                                                  result.agentResponse,
-                                                ),
-                                                null,
-                                                2,
-                                              );
-                                            } catch {
-                                              return result.agentResponse;
-                                            }
-                                          })()}
-                                        </pre>
-                                      ) : result.errorMessage ? (
-                                        <p className="text-xs text-red-300 bg-red-500/10 rounded px-3 py-2">
-                                          {result.errorMessage}
-                                        </p>
-                                      ) : (
-                                        <p className="text-xs text-white/30 italic">
-                                          Waiting for response...
-                                        </p>
-                                      )}
-                                    </div>
+                                        {/* LEFT: Request */}
+                                        <div className="p-4 space-y-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Request</span>
+                                            {parsedRequest?.url && (
+                                              <span className="text-xs font-mono text-white/35 truncate">POST {parsedRequest.url}</span>
+                                            )}
+                                          </div>
+                                          {parsedRequest?.body ? (
+                                            <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap max-h-52 font-mono leading-relaxed">
+                                              {JSON.stringify(parsedRequest.body, null, 2)}
+                                            </pre>
+                                          ) : result.requestPayload ? (
+                                            <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap max-h-52 font-mono leading-relaxed">
+                                              {result.requestPayload}
+                                            </pre>
+                                          ) : (
+                                            <p className="text-xs text-white/25 italic">Not sent yet</p>
+                                          )}
+                                        </div>
+
+                                        {/* RIGHT: Response */}
+                                        <div className="p-4 space-y-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-semibold text-green-400 uppercase tracking-wider">Response</span>
+                                            {result.httpStatus != null && (
+                                              <span className={`text-xs font-mono font-semibold ${result.httpStatus >= 200 && result.httpStatus < 300 ? "text-green-400" : "text-red-400"}`}>
+                                                {result.httpStatus}
+                                              </span>
+                                            )}
+                                            {result.latencyMs != null && (
+                                              <span className="text-xs text-white/30 font-mono ml-auto">{result.latencyMs}ms</span>
+                                            )}
+                                          </div>
+                                          {parsedResponse ? (
+                                            <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap max-h-52 font-mono leading-relaxed">
+                                              {JSON.stringify(parsedResponse, null, 2)}
+                                            </pre>
+                                          ) : rawResponse ? (
+                                            <pre className="text-xs text-white/65 bg-black/20 rounded-lg px-3 py-2.5 overflow-x-auto whitespace-pre-wrap max-h-52 font-mono leading-relaxed">
+                                              {rawResponse}
+                                            </pre>
+                                          ) : result.errorMessage ? (
+                                            <div className="text-xs text-red-300 bg-red-500/10 rounded-lg px-3 py-2.5 border border-red-500/20">
+                                              {result.errorMessage}
+                                            </div>
+                                          ) : (
+                                            <p className="text-xs text-white/25 italic">Waiting for response...</p>
+                                          )}
+                                        </div>
+
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>

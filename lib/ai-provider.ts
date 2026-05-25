@@ -54,7 +54,7 @@ export function getModelsForProvider(
 }
 
 // ── Fallback defaults (used when no model is stored on the config) ────────────
-const ANTHROPIC_DEFAULT_GENERATION_MODEL = "claude-opus-4-6";
+const ANTHROPIC_DEFAULT_GENERATION_MODEL = "claude-haiku-4-5-20251001";
 const ANTHROPIC_DEFAULT_SCORING_MODEL = "claude-haiku-4-5-20251001";
 const GOOGLE_DEFAULT_GENERATION_MODEL = "gemini-2.5-pro";
 const GOOGLE_DEFAULT_SCORING_MODEL = "gemini-2.5-pro";
