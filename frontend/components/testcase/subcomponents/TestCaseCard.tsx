@@ -63,7 +63,7 @@ export function TestCaseCard({ testCase, onDelete, onClick }: TestCaseCardProps)
       onClick={onClick}
       style={{ background: gradientStyle }}
     >
-      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#0a1628' }}>
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
         <Card
           variant="glass"
           className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"

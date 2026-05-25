@@ -103,7 +103,7 @@ export const ProductShowcaseSection = () => {
             <div className="flex-1 relative">
               <div className="relative rounded-2xl border border-white/20 bg-white/5 backdrop-blur-xl p-4 shadow-2xl">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-2xl blur opacity-50"></div>
-                <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#0a1628] to-[#0b1028] border border-white/10">
+                <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#050608] to-[#0b1028] border border-white/10">
                   <Image
                     src={showcase.image}
                     alt={showcase.imageAlt}

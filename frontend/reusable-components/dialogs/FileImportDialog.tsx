@@ -244,7 +244,7 @@ export function FileImportDialog({
             </DialogHeader>
 
             <div className="space-y-5">{/* Download Template */}
-          <div className="flex items-center justify-between p-4 border border-white/20 rounded-lg bg-[#0f172a]">
+          <div className="flex items-center justify-between p-4 border border-white/20 rounded-lg bg-[#0f0f12]">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10">
                 <FileSpreadsheet className="h-5 w-5 text-white/70" />
@@ -271,7 +271,7 @@ export function FileImportDialog({
 
           {/* File Upload Area */}
           <div
-            className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all bg-[#0f172a]"
+            className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all bg-[#0f0f12]"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
@@ -413,7 +413,7 @@ export function FileImportDialog({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
           <Button
             type="button"
             variant="glass"

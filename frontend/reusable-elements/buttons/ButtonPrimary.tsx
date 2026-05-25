@@ -20,73 +20,207 @@ const ButtonPrimary = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const handleClick = React.useCallback(
       (e: React.MouseEvent<HTMLButtonElement>) => {
-        // Call original onClick handler first
-        // Note: onClick is typed as void, so we call it synchronously
-        // If the handler needs async behavior, it should handle that internally
         if (onClick) {
           onClick(e);
         }
 
-        // Track button click if enabled (runs after onClick is called)
-        // Analytics tracking is fire-and-forget and won't block the original logic
         if (!disableTracking) {
-          // Get button name from various sources
           const dataAttr = (e.currentTarget as HTMLElement)?.getAttribute('data-analytics-button');
           const children = (e.currentTarget as HTMLElement)?.textContent?.trim();
           const nameToTrack = buttonName || dataAttr || children || 'Button';
-          // Track asynchronously without blocking (fire-and-forget)
           trackButton(nameToTrack, {
             variant,
             size,
           }).catch((error) => {
-            // Silently fail - analytics should not break the app
             console.error('Failed to track button click:', error);
           });
         }
       },
       [onClick, trackButton, buttonName, disableTracking, variant, size]
     );
-    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
-
-    // For gradient border effect
-    const wrapperClass = variant === "default" 
-      ? "relative inline-block rounded-full p-[1px] bg-gradient-to-r from-[#748ed3] via-[#748ed3] to-[#2c4892]" 
-      : ""
-
-    const variants = {
-      default: "bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white border-2 border-transparent bg-clip-padding border-image-source-gradient rounded-full hover:shadow-lg hover:shadow-[#748ed3]/30 relative overflow-hidden dark:from-[#293b64] dark:to-[#1e2c4e]",
-      light: "bg-transparent text-[#748ed3] border-2 border-[#748ed3] rounded-full hover:bg-[#293b64]/20 hover:border-[#748ed3]/80 dark:text-[#748ed3] dark:border-[#748ed3]/80",
-      outline: "border-2 border-[#748ed3] text-[#748ed3] bg-transparent rounded-full hover:bg-[#293b64]/10 hover:border-[#748ed3]/80 dark:border-[#748ed3]/80 dark:text-[#748ed3]",
-      ghost: "text-[#748ed3] hover:bg-[#293b64]/20 border-none rounded-full dark:text-[#748ed3]",
-    }
 
     const sizes = {
-      default: "h-9 px-5 py-2",
-      sm: "h-8 px-4 text-xs",
-      lg: "h-11 px-7 text-base",
+      default: "h-auto px-4 py-2",
+      sm: "h-8 px-3 text-xs",
+      lg: "h-11 px-6 text-base",
       icon: "h-9 w-9 p-0",
     }
 
+    // Exact replica of home page navbar button
     if (variant === "default") {
       return (
-        <div className={wrapperClass}>
-          <button
-            className={cn("rounded-full bg-gradient-to-br from-[#293b64] to-[#1e2c4e] text-white text-sm font-semibold inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:shadow-lg hover:shadow-[#748ed3]/30 dark:from-[#293b64] dark:to-[#1e2c4e] cursor-pointer", sizes[size], className)}
-            ref={ref}
-            suppressHydrationWarning
-            onClick={handleClick}
-            {...props}
+        <div
+          className="inline-flex items-center relative rounded-[100px] transition-all cursor-pointer"
+          style={{
+            height: size === "lg" ? "44px" : size === "sm" ? "32px" : "36px",
+            backgroundColor: 'rgba(51, 51, 51, 0.10)',
+            paddingTop: '6px',
+            paddingRight: '10px',
+            paddingBottom: '6px',
+            paddingLeft: '10px',
+            gap: '10px',
+            backdropFilter: 'blur(40px)',
+            boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+          }}
+          onMouseEnter={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(51, 51, 51, 0.32)';
+            target.style.boxShadow = '0 18px 45px -18px rgba(0, 0, 0, 0.95)';
+            target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(51, 51, 51, 0.10)';
+            target.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+            target.style.transform = 'translateY(0)';
+          }}
+        >
+          <div
+            className="absolute -inset-[1px] rounded-[100px] pointer-events-none -z-10"
+            style={{
+              background: 'conic-gradient(from 339deg, rgba(255, 255, 255, 0.4) 0deg, rgba(255, 255, 255, 0.4) 70deg, rgba(255, 255, 255, 0.05) 90deg, rgba(255, 255, 255, 0.4) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.4) 360deg)',
+              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              maskComposite: 'exclude',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              padding: '1px',
+            }}
           />
+          <button
+            ref={ref}
+            className={cn("relative z-10 px-4 py-2 transition-colors cursor-pointer border-0 outline-none flex items-center justify-center gap-2", className)}
+            style={{
+              background: 'transparent',
+              fontFamily: 'Inter',
+              fontWeight: 500,
+              fontSize: size === "lg" ? "16px" : size === "sm" ? "12px" : "14px",
+              lineHeight: size === "lg" ? "24px" : size === "sm" ? "18px" : "21.85px",
+              letterSpacing: '0.27px',
+              textAlign: 'center',
+              verticalAlign: 'middle',
+            }}
+            onClick={handleClick}
+            suppressHydrationWarning
+            {...props}
+          >
+            {React.Children.map(props.children, (child) => {
+              if (typeof child === 'string' || typeof child === 'number') {
+                return (
+                  <span
+                    style={{
+                      backgroundImage: 'linear-gradient(94.37deg, #3291FF 11.75%, #405998 88.32%)',
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                    }}
+                  >
+                    {child}
+                  </span>
+                )
+              }
+              return child
+            })}
+          </button>
         </div>
+      )
+    }
+
+    // Light variant
+    if (variant === "light") {
+      return (
+        <button
+          ref={ref}
+          className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-[100px] transition-all cursor-pointer", sizes[size], className)}
+          style={{
+            backgroundColor: 'rgba(50, 145, 255, 0.1)',
+            backdropFilter: 'blur(40px)',
+            border: '1px solid rgba(50, 145, 255, 0.3)',
+            color: '#3291FF',
+            boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+          }}
+          onClick={handleClick}
+          suppressHydrationWarning
+          onMouseEnter={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(50, 145, 255, 0.2)';
+            target.style.boxShadow = '0 18px 45px -18px rgba(50, 145, 255, 0.4)';
+            target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(50, 145, 255, 0.1)';
+            target.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+            target.style.transform = 'translateY(0)';
+          }}
+          {...props}
+        />
+      )
+    }
+
+    // Outline variant
+    if (variant === "outline") {
+      return (
+        <button
+          ref={ref}
+          className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-[100px] transition-all cursor-pointer", sizes[size], className)}
+          style={{
+            backgroundColor: 'transparent',
+            backdropFilter: 'blur(40px)',
+            border: '2px solid #3291FF',
+            color: '#3291FF',
+            boxShadow: '0 10px 30px -12px rgba(0, 0, 0, 0.6)',
+          }}
+          onClick={handleClick}
+          suppressHydrationWarning
+          onMouseEnter={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(50, 145, 255, 0.1)';
+            target.style.boxShadow = '0 18px 45px -18px rgba(50, 145, 255, 0.4)';
+            target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'transparent';
+            target.style.boxShadow = '0 10px 30px -12px rgba(0, 0, 0, 0.6)';
+            target.style.transform = 'translateY(0)';
+          }}
+          {...props}
+        />
+      )
+    }
+
+    // Ghost variant
+    if (variant === "ghost") {
+      return (
+        <button
+          ref={ref}
+          className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-[100px] transition-all cursor-pointer", sizes[size], className)}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#3291FF',
+          }}
+          onClick={handleClick}
+          suppressHydrationWarning
+          onMouseEnter={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'rgba(50, 145, 255, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget as HTMLElement;
+            target.style.backgroundColor = 'transparent';
+          }}
+          {...props}
+        />
       )
     }
 
     return (
       <button
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
-        suppressHydrationWarning
+        className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-[100px]", sizes[size], className)}
         onClick={handleClick}
+        suppressHydrationWarning
         {...props}
       />
     )

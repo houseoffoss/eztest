@@ -99,7 +99,7 @@ export function DefectTable({
     <div className="space-y-0">
       {/* Header Row - Sticky */}
       <div
-        className="sticky top-0 z-10 bg-[#0a1628]/95 backdrop-blur-sm grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10"
+        className="sticky top-0 z-10 bg-[#050608]/95 backdrop-blur-sm grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10"
         style={{ gridTemplateColumns: '40px 100px 2fr 110px 110px 110px 150px 150px 50px' }}
       >
         <div className="flex items-center justify-center">

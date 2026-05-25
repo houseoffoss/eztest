@@ -58,6 +58,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
   const [stepAttachments, setStepAttachments] = useState<Record<string, Record<string, Attachment[]>>>({});
   const [newStepActionAttachments, setNewStepActionAttachments] = useState<Attachment[]>([]);
   const [newStepExpectedResultAttachments, setNewStepExpectedResultAttachments] = useState<Attachment[]>([]);
+  const [deletedCommonAttachmentIds, setDeletedCommonAttachmentIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   const navbarActions = useMemo(() => {
@@ -354,10 +355,33 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     return uploadedAttachments;
   };
 
+  const handleDeletedAttachments = (deletedIds: string[]) => {
+    setDeletedCommonAttachmentIds(new Set(deletedIds));
+  };
+
+  const deleteMarkedAttachments = async (deletedIds: string[]) => {
+    if (deletedIds.length === 0) return;
+
+    for (const attachmentId of deletedIds) {
+      try {
+        await fetch(`/api/testcases/${testCaseId}/attachments?attachmentId=${attachmentId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        console.error(`Failed to delete attachment ${attachmentId}:`, error);
+        // Continue with other deletions even if one fails
+      }
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Upload all pending attachments first
+      // Delete marked attachments first
+      await deleteMarkedAttachments(Array.from(deletedCommonAttachmentIds));
+
+      // Upload all pending attachments
       const uploadedAttachments = await uploadPendingAttachments();
 
       const estimatedTime = formData.estimatedTime
@@ -591,6 +615,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         setExpectedResultAttachments([]);
         setNewStepActionAttachments([]);
         setNewStepExpectedResultAttachments([]);
+        setDeletedCommonAttachmentIds(new Set());
         
         setAlert({
           type: 'success',
@@ -858,6 +883,7 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
               projectId={testCase?.project?.id}
               commonAttachments={commonAttachments}
               onCommonAttachmentsChange={setCommonAttachments}
+              onDeletedAttachments={handleDeletedAttachments}
             />
 
             <TestStepsCard

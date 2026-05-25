@@ -121,7 +121,7 @@ export function TestStepsCard({
                         />
                       ) : (
                         <div className="space-y-2">
-                          <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
+                          <div className="px-4 py-3 rounded-[10px] bg-[#0f0f12]/70 border border-white/15 text-white/90 break-words min-h-24">
                             {step.action}
                           </div>
                           {step.id && stepAttachments?.[step.id]?.action && stepAttachments[step.id].action.length > 0 && (
@@ -163,7 +163,7 @@ export function TestStepsCard({
                         />
                       ) : (
                         <div className="space-y-2">
-                          <div className="px-4 py-3 rounded-[10px] bg-[#101a2b]/70 border border-white/15 text-white/90 break-words min-h-24">
+                          <div className="px-4 py-3 rounded-[10px] bg-[#0f0f12]/70 border border-white/15 text-white/90 break-words min-h-24">
                             {step.expectedResult}
                           </div>
                           {step.id && stepAttachments?.[step.id]?.expectedResult && stepAttachments[step.id].expectedResult.length > 0 && (

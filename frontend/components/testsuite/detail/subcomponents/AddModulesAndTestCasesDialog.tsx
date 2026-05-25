@@ -285,7 +285,7 @@ export function AddModulesAndTestCasesDialog({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f172a] px-6 py-4">
+        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4">
           <div className="flex items-center justify-between w-full">
             <p className="text-sm text-white/60">
               {totalSelectedCount > 0 ? (

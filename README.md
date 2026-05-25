@@ -98,12 +98,11 @@ cd eztest
 cp .env.example .env
 # Edit .env with your settings
 
-# Start the application
-docker-compose up -d
+# (Optional) Enable sample data seeding — add this to your .env:
+# SEED_DATABASE=true
 
-# Initialize database
-docker-compose exec app npx prisma db push
-docker-compose exec app npx prisma db seed
+# Start the application (database migrations run automatically on first startup)
+docker-compose up -d
 
 # Open http://localhost:3000
 ```
@@ -112,7 +111,14 @@ docker-compose exec app npx prisma db seed
 - **Email**: `admin@eztest.local`
 - **Password**: `Admin@123456`
 
-> 💡 You can also register a new account, or customize admin credentials by setting `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables before seeding.
+> 💡 You can customize admin credentials by setting `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in your `.env` before starting.
+
+> ⚠️ **Windows users:** Git on Windows may clone files with CRLF line endings, which can cause `exec /app/docker-entrypoint.sh: no such file or directory` errors. Fix this before cloning:
+> ```bash
+> git config --global core.autocrlf false
+> git clone https://github.com/houseoffoss/eztest.git
+> ```
+> Or convert line endings after cloning: `git ls-files --eol | grep crlf` to identify affected files.
 
 📖 For production deployment and advanced configuration, see [DOCKER.md](./DOCKER.md)
 

@@ -55,3 +55,6 @@ next-env.d.ts
 
 # Agent eval SQLite checkpoints
 /data/
+
+# Claude Code
+.claude/

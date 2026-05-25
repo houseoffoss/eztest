@@ -21,8 +21,8 @@ ALTER TABLE "TestCaseDefect" ADD CONSTRAINT "TestCaseDefect_defectId_fkey" FOREI
 
 -- Migrate existing data from Defect.testCaseId to TestCaseDefect table
 INSERT INTO "TestCaseDefect" ("id", "testCaseId", "defectId", "linkedAt")
-SELECT 
-  gen_random_uuid()::text,
+SELECT
+  substr(md5(random()::text || clock_timestamp()::text), 1, 24)::text,
   "testCaseId",
   "id",
   "createdAt"

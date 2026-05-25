@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma';
-import { ParsedRow } from '@/lib/file-parser';
-import { ValidationException } from '@/backend/utils/exceptions';
-import { defectService } from '@/backend/services/defect/services';
+import { prisma } from "@/lib/prisma";
+import { ParsedRow } from "@/lib/file-parser";
+import { ValidationException } from "@/backend/utils/exceptions";
+import { defectService } from "@/backend/services/defect/services";
 
-export type ImportType = 'testcases' | 'defects';
+export type ImportType = "testcases" | "defects";
 
 export interface MigrationResult {
   success: number;
@@ -32,71 +32,74 @@ export class ImportService {
    */
   private normalizeColumnName(columnName: string): string {
     const normalized = columnName.trim().toLowerCase();
-    
+
     // Map export format column names to import format
     const columnMap: Record<string, string> = {
       // New test case fields
-      'test case id': 'testCaseId',
-      'testcase id': 'testCaseId',
-      'test case title': 'title',
-      'testcase title': 'title',
-      'title': 'title',
-      'module / feature': 'module',
-      'module/feature': 'module',
-      'module': 'module',
-      'feature': 'module',
-      'priority': 'priority',
-      'preconditions': 'preconditions',
-      'test steps': 'testSteps',
-      'teststeps': 'testSteps',
-      'test data': 'testData',
-      'testdata': 'testData',
-      'expected result': 'expectedResult',
-      'expectedresult': 'expectedResult',
-      'status': 'status',
+      "test case id": "testCaseId",
+      "testcase id": "testCaseId",
+      "test case title": "title",
+      "testcase title": "title",
+      title: "title",
+      "module / feature": "module",
+      "module/feature": "module",
+      module: "module",
+      feature: "module",
+      priority: "priority",
+      preconditions: "preconditions",
+      "test steps": "testSteps",
+      teststeps: "testSteps",
+      "test data": "testData",
+      testdata: "testData",
+      "expected result": "expectedResult",
+      expectedresult: "expectedResult",
+      status: "status",
       // Defect linking for test cases
-      'defect id': 'defectId',
-      'defectid': 'defectId',
-      'defect': 'defectId',
+      "defect id": "defectId",
+      defectid: "defectId",
+      defect: "defectId",
       // Older fields (kept for backward compatibility)
-      'description': 'description',
-      'estimated time (minutes)': 'estimatedTime',
-      'estimated time': 'estimatedTime',
-      'postconditions': 'postconditions',
-      'test suites': 'testsuite',
-      'testsuite': 'testsuite',
-      'test suite': 'testsuite',
+      description: "description",
+      "estimated time (minutes)": "estimatedTime",
+      "estimated time": "estimatedTime",
+      postconditions: "postconditions",
+      "test suites": "testsuite",
+      testsuite: "testsuite",
+      "test suite": "testsuite",
       // Defect columns (for defect import)
-      'defect title / summary': 'title',
-      'defect title': 'title',
-      'summary': 'title',
-      'severity': 'severity',
-      'assigned to': 'assignedTo',
-      'environment': 'environment',
-      'reported by': 'reportedBy',
-      'reportedby': 'reportedBy',
-      'reported date': 'reportedDate',
-      'reporteddate': 'reportedDate',
-      'due date': 'dueDate',
+      "defect title / summary": "title",
+      "defect title": "title",
+      summary: "title",
+      severity: "severity",
+      "assigned to": "assignedTo",
+      environment: "environment",
+      "reported by": "reportedBy",
+      reportedby: "reportedBy",
+      "reported date": "reportedDate",
+      reporteddate: "reportedDate",
+      "due date": "dueDate",
     };
-    
+
     return columnMap[normalized] || normalized;
   }
 
   /**
    * Get value from row using normalized column name
    */
-  private getRowValue(row: ParsedRow, normalizedKey: string): string | number | null | undefined {
+  private getRowValue(
+    row: ParsedRow,
+    normalizedKey: string,
+  ): string | number | null | undefined {
     // Try normalized key first
     if (row[normalizedKey] !== undefined) {
       return row[normalizedKey];
     }
-    
+
     // Try to find by case-insensitive match
     const foundKey = Object.keys(row).find(
-      (key) => this.normalizeColumnName(key) === normalizedKey
+      (key) => this.normalizeColumnName(key) === normalizedKey,
     );
-    
+
     return foundKey ? row[foundKey] : undefined;
   }
 
@@ -107,12 +110,12 @@ export class ImportService {
     type: ImportType,
     projectId: string,
     userId: string,
-    data: ParsedRow[]
+    data: ParsedRow[],
   ): Promise<MigrationResult> {
     switch (type) {
-      case 'testcases':
+      case "testcases":
         return this.importTestCases(projectId, userId, data);
-      case 'defects':
+      case "defects":
         return this.importDefects(projectId, userId, data);
       default:
         throw new ValidationException(`Unsupported import type: ${type}`);
@@ -125,7 +128,7 @@ export class ImportService {
   private async importTestCases(
     projectId: string,
     userId: string,
-    data: ParsedRow[]
+    data: ParsedRow[],
   ): Promise<MigrationResult> {
     const result: MigrationResult = {
       success: 0,
@@ -146,14 +149,14 @@ export class ImportService {
     });
 
     if (!project) {
-      throw new ValidationException('Project not found');
+      throw new ValidationException("Project not found");
     }
 
     // Get existing test cases to generate next tcId
     const existingTestCases = await prisma.testCase.findMany({
       where: { projectId },
       select: { tcId: true, title: true },
-      orderBy: { tcId: 'desc' },
+      orderBy: { tcId: "desc" },
     });
 
     // Create a set of existing tcIds for quick lookup
@@ -168,7 +171,7 @@ export class ImportService {
     // Create a map of defectId (display ID) to defect database id and title
     // Case-sensitive matching - preserve original case
     const defectIdToDefect = new Map(
-      existingDefects.map((d) => [d.defectId, { id: d.id, title: d.title }])
+      existingDefects.map((d) => [d.defectId, { id: d.id, title: d.title }]),
     );
 
     let nextTcIdNumber = 1;
@@ -184,16 +187,18 @@ export class ImportService {
     // Get dropdown options for validation
     const [priorities, statuses] = await Promise.all([
       prisma.dropdownOption.findMany({
-        where: { entity: 'TestCase', field: 'priority' },
+        where: { entity: "TestCase", field: "priority" },
         select: { value: true },
       }),
       prisma.dropdownOption.findMany({
-        where: { entity: 'TestCase', field: 'status' },
+        where: { entity: "TestCase", field: "status" },
         select: { value: true },
       }),
     ]);
 
-    const validPriorities = new Set(priorities.map((p) => p.value.toUpperCase()));
+    const validPriorities = new Set(
+      priorities.map((p) => p.value.toUpperCase()),
+    );
     const validStatuses = new Set(statuses.map((s) => s.value.toUpperCase()));
 
     // Process each row
@@ -204,45 +209,57 @@ export class ImportService {
       try {
         // Get values using normalized column names
         // Note: Test Case ID is always auto-generated, not read from import
-        const title = this.getRowValue(row, 'title');
-        const description = this.getRowValue(row, 'description');
-        const expectedResult = this.getRowValue(row, 'expectedResult');
-        const priority = this.getRowValue(row, 'priority');
-        const status = this.getRowValue(row, 'status');
-        const estimatedTime = this.getRowValue(row, 'estimatedTime');
-        const preconditions = this.getRowValue(row, 'preconditions');
-        const postconditions = this.getRowValue(row, 'postconditions');
-        const moduleValue = this.getRowValue(row, 'module');
-        const testsuite = this.getRowValue(row, 'testsuite');
-        const testSteps = this.getRowValue(row, 'testSteps');
-        const testData = this.getRowValue(row, 'testData');
-        const defectId = this.getRowValue(row, 'defectId');
+        const title = this.getRowValue(row, "title");
+        const description = this.getRowValue(row, "description");
+        const expectedResult = this.getRowValue(row, "expectedResult");
+        const priority = this.getRowValue(row, "priority");
+        const status = this.getRowValue(row, "status");
+        const estimatedTime = this.getRowValue(row, "estimatedTime");
+        const preconditions = this.getRowValue(row, "preconditions");
+        const postconditions = this.getRowValue(row, "postconditions");
+        const moduleValue = this.getRowValue(row, "module");
+        const testsuite = this.getRowValue(row, "testsuite");
+        const testSteps = this.getRowValue(row, "testSteps");
+        const testData = this.getRowValue(row, "testData");
+        const defectId = this.getRowValue(row, "defectId");
 
         // Validate required field
-        if (!title || typeof title !== 'string' || title.toString().trim() === '') {
-          throw new Error('Test Case Title is required');
+        if (
+          !title ||
+          typeof title !== "string" ||
+          title.toString().trim() === ""
+        ) {
+          throw new Error("Test Case Title is required");
         }
 
         const testCaseTitle = title.toString().trim();
 
         // Process defect IDs if provided (supports multiple defects: comma or semicolon separated)
         // Store all defect IDs (both existing and pending) for later linking
-        const defectsToLink: Array<{ id: string; title: string; defectId: string }> = [];
+        const defectsToLink: Array<{
+          id: string;
+          title: string;
+          defectId: string;
+        }> = [];
         const pendingDefectIds: string[] = [];
-        
-        if (defectId && typeof defectId === 'string' && defectId.toString().trim()) {
+
+        if (
+          defectId &&
+          typeof defectId === "string" &&
+          defectId.toString().trim()
+        ) {
           // Parse multiple defect IDs (comma or semicolon separated)
           // Preserve original case for case-sensitive matching
           const defectIdString = defectId.toString().trim();
           const defectIdList = defectIdString
             .split(/[,;]/)
-            .map(id => id.trim())
-            .filter(id => id.length > 0);
-          
+            .map((id) => id.trim())
+            .filter((id) => id.length > 0);
+
           for (const providedDefectId of defectIdList) {
             // Check for existing defect (case-sensitive match - exact case required)
             const foundDefect = defectIdToDefect.get(providedDefectId);
-            
+
             if (foundDefect) {
               // Defect exists - link immediately
               defectsToLink.push({
@@ -262,7 +279,7 @@ export class ImportService {
             projectId,
             title: {
               equals: testCaseTitle,
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
         });
@@ -279,10 +296,14 @@ export class ImportService {
 
         // Find or create module
         let moduleId: string | undefined;
-        if (moduleValue && typeof moduleValue === 'string' && moduleValue.toString().trim()) {
+        if (
+          moduleValue &&
+          typeof moduleValue === "string" &&
+          moduleValue.toString().trim()
+        ) {
           const moduleName = moduleValue.toString().trim();
           let foundModule = project.modules.find(
-            (m) => m.name.toLowerCase() === moduleName.toLowerCase()
+            (m) => m.name.toLowerCase() === moduleName.toLowerCase(),
           );
 
           if (!foundModule) {
@@ -301,10 +322,14 @@ export class ImportService {
 
         // Find or create suite
         let suiteId: string | undefined;
-        if (testsuite && typeof testsuite === 'string' && testsuite.toString().trim()) {
+        if (
+          testsuite &&
+          typeof testsuite === "string" &&
+          testsuite.toString().trim()
+        ) {
           const suiteName = testsuite.toString().trim();
           let foundSuite = project.testSuites.find(
-            (s) => s.name.toLowerCase() === suiteName.toLowerCase()
+            (s) => s.name.toLowerCase() === suiteName.toLowerCase(),
           );
 
           if (!foundSuite) {
@@ -324,18 +349,18 @@ export class ImportService {
         // Validate priority
         const priorityValue = priority
           ? priority.toString().toUpperCase()
-          : 'MEDIUM';
+          : "MEDIUM";
         if (!validPriorities.has(priorityValue)) {
           throw new Error(
-            `Invalid priority: ${priority}. Valid values are: ${Array.from(validPriorities).join(', ')}`
+            `Invalid priority: ${priority}. Valid values are: ${Array.from(validPriorities).join(", ")}`,
           );
         }
 
         // Validate status
-        const statusValue = status ? status.toString().toUpperCase() : 'ACTIVE';
+        const statusValue = status ? status.toString().toUpperCase() : "ACTIVE";
         if (!validStatuses.has(statusValue)) {
           throw new Error(
-            `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(', ')}`
+            `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(", ")}`,
           );
         }
 
@@ -351,36 +376,52 @@ export class ImportService {
         // Parse expected results if provided (can be numbered list, newline-separated, or single value)
         let expectedResultsList: string[] = [];
         let singleExpectedResult: string | null = null;
-        
-        if (expectedResult && typeof expectedResult === 'string' && expectedResult.toString().trim()) {
+
+        if (
+          expectedResult &&
+          typeof expectedResult === "string" &&
+          expectedResult.toString().trim()
+        ) {
           const expectedResultText = expectedResult.toString().trim();
-          
+
           // Check if it contains numbered points (1., 2., etc.) or newlines
           const hasNumberedPoints = /\d+\./.test(expectedResultText);
-          const hasNewlines = expectedResultText.includes('\n');
+          const hasNewlines = expectedResultText.includes("\n");
           const numberedPointsMatches = expectedResultText.match(/\d+\./g);
-          const numberedPointsCount = numberedPointsMatches ? numberedPointsMatches.length : 0;
-          
+          const numberedPointsCount = numberedPointsMatches
+            ? numberedPointsMatches.length
+            : 0;
+
           if (hasNewlines || (hasNumberedPoints && numberedPointsCount > 1)) {
             // Multi-item format - split by newlines first, then check for numbered points
             let items: string[] = [];
-            
+
             if (hasNewlines) {
               // Split by newlines first
-              items = expectedResultText.split('\n').map(l => l.trim()).filter(l => l);
+              items = expectedResultText
+                .split("\n")
+                .map((l) => l.trim())
+                .filter((l) => l);
             } else {
               // No newlines but has multiple numbered points - split by numbered points
               // Match pattern: number followed by dot and optional space
-              items = expectedResultText.split(/(?=\d+\.\s*)/).map(l => l.trim()).filter(l => l);
+              items = expectedResultText
+                .split(/(?=\d+\.\s*)/)
+                .map((l) => l.trim())
+                .filter((l) => l);
             }
-            
+
             // Process each item - remove leading number and dot if present
-            expectedResultsList = items.map(item => {
-              return item.replace(/^\d+\.\s*/, '').trim();
-            }).filter(item => item.length > 0);
+            expectedResultsList = items
+              .map((item) => {
+                return item.replace(/^\d+\.\s*/, "").trim();
+              })
+              .filter((item) => item.length > 0);
           } else if (hasNumberedPoints) {
             // Single line with number prefix - treat as single result
-            singleExpectedResult = expectedResultText.replace(/^\d+\.\s*/, '').trim();
+            singleExpectedResult = expectedResultText
+              .replace(/^\d+\.\s*/, "")
+              .trim();
           } else {
             // Single expected result - will apply to all steps
             singleExpectedResult = expectedResultText;
@@ -389,24 +430,37 @@ export class ImportService {
 
         // Parse test steps if provided
         // Also handle case where Expected Result column has values but Test Steps is empty
-        let testStepsData: Array<{ stepNumber: number; action: string; expectedResult: string }> | undefined;
-        
+        let testStepsData:
+          | Array<{
+              stepNumber: number;
+              action: string;
+              expectedResult: string;
+            }>
+          | undefined;
+
         // If Test Steps is empty but Expected Result has values, create steps from expected results
-        if (!testSteps && (expectedResultsList.length > 0 || singleExpectedResult)) {
+        if (
+          !testSteps &&
+          (expectedResultsList.length > 0 || singleExpectedResult)
+        ) {
           if (expectedResultsList.length > 0) {
             // Multiple expected results - create one step per expected result
-            testStepsData = expectedResultsList.map((expectedResult, index) => ({
-              stepNumber: index + 1,
-              action: '', // No action, only expected result
-              expectedResult: expectedResult,
-            }));
+            testStepsData = expectedResultsList.map(
+              (expectedResult, index) => ({
+                stepNumber: index + 1,
+                action: "", // No action, only expected result
+                expectedResult: expectedResult,
+              }),
+            );
           } else if (singleExpectedResult) {
             // Single expected result - create one step
-            testStepsData = [{
-              stepNumber: 1,
-              action: '', // No action, only expected result
-              expectedResult: singleExpectedResult,
-            }];
+            testStepsData = [
+              {
+                stepNumber: 1,
+                action: "", // No action, only expected result
+                expectedResult: singleExpectedResult,
+              },
+            ];
           }
         } else if (testSteps) {
           try {
@@ -415,30 +469,40 @@ export class ImportService {
               testStepsData = testSteps
                 .filter((step) => {
                   // Filter out invalid steps
-                  if (typeof step === 'object' && step !== null) {
+                  if (typeof step === "object" && step !== null) {
                     return step.action || step.step;
                   }
                   return Boolean(step);
                 })
                 .map((step, index) => {
-                  const stepAction = (typeof step === 'object' && step !== null) 
-                    ? (step.action || step.step || '') 
-                    : String(step);
-                  const stepExpectedResult = (typeof step === 'object' && step !== null) 
-                    ? (step.expectedResult || step.expected || '') 
-                    : '';
+                  const stepAction =
+                    typeof step === "object" && step !== null
+                      ? step.action || step.step || ""
+                      : String(step);
+                  const stepExpectedResult =
+                    typeof step === "object" && step !== null
+                      ? step.expectedResult || step.expected || ""
+                      : "";
                   // Use Expected Result column if step doesn't have expected result
-                  const finalExpectedResult = stepExpectedResult || expectedResultsList[index] || singleExpectedResult || '';
-                  
+                  const finalExpectedResult =
+                    stepExpectedResult ||
+                    expectedResultsList[index] ||
+                    singleExpectedResult ||
+                    "";
+
                   return {
-                    stepNumber: step.stepNumber || (typeof step === 'object' && step !== null ? index + 1 : index + 1),
+                    stepNumber:
+                      step.stepNumber ||
+                      (typeof step === "object" && step !== null
+                        ? index + 1
+                        : index + 1),
                     action: stepAction,
                     expectedResult: finalExpectedResult,
                   };
                 });
             }
             // If it's a string, try to parse it
-            else if (typeof testSteps === 'string' && testSteps.trim()) {
+            else if (typeof testSteps === "string" && testSteps.trim()) {
               try {
                 // Try to parse as JSON first (if it's a JSON array string)
                 const parsed = JSON.parse(testSteps);
@@ -446,11 +510,16 @@ export class ImportService {
                   testStepsData = parsed
                     .filter((step) => step && (step.action || step.step)) // Filter out invalid steps
                     .map((step, index) => {
-                      const stepAction = step.action || step.step || '';
-                      const stepExpectedResult = step.expectedResult || step.expected || '';
+                      const stepAction = step.action || step.step || "";
+                      const stepExpectedResult =
+                        step.expectedResult || step.expected || "";
                       // Use Expected Result column if step doesn't have expected result
-                      const finalExpectedResult = stepExpectedResult || expectedResultsList[index] || singleExpectedResult || '';
-                      
+                      const finalExpectedResult =
+                        stepExpectedResult ||
+                        expectedResultsList[index] ||
+                        singleExpectedResult ||
+                        "";
+
                       return {
                         stepNumber: step.stepNumber || index + 1,
                         action: stepAction,
@@ -462,44 +531,60 @@ export class ImportService {
                 // If not JSON, try to parse as numbered list, newline-separated, or other formats
                 const stepsText = testSteps.trim();
                 let stepLines: string[] = [];
-                
+
                 // Check if it contains numbered points (1., 2., etc.) or newlines
                 const hasNumberedPoints = /\d+\./.test(stepsText);
-                const hasNewlines = stepsText.includes('\n');
-                const numberedPointsCount = stepsText.match(/\d+\./g)?.length || 0;
-                
-                if (hasNewlines || (hasNumberedPoints && numberedPointsCount > 1)) {
+                const hasNewlines = stepsText.includes("\n");
+                const numberedPointsCount =
+                  stepsText.match(/\d+\./g)?.length || 0;
+
+                if (
+                  hasNewlines ||
+                  (hasNumberedPoints && numberedPointsCount > 1)
+                ) {
                   // Multi-step format - split by newlines first, then check for numbered points
                   if (hasNewlines) {
                     // Split by newlines first - each line is a separate step
-                    stepLines = stepsText.split('\n').map(s => s.trim()).filter(s => s);
+                    stepLines = stepsText
+                      .split("\n")
+                      .map((s) => s.trim())
+                      .filter((s) => s);
                   } else {
                     // No newlines but has multiple numbered points - split by numbered points
                     // Match pattern: number followed by dot and optional space
-                    stepLines = stepsText.split(/(?=\d+\.\s*)/).map(s => s.trim()).filter(s => s);
+                    stepLines = stepsText
+                      .split(/(?=\d+\.\s*)/)
+                      .map((s) => s.trim())
+                      .filter((s) => s);
                   }
-                  
+
                   testStepsData = stepLines.map((line, index) => {
                     // Check if line has numbered prefix (e.g., "1. Enter password")
                     const isNumbered = /^\d+\./.test(line);
-                    
+
                     // Remove leading number and dot if present
-                    let action = isNumbered ? line.replace(/^\d+\.\s*/, '').trim() : line;
-                    
+                    let action = isNumbered
+                      ? line.replace(/^\d+\.\s*/, "").trim()
+                      : line;
+
                     // Remove expected result from action if it's separated by semicolon or colon
                     // We only want the action, expected result comes from Expected Result column
-                    const parts = action.split(/[;:]/).map(p => p.trim()).filter(p => p);
+                    const parts = action
+                      .split(/[;:]/)
+                      .map((p) => p.trim())
+                      .filter((p) => p);
                     action = parts[0] || action; // Take only the action part (before semicolon/colon)
-                    
+
                     // Get expected result from Expected Result column by index
                     // If multiple expected results exist, match by index; if single value, apply to all steps
-                    const expectedResultValue = expectedResultsList[index] || singleExpectedResult || '';
-                    
+                    const expectedResultValue =
+                      expectedResultsList[index] || singleExpectedResult || "";
+
                     // If action is empty but expected result exists, use expected result as the content
                     // If expected result is empty but action exists, use action only
-                    const finalAction = action || '';
-                    const finalExpectedResult = expectedResultValue || '';
-                    
+                    const finalAction = action || "";
+                    const finalExpectedResult = expectedResultValue || "";
+
                     return {
                       stepNumber: index + 1,
                       action: finalAction,
@@ -509,33 +594,44 @@ export class ImportService {
                 } else {
                   // Single line - check if it's numbered or has pipe separator
                   // Try pipe-separated format first: "Step 1; Expected 1|Step 2; Expected 2"
-                  if (stepsText.includes('|')) {
-                    stepLines = stepsText.split('|').map(s => s.trim()).filter(s => s);
+                  if (stepsText.includes("|")) {
+                    stepLines = stepsText
+                      .split("|")
+                      .map((s) => s.trim())
+                      .filter((s) => s);
                   } else {
                     // Single step
                     stepLines = [stepsText];
                   }
-                  
+
                   if (stepLines.length > 0) {
                     testStepsData = stepLines.map((line, index) => {
                       // Check if line has numbered prefix
                       const isNumbered = /^\d+\./.test(line);
-                      let cleanLine = isNumbered ? line.replace(/^\d+\.\s*/, '').trim() : line;
-                      
+                      let cleanLine = isNumbered
+                        ? line.replace(/^\d+\.\s*/, "").trim()
+                        : line;
+
                       // Remove expected result from action if it's separated by semicolon or colon
                       // We only want the action, expected result comes from Expected Result column
-                      const parts = cleanLine.split(/[;:]/).map(p => p.trim()).filter(p => p);
+                      const parts = cleanLine
+                        .split(/[;:]/)
+                        .map((p) => p.trim())
+                        .filter((p) => p);
                       cleanLine = parts[0] || cleanLine; // Take only the action part (before semicolon/colon)
-                      
+
                       // Get expected result from Expected Result column by index
                       // If multiple expected results exist, match by index; if single value, apply to all steps
-                      const expectedResultValue = expectedResultsList[index] || singleExpectedResult || '';
-                      
+                      const expectedResultValue =
+                        expectedResultsList[index] ||
+                        singleExpectedResult ||
+                        "";
+
                       // If action is empty but expected result exists, use expected result as the content
                       // If expected result is empty but action exists, use action only
-                      const finalAction = cleanLine || '';
-                      const finalExpectedResult = expectedResultValue || '';
-                      
+                      const finalAction = cleanLine || "";
+                      const finalExpectedResult = expectedResultValue || "";
+
                       return {
                         stepNumber: index + 1,
                         action: finalAction,
@@ -547,15 +643,19 @@ export class ImportService {
               }
             }
           } catch (error) {
-            console.warn(`Failed to parse test steps for row ${rowNumber}:`, error);
+            console.warn(
+              `Failed to parse test steps for row ${rowNumber}:`,
+              error,
+            );
             // Continue without steps if parsing fails
           }
         }
 
         // Parse test data
-        const testDataValue = testData && typeof testData === 'string' && testData.toString().trim()
-          ? testData.toString().trim()
-          : null;
+        const testDataValue =
+          testData && typeof testData === "string" && testData.toString().trim()
+            ? testData.toString().trim()
+            : null;
 
         // Determine the expected result value to use for the test case
         // If there are no test steps, use the parsed expected result (singleExpectedResult) or original value
@@ -563,7 +663,13 @@ export class ImportService {
         let finalExpectedResult: string | null = null;
         if (!testStepsData || testStepsData.length === 0) {
           // No test steps - use the parsed expected result if available, otherwise use original value
-          finalExpectedResult = singleExpectedResult || (expectedResult && typeof expectedResult === 'string' && expectedResult.toString().trim() ? expectedResult.toString().trim() : null);
+          finalExpectedResult =
+            singleExpectedResult ||
+            (expectedResult &&
+            typeof expectedResult === "string" &&
+            expectedResult.toString().trim()
+              ? expectedResult.toString().trim()
+              : null);
         } else {
           // Has test steps - check if multiple expected results were parsed
           if (expectedResultsList.length > 1) {
@@ -578,7 +684,12 @@ export class ImportService {
             finalExpectedResult = singleExpectedResult;
           } else {
             // No expected results parsed - use original value if provided
-            finalExpectedResult = expectedResult && typeof expectedResult === 'string' && expectedResult.toString().trim() ? expectedResult.toString().trim() : null;
+            finalExpectedResult =
+              expectedResult &&
+              typeof expectedResult === "string" &&
+              expectedResult.toString().trim()
+                ? expectedResult.toString().trim()
+                : null;
           }
         }
 
@@ -599,9 +710,7 @@ export class ImportService {
             tcId,
             projectId,
             title: testCaseTitle,
-            description: description
-              ? description.toString().trim()
-              : null,
+            description: description ? description.toString().trim() : null,
             expectedResult: finalExpectedResult,
             priority: priorityValue,
             status: statusValue,
@@ -613,23 +722,33 @@ export class ImportService {
               ? postconditions.toString().trim()
               : null,
             testData: testDataValue,
-            pendingDefectIds: pendingDefectIds.length > 0 ? pendingDefectIds.join(', ') : null,
+            pendingDefectIds:
+              pendingDefectIds.length > 0 ? pendingDefectIds.join(", ") : null,
             moduleId,
             suiteId,
             createdById: userId,
-            steps: testStepsData && testStepsData.length > 0
-              ? {
-                  create: testStepsData
-                    .filter((step) => (step.action && step.action.trim()) || (step.expectedResult && step.expectedResult.trim())) // Include steps with either action or expected result
-                    .map((step) => ({
-                      stepNumber: step.stepNumber,
-                      action: step.action && step.action.trim() ? step.action.trim() : '', // Allow empty action
-                      expectedResult: step.expectedResult && step.expectedResult.trim() 
-                        ? step.expectedResult.trim() 
-                        : '', // expectedResult is optional, allow empty string
-                    })),
-                }
-              : undefined,
+            steps:
+              testStepsData && testStepsData.length > 0
+                ? {
+                    create: testStepsData
+                      .filter(
+                        (step) =>
+                          (step.action && step.action.trim()) ||
+                          (step.expectedResult && step.expectedResult.trim()),
+                      ) // Include steps with either action or expected result
+                      .map((step) => ({
+                        stepNumber: step.stepNumber,
+                        action:
+                          step.action && step.action.trim()
+                            ? step.action.trim()
+                            : "", // Allow empty action
+                        expectedResult:
+                          step.expectedResult && step.expectedResult.trim()
+                            ? step.expectedResult.trim()
+                            : "", // expectedResult is optional, allow empty string
+                      })),
+                  }
+                : undefined,
           },
         });
 
@@ -655,7 +774,9 @@ export class ImportService {
               });
             } catch {
               // If link already exists, that's okay - just log it
-              console.warn(`Defect ${defect.defectId} (${defect.id}) already linked to test case ${testCase.id}`);
+              console.warn(
+                `Defect ${defect.defectId} (${defect.id}) already linked to test case ${testCase.id}`,
+              );
             }
           }
         }
@@ -667,17 +788,17 @@ export class ImportService {
         });
       } catch (error) {
         result.failed++;
-        const titleValue = this.getRowValue(row, 'title');
+        const titleValue = this.getRowValue(row, "title");
         result.errors.push({
           row: rowNumber,
-          title: titleValue ? titleValue.toString() : 'N/A',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          title: titleValue ? titleValue.toString() : "N/A",
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
 
     // Debug: Log the test case import result before returning
-    console.log('Test case import result:', {
+    console.log("Test case import result:", {
       success: result.success,
       failed: result.failed,
       skipped: result.skipped,
@@ -695,7 +816,7 @@ export class ImportService {
   private async importDefects(
     projectId: string,
     userId: string,
-    data: ParsedRow[]
+    data: ParsedRow[],
   ): Promise<MigrationResult> {
     const result: MigrationResult = {
       success: 0,
@@ -719,7 +840,7 @@ export class ImportService {
     });
 
     if (!project) {
-      throw new ValidationException('Project not found');
+      throw new ValidationException("Project not found");
     }
 
     // Get existing defects to generate next defectId
@@ -735,7 +856,7 @@ export class ImportService {
     // Only consider defects in DEF-X format (not custom formats like DEF-LOGIN-001)
     let nextDefectIdNumber = 1;
     const defectNumberPattern = /^DEF-(\d+)$/;
-    
+
     for (const defect of existingDefects) {
       const match = defect.defectId.match(defectNumberPattern);
       if (match) {
@@ -749,28 +870,32 @@ export class ImportService {
     // Get dropdown options for validation
     const [severities, priorities, statuses, environments] = await Promise.all([
       prisma.dropdownOption.findMany({
-        where: { entity: 'Defect', field: 'severity' },
+        where: { entity: "Defect", field: "severity" },
         select: { value: true },
       }),
       prisma.dropdownOption.findMany({
-        where: { entity: 'Defect', field: 'priority' },
+        where: { entity: "Defect", field: "priority" },
         select: { value: true },
       }),
       prisma.dropdownOption.findMany({
-        where: { entity: 'Defect', field: 'status' },
+        where: { entity: "Defect", field: "status" },
         select: { value: true },
       }),
       prisma.dropdownOption.findMany({
-        where: { entity: 'TestRun', field: 'environment' },
+        where: { entity: "Defect", field: "environment" },
         select: { value: true },
       }),
     ]);
 
-    const validSeverities = new Set(severities.map((s) => s.value.toUpperCase()));
-    const validPriorities = new Set(priorities.map((p) => p.value.toUpperCase()));
+    const validSeverities = new Set(
+      severities.map((s) => s.value.toUpperCase()),
+    );
+    const validPriorities = new Set(
+      priorities.map((p) => p.value.toUpperCase()),
+    );
     const validStatuses = new Set(statuses.map((s) => s.value.toUpperCase()));
     const validEnvironments = new Set(
-      environments.map((e) => e.value.toUpperCase())
+      environments.map((e) => e.value.toUpperCase()),
     );
 
     // Process each row
@@ -780,21 +905,25 @@ export class ImportService {
 
       try {
         // Get values using normalized column names
-        const defectId = this.getRowValue(row, 'defectId');
-        const title = this.getRowValue(row, 'title');
-        const description = this.getRowValue(row, 'description');
-        const severity = this.getRowValue(row, 'severity');
-        const priority = this.getRowValue(row, 'priority');
-        const status = this.getRowValue(row, 'status');
-        const environment = this.getRowValue(row, 'environment');
-        const reportedBy = this.getRowValue(row, 'reportedBy');
-        const reportedDate = this.getRowValue(row, 'reportedDate');
-        const assignedTo = this.getRowValue(row, 'assignedTo');
-        const dueDate = this.getRowValue(row, 'dueDate');
+        const defectId = this.getRowValue(row, "defectId");
+        const title = this.getRowValue(row, "title");
+        const description = this.getRowValue(row, "description");
+        const severity = this.getRowValue(row, "severity");
+        const priority = this.getRowValue(row, "priority");
+        const status = this.getRowValue(row, "status");
+        const environment = this.getRowValue(row, "environment");
+        const reportedBy = this.getRowValue(row, "reportedBy");
+        const reportedDate = this.getRowValue(row, "reportedDate");
+        const assignedTo = this.getRowValue(row, "assignedTo");
+        const dueDate = this.getRowValue(row, "dueDate");
 
         // Validate required field
-        if (!title || typeof title !== 'string' || title.toString().trim() === '') {
-          throw new Error('Title is required');
+        if (
+          !title ||
+          typeof title !== "string" ||
+          title.toString().trim() === ""
+        ) {
+          throw new Error("Title is required");
         }
 
         const defectTitle = title.toString().trim();
@@ -805,7 +934,7 @@ export class ImportService {
             projectId,
             title: {
               equals: defectTitle,
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
         });
@@ -823,51 +952,51 @@ export class ImportService {
         // Validate severity
         const severityValue = severity
           ? severity.toString().toUpperCase()
-          : 'MEDIUM';
+          : "MEDIUM";
         if (!validSeverities.has(severityValue)) {
           throw new Error(
-            `Invalid severity: ${severity}. Valid values are: ${Array.from(validSeverities).join(', ')}`
+            `Invalid severity: ${severity}. Valid values are: ${Array.from(validSeverities).join(", ")}`,
           );
         }
 
         // Validate priority
         const priorityValue = priority
           ? priority.toString().toUpperCase()
-          : 'MEDIUM';
+          : "MEDIUM";
         if (!validPriorities.has(priorityValue)) {
           throw new Error(
-            `Invalid priority: ${priority}. Valid values are: ${Array.from(validPriorities).join(', ')}`
+            `Invalid priority: ${priority}. Valid values are: ${Array.from(validPriorities).join(", ")}`,
           );
         }
 
         // Validate status
-        const statusValue = status ? status.toString().toUpperCase() : 'NEW';
+        const statusValue = status ? status.toString().toUpperCase() : "NEW";
         if (!validStatuses.has(statusValue)) {
           throw new Error(
-            `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(', ')}`
+            `Invalid status: ${status}. Valid values are: ${Array.from(validStatuses).join(", ")}`,
           );
         }
 
         // Validate environment
         let environmentValue: string | undefined;
-        if (environment && typeof environment === 'string') {
+        if (environment && typeof environment === "string") {
           environmentValue = environment.toString().toUpperCase();
           if (!validEnvironments.has(environmentValue)) {
             throw new Error(
-              `Invalid environment: ${environment}. Valid values are: ${Array.from(validEnvironments).join(', ')}`
+              `Invalid environment: ${environment}. Valid values are: ${Array.from(validEnvironments).join(", ")}`,
             );
           }
         }
 
         // Find reported by user (name or email)
         let createdById = userId; // Default to current user
-        if (reportedBy && typeof reportedBy === 'string') {
+        if (reportedBy && typeof reportedBy === "string") {
           const reportedByValue = reportedBy.toString().trim();
           // Try to find by email first, then by name
           const projectMember = project.members.find(
-            (m) => 
+            (m) =>
               m.user.email.toLowerCase() === reportedByValue.toLowerCase() ||
-              m.user.name?.toLowerCase() === reportedByValue.toLowerCase()
+              m.user.name?.toLowerCase() === reportedByValue.toLowerCase(),
           );
 
           if (projectMember) {
@@ -875,37 +1004,43 @@ export class ImportService {
           } else {
             // Log warning but use current user as fallback
             console.warn(
-              `User "${reportedByValue}" not found in project members. Using current user as reporter.`
+              `User "${reportedByValue}" not found in project members. Using current user as reporter.`,
             );
           }
         }
 
         // Parse reported date
         let createdAtValue: Date | undefined;
-        if (reportedDate && typeof reportedDate === 'string') {
+        if (reportedDate && typeof reportedDate === "string") {
           const parsedDate = new Date(reportedDate);
           if (!isNaN(parsedDate.getTime())) {
             createdAtValue = parsedDate;
           } else {
-            console.warn(`Invalid reported date format: ${reportedDate}. Using current date.`);
+            console.warn(
+              `Invalid reported date format: ${reportedDate}. Using current date.`,
+            );
           }
         }
 
         // Find assignee by name or email (optional field)
         let assignedToId: string | undefined;
-        
-        if (assignedTo && typeof assignedTo === 'string' && assignedTo.toString().trim() !== '') {
+
+        if (
+          assignedTo &&
+          typeof assignedTo === "string" &&
+          assignedTo.toString().trim() !== ""
+        ) {
           const assignedToValue = assignedTo.toString().trim();
           // Try to find by email first, then by name
           const projectMember = project.members.find(
-            (m) => 
+            (m) =>
               m.user.email.toLowerCase() === assignedToValue.toLowerCase() ||
-              m.user.name?.toLowerCase() === assignedToValue.toLowerCase()
+              m.user.name?.toLowerCase() === assignedToValue.toLowerCase(),
           );
 
           if (!projectMember) {
             throw new Error(
-              `User "${assignedToValue}" not found in project members. Please provide a valid name or email of a project member, or leave empty if unassigned.`
+              `User "${assignedToValue}" not found in project members. Please provide a valid name or email of a project member, or leave empty if unassigned.`,
             );
           }
 
@@ -914,7 +1049,7 @@ export class ImportService {
 
         // Parse due date
         let dueDateValue: Date | undefined;
-        if (dueDate && typeof dueDate === 'string') {
+        if (dueDate && typeof dueDate === "string") {
           const parsedDate = new Date(dueDate);
           if (!isNaN(parsedDate.getTime())) {
             dueDateValue = parsedDate;
@@ -923,9 +1058,10 @@ export class ImportService {
 
         // Prepare defectId - will be validated and used/auto-generated by defectService
         // Accept any value, preserve original case (case-sensitive matching)
-        const providedDefectId = defectId && typeof defectId === 'string' && defectId.toString().trim()
-          ? defectId.toString().trim() // Preserve original case
-          : null;
+        const providedDefectId =
+          defectId && typeof defectId === "string" && defectId.toString().trim()
+            ? defectId.toString().trim() // Preserve original case
+            : null;
 
         // Check if defect ID already exists (for better error message during import)
         if (providedDefectId && existingDefectIds.has(providedDefectId)) {
@@ -936,7 +1072,7 @@ export class ImportService {
             },
             select: { title: true },
           });
-          const existingTitle = existingDefect?.title || 'Unknown';
+          const existingTitle = existingDefect?.title || "Unknown";
           result.skipped++;
           result.skippedItems.push({
             row: rowNumber,
@@ -952,9 +1088,7 @@ export class ImportService {
           defectId: providedDefectId, // null if not provided, will be auto-generated
           projectId,
           title: title.toString().trim(),
-          description: description
-            ? description.toString().trim()
-            : null,
+          description: description ? description.toString().trim() : null,
           severity: severityValue,
           priority: priorityValue,
           status: statusValue,
@@ -966,7 +1100,7 @@ export class ImportService {
 
         // Track the created defect ID for uniqueness check in subsequent rows
         existingDefectIds.add(defect.defectId);
-        
+
         // Update nextDefectIdNumber if the created defect is in DEF-X format
         const match = defect.defectId.match(/^DEF-(\d+)$/);
         if (match) {
@@ -991,17 +1125,17 @@ export class ImportService {
         });
       } catch (error) {
         result.failed++;
-        const titleValue = this.getRowValue(row, 'title');
+        const titleValue = this.getRowValue(row, "title");
         result.errors.push({
           row: rowNumber,
-          title: titleValue ? titleValue.toString() : 'N/A',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          title: titleValue ? titleValue.toString() : "N/A",
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
 
     // Debug: Log the result before returning
-    console.log('Defect import result:', {
+    console.log("Defect import result:", {
       success: result.success,
       failed: result.failed,
       skipped: result.skipped,
@@ -1015,4 +1149,3 @@ export class ImportService {
 }
 
 export const importService = new ImportService();
-
