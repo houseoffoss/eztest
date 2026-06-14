@@ -10,6 +10,8 @@ import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
+import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/lib/pagination-config';
 import { TestSuite, Project } from './types';
 import { TestSuiteTreeItem } from './subcomponents/TestSuiteTreeItem';
 import { CreateTestSuiteDialog } from './subcomponents/CreateTestSuiteDialog';
@@ -32,6 +34,8 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
   const [selectedSuite, setSelectedSuite] = useState<TestSuite | null>(null);
   const [expandedSuites, setExpandedSuites] = useState<Set<string>>(new Set());
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_PAGE_SIZE);
 
   const canCreateTestSuite = hasPermissionCheck('testsuites:create');
 
@@ -112,6 +116,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
         const data = await response.json();
         if (data.data) {
           setTestSuites(data.data);
+          setCurrentPage(1);
         }
       }
     } catch (error) {
@@ -192,6 +197,19 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
 
   const canDeleteTestSuite = hasPermissionCheck('testsuites:delete');
 
+  const totalPages = Math.max(1, Math.ceil(rootSuites.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedRootSuites = rootSuites.slice(
+    (safePage - 1) * itemsPerPage,
+    safePage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handleItemsPerPageChange = (n: number) => {
+    setItemsPerPage(n);
+    setCurrentPage(1);
+  };
+
   return (
     <>
       {/* Alert Messages */}
@@ -240,7 +258,7 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
             columns={{ default: 1, md: 2, lg: 2, xl: 3 }}
             gap="md"
           >
-            {rootSuites.map((suite) => (
+            {paginatedRootSuites.map((suite) => (
               <TestSuiteTreeItem
                 key={suite.id}
                 suite={suite}
@@ -252,6 +270,22 @@ export default function TestSuiteList({ projectId }: TestSuiteListProps) {
               />
             ))}
           </ResponsiveGrid>
+        )}
+
+        {/* Pagination */}
+        {rootSuites.length > 0 && (
+          <div className="mt-6">
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              totalItems={rootSuites.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={PAGE_SIZE_OPTIONS}
+              showItemsPerPage={true}
+            />
+          </div>
         )}
       </div>
 

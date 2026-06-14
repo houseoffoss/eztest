@@ -7,6 +7,8 @@ import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { FloatingAlert, type FloatingAlertMessage } from '@/frontend/reusable-components/alerts/FloatingAlert';
 import { InfoBanner } from '@/frontend/reusable-components/alerts/InfoBanner';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
+import { Pagination } from '@/frontend/reusable-elements/pagination/Pagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/lib/pagination-config';
 import { Loader } from '@/frontend/reusable-elements/loaders/Loader';
 import { ProjectCard } from './subcomponents/ProjectCard';
 import { CreateProjectDialog } from './subcomponents/CreateProjectDialog';
@@ -26,6 +28,8 @@ export default function ProjectList() {
   const [triggerCreateDialog, setTriggerCreateDialog] = useState(false);
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
   const [hasSelectedProject, setHasSelectedProject] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_PAGE_SIZE);
 
   // Compute permissions early for hooks
   const canCreateProject = hasPermissionCheck('projects:create');
@@ -99,6 +103,7 @@ export default function ProjectList() {
 
   const handleProjectCreated = (newProject: Project) => {
     setProjects([newProject, ...projects]);
+    setCurrentPage(1);
     setAlert({
       type: 'success',
       title: 'Success',
@@ -144,6 +149,19 @@ export default function ProjectList() {
     return null; // Will be redirected by useEffect
   }
 
+  const totalPages = Math.max(1, Math.ceil(projects.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProjects = projects.slice(
+    (safePage - 1) * itemsPerPage,
+    safePage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handleItemsPerPageChange = (n: number) => {
+    setItemsPerPage(n);
+    setCurrentPage(1);
+  };
+
   return (
     <>
       {/* Alert Messages */}
@@ -187,7 +205,7 @@ export default function ProjectList() {
             columns={{ default: 1, md: 2, lg: 3 }}
             gap="md"
           >
-            {projects.map((project) => (
+            {paginatedProjects.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}
@@ -199,6 +217,22 @@ export default function ProjectList() {
               />
             ))}
           </ResponsiveGrid>
+        )}
+
+        {/* Pagination */}
+        {projects.length > 0 && (
+          <div className="mt-6">
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              totalItems={projects.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={PAGE_SIZE_OPTIONS}
+              showItemsPerPage={true}
+            />
+          </div>
         )}
       </div>
 
