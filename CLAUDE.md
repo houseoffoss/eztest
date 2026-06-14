@@ -427,6 +427,7 @@ Use consistent format:
 
 ## Useful Documentation Links
 
+- [Automation API](./docs/api/automation-api.md) - API-key automation surface; live reference at `/api/docs`, OpenAPI spec at `/api/openapi.json`
 - [Architecture Deep Dive](./docs/architecture/) - System design and patterns
 - [API Documentation](./docs/api/) - Endpoint specifications
 - [Database Schema](./docs/architecture/database.md) - Entity relationships
