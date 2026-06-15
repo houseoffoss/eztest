@@ -1,69 +1,69 @@
-﻿import { formatDateTime } from '@/lib/date-utils';
+import { formatDateTime } from '@/lib/date-utils';
 import { StatCard } from '@/frontend/reusable-components/cards/StatCard';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
 import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
 import { TestRunStats } from '../types';
 
-        label="Прогресс"
+interface TestRunStatsCardsProps {
   stats: TestRunStats;
-        helpText={`${stats.total - stats.pending} из ${stats.total} выполнено`}
+  progressPercentage: number;
   passRate: number;
   testRun: {
     assignedTo?: {
       name: string;
     };
-        label="Успешно"
+    createdAt: string;
     startedAt?: string;
-        helpText={`${passRate}% успешных`}
+  };
 }
 
 export function TestRunStatsCards({
   stats,
   progressPercentage,
-        label="Провалено"
+  passRate,
   testRun,
-        helpText={`${stats.blocked} заблокировано, ${stats.skipped} пропущено`}
+}: TestRunStatsCardsProps) {
   return (
     <ResponsiveGrid
       columns={{ default: 1, md: 2, lg: 4 }}
       gap="md"
       className="mb-6"
-        label={testRun.assignedTo?.name || 'Не назначен'}
+    >
       <StatCard
-        label="Progress"
+        label="Прогресс"
         value={`${progressPercentage}%`}
-        helpText={`${stats.total - stats.pending} of ${stats.total} executed`}
+        helpText={`${stats.total - stats.pending} из ${stats.total} выполнено`}
       />
 
       <StatCard
         icon={<CheckCircle className="w-5 h-5" />}
-        label="Passed"
+        label="Успешно"
         value={stats.passed}
-        helpText={`${passRate}% pass rate`}
+        helpText={`${passRate}% успешных`}
         borderColor="border-l-green-500/30"
       />
 
       <StatCard
         icon={<XCircle className="w-5 h-5" />}
-        label="Failed"
+        label="Провалено"
         value={stats.failed}
-        helpText={`${stats.blocked} blocked, ${stats.skipped} skipped`}
+        helpText={`${stats.blocked} заблокировано, ${stats.skipped} пропущено`}
         borderColor="border-l-red-500/30"
       />
 
       <StatCard
         icon={<User className="w-5 h-5" />}
-        label={testRun.assignedTo?.name || 'Unassigned'}
+        label={testRun.assignedTo?.name || 'Не назначен'}
         value={
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-white/60">
               <Calendar className="w-3 h-3" />
-              Created {formatDateTime(testRun.createdAt)}
+              Создан {formatDateTime(testRun.createdAt)}
             </div>
             {testRun.startedAt && (
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <Clock className="w-3 h-3" />
-                Started {formatDateTime(testRun.startedAt)}
+                Запущен {formatDateTime(testRun.startedAt)}
               </div>
             )}
           </div>
