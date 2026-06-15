@@ -3,7 +3,9 @@ import { emailService } from '@/backend/services/email/services';
 import { 
   createTestRunSchema, 
   updateTestRunSchema, 
-  addTestResultSchema 
+  addTestResultSchema,
+  bulkUpdateTestResultsSchema,
+  bulkDeleteTestResultsSchema,
 } from '@/backend/validators/testrun.validator';
 import { CustomRequest } from '@/backend/utils/interceptor';
 import { ValidationException } from '@/backend/utils/exceptions';
@@ -35,9 +37,11 @@ export class TestRunController {
    */
   async getTestRunById(
     testRunId: string,
-    userId: string
+    userId: string,
+    page = 1,
+    limit = 50
   ) {
-    const testRun = await testRunService.getTestRunById(testRunId);
+    const testRun = await testRunService.getTestRunById(testRunId, page, limit);
 
     if (!testRun) {
       throw new ValidationException(TestRunMessages.TestRunNotFound);
@@ -50,6 +54,12 @@ export class TestRunController {
       data: {
         ...testRun,
         stats,
+      },
+      pagination: {
+        currentPage: page,
+        totalPages: Math.max(1, Math.ceil((testRun._count?.results || 0) / limit)),
+        totalItems: testRun._count?.results || 0,
+        itemsPerPage: limit,
       },
     };
   }
@@ -185,6 +195,58 @@ export class TestRunController {
     );
 
     return { data: result, statusCode: 201 };
+  }
+
+  async bulkUpdateTestResults(
+    body: unknown,
+    testRunId: string,
+    userId: string
+  ) {
+    const validationResult = bulkUpdateTestResultsSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const validatedData = validationResult.data;
+
+    const result = await testRunService.bulkUpdateTestResults(
+      testRunId,
+      validatedData.testCaseIds,
+      {
+        status: validatedData.status,
+        executedById: validatedData.executedById || userId,
+        assignedToId: validatedData.assignedToId,
+        duration: validatedData.duration,
+        comment: validatedData.comment,
+        errorMessage: validatedData.errorMessage,
+        stackTrace: validatedData.stackTrace,
+      }
+    );
+
+    return { data: result };
+  }
+
+  async bulkDeleteTestResults(
+    body: unknown,
+    testRunId: string
+  ) {
+    const validationResult = bulkDeleteTestResultsSchema.safeParse(body);
+    if (!validationResult.success) {
+      throw new ValidationException(
+        'Validation failed',
+        validationResult.error.issues
+      );
+    }
+
+    const result = await testRunService.bulkDeleteTestResults(
+      testRunId,
+      validationResult.data.testCaseIds
+    );
+
+    return { data: result };
   }
 
   /**

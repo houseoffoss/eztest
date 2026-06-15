@@ -385,7 +385,11 @@ export class TestRunService {
   /**
    * Get a single test run by ID
    */
-  async getTestRunById(testRunId: string) {
+  async getTestRunById(testRunId: string, page = 1, limit = 50) {
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.max(1, limit);
+    const skip = (safePage - 1) * safeLimit;
+
     return await prisma.testRun.findUnique({
       where: { id: testRunId },
       include: {
@@ -412,8 +416,20 @@ export class TestRunService {
                 tcId: true,
                 title: true,
                 description: true,
+                preconditions: true,
                 priority: true,
                 status: true,
+                steps: {
+                  select: {
+                    id: true,
+                    stepNumber: true,
+                    action: true,
+                    expectedResult: true,
+                  },
+                  orderBy: {
+                    stepNumber: 'asc',
+                  },
+                },
               },
             },
             executedBy: {
@@ -428,6 +444,8 @@ export class TestRunService {
           orderBy: {
             executedAt: 'desc',
           },
+          skip,
+          take: safeLimit,
         },
         _count: {
           select: {
@@ -686,6 +704,68 @@ export class TestRunService {
         },
       },
     });
+  }
+
+  async bulkUpdateTestResults(
+    testRunId: string,
+    testCaseIds: string[],
+    data: {
+      status: string;
+      executedById: string;
+      assignedToId?: string | null;
+      duration?: number;
+      comment?: string;
+      errorMessage?: string;
+      stackTrace?: string;
+    }
+  ) {
+    return await prisma.$transaction(async (tx) => {
+      if (data.assignedToId !== undefined) {
+        await tx.testRun.update({
+          where: { id: testRunId },
+          data: {
+            assignedToId: data.assignedToId || null,
+          },
+        });
+      }
+
+      const updateResult = await tx.testResult.updateMany({
+        where: {
+          testRunId,
+          testCaseId: {
+            in: testCaseIds,
+          },
+        },
+        data: {
+          status: data.status,
+          executedById: data.executedById,
+          duration: data.duration,
+          comment: data.comment,
+          errorMessage: data.errorMessage,
+          stackTrace: data.stackTrace,
+          executedAt: new Date(),
+        },
+      });
+
+      return {
+        updatedCount: updateResult.count,
+      };
+    });
+  }
+
+  async bulkDeleteTestResults(testRunId: string, testCaseIds: string[]) {
+    const result = await prisma.testResult.deleteMany({
+      where: {
+        testRunId,
+        testCaseId: {
+          in: testCaseIds,
+        },
+      },
+    });
+
+    return {
+      deletedCount: result.count,
+    };
   }
 
   /**

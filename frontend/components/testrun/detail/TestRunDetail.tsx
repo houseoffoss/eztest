@@ -37,10 +37,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [addSuitesDialogOpen, setAddSuitesDialogOpen] = useState(false);
   const [createDefectDialogOpen, setCreateDefectDialogOpen] = useState(false);
   const [selectedTestCaseForDefect, setSelectedTestCaseForDefect] = useState<string | null>(null);
-  const [selectedTestCase, setSelectedTestCase] = useState<{
-    testCaseId: string;
-    testCaseName: string;
-  } | null>(null);
+  const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [availableTestCases, setAvailableTestCases] = useState<TestCase[]>([]);
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
@@ -53,6 +50,10 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [addingTestSuites, setAddingTestSuites] = useState(false);
   const [loadingSuites, setLoadingSuites] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+  const [totalPagesCount, setTotalPagesCount] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -107,7 +108,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   useEffect(() => {
     fetchTestRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testRunId]);
+  }, [testRunId, currentPage, itemsPerPage]);
 
   useEffect(() => {
     if (testRun) {
@@ -128,13 +129,18 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           projectId = pathSegments[projectIndex + 1];
         }
       }
+      const query = `page=${currentPage}&limit=${itemsPerPage}`;
       const url = projectId 
-        ? `/api/projects/${projectId}/testruns/${testRunId}`
+        ? `/api/projects/${projectId}/testruns/${testRunId}?${query}`
         : `/api/testruns/${testRunId}`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.data) {
         setTestRun(data.data);
+        if (data.pagination) {
+          setTotalPagesCount(data.pagination.totalPages);
+          setTotalItems(data.pagination.totalItems);
+        }
       } else {
         alert(data.error || 'Failed to fetch test run');
       }
@@ -275,10 +281,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       (r) => r.testCaseId === testCase.id
     );
 
-    setSelectedTestCase({
-      testCaseId: testCase.id,
-      testCaseName: testCase.title || testCase.name || '',
-    });
+    setSelectedTestCase(testCase);
 
     setResultForm({
       status: existingResult?.status || '',
@@ -290,7 +293,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const handleSubmitResult = async () => {
     if (!selectedTestCase || !resultForm.status) {
-      alert('Please select a result status');
+      alert('Выберите статус результата');
       return;
     }
 
@@ -307,7 +310,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          testCaseId: selectedTestCase.testCaseId,
+          testCaseId: selectedTestCase.id,
           status: resultForm.status,
           comment: resultForm.comment,
         }),
@@ -365,7 +368,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const handleAddTestCases = async () => {
     if (selectedCaseIds.length === 0) {
-      alert('Please select at least one test case');
+      alert('Выберите хотя бы один тест-кейс');
       return;
     }
 
@@ -514,7 +517,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const handleAddTestSuites = async () => {
     if (selectedSuiteIds.length === 0) {
-      alert('Please select at least one test suite');
+      alert('Выберите хотя бы один тест-сьют');
       return;
     }
 
@@ -536,7 +539,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       });
 
       if (testCaseIds.length === 0) {
-        alert('No new test cases to add from selected suites');
+        alert('В выбранных тест-сьютах нет новых тест-кейсов для добавления');
         return;
       }
 
@@ -624,6 +627,17 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const calculateStats = (): TestRunStats => {
     if (!testRun)
       return { passed: 0, failed: 0, blocked: 0, skipped: 0, pending: 0, total: 0 };
+
+    if (testRun.stats) {
+      return {
+        passed: testRun.stats.passed,
+        failed: testRun.stats.failed,
+        blocked: testRun.stats.blocked,
+        skipped: testRun.stats.skipped,
+        pending: testRun.stats.skipped,
+        total: testRun.stats.total,
+      };
+    }
 
     const stats: TestRunStats = {
       passed: 0,
@@ -725,11 +739,22 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         />
 
         <TestCasesListCard
+          testRunId={testRun.id}
           results={testRun.results}
           testRunStatus={testRun.status}
           canUpdate={canUpdateTestRun}
           canCreate={canCreateTestRun}
           projectId={testRun.project?.id || ''}
+          onRefresh={fetchTestRun}
+          currentPage={currentPage}
+          totalPages={totalPagesCount}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(items) => {
+            setItemsPerPage(items);
+            setCurrentPage(1);
+          }}
           onAddTestCases={() => {
             fetchAvailableTestCases();
             setAddCasesDialogOpen(true);
@@ -746,8 +771,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
         <RecordResultDialog
           open={resultDialogOpen}
-          testCaseName={selectedTestCase?.testCaseName || ''}
-          testCaseId={selectedTestCase?.testCaseId || ''}
+          testCase={selectedTestCase}
+          testCaseId={selectedTestCase?.id || ''}
           projectId={testRun.project?.id || ''}
           testRunEnvironment={testRun.environment}
           formData={resultForm}

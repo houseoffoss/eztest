@@ -47,6 +47,21 @@ export const addTestResultSchema = z.object({
   stackTrace: z.string().optional(),
 });
 
+export const bulkUpdateTestResultsSchema = z.object({
+  testCaseIds: z.array(z.string().min(1, 'ID тест-кейса обязателен')).min(1, 'Выберите хотя бы один тест-кейс'),
+  status: z.enum(['PASSED', 'FAILED', 'BLOCKED', 'SKIPPED', 'RETEST']),
+  comment: z.string().optional(),
+  duration: z.number().optional(),
+  errorMessage: z.string().optional(),
+  stackTrace: z.string().optional(),
+  executedById: z.string().min(1, 'Некорректный ID исполнителя').optional(),
+  assignedToId: z.string().min(1, 'Некорректный ID назначенного пользователя').nullable().optional(),
+});
+
+export const bulkDeleteTestResultsSchema = z.object({
+  testCaseIds: z.array(z.string().min(1, 'ID тест-кейса обязателен')).min(1, 'Выберите хотя бы один тест-кейс'),
+});
+
 /**
  * Send Test Run Report Schema
  */
@@ -63,4 +78,6 @@ export const sendTestRunReportSchema = z.object({
 export type CreateTestRunInput = z.infer<typeof createTestRunSchema>;
 export type UpdateTestRunInput = z.infer<typeof updateTestRunSchema>;
 export type AddTestResultInput = z.infer<typeof addTestResultSchema>;
+export type BulkUpdateTestResultsInput = z.infer<typeof bulkUpdateTestResultsSchema>;
+export type BulkDeleteTestResultsInput = z.infer<typeof bulkDeleteTestResultsSchema>;
 export type SendTestRunReportInput = z.infer<typeof sendTestRunReportSchema>;

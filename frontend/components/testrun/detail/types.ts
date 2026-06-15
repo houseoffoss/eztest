@@ -20,9 +20,16 @@ export interface TestCase {
   name?: string;
   title?: string;
   description?: string;
+  preconditions?: string;
   priority: Priority | string;
   status: string;
   suiteId?: string | null;
+  steps?: Array<{
+    id: string;
+    stepNumber: number;
+    action: string;
+    expectedResult: string;
+  }>;
 }
 
 export interface TestRun {
@@ -46,6 +53,14 @@ export interface TestRun {
   testCases?: TestCase[];
   _count?: {
     results: number;
+  };
+  stats?: {
+    total: number;
+    passed: number;
+    failed: number;
+    blocked: number;
+    skipped: number;
+    retest: number;
   };
   createdAt: string;
   startedAt?: string;

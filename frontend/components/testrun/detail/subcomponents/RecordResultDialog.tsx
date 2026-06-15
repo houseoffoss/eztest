@@ -23,7 +23,7 @@ import {
 } from '@/frontend/reusable-elements/selects/Select';
 import { Checkbox } from '@/frontend/reusable-elements/checkboxes/Checkbox';
 import { CheckCircle, XCircle, AlertCircle, Circle, Bug } from 'lucide-react';
-import { ResultFormData } from '../types';
+import { ResultFormData, TestCase } from '../types';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
@@ -37,7 +37,7 @@ interface Defect {
 
 interface RecordResultDialogProps {
   open: boolean;
-  testCaseName: string;
+  testCase: TestCase | null;
   testCaseId: string;
   projectId: string;
   testRunEnvironment?: string; // Environment from test run
@@ -50,7 +50,7 @@ interface RecordResultDialogProps {
 
 export function RecordResultDialog({
   open,
-  testCaseName,
+  testCase,
   testCaseId,
   projectId,
   testRunEnvironment,
@@ -202,10 +202,49 @@ export function RecordResultDialog({
       <DialogContent>
         <DialogHeader className="mb-4">
           <DialogTitle>Записать результат теста</DialogTitle>
-          <DialogDescription>{testCaseName}</DialogDescription>
+          <DialogDescription>{testCase?.title || testCase?.name || ''}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mb-4">
+          {testCase && (
+            <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
+              <div>
+                <h3 className="text-sm font-semibold text-white/90">Полное название кейса</h3>
+                <p className="mt-1 text-sm text-white/75 break-words">
+                  {testCase.title || testCase.name || 'Без названия'}
+                </p>
+              </div>
+
+              {testCase.preconditions && (
+                <div>
+                  <h3 className="text-sm font-semibold text-white/90">Preconditions</h3>
+                  <p className="mt-1 text-sm text-white/75 whitespace-pre-wrap break-words">
+                    {testCase.preconditions}
+                  </p>
+                </div>
+              )}
+
+              {testCase.steps && testCase.steps.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-white/90">Steps</h3>
+                  <div className="mt-2 space-y-3">
+                    {testCase.steps.map((step) => (
+                      <div key={step.id} className="rounded-lg border border-white/10 bg-black/10 p-3">
+                        <div className="text-xs font-medium text-white/50">Шаг {step.stepNumber}</div>
+                        <div className="mt-2 text-sm text-white/85 whitespace-pre-wrap break-words">
+                          <span className="font-medium text-white/90">Действие:</span> {step.action}
+                        </div>
+                        <div className="mt-1 text-sm text-white/75 whitespace-pre-wrap break-words">
+                          <span className="font-medium text-white/90">Ожидаемый результат:</span> {step.expectedResult}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="status">Статус результата *</Label>
             <Select
