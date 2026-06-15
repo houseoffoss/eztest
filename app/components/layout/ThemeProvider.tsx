@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 
 type Theme = 'dark' | 'light';
 
@@ -15,13 +15,7 @@ const STORAGE_KEY = 'eztest-theme';
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
-
-  useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    const initialTheme: Theme = stored === 'light' ? 'light' : 'dark';
-    setThemeState(initialTheme);
-  }, []);
+  const theme: Theme = 'dark';
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -30,17 +24,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const root = document.documentElement;
     root.classList.remove('dark', 'light');
-    root.classList.add(theme);
-    localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+    root.classList.add('dark');
+    localStorage.setItem(STORAGE_KEY, 'dark');
+  }, []);
 
-  const setTheme = (nextTheme: Theme) => {
-    setThemeState(nextTheme);
-  };
+  const setTheme = (_nextTheme: Theme) => {};
 
-  const toggleTheme = () => {
-    setThemeState((prev: Theme) => (prev === 'dark' ? 'light' : 'dark'));
-  };
+  const toggleTheme = () => {};
 
   const value = useMemo(
     () => ({
