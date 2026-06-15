@@ -509,10 +509,10 @@ export function TestCasesListCard({
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={tableData.length}
+              totalItems={totalItems}
               itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
+              onPageChange={onPageChange}
+              onItemsPerPageChange={onItemsPerPageChange}
               itemsPerPageOptions={PAGE_SIZE_OPTIONS}
               showItemsPerPage={true}
             />
