@@ -26,10 +26,10 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
         <Badge variant="outline" className="font-mono border-primary/40 bg-primary/10 text-primary text-xs px-2.5 py-0.5">
           {project.key}
         </Badge>
-        <h1 className="text-2xl font-bold text-white">{project.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
       </div>
       {project.description && (
-        <p className="text-white/70 text-sm mb-2 break-words line-clamp-2">{project.description}</p>
+        <p className="text-muted-foreground text-sm mb-2 break-words line-clamp-2">{project.description}</p>
       )}
       <MetadataDisplay
         items={[

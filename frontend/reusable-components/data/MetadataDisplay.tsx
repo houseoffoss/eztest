@@ -23,12 +23,12 @@ export function MetadataDisplay({
   separator = '•',
 }: MetadataDisplayProps) {
   return (
-    <div className={cn('flex items-center gap-4 text-xs text-white/60', className)}>
+    <div className={cn('flex items-center gap-4 text-xs text-muted-foreground', className)}>
       {items.map((item, index) => (
         <React.Fragment key={index}>
           <div className={itemClassName}>
             {item.label && <>{item.label} </>}
-            <span className="font-semibold text-white/90">{item.value}</span>
+            <span className="font-semibold text-foreground">{item.value}</span>
           </div>
           {index < items.length - 1 && item.showSeparator !== false && (
             <div>{separator}</div>

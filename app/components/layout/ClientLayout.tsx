@@ -33,6 +33,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
     if (session?.user?.email && typeof window !== 'undefined') {
       const storedUserId = sessionStorage.getItem('currentUserId');
       const currentUserId = session.user.email; // Using email as unique identifier
+      const firstLoginThemeKey = `eztest-theme-initialized-${currentUserId}`;
       
       if (storedUserId && storedUserId !== currentUserId) {
         // Different user logged in - clear all project context
@@ -43,6 +44,14 @@ export function ClientLayout({ children }: ClientLayoutProps) {
           }
         });
         setLastProjectId(null);
+      }
+
+      // First login for this user in this browser: force dark theme once.
+      if (!localStorage.getItem(firstLoginThemeKey)) {
+        localStorage.setItem('eztest-theme', 'dark');
+        localStorage.setItem(firstLoginThemeKey, 'true');
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add('dark');
       }
       
       // Store current user identifier
