@@ -496,7 +496,10 @@ export class TestRunService {
           testRunId: testRun.id,
           testCaseId,
           status: 'SKIPPED',
-          executedById: data.assignedToId || '', // Will be updated when actually executed
+          // executedById is a required User FK. Attribute placeholder results to
+          // the run creator — i.e. the API key's owner for API-driven runs
+          // (request.userInfo.id flows here as createdById). Updated on execution.
+          executedById: data.createdById,
         })),
         skipDuplicates: true,
       });

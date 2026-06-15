@@ -28,7 +28,15 @@ function isValidEmailForOtp(email: string): boolean {
   if (!emailRegex.test(email)) {
     return false;
   }
-  
+
+  // In setups without SMTP, OTP is bypassed and no email is ever delivered, so
+  // otherwise-undeliverable dev domains (e.g. .local) are harmless. Permit them
+  // there to keep local/demo accounts usable. Production (ENABLE_SMTP=true)
+  // keeps the strict check below.
+  if (process.env.ENABLE_SMTP !== 'true') {
+    return true;
+  }
+
   // Check for invalid domains like .local, .invalid, .test, .example
   const invalidDomains = ['.local', '.invalid', '.test', '.example', '.localhost'];
   const lowerEmail = email.toLowerCase();

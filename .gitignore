@@ -49,4 +49,6 @@ next-env.d.ts
 /uploads
 
 # Claude Code
-.claude/
+.claude/*
+# ...but share the project settings (e.g. .env protection) with the team
+!.claude/settings.json

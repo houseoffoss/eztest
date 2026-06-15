@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '../buttons/Button';
 import { cn } from '@/lib/utils';
+import { PAGE_SIZE_OPTIONS } from '@/lib/pagination-config';
 
 export interface PaginationProps {
   currentPage: number;
@@ -22,7 +23,7 @@ export function Pagination({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
-  itemsPerPageOptions = [10, 20, 50, 100],
+  itemsPerPageOptions = PAGE_SIZE_OPTIONS,
   showItemsPerPage = true,
   className,
 }: PaginationProps) {

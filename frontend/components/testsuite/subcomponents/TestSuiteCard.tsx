@@ -1,15 +1,17 @@
-﻿'use client';
+'use client';
 
+import { formatDateTime } from '@/lib/date-utils';
+import { Badge } from '@/frontend/reusable-elements/badges/Badge';
+import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import { ActionMenu } from '@/frontend/reusable-components/menus/ActionMenu';
-import {
-  Edit,
-  Folder,
-  Trash2,
-} from 'lucide-react';
+import { StatsGrid } from '@/frontend/reusable-components/data/StatsGrid';
+import { Edit, Trash2, TestTube2, Layers, FolderTree } from 'lucide-react';
 import { TestSuite } from '../types';
 
 interface TestSuiteCardProps {
   suite: TestSuite;
+  // Retained for API compatibility with the tree list; nesting is shown via the
+  // "Sub-suites" stat and the parent badge rather than inline expansion.
   isExpanded?: boolean;
   onToggleExpand?: (suiteId: string) => void;
   onView: (suiteId: string) => void;
@@ -20,69 +22,85 @@ interface TestSuiteCardProps {
 
 export function TestSuiteCard({
   suite,
-  isExpanded = false,
-  onToggleExpand,
   onView,
   onDelete,
   canDelete = true,
-  isChild = false,
 }: TestSuiteCardProps) {
-  const hasChildren = suite.children && suite.children.length > 0;
   const childrenCount = suite.children?.length || 0;
 
-  // Card design matching the image
-  return (
-    <div 
-      className="relative bg-gradient-to-br from-white/[0.05] to-white/[0.08] rounded-2xl p-5 cursor-pointer transition-all group shadow-lg shadow-black/30 hover:shadow-xl hover:shadow-primary/10 backdrop-blur-xl"
-      onClick={() => onView(suite.id)}
+  // Mirror the Projects dashboard card: a key/relationship pill, a stats grid,
+  // and a footer — built on the same ItemCard/StatsGrid primitives.
+  const badges = (
+    <Badge
+      variant="outline"
+      className="flex items-center gap-1 text-xs px-2 py-0.5 border-primary/40 bg-primary/10 text-primary"
     >
-      {/* Menu Button */}
-      <div className="absolute top-4 right-4">
-        <ActionMenu
-          items={[
-            {
-              label: 'View / Edit',
-              icon: Edit,
-              onClick: () => onView(suite.id),
-            },
-            {
-              label: 'Delete',
-              icon: Trash2,
-              onClick: () => onDelete(suite),
-              variant: 'destructive',
-              show: canDelete,
-            },
-          ]}
-          align="end"
-          iconSize="h-4 w-4"
-        />
-      </div>
+      <FolderTree className="h-3 w-3" />
+      {suite.parent ? suite.parent.name : 'Suite'}
+    </Badge>
+  );
 
-      {/* Card Content */}
-      <div className="pr-8">
-        {/* Title */}
-        <h3 className="text-white group-hover:text-primary font-semibold text-base mb-2 truncate transition-colors">
-          {suite.name}
-        </h3>
+  const header = (
+    <ActionMenu
+      items={[
+        {
+          label: 'View / Edit',
+          icon: Edit,
+          onClick: () => onView(suite.id),
+        },
+        {
+          label: 'Delete',
+          icon: Trash2,
+          onClick: () => onDelete(suite),
+          variant: 'destructive',
+          show: canDelete,
+          buttonName: `Test Suite Card - Delete (${suite.name})`,
+        },
+      ]}
+      align="end"
+      iconSize="h-4 w-4"
+    />
+  );
 
-        {/* Description */}
-        <p className="text-white/50 text-sm mb-6 line-clamp-2">
-          {suite.description || 'No description provided'}
-        </p>
-        {/* Divider */}
-        <div className="w-full h-px bg-white/10 mb-6" />
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-4 text-white/60 text-sm">
-          <div className="flex items-center gap-2">
-            <Edit className="w-4 h-4" />
-            <span>{suite._count.testCases} cases</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Folder className="w-4 h-4" />
-            <span>{childrenCount} suites</span>
-          </div>
-        </div>
-      </div>
-    </div>
+  const content = (
+    <StatsGrid
+      stats={[
+        {
+          icon: TestTube2,
+          value: suite._count.testCases,
+          label: 'Test Cases',
+          iconColor: 'text-primary',
+        },
+        {
+          icon: Layers,
+          value: childrenCount,
+          label: 'Sub-suites',
+          iconColor: 'text-purple-400',
+        },
+      ]}
+      columns={2}
+      gap="sm"
+      className="mb-2.5"
+    />
+  );
+
+  const footer = (
+    <span className="text-xs text-white/50">
+      Created {formatDateTime(suite.createdAt)}
+    </span>
+  );
+
+  return (
+    <ItemCard
+      title={suite.name}
+      description={suite.description || undefined}
+      descriptionClassName="line-clamp-2 break-words text-sm text-white/60 min-h-5"
+      badges={badges}
+      header={header}
+      content={content}
+      footer={footer}
+      onClick={() => onView(suite.id)}
+      borderColor="primary"
+    />
   );
 }

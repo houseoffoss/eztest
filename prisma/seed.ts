@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { seedRBAC } from './seed-rbac';
 import { seedDropdownOptions } from './seed-dropdown-options';
+import { seedDogfoodDemo } from './seed-dogfood-demo';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma: any = new PrismaClient();
@@ -1498,6 +1499,9 @@ async function main() {
       console.log('✅ Sample defects already exist for demo project');
     }
   }
+
+  // Seed the dogfooding demo project (EZTest tests EZTest). Idempotent on key "EZQA".
+  await seedDogfoodDemo(prisma);
 
   console.log('\n🎉 Database seeding completed successfully!');
 }
