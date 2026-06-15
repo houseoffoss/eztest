@@ -52,8 +52,8 @@ export const ItemCard = ({
         background: gradientStyle,
       }}
     >
-      {/* Inner container with page background color to block gradient */}
-      <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
+      {/* Theme-aware inner surface keeps dark cards in dark mode and light cards in light mode */}
+      <div className="relative rounded-3xl h-full" style={{ backgroundColor: 'var(--item-card-bg)' }}>
         <Card
           variant="glass"
           className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col h-full"

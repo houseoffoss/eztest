@@ -306,7 +306,7 @@ export async function sendPasswordResetEmail(
   resetLink: string,
   userName: string
 ): Promise<boolean> {
-  const subject = 'Reset Your EZTest Password';
+  const subject = 'Сброс пароля EZTest';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -315,26 +315,26 @@ export async function sendPasswordResetEmail(
           <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
         </div>
 
-        <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Password Reset Request</h2>
+        <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Запрос на сброс пароля</h2>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 15px 0;">
-          Hi ${userName},
+          Здравствуйте, ${userName}.
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          We received a request to reset your password. Click the button below to reset it:
+          Мы получили запрос на сброс вашего пароля. Нажмите кнопку ниже, чтобы установить новый пароль:
         </p>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${resetLink}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              Reset Password
+              Сбросить пароль
             </a>
           </div>
         </div>
 
         <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin: 20px 0 10px 0;">
-          Or copy and paste this link in your browser:
+          Или скопируйте и вставьте эту ссылку в браузер:
         </p>
         <p style="word-break: break-all; color: #033977; font-size: 13px; background-color: #f3f4f6; padding: 10px; border-radius: 4px; margin: 0 0 20px 0;">
           ${resetLink}
@@ -342,7 +342,7 @@ export async function sendPasswordResetEmail(
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #92400e; font-size: 13px; margin: 0;">
-            <strong>Security Notice:</strong> This link will expire in 1 hour. If you didn't request a password reset, please ignore this email or contact support immediately.
+            <strong>Уведомление безопасности:</strong> Ссылка действует 1 час. Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо или немедленно свяжитесь с поддержкой.
           </p>
         </div>
 
@@ -356,15 +356,15 @@ export async function sendPasswordResetEmail(
   `;
 
   const text = `
-Password Reset Request
+Запрос на сброс пароля
 
-Hi ${userName},
+Здравствуйте, ${userName}.
 
-We received a request to reset your password. Click the link below to reset it:
+Мы получили запрос на сброс вашего пароля. Перейдите по ссылке ниже, чтобы установить новый пароль:
 
 ${resetLink}
 
-This link will expire in 1 hour. If you didn't request a password reset, please ignore this email or contact support immediately.
+Ссылка действует 1 час. Если вы не запрашивали сброс пароля, проигнорируйте это письмо или свяжитесь с поддержкой.
 
 ---
 EZTest - Self-hosted Test Management Platform

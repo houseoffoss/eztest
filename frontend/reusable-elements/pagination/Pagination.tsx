@@ -84,11 +84,11 @@ export function Pagination({
       {/* Items count and per-page selector */}
       <div className="flex items-center gap-4 text-sm text-white/70">
         <span>
-          Showing {startItem} to {endItem} of {totalItems} items
+          Показано {startItem}–{endItem} из {totalItems}
         </span>
         {showItemsPerPage && onItemsPerPageChange && (
           <div className="flex items-center gap-2">
-            <span>Show</span>
+            <span>Показывать</span>
             <select
               value={itemsPerPage}
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
@@ -100,7 +100,7 @@ export function Pagination({
                 </option>
               ))}
             </select>
-            <span>per page</span>
+            <span>на странице</span>
           </div>
         )}
       </div>

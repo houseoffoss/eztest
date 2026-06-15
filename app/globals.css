@@ -99,6 +99,7 @@
   --glass-radius: 14px;
   --glass-shadow: 0 8px 30px rgba(10,10,20,0.14);
   --text-on-glass: #121826;
+  --item-card-bg: #ffffff;
 }
 
 .dark {
@@ -106,7 +107,7 @@
   --primary-foreground: #ffffff;
   --accent: #ff7a18;
   --accent-foreground: #ffffff;
-  --background: #0b1028;
+  --background: #050608;
   --foreground: rgba(255,255,255,0.95);
   --card: rgba(255,255,255,0.08);
   --card-foreground: rgba(255,255,255,0.95);
@@ -134,13 +135,13 @@
   --sidebar-border: rgba(255,255,255,0.18);
   --sidebar-ring: #0b72ff;
   --app-bg:
-    radial-gradient(600px 400px at 10% 20%, rgba(11,114,255,0.18), transparent 12%),
-    radial-gradient(500px 350px at 90% 85%, rgba(255,122,24,0.14), transparent 12%),
-    linear-gradient(135deg, rgba(4,9,30,1) 0%, rgba(11,16,40,1) 40%, rgba(8,10,30,1) 100%);
+    radial-gradient(1200px 520px at 50% -20%, rgba(255,255,255,0.05), transparent 50%),
+    linear-gradient(180deg, #050608 0%, #06080d 45%, #050608 100%);
   --glass-bg: rgba(255,255,255,0.12);
   --glass-border: rgba(255,255,255,0.24);
   --glass-shadow: 0 8px 30px rgba(10,10,20,0.25);
   --text-on-glass: rgba(255,255,255,0.95);
+  --item-card-bg: #050608;
 }
 
 @layer base {
@@ -160,38 +161,6 @@
   select option {
     cursor: pointer !important;
   }
-}
-
-/* Improve readability in white theme for existing glass utilities */
-.light .text-white {
-  color: #111827 !important;
-}
-
-.light .text-white\/80 {
-  color: rgba(17,24,39,0.8) !important;
-}
-
-.light .text-white\/70 {
-  color: rgba(17,24,39,0.7) !important;
-}
-
-.light .text-white\/60 {
-  color: rgba(17,24,39,0.6) !important;
-}
-
-.light .bg-white\/5,
-.light .bg-white\/8,
-.light .bg-white\/10,
-.light .bg-white\/12 {
-  background-color: rgba(17,24,39,0.06) !important;
-}
-
-.light .border-white\/10 {
-  border-color: rgba(17,24,39,0.14) !important;
-}
-
-.light .ring-white\/5 {
-  --tw-ring-color: rgba(17,24,39,0.1) !important;
 }
 
 @layer utilities {
