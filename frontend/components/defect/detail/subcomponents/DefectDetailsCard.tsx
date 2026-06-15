@@ -84,7 +84,7 @@ export function DefectDetailsCard({
   }, [isEditing, defect.projectId]);
 
   const assignedToOptions: SelectOption[] = [
-    { value: 'unassigned', label: 'Not Assigned' },
+    { value: 'unassigned', label: 'Не назначено' },
     ...users.map((user) => ({
       value: user.id,
       label: `${user.name} (${user.email})`,
@@ -109,14 +109,14 @@ export function DefectDetailsCard({
   };
 
   return (
-    <DetailCard title="Details" contentClassName="space-y-6">
+    <DetailCard title="Детали" contentClassName="space-y-6">
       {isEditing ? (
         <div className="space-y-4">
           {/* Severity and Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="severity">
-                Severity <span className="text-red-500">*</span>
+                Серьезность <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.severity}
@@ -127,7 +127,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingSeverity ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>Загрузка...</SelectItem>
                   ) : (
                     severityOptions.map((opt) => (
                       <SelectItem 
@@ -144,7 +144,7 @@ export function DefectDetailsCard({
 
             <div className="space-y-2">
               <Label htmlFor="priority">
-                Priority <span className="text-red-500">*</span>
+                Приоритет <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.priority}
@@ -155,7 +155,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingPriority ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>Загрузка...</SelectItem>
                   ) : (
                     priorityOptions.map((opt) => (
                       <SelectItem 
@@ -175,7 +175,7 @@ export function DefectDetailsCard({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">
-                Status <span className="text-red-500">*</span>
+                Статус <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={formData.status}
@@ -186,7 +186,7 @@ export function DefectDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingStatus ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>Загрузка...</SelectItem>
                   ) : (
                     statusOptions.map((opt) => (
                       <SelectItem 
@@ -202,7 +202,7 @@ export function DefectDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="assignedToId">Assigned To</Label>
+              <Label htmlFor="assignedToId">Назначен</Label>
               <Select
                 value={formData.assignedToId || 'unassigned'}
                 onValueChange={(value) => handleSelectChange('assignedToId', value)}
@@ -224,7 +224,7 @@ export function DefectDetailsCard({
           {/* Due Date and Progress */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="dueDate">Срок</Label>
               <Input
                 id="dueDate"
                 variant="glass"
@@ -235,7 +235,7 @@ export function DefectDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="progressPercentage">Progress (%)</Label>
+              <Label htmlFor="progressPercentage">Прогресс (%)</Label>
               <Input
                 id="progressPercentage"
                 variant="glass"
@@ -250,13 +250,13 @@ export function DefectDetailsCard({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Описание</Label>
             <Textarea
               id="description"
               variant="glass"
               value={formData.description || ''}
               onChange={(e) => handleFieldChange('description', e.target.value)}
-              placeholder="Detailed description of the defect"
+              placeholder="Подробное описание дефекта"
               rows={4}
               maxLength={2000}
             />
@@ -266,7 +266,7 @@ export function DefectDetailsCard({
           {/* Common Attachments */}
           <div className="pt-2">
             <DetailCard
-              title="Attachments"
+              title="Вложения"
               contentClassName="space-y-3"
               headerAction={
                 <button
@@ -291,14 +291,14 @@ export function DefectDetailsCard({
                       )}
                       {att.id.startsWith('pending-') && (
                         <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
-                          Pending
+                          Ожидает
                         </span>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-white/40 py-2">No attachments yet</p>
+                <p className="text-sm text-white/40 py-2">Пока нет вложений</p>
               )}
               <FileUploadModal
                 isOpen={attachmentModalOpen}
@@ -308,20 +308,20 @@ export function DefectDetailsCard({
                 fieldName="attachment"
                 entityType="defect"
                 projectId={projectId}
-                title="Defect Attachments"
+                title="Вложения дефекта"
               />
             </DetailCard>
           </div>
 
           {/* Environment */}
           <div className="space-y-2">
-            <Label htmlFor="environment">Environment</Label>
+            <Label htmlFor="environment">Окружение</Label>
             <Input
               id="environment"
               variant="glass"
               value={formData.environment || ''}
               onChange={(e) => handleFieldChange('environment', e.target.value)}
-              placeholder="e.g., Production, Staging, Development"
+              placeholder="например, Production, Staging, Development"
             />
           </div>
         </div>
@@ -330,7 +330,7 @@ export function DefectDetailsCard({
           {defect.description && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Description
+                Описание
               </h4>
               <p className="text-white/90 break-words whitespace-pre-wrap">
                 {defect.description}
@@ -341,7 +341,7 @@ export function DefectDetailsCard({
           {defect.environment && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Environment
+                Окружение
               </h4>
               <p className="text-white/90 break-words whitespace-pre-wrap">
                 {defect.environment}
@@ -352,7 +352,7 @@ export function DefectDetailsCard({
           {defect.dueDate && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Due Date
+                Срок
               </h4>
               <p className="text-white/90">
                 {new Date(defect.dueDate).toLocaleDateString()}
@@ -363,7 +363,7 @@ export function DefectDetailsCard({
           {defect.progressPercentage !== null && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Progress
+                Прогресс
               </h4>
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
@@ -382,7 +382,7 @@ export function DefectDetailsCard({
           {commonAttachments.length > 0 && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Attachments
+                Вложения
               </h4>
               <AttachmentDisplay attachments={commonAttachments} />
             </div>

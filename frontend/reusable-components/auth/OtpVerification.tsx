@@ -31,7 +31,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setError('OTP has expired. Please request a new one.');
+          setError('Код подтверждения истек. Запросите новый.');
           return 0;
         }
         return prev - 1;
@@ -99,7 +99,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
     
     // Check if pasted data is 6 digits
     if (!/^\d{6}$/.test(pastedData)) {
-      setError('Please paste a valid 6-digit OTP');
+      setError('Вставьте корректный 6-значный код');
       return;
     }
 
@@ -115,7 +115,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
     const otpCode = otpValue || otp.join('');
     
     if (otpCode.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError('Введите все 6 цифр');
       return;
     }
 
@@ -147,7 +147,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
         inputRefs.current[0]?.focus();
       }
     } catch {
-      setError('Failed to verify OTP. Please try again.');
+      setError('Не удалось проверить код. Попробуйте снова.');
     } finally {
       setIsVerifying(false);
     }
@@ -183,7 +183,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
         setError(data.message || 'Failed to resend OTP');
       }
     } catch {
-      setError('Failed to resend OTP. Please try again.');
+      setError('Не удалось отправить код повторно. Попробуйте снова.');
     } finally {
       setIsResending(false);
     }
@@ -210,9 +210,9 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
                   />
                 </svg>
               </div>
-              <CardTitle className="text-2xl mb-2">Verify Your Email</CardTitle>
+              <CardTitle className="text-2xl mb-2">Подтвердите email</CardTitle>
               <CardDescription>
-                We&apos;ve sent a 6-digit code to
+                Мы отправили 6-значный код на
                 <br />
                 <span className="text-primary font-medium">{email}</span>
               </CardDescription>
@@ -244,7 +244,7 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
               {/* Timer */}
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">
-                  Time remaining:{' '}
+                  Осталось времени:{' '}
                   <span className={`font-mono font-semibold ${timeLeft < 60 ? 'text-destructive' : 'text-primary'}`}>
                     {formatTime(timeLeft)}
                   </span>
@@ -275,21 +275,21 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
                 {isVerifying ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span>
-                    Verifying...
+                    Проверка...
                   </span>
                 ) : (
-                  'Verify OTP'
+                  'Подтвердить код'
                 )}
               </ButtonPrimary>
 
               <ButtonSecondary onClick={onCancel} disabled={isVerifying} className="w-auto px-8">
-                Cancel
+                Отмена
               </ButtonSecondary>
             </div>
 
             {/* Resend */}
             <div className="text-center pt-2 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-2">Didn&apos;t receive the code?</p>
+              <p className="text-sm text-muted-foreground mb-2">Не получили код?</p>
               <button
                 onClick={handleResend}
                 disabled={!canResend || isResending}
@@ -300,10 +300,10 @@ export function OtpVerification({ email, type, onVerified, onCancel }: OtpVerifi
                 }`}
               >
                 {isResending
-                  ? 'Sending...'
+                  ? 'Отправка...'
                   : canResend
-                    ? 'Resend OTP'
-                    : `Resend in ${resendCooldown}s`}
+                    ? 'Отправить код повторно'
+                    : `Повтор через ${resendCooldown}с`}
               </button>
             </div>
           </CardContent>

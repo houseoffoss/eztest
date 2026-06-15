@@ -671,13 +671,13 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     executed > 0 ? Math.round((stats.passed / executed) * 100) : 0;
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test run..." />;
+    return <Loader fullScreen text="Загрузка тест-рана..." />;
   }
 
   if (!testRun) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <p className="text-gray-400">Test run not found</p>
+        <p className="text-gray-400">Тест-ран не найден</p>
       </div>
     );
   }
@@ -691,13 +691,13 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
+              { label: 'Проекты', href: '/projects' },
               {
-                label: testRun.project?.name || 'Project',
+                label: testRun.project?.name || 'Проект',
                 href: `/projects/${testRun.project?.id}`,
               },
               {
-                label: 'Test Runs',
+                label: 'Тест-раны',
                 href: `/projects/${testRun.project?.id}/testruns`,
               },
               { label: testRun.name, href: `/projects/${testRun.project?.id}/testruns/${testRun.id}` },
@@ -832,14 +832,14 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           <FileExportDialog
             open={exportDialogOpen}
             onOpenChange={setExportDialogOpen}
-            title="Export Test Run Report"
-            description="Choose a format to export the detailed test run report with test cases and defects."
+            title="Экспорт отчета тест-рана"
+            description="Выберите формат для экспорта подробного отчета тест-рана с тест-кейсами и дефектами."
             exportOptions={{
               projectId: testRun.project?.id || '',
               endpoint: `/api/projects/${testRun.project?.id}/testruns/${testRunId}/export`,
               filters: {},
             }}
-            itemName="test run report"
+            itemName="отчет тест-рана"
           />
         )}
       </div>

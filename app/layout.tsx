@@ -127,18 +127,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <head>
         {/* GEO: llms.txt discovery for AI/LLM crawlers */}
         <link rel="alternate" type="text/plain" title="LLM-readable site description" href="/llms.txt" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-[#050608] min-h-screen text-white relative`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased bg-background min-h-screen text-foreground relative`}
         suppressHydrationWarning
       >
-        {/* Global solid background color */}
-        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-[#050608]" />
-
         <div className="relative z-10">
           <Providers>
             <ClientLayout>

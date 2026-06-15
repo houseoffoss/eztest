@@ -19,9 +19,9 @@ export const LoginLeftPanel = () => {
               EZTest
             </span>
           </Link>
-          <h2 className="text-4xl font-bold mb-4 text-white">Welcome back! 👋</h2>
+          <h2 className="text-4xl font-bold mb-4 text-white">С возвращением! 👋</h2>
           <p className="text-white/80 text-lg leading-relaxed max-w-md">
-            Sign in to manage test cases, track executions, and collaborate with your team.
+            Войдите, чтобы управлять тест-кейсами, отслеживать выполнения и работать с командой.
           </p>
         </div>
         <div className="space-y-4">
@@ -29,8 +29,8 @@ export const LoginLeftPanel = () => {
             <div className="flex items-start gap-3">
               <span className="text-2xl">✨</span>
               <div>
-                <h3 className="font-semibold mb-1">Simple & Powerful</h3>
-                <p className="text-muted-foreground text-sm">All essentials in one place</p>
+                <h3 className="font-semibold mb-1">Просто и мощно</h3>
+                <p className="text-muted-foreground text-sm">Все нужное в одном месте</p>
               </div>
             </div>
           </Card>
@@ -38,8 +38,8 @@ export const LoginLeftPanel = () => {
             <div className="flex items-start gap-3">
               <span className="text-2xl">🚀</span>
               <div>
-                <h3 className="font-semibold mb-1">Self-Hosted</h3>
-                <p className="text-muted-foreground text-sm">Your data, your control</p>
+                <h3 className="font-semibold mb-1">Self-hosted</h3>
+                <p className="text-muted-foreground text-sm">Ваши данные - под вашим контролем</p>
               </div>
             </div>
           </Card>

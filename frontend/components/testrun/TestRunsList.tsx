@@ -69,7 +69,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Test Runs - ${project.name} | EZTest`;
+      document.title = `Тест-раны - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -143,8 +143,8 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   const handleTestRunCreated = (newTestRun: TestRun) => {
     setAlert({
       type: 'success',
-      title: 'Success',
-      message: `Test run "${newTestRun.name}" created successfully`,
+      title: 'Успешно',
+      message: `Тест-ран "${newTestRun.name}" успешно создан`,
     });
     setTimeout(() => setAlert(null), 5000);
     fetchTestRuns();
@@ -164,8 +164,8 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         setSelectedTestRun(null);
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: `Test run "${deletedTestRunName}" deleted successfully`,
+          title: 'Успешно',
+          message: `Тест-ран "${deletedTestRunName}" успешно удален`,
         });
         setTimeout(() => setAlert(null), 5000);
         fetchTestRuns();
@@ -173,15 +173,15 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Delete Test Run',
-          message: data.error || 'Failed to delete test run',
+          title: 'Не удалось удалить тест-ран',
+          message: data.error || 'Не удалось удалить тест-ран',
         });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setAlert({
         type: 'error',
-        title: 'Connection Error',
+        title: 'Ошибка соединения',
         message: errorMessage,
       });
       console.error('Error deleting test run:', error);
@@ -204,7 +204,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <ButtonSecondary className="cursor-pointer flex items-center gap-2">
-                Manual / Automation
+                Ручные / Авто
                 <ChevronDown className="w-4 h-4" />
               </ButtonSecondary>
             </DropdownMenuTrigger>
@@ -212,7 +212,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               {/* Always show automation setup guide */}
               <DropdownMenuItem onClick={() => setAutomationWizardOpen(true)}>
                 <BookOpen className="w-4 h-4" />
-                Automation Setup Guide
+                Гайд по автоматизации
               </DropdownMenuItem>
               {/* Always show import/export options */}
               <DropdownMenuItem onClick={() => setUploadXMLDialogOpen(true)}>
@@ -221,7 +221,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
                 <Upload className="w-4 h-4" />
-                Export Test Runs
+                Экспорт тест-ранов
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -232,11 +232,11 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     if (canCreateTestRun) {
       actions.push({
         type: 'action' as const,
-        label: 'New Test Run',
+        label: 'Новый тест-ран',
         icon: Plus,
         onClick: () => setCreateDialogOpen(true),
         variant: 'primary' as const,
-        buttonName: 'Test Runs List - New Test Run',
+        buttonName: 'Список тест-ранов - Новый тест-ран',
       });
     }
 
@@ -249,7 +249,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   }, [canCreateTestRun, canReadTestRun]);
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading test runs..." />;
+    return <Loader fullScreen text="Загрузка тест-ранов..." />;
   }
 
   const totalPages = Math.max(1, Math.ceil(filteredTestRuns.length / itemsPerPage));
@@ -269,9 +269,9 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
-              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-              { label: 'Test Runs', href: `/projects/${projectId}/testruns` },
+              { label: 'Проекты', href: '/projects' },
+              { label: project?.name || 'Загрузка...', href: `/projects/${projectId}` },
+              { label: 'Тест-раны', href: `/projects/${projectId}/testruns` },
             ]}
           />
         }
@@ -284,8 +284,8 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           header={
             <PageHeaderWithBadge
               badge={project?.key}
-              title="Test Runs"
-              description="Manage and track test execution progress"
+              title="Тест-раны"
+              description="Управляйте и отслеживайте прогресс выполнения тестов"
             />
           }
           filters={
@@ -375,8 +375,8 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         <FileExportDialog
           open={exportDialogOpen}
           onOpenChange={setExportDialogOpen}
-          title="Export Test Runs"
-          description="Choose a format to export your test runs."
+          title="Экспорт тест-ранов"
+          description="Выберите формат для экспорта тест-ранов."
           exportOptions={{
             projectId,
             endpoint: `/api/projects/${projectId}/testruns/export`,
@@ -385,7 +385,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               environment: filters.environmentFilter !== 'all' ? filters.environmentFilter : undefined,
             },
           }}
-          itemName="test runs"
+          itemName="тест-раны"
         />
 
         {/* Upload XML Dialog */}

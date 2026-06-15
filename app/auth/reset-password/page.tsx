@@ -2,8 +2,8 @@
 import ResetPasswordContent from './ResetPasswordContent';
 
 export const metadata: Metadata = {
-  title: 'Reset Password',
-  description: 'Create a new password for your EZTest account.',
+  title: 'Сброс пароля',
+  description: 'Создайте новый пароль для аккаунта EZTest.',
   robots: {
     index: false,
     follow: false,

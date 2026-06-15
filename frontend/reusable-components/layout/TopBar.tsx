@@ -49,14 +49,14 @@ export function TopBar({ breadcrumbs, actions, className = "" }: TopBarProps) {
               onClick={() => setSignOutDialogOpen(true)}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              Выйти
             </ButtonDestructive>
             
             <BaseConfirmDialog
-              title="Sign Out"
-              description="Are you sure you want to sign out? You will need to log in again to access your account."
-              submitLabel="Sign Out"
-              cancelLabel="Cancel"
+              title="Выход из аккаунта"
+              description="Вы уверены, что хотите выйти? Для продолжения работы потребуется войти снова."
+              submitLabel="Выйти"
+              cancelLabel="Отмена"
               triggerOpen={signOutDialogOpen}
               onOpenChange={setSignOutDialogOpen}
               onSubmit={handleSignOut}

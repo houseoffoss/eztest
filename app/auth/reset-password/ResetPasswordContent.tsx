@@ -26,7 +26,7 @@ function ResetPasswordForm() {
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
-        setError('No reset token provided');
+        setError('Токен сброса не передан');
         setValidating(false);
         return;
       }
@@ -37,10 +37,10 @@ function ResetPasswordForm() {
           setTokenValid(true);
         } else {
           const errorData = await response.json();
-          setError(errorData.error || 'Invalid or expired token');
+          setError(errorData.error || 'Недействительный или просроченный токен');
         }
       } catch {
-        setError('Failed to validate token');
+        setError('Не удалось проверить токен');
       } finally {
         setValidating(false);
       }
@@ -54,12 +54,12 @@ function ResetPasswordForm() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Пароли не совпадают');
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError('Пароль должен содержать минимум 8 символов');
       return;
     }
 
@@ -76,7 +76,7 @@ function ResetPasswordForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reset password');
+        throw new Error(errorData.error || 'Не удалось сбросить пароль');
       }
 
       setSuccess(true);
@@ -111,33 +111,33 @@ function ResetPasswordForm() {
         {/* Card */}
         <GlassPanel contentClassName="p-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">Create New Password</h1>
+              <h1 className="text-2xl font-bold text-white mb-2">Создайте новый пароль</h1>
             <p className="text-white/70 text-sm">
-              Enter your new password below.
+              Введите новый пароль ниже.
             </p>
           </div>
 
           {success ? (
             <div className="rounded-lg p-4 text-center border border-green-500/40 bg-green-500/10">
-              <h3 className="font-semibold text-green-400 mb-2 text-sm">Password Reset Successful</h3>
+              <h3 className="font-semibold text-green-400 mb-2 text-sm">Пароль успешно изменен</h3>
               <p className="text-green-300/90 text-sm mb-3">
-                Your password has been reset. You can now log in with your new password.
+                Ваш пароль изменен. Теперь вы можете войти с новым паролем.
               </p>
               <p className="text-green-300/90 text-sm">
-                Redirecting to login page...
+                Переход на страницу входа...
               </p>
             </div>
           ) : !tokenValid ? (
             <div className="rounded-lg p-4 border border-red-500/40 bg-red-500/10">
-              <h3 className="font-semibold text-red-400 mb-2 text-sm">Invalid Reset Link</h3>
+              <h3 className="font-semibold text-red-400 mb-2 text-sm">Некорректная ссылка сброса</h3>
               <p className="text-red-300 text-sm mb-4">
-                {error || 'The password reset link is invalid or has expired.'}
+                {error || 'Ссылка для сброса пароля недействительна или устарела.'}
               </p>
               <Link
                 href="/auth/forgot-password"
                 className="text-red-400 hover:text-red-300 font-semibold underline"
               >
-                Request a new reset link
+                Запросить новую ссылку
               </Link>
             </div>
           ) : (
@@ -150,36 +150,36 @@ function ResetPasswordForm() {
 
               {/* New Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password">Новый пароль</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPassword(e.target.value)}
                   required
-                  placeholder="Enter new password (min 8 characters)"
+                  placeholder="Введите новый пароль (минимум 8 символов)"
                 />
               </div>
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setConfirmPassword(e.target.value)}
                   required
-                  placeholder="Confirm your password"
+                  placeholder="Подтвердите пароль"
                 />
               </div>
 
               {/* Password Requirements */}
               <div className="rounded-lg p-3 text-sm border border-primary/30 bg-primary/5">
-                <p className="font-semibold mb-2 text-white">Password requirements:</p>
+                <p className="font-semibold mb-2 text-white">Требования к паролю:</p>
                 <ul className="list-disc list-inside space-y-1 text-white/70">
-                  <li>At least 8 characters long</li>
-                  <li>Must match in both fields</li>
+                  <li>Не менее 8 символов</li>
+                  <li>Должен совпадать в обоих полях</li>
                 </ul>
               </div>
 
@@ -188,7 +188,7 @@ function ResetPasswordForm() {
                   type="submit"
                   disabled={loading}
                 >
-                  {loading ? 'Resetting Password...' : 'Reset Password'}
+                  {loading ? 'Сбрасываем пароль...' : 'Сбросить пароль'}
                 </ButtonPrimary>
               </div>
             </form>
@@ -198,7 +198,7 @@ function ResetPasswordForm() {
           <div className="mt-6 text-center">
             <p className="text-white/60 text-sm">
               <Link href="/auth/login" className="text-primary hover:text-accent font-semibold transition-colors">
-                Back to Login
+                Назад ко входу
               </Link>
             </p>
           </div>

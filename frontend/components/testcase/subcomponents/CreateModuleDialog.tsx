@@ -19,8 +19,8 @@ export function CreateModuleDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Module Name',
-      placeholder: 'Enter module name',
+      label: 'Название папки',
+      placeholder: 'Введите название папки',
       type: 'text',
       required: true,
       minLength: 1,
@@ -29,9 +29,9 @@ export function CreateModuleDialog({
     },
     {
       name: 'description',
-      label: 'Description',
+      label: 'Описание',
       type: 'textarea',
-      placeholder: 'Enter module description (optional)',
+      placeholder: 'Введите описание папки (необязательно)',
       rows: 3,
       cols: 2,
       maxLength: 250,
@@ -50,7 +50,7 @@ export function CreateModuleDialog({
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || error.message || 'Failed to create module');
+      throw new Error(error.error || error.message || 'Не удалось создать папку');
     }
 
     const result = await response.json();
@@ -58,11 +58,11 @@ export function CreateModuleDialog({
   };
 
   const config: BaseDialogConfig = {
-    title: 'Create Module',
-    description: 'Organize your test cases into modules for better structure and management.',
+    title: 'Создать папку',
+    description: 'Организуйте тест-кейсы по папкам для удобной структуры и управления.',
     fields,
-    submitLabel: 'Create Module',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Создать папку',
+    cancelLabel: 'Отмена',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,
@@ -71,8 +71,8 @@ export function CreateModuleDialog({
         onModuleCreated(module as Module);
       }
     },
-    submitButtonName: 'Create Module Dialog - Create Module',
-    cancelButtonName: 'Create Module Dialog - Cancel',
+    submitButtonName: 'Диалог создания папки - Создать',
+    cancelButtonName: 'Диалог создания папки - Отмена',
   };
 
   return <BaseDialog {...config} />;

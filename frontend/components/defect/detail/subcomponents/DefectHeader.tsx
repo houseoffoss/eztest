@@ -109,19 +109,19 @@ export function DefectHeader({
       onTitleChange={(title) => onFormChange({ ...formData, title })}
       badges={[
         { 
-          label: 'Severity', 
+          label: 'Серьезность', 
           value: severityLabel, 
           className: severityBadgeProps.className,
           style: severityBadgeProps.style 
         },
         { 
-          label: 'Priority', 
+          label: 'Приоритет', 
           value: priorityLabel, 
           className: priorityBadgeProps.className,
           style: priorityBadgeProps.style 
         },
         { 
-          label: 'Status', 
+          label: 'Статус', 
           value: statusLabel, 
           className: statusBadgeProps.className,
           style: statusBadgeProps.style 
@@ -129,21 +129,21 @@ export function DefectHeader({
       ]}
       actions={[
         { 
-          label: 'Reopen', 
+          label: 'Переоткрыть', 
           icon: RotateCcw, 
           onClick: onReopen, 
           show: defect.status === 'CLOSED' && canUpdate,
           buttonName: 'Defect Detail - Reopen',
         },
         { 
-          label: 'Edit', 
+          label: 'Редактировать', 
           icon: Edit, 
           onClick: onEdit, 
           show: canUpdate,
           buttonName: 'Defect Detail - Edit',
         },
         { 
-          label: 'Delete', 
+          label: 'Удалить', 
           icon: Trash2, 
           onClick: onDelete, 
           variant: 'destructive', 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useNavbarActions, type ActionButtonConfig } from "@/hooks/useNavbarActions";
+import { ThemeToggleButton } from "@/frontend/reusable-components/layout/ThemeToggleButton";
 
 export type NavItem = { label: string; href: string };
 
@@ -169,15 +170,21 @@ export function Navbar({
             {/* Right side: Actions */}
             {renderedActions ? (
               hasOnlySignOutButton ? (
-                <div className="absolute right-0 z-20">
+                <div className="absolute right-0 z-20 flex items-center gap-2">
+                  <ThemeToggleButton />
                   {renderedActions}
                 </div>
               ) : (
                 <div className="absolute right-0 z-20 flex items-center gap-1 sm:gap-2">
+                  <ThemeToggleButton />
                   {renderedActions}
                 </div>
               )
-            ) : null}
+            ) : (
+              <div className="absolute right-0 z-20">
+                <ThemeToggleButton />
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -221,7 +228,8 @@ export function Navbar({
           {/* Right side: Nav + actions */}
           {(items && items.length > 0) || renderedActions ? (
             hasOnlySignOutButton ? (
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-2">
+                <ThemeToggleButton />
                 {renderedActions}
               </div>
             ) : (
@@ -249,6 +257,8 @@ export function Navbar({
                   </nav>
                 ) : null}
 
+                <ThemeToggleButton />
+
                 {renderedActions ? (
                   <div className="hidden sm:flex items-center gap-2">
                     {renderedActions}
@@ -256,7 +266,11 @@ export function Navbar({
                 ) : null}
               </div>
             )
-          ) : null}
+          ) : (
+            <div className="ml-auto">
+              <ThemeToggleButton />
+            </div>
+          )}
         </div>
       </div>
     </header>

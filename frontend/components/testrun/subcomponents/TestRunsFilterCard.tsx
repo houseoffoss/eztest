@@ -24,12 +24,12 @@ export function TestRunsFilterCard({
 
   // Map to FilterOption format with "All" option
   const statusOptions: FilterOption[] = [
-    { value: 'all', label: 'All Statuses' },
+    { value: 'all', label: 'Все статусы' },
     ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
 
   const environmentOptions: FilterOption[] = [
-    { value: 'all', label: 'All Environments' },
+    { value: 'all', label: 'Все окружения' },
     ...environmentOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
   return (
@@ -39,7 +39,7 @@ export function TestRunsFilterCard({
           <SearchInput
             value={filters.searchQuery}
             onChange={onSearchChange}
-            placeholder="Search test runs..."
+            placeholder="Поиск тест-ранов..."
           />
         </div>
 
@@ -47,7 +47,7 @@ export function TestRunsFilterCard({
           <FilterDropdown
             value={filters.statusFilter}
             onValueChange={onStatusFilterChange}
-            placeholder="Status"
+            placeholder="Статус"
             options={statusOptions}
           />
         </div>
@@ -56,7 +56,7 @@ export function TestRunsFilterCard({
           <FilterDropdown
             value={filters.environmentFilter}
             onValueChange={onEnvironmentFilterChange}
-            placeholder="Environment"
+            placeholder="Окружение"
             options={environmentOptions}
           />
         </div>

@@ -37,11 +37,11 @@ export default function ForgotPasswordPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.error || 'Failed to send reset email';
+        const errorMessage = errorData.error || 'Не удалось отправить письмо для сброса';
         setError(errorMessage);
         setAlert({
           type: 'error',
-          title: 'Failed to Send Reset Link',
+          title: 'Не удалось отправить ссылку',
           message: errorMessage,
         });
         throw new Error(errorMessage);
@@ -51,8 +51,8 @@ export default function ForgotPasswordPage() {
       setSuccess(true);
       setAlert({
         type: 'success',
-        title: 'Reset Link Sent',
-        message: data.message || 'Password reset instructions have been sent to your email.',
+        title: 'Ссылка отправлена',
+        message: data.message || 'Инструкции по сбросу пароля отправлены на вашу почту.',
       });
       clearFormData();
     } catch (err) {
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
       if (!alert) {
         setAlert({
           type: 'error',
-          title: 'Error',
+          title: 'Ошибка',
           message: errorMessage,
         });
       }
@@ -76,29 +76,29 @@ export default function ForgotPasswordPage() {
         {/* Card */}
         <GlassPanel contentClassName="p-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">Reset Password</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Сброс пароля</h1>
             <p className="text-white/70 text-sm">
-              Enter your email address and we&apos;ll send you a link to reset your password.
+              Введите email, и мы отправим ссылку для сброса пароля.
             </p>
           </div>
 
           {success ? (
             <div className="rounded-lg p-4 mb-6 border border-green-500/40 bg-green-500/10">
-              <h3 className="font-semibold text-green-400 mb-2 text-sm">Check your email</h3>
+              <h3 className="font-semibold text-green-400 mb-2 text-sm">Проверьте почту</h3>
               <p className="text-green-300/90 text-sm mb-3">
-                We&apos;ve sent a password reset link to <strong>{formData.email}</strong>.
-                Please check your email and follow the link to reset your password.
+                Мы отправили ссылку для сброса пароля на <strong>{formData.email}</strong>.
+                Откройте письмо и перейдите по ссылке.
               </p>
               <p className="text-green-300/90 text-sm mb-3">
-                The link will expire in 1 hour for security reasons.
+                Ссылка действует 1 час по соображениям безопасности.
               </p>
               <p className="text-green-300/90 text-sm">
-                Didn&apos;t receive the email? Check your spam folder or{' '}
+                Не получили письмо? Проверьте спам или{' '}
                 <button
                   onClick={() => setSuccess(false)}
                   className="font-semibold text-green-400 hover:text-green-300 underline"
                 >
-                  try again
+                  попробуйте снова
                 </button>
               </p>
             </div>
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -129,7 +129,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Sending...' : 'Send Reset Link'}
+                {loading ? 'Отправка...' : 'Отправить ссылку'}
               </ButtonPrimary>
             </form>
           )}
@@ -137,9 +137,9 @@ export default function ForgotPasswordPage() {
           {/* Back to Login */}
           <div className="mt-6 text-center">
             <p className="text-white/60 text-sm">
-              Remember your password?{' '}
+              Вспомнили пароль?{' '}
               <Link href="/auth/login" className="text-primary hover:text-accent font-semibold transition-colors">
-                Back to Login
+                Назад ко входу
               </Link>
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
 
         {/* Help Text */}
         <div className="mt-6 text-center text-sm text-white/50">
-          <p>If you need further assistance, please contact support.</p>
+          <p>Если нужна помощь, обратитесь в поддержку.</p>
         </div>
       </div>
 

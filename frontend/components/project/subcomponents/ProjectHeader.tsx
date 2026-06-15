@@ -34,16 +34,16 @@ export const ProjectHeader = ({ project }: ProjectHeaderProps) => {
       <MetadataDisplay
         items={[
           {
-            label: 'Created by',
+            label: 'Создал',
             value: project.createdBy.name,
           },
           {
-            label: 'Last updated',
+            label: 'Последнее обновление',
             value: formatDateTime(project.updatedAt),
           },
           {
-            label: 'Team Size:',
-            value: `${project.members.length} members`,
+            label: 'Размер команды:',
+            value: `${project.members.length} участников`,
           },
         ]}
       />

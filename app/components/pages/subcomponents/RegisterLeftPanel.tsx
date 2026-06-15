@@ -19,9 +19,9 @@ export const RegisterLeftPanel = () => {
               EZTest
             </span>
           </Link>
-          <h2 className="text-4xl font-bold mb-4 text-white">Start Testing Smarter 🚀</h2>
+          <h2 className="text-4xl font-bold mb-4 text-white">Тестируйте умнее 🚀</h2>
           <p className="text-white/80 text-lg leading-relaxed max-w-md">
-            Join teams who have simplified their test management. No credit card required, start for free today.
+            Присоединяйтесь к командам, которые упростили тест-менеджмент. Без карты, начните бесплатно уже сегодня.
           </p>
         </div>
         <div className="space-y-4">
@@ -29,9 +29,9 @@ export const RegisterLeftPanel = () => {
             <div className="flex items-start gap-3">
               <span className="text-2xl">🎯</span>
               <div>
-                <h3 className="font-semibold mb-1">Complete Control</h3>
+                <h3 className="font-semibold mb-1">Полный контроль</h3>
                 <p className="text-muted-foreground text-sm">
-                  Self-host on your infrastructure, own your data completely
+                  Размещайте у себя и полностью контролируйте данные
                 </p>
               </div>
             </div>
@@ -40,9 +40,9 @@ export const RegisterLeftPanel = () => {
             <div className="flex items-start gap-3">
               <span className="text-2xl">⚡</span>
               <div>
-                <h3 className="font-semibold mb-1">Lightweight & Fast</h3>
+                <h3 className="font-semibold mb-1">Легко и быстро</h3>
                 <p className="text-muted-foreground text-sm">
-                  Runs on minimal resources, no complex setup required
+                  Работает на минимальных ресурсах без сложной настройки
                 </p>
               </div>
             </div>
@@ -52,7 +52,7 @@ export const RegisterLeftPanel = () => {
               <span className="text-2xl">🔓</span>
               <div>
                 <h3 className="font-semibold mb-1">100% Open Source</h3>
-                <p className="text-muted-foreground text-sm">Free forever, transparent and community-driven</p>
+                <p className="text-muted-foreground text-sm">Бесплатно навсегда, прозрачно и с поддержкой сообщества</p>
               </div>
             </div>
           </Card>

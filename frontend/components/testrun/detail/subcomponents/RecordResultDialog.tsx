@@ -201,19 +201,19 @@ export function RecordResultDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="mb-4">
-          <DialogTitle>Record Test Result</DialogTitle>
+          <DialogTitle>Записать результат теста</DialogTitle>
           <DialogDescription>{testCaseName}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mb-4">
           <div className="space-y-2">
-            <Label htmlFor="status">Result Status *</Label>
+            <Label htmlFor="status">Статус результата *</Label>
             <Select
               value={formData.status}
               onValueChange={(value: string) => onFormChange({ status: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select result status" />
+                <SelectValue placeholder="Выберите статус результата" />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((option) => (
@@ -229,13 +229,13 @@ export function RecordResultDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="comment">Comment</Label>
+            <Label htmlFor="comment">Комментарий</Label>
             <Textarea
               id="comment"
               variant="glass"
               value={formData.comment}
               onChange={(e) => onFormChange({ comment: e.target.value })}
-              placeholder="Add any comments about this test execution"
+              placeholder="Добавьте комментарий к выполнению теста"
               rows={4}
             />
           </div>
@@ -244,14 +244,14 @@ export function RecordResultDialog({
           {formData.status === 'FAILED' && (
             <div className="space-y-4 border-t border-white/10 pt-4">
               <div className="flex flex-col gap-2">
-                <Label>Link to Defects (Optional)</Label>
+                <Label>Связать с дефектами (необязательно)</Label>
                 <p className="text-xs text-white/50">
-                  To create a new defect, use the &ldquo;Create Defect&rdquo; button in the table&apos;s Actions column.
+                  Чтобы создать новый дефект, используйте кнопку &ldquo;Создать дефект&rdquo; в колонке действий таблицы.
                 </p>
               </div>
 
               {loadingDefects ? (
-                <p className="text-sm text-white/50">Loading defects...</p>
+                <p className="text-sm text-white/50">Загрузка дефектов...</p>
               ) : (
                 <div className="space-y-4">
                   {/* Filter Buttons */}
@@ -264,7 +264,7 @@ export function RecordResultDialog({
                       }}
                       className={defectFilter === 'all' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
                     >
-                      All Defects
+                      Все дефекты
                     </ButtonSecondary>
                     {existingDefects.length > 0 && (
                       <ButtonSecondary
@@ -275,7 +275,7 @@ export function RecordResultDialog({
                         }}
                         className={defectFilter === 'existing' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
                       >
-                        Existing Defects ({existingDefects.length})
+                        Существующие дефекты ({existingDefects.length})
                       </ButtonSecondary>
                     )}
                     {otherDefects.length > 0 && (
@@ -287,7 +287,7 @@ export function RecordResultDialog({
                         }}
                         className={defectFilter === 'other' ? 'bg-blue-500/20 border-blue-500/50 text-white' : ''}
                       >
-                        Other Defects ({otherDefects.length})
+                        Другие дефекты ({otherDefects.length})
                       </ButtonSecondary>
                     )}
                   </div>
@@ -296,7 +296,7 @@ export function RecordResultDialog({
                   <SearchInput
                     value={searchQuery}
                     onChange={setSearchQuery}
-                    placeholder="Search defects by title or ID..."
+                    placeholder="Поиск дефектов по названию или ID..."
                   />
 
                   {/* Defects List */}
@@ -331,7 +331,7 @@ export function RecordResultDialog({
                       ))
                     ) : (
                       <p className="text-sm text-white/50 text-center py-4">
-                        {searchQuery ? 'No defects match your search' : 'No defects available'}
+                        {searchQuery ? 'По вашему запросу дефекты не найдены' : 'Нет доступных дефектов'}
                       </p>
                     )}
                   </div>
@@ -347,16 +347,16 @@ export function RecordResultDialog({
             onClick={() => onOpenChange(false)}
             buttonName="Record Test Result Dialog - Cancel"
           >
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary 
             onClick={handleSubmitWithDefects}
             buttonName="Record Test Result Dialog - Save Result"
           >
-            Save Result
+            Сохранить результат
             {formData.status === 'FAILED' && selectedDefectIds.length > 0 && (
               <span className="ml-2 text-xs">
-                ({selectedDefectIds.length} defect{selectedDefectIds.length > 1 ? 's' : ''})
+                ({selectedDefectIds.length} дефект{selectedDefectIds.length > 1 ? 'ов' : ''})
               </span>
             )}
           </ButtonPrimary>

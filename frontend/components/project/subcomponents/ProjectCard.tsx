@@ -52,24 +52,24 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
     <ActionMenu
       items={[
         {
-          label: 'Open Project',
+          label: 'Открыть проект',
           icon: Folder,
           onClick: () => onNavigate(`/projects/${project.id}`),
         },
         {
-          label: 'Settings',
+          label: 'Настройки',
           icon: Settings,
           onClick: () => onNavigate(`/projects/${project.id}/settings`),
           show: canUpdate,
         },
         {
-          label: 'Manage Members',
+          label: 'Участники',
           icon: Users,
           onClick: () => onNavigate(`/projects/${project.id}/members`),
           show: canManageMembers,
         },
         {
-          label: 'Delete',
+          label: 'Удалить',
           icon: Trash2,
           onClick: onDelete,
           variant: 'destructive',
@@ -86,25 +86,25 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
         {
           icon: TestTube2,
           value: project._count?.testCases || 0,
-          label: 'Test Cases',
+          label: 'Тест-кейсы',
           iconColor: 'text-primary',
         },
         {
           icon: Play,
           value: project._count?.testRuns || 0,
-          label: 'Test Runs',
+          label: 'Тест-раны',
           iconColor: 'text-accent',
         },
         {
           icon: FileText,
           value: project._count?.testSuites || 0,
-          label: 'Test Suites',
+          label: 'Тест-сьюты',
           iconColor: 'text-purple-400',
         },
         {
           icon: Bug,
           value: project._count?.defects || 0,
-          label: 'Defects',
+          label: 'Дефекты',
           iconColor: 'text-red-400',
         },
       ]}
@@ -129,11 +129,11 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
           showCount={true}
         />
         <span className="text-xs text-white/60">
-          {project.members.length} member{project.members.length !== 1 ? 's' : ''}
+          {project.members.length} участник{project.members.length !== 1 ? 'а' : ''}
         </span>
       </div>
       <span className="text-xs text-white/50">
-        Updated {formatDateTime(project.updatedAt)}
+        Обновлен: {formatDateTime(project.updatedAt)}
       </span>
     </>
   );

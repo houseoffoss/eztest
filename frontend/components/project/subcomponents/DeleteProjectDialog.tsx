@@ -15,13 +15,13 @@ interface DeleteProjectDialogProps {
 export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDeleted }: DeleteProjectDialogProps) => {
   const content = (
     <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
-      <p className="font-semibold mb-2">This will permanently delete:</p>
+      <p className="font-semibold mb-2">Будет удалено навсегда:</p>
       <ul className="list-disc list-inside space-y-1">
-        <li>All test cases</li>
-        <li>All test runs</li>
-        <li>All test suites</li>
-        <li>All requirements</li>
-        <li>All project data</li>
+        <li>Все тест-кейсы</li>
+        <li>Все тест-раны</li>
+        <li>Все тест-сьюты</li>
+        <li>Все требования</li>
+        <li>Все данные проекта</li>
       </ul>
     </div>
   );
@@ -36,16 +36,16 @@ export const DeleteProjectDialog = ({ project, open, onOpenChange, onProjectDele
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to delete project');
+      throw new Error(data.message || data.error || 'Не удалось удалить проект');
     }
   };
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Project',
-    description: `Are you sure you want to delete "${project?.name}"? This action cannot be undone.`,
+    title: 'Удаление проекта',
+    description: `Вы уверены, что хотите удалить "${project?.name}"? Это действие нельзя отменить.`,
     content,
-    submitLabel: 'Delete Project',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Удалить проект',
+    cancelLabel: 'Отмена',
     triggerOpen: open,
     onOpenChange,
     onSubmit: handleSubmit,

@@ -50,7 +50,7 @@ export const RegisterForm = ({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-white/80">Name</Label>
+        <Label htmlFor="name" className="text-white/80">Имя</Label>
         <Input
           id="name"
           type="text"
@@ -60,7 +60,7 @@ export const RegisterForm = ({
             onFormDataChange({ ...formData, name: e.target.value })
           }
           onBlur={() => onFieldBlur?.('name')}
-          placeholder="Enter your name"
+          placeholder="Введите имя"
           className={`h-10 bg-transparent border-[#BAB8B8]/60 rounded-full px-5 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all ${
             fieldErrors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400/50' : ''
           }`}
@@ -92,7 +92,7 @@ export const RegisterForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-white/80">Password</Label>
+        <Label htmlFor="password" className="text-white/80">Пароль</Label>
         <Input
           id="password"
           type="password"
@@ -113,7 +113,7 @@ export const RegisterForm = ({
       </div>
 
       <div className="space-y-2 mb-4">
-        <Label htmlFor="confirmPassword" className="text-white/80">Confirm Password</Label>
+        <Label htmlFor="confirmPassword" className="text-white/80">Подтвердите пароль</Label>
         <Input
           id="confirmPassword"
           type="password"
@@ -170,7 +170,7 @@ export const RegisterForm = ({
               }}
             />
             {isLoading ? (
-              <span className="text-white/70">Creating account...</span>
+              <span className="text-white/70">Создание аккаунта...</span>
             ) : (
               <span 
                 className="relative z-10 px-4 py-2 transition-colors flex items-center gap-1"
@@ -188,7 +188,7 @@ export const RegisterForm = ({
                   color: 'transparent',
                 }}
               >
-                Create Account
+                Создать аккаунт
               </span>
             )}
         </button>

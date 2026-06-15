@@ -82,7 +82,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
             setProjectName(data.data?.name || null);
           } else if (response.status === 404 || response.status === 403) {
             // Project was deleted, not found, or no access
-            setProjectName('Project Undefined');
+            setProjectName('Проект не определен');
             
             // Redirect to projects page after a brief moment
             if (typeof window !== 'undefined' && window.location.pathname.includes(`/projects/${projectId}`)) {
@@ -281,7 +281,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
                   ? 'bg-white/[0.08] text-white'
                   : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
               )}
-              title="Toggle dropdown"
+              title="Открыть/закрыть список"
             >
               <span className="text-white/40">
                 {isExpanded ? (
@@ -329,7 +329,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
             {item.children && item.children.length > 0 ? (
               item.children.map((child, childIndex) => renderItem(child, level + 1, childIndex))
             ) : (
-              <div className="px-4 py-2 text-sm text-white/40 italic">No items</div>
+              <div className="px-4 py-2 text-sm text-white/40 italic">Нет элементов</div>
             )}
           </div>
         )}
@@ -372,7 +372,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
               size="sm"
               onClick={toggleSidebar}
               className="text-white/40 hover:text-white hover:bg-white/5 p-1.5 shrink-0 rounded-md"
-              title="Collapse sidebar"
+              title="Свернуть боковую панель"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -387,7 +387,7 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
               size="sm"
               onClick={toggleSidebar}
               className="text-white/40 hover:text-white hover:bg-white/5 p-1.5 w-full rounded-md"
-              title="Expand sidebar"
+              title="Развернуть боковую панель"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -401,24 +401,24 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
           'px-3 py-2 mb-1',
           isCollapsed && 'px-2'
         )}>
-          {projectName === 'Project Undefined' ? (
+          {projectName === 'Проект не определен' ? (
             // Show warning state for undefined project
             !isCollapsed ? (
               <div className="flex flex-col gap-2 px-3 py-2 rounded-md bg-red-500/10 border border-red-500/30">
                 <div className="flex items-center gap-2">
                   <Folder className="w-4 h-4 text-red-400 flex-shrink-0" />
                   <span className="text-sm font-normal text-red-400 truncate">
-                    Project Undefined
+                    Проект не определен
                   </span>
                 </div>
                 <p className="text-xs text-red-300/80">
-                  Redirecting to projects...
+                  Переход к списку проектов...
                 </p>
               </div>
             ) : (
               <div 
                 className="flex items-center justify-center p-2.5 rounded-md bg-red-500/10 border border-red-500/30"
-                title="Project Undefined - Redirecting..."
+                title="Проект не определен - переход..."
               >
                 <Folder className="w-4 h-4 text-red-400" />
               </div>
@@ -466,14 +466,14 @@ export function Sidebar({ items, projectId, className }: SidebarProps) {
             isMounted && isCollapsed ? 'justify-center' : 'justify-start',
             'text-white/70 hover:text-white hover:bg-white/[0.05]'
           )}
-          title={isMounted && isCollapsed ? 'Account' : ''}
+          title={isMounted && isCollapsed ? 'Аккаунт' : ''}
         >
           {isMounted && isCollapsed ? (
             <Settings className="w-5 h-5" />
           ) : (
             <>
               <Settings className="w-5 h-5" />
-              <span className="text-sm font-normal">Account</span>
+              <span className="text-sm font-normal">Аккаунт</span>
             </>
           )}
         </Link>

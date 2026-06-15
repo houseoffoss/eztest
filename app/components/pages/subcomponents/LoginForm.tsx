@@ -42,7 +42,7 @@ export const LoginForm = ({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-white/80">Email address</Label>
+        <Label htmlFor="email" className="text-white/80">Email</Label>
         <Input
           id="email"
           type="email"
@@ -53,7 +53,7 @@ export const LoginForm = ({
             onFormDataChange({ ...formData, email: e.target.value })
           }
           onBlur={() => onFieldBlur?.('email')}
-          placeholder="you@company.com"
+          placeholder="you@example.com"
           className={`h-11 bg-transparent border-[#BAB8B8]/60 rounded-full px-5 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all ${
             fieldErrors.email ? 'border-red-400 focus:border-red-400 focus:ring-red-400/50' : ''
           }`}
@@ -65,12 +65,12 @@ export const LoginForm = ({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between pl-1">
-          <Label htmlFor="password" className="text-white/80">Password</Label>
+          <Label htmlFor="password" className="text-white/80">Пароль</Label>
           <Link
             href="/auth/forgot-password"
             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
           >
-            Forgot password?
+            Забыли пароль?
           </Link>
         </div>
         <Input
@@ -130,7 +130,7 @@ export const LoginForm = ({
               }}
             />
             {isLoading ? (
-              <span className="text-white/70">Signing in...</span>
+              <span className="text-white/70">Вход...</span>
             ) : (
               <span 
                 className="relative z-10 px-4 py-2 transition-colors flex items-center gap-1"
@@ -148,7 +148,7 @@ export const LoginForm = ({
                   color: 'transparent',
                 }}
               >
-                Sign in
+                Войти
               </span>
             )}
         </button>

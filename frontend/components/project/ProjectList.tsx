@@ -40,10 +40,10 @@ export default function ProjectList() {
     if (canCreateProject) {
       actions.push({
         type: 'action' as const,
-        label: '+ New Project',
+        label: '+ Новый проект',
         onClick: () => setTriggerCreateDialog(true),
         variant: 'primary' as const,
-        buttonName: 'Project List - New Project',
+        buttonName: 'Список проектов - Новый проект',
       });
     }
 
@@ -80,7 +80,7 @@ export default function ProjectList() {
         const errorData = await response.json().catch(() => ({}));
         setAlert({
           type: 'error',
-          title: 'Failed to Load Projects',
+          title: 'Не удалось загрузить проекты',
           message: errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
         });
         setProjects([]);
@@ -92,7 +92,7 @@ export default function ProjectList() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setAlert({
         type: 'error',
-        title: 'Connection Error',
+        title: 'Ошибка соединения',
         message: errorMessage,
       });
       console.error('Failed to fetch projects:', error);
@@ -106,8 +106,8 @@ export default function ProjectList() {
     setCurrentPage(1);
     setAlert({
       type: 'success',
-      title: 'Success',
-      message: `Project "${newProject.name}" created successfully`,
+      title: 'Успешно',
+      message: `Проект "${newProject.name}" успешно создан`,
     });
     setTimeout(() => setAlert(null), 5000);
   };
@@ -119,8 +119,8 @@ export default function ProjectList() {
     if (deletedProject) {
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: `Project "${deletedProject.name}" deleted successfully`,
+        title: 'Успешно',
+        message: `Проект "${deletedProject.name}" успешно удален`,
       });
       setTimeout(() => setAlert(null), 5000);
     }
@@ -142,7 +142,7 @@ export default function ProjectList() {
   };
 
   if (status === 'loading' || loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading projects..." />;
+    return <Loader fullScreen text="Загрузка проектов..." />;
   }
 
   if (status === 'unauthenticated') {
@@ -179,15 +179,15 @@ export default function ProjectList() {
       <div className="max-w-7xl mx-auto px-8 py-6 pt-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">Projects</h1>
-              <p className="text-white/70 text-sm">Manage your test projects and track progress</p>
+              <h1 className="text-3xl font-bold text-white mb-1">Проекты</h1>
+              <p className="text-white/70 text-sm">Управляйте тестовыми проектами и отслеживайте прогресс</p>
             </div>
           </div>
           
           {/* Info Banner - Only show when no project has been selected */}
           {projects.length > 0 && !hasSelectedProject && (
             <InfoBanner
-              message="Select a project below to view test suites, test cases, and manage testing activities."
+              message="Выберите проект ниже, чтобы открыть тест-сьюты, тест-кейсы и управление тестированием."
               variant="info"
               className="mb-6"
             />

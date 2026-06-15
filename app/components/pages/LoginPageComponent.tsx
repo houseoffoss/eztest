@@ -31,22 +31,22 @@ export default function LoginPageComponent() {
     {
       image: '/screenshots/TestCase_List_Page1.png',
       title: 'Complete Control',
-      description: 'Self-host on your infrastructure, own your data completely',
+      description: 'Размещайте у себя и полностью контролируйте данные',
     },
     {
       image: '/screenshots/TestRun_List_Page.png',
       title: 'Actionable Insights',
-      description: 'Get detailed reports and analytics for every test run',
+      description: 'Получайте подробные отчеты и аналитику по каждому тест-рану',
     },
     {
       image: '/screenshots/Defects_List_Page.png',
       title: 'Streamlined Debugging',
-      description: 'Track and manage defects with ease and precision',
+      description: 'Отслеживайте и управляйте дефектами быстро и точно',
     },
     {
       image: '/screenshots/Project_List_Page.png',
       title: 'Effortless Organization',
-      description: 'Organize your testing projects in a structured way',
+      description: 'Организуйте тестовые проекты в удобной структуре',
     },
   ];
 
@@ -68,21 +68,21 @@ export default function LoginPageComponent() {
 
   const validateEmail = (email: string): string | undefined => {
     if (!email) {
-      return 'Email is required';
+      return 'Email обязателен';
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return 'Please enter a valid email address';
+      return 'Введите корректный email';
     }
     return undefined;
   };
 
   const validatePassword = (password: string): string | undefined => {
     if (!password) {
-      return 'Password is required';
+      return 'Пароль обязателен';
     }
     if (password.length < 6) {
-      return 'Password must be at least 6 characters';
+      return 'Пароль должен содержать минимум 6 символов';
     }
     return undefined;
   };
@@ -109,7 +109,7 @@ export default function LoginPageComponent() {
         errors.email = error;
         setAlert({
           type: 'error',
-          title: 'Validation Error',
+          title: 'Ошибка валидации',
           message: error,
         });
       } else {
@@ -121,7 +121,7 @@ export default function LoginPageComponent() {
         errors.password = error;
         setAlert({
           type: 'error',
-          title: 'Validation Error',
+          title: 'Ошибка валидации',
           message: error,
         });
       } else {
@@ -139,8 +139,8 @@ export default function LoginPageComponent() {
     if (!validateForm()) {
       setAlert({
         type: 'error',
-        title: 'Validation Error',
-        message: 'Please fix the validation errors before submitting',
+        title: 'Ошибка валидации',
+        message: 'Исправьте ошибки в форме перед отправкой',
       });
       return;
     }
@@ -162,11 +162,11 @@ export default function LoginPageComponent() {
       const otpData = await otpResponse.json();
 
       if (!otpData.success) {
-        setError(otpData.message || 'Failed to send OTP');
+        setError(otpData.message || 'Не удалось отправить код');
         setAlert({
           type: 'error',
-          title: 'Error',
-          message: otpData.message || 'Failed to send OTP',
+          title: 'Ошибка',
+          message: otpData.message || 'Не удалось отправить код',
         });
         setIsLoading(false);
         return;
@@ -182,17 +182,17 @@ export default function LoginPageComponent() {
       // Show OTP verification screen
       setAlert({
         type: 'success',
-        title: 'OTP Sent',
-        message: 'Please check your email for the verification code',
+        title: 'Код отправлен',
+        message: 'Проверьте почту, мы отправили код подтверждения',
       });
       setIsLoading(false);
       setShowOtpVerification(true);
     } catch (error) {
-      const errorMsg = 'An unexpected error occurred';
+      const errorMsg = 'Произошла непредвиденная ошибка';
       setError(errorMsg);
       setAlert({
         type: 'error',
-        title: 'Error',
+        title: 'Ошибка',
         message: errorMsg,
       });
       setIsLoading(false);
@@ -210,11 +210,11 @@ export default function LoginPageComponent() {
       });
 
       if (result?.error) {
-        const errorMsg = 'Invalid email or password';
+        const errorMsg = 'Неверный email или пароль';
         setError(errorMsg);
         setAlert({
           type: 'error',
-          title: 'Login Failed',
+          title: 'Ошибка входа',
           message: errorMsg,
         });
         setShowOtpVerification(false);
@@ -227,18 +227,18 @@ export default function LoginPageComponent() {
         clearFormData();
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: 'Login successful! Redirecting...',
+          title: 'Успешно',
+          message: 'Вход выполнен. Выполняется переход...',
         });
         router.push('/projects');
         router.refresh();
       }
     } catch {
-      const errorMsg = 'An unexpected error occurred';
+      const errorMsg = 'Произошла непредвиденная ошибка';
       setError(errorMsg);
       setAlert({
         type: 'error',
-        title: 'Error',
+        title: 'Ошибка',
         message: errorMsg,
       });
       setShowOtpVerification(false);
@@ -351,7 +351,7 @@ export default function LoginPageComponent() {
                         color: 'transparent',
                       }}
                     >
-                      Sign up
+                      Регистрация
                     </span>
                   </div>
                 </Link>
@@ -377,7 +377,7 @@ export default function LoginPageComponent() {
                 fontFamily: 'Inter, sans-serif'
               }}
             >
-              Start Testing Smarter
+              Тестируйте умнее
             </h1>
             <p 
               className="max-w-xl mx-auto text-white font-medium text-[16px] leading-[28px] tracking-normal"
@@ -386,9 +386,9 @@ export default function LoginPageComponent() {
                 fontFamily: 'Inter, sans-serif'
               }}
             >
-              Join teams who have simplified their test management.
+              Присоединяйтесь к командам, которые упростили управление тестированием.
               <br className="hidden sm:block" />
-              No credit card required, start for free today.
+              Без карты, начните бесплатно уже сегодня.
             </p>
           </div>
 
@@ -481,8 +481,8 @@ export default function LoginPageComponent() {
                   <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-[#28C840]" />
                 </div>
                 <div className="mb-6 text-center sm:text-left">
-                  <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white">Sign in to your account</h2>
-                  <p className="text-white/60 text-sm">Access your test management workspace</p>
+                  <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white">Вход в аккаунт</h2>
+                  <p className="text-white/60 text-sm">Доступ к рабочему пространству тест-менеджмента</p>
                 </div>
                 <LoginForm
                   formData={formData}
@@ -495,7 +495,7 @@ export default function LoginPageComponent() {
                 />
                 <div className="mt-6 text-center">
                    <p className="text-xs text-white/50">
-                      Don&apos;t have an account? <Link href="/auth/register" className="text-white hover:text-blue-400 transition-colors">Sign up</Link>
+                       Нет аккаунта? <Link href="/auth/register" className="text-white hover:text-blue-400 transition-colors">Зарегистрироваться</Link>
                    </p>
                 </div>
               </div>

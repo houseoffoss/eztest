@@ -23,8 +23,8 @@ export function CreateTestRunDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Test Run Name',
-      placeholder: 'E.g., Login Feature - Build #123',
+      label: 'Название тест-рана',
+      placeholder: 'Например: Login Feature - Build #123',
       type: 'text',
       required: true,
       minLength: 3,
@@ -33,21 +33,21 @@ export function CreateTestRunDialog({
     },
     {
       name: 'environment',
-      label: 'Environment',
+      label: 'Окружение',
       type: 'select',
-      placeholder: 'Select environment',
+      placeholder: 'Выберите окружение',
       required: true,
       defaultValue: 'none',
       options: [
-        { value: 'none', label: 'Select environment' },
+        { value: 'none', label: 'Выберите окружение' },
         ...environmentOptions.map(opt => ({ value: opt.value, label: opt.label })),
       ],
       cols: 2,
     },
     {
       name: 'description',
-      label: 'Description',
-      placeholder: 'Enter test run description',
+      label: 'Описание',
+      placeholder: 'Введите описание тест-рана',
       type: 'textarea',
       rows: 3,
       cols: 2,
@@ -58,7 +58,7 @@ export function CreateTestRunDialog({
   const handleSubmit = async (formData: Record<string, string>) => {
     // Validate environment is selected
     if (formData.environment === 'none' || !formData.environment) {
-      throw new Error('Environment is required');
+      throw new Error('Окружение обязательно');
     }
 
     const response = await fetch(`/api/projects/${projectId}/testruns`, {
@@ -77,18 +77,18 @@ export function CreateTestRunDialog({
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to create test run');
+      throw new Error(data.message || data.error || 'Не удалось создать тест-ран');
     }
 
     return data.data;
   };
 
   const config: BaseDialogConfig<TestRun> = {
-    title: 'Create Test Run',
-    description: 'Create a new test run to execute test cases and track results.',
+    title: 'Создать тест-ран',
+    description: 'Создайте новый тест-ран для выполнения тест-кейсов и отслеживания результатов.',
     fields,
-    submitLabel: 'Create Test Run',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Создать тест-ран',
+    cancelLabel: 'Отмена',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,
@@ -97,8 +97,8 @@ export function CreateTestRunDialog({
         onTestRunCreated(testRun);
       }
     },
-    submitButtonName: 'Create Test Run Dialog - Create Test Run',
-    cancelButtonName: 'Create Test Run Dialog - Cancel',
+    submitButtonName: 'Диалог создания тест-рана - Создать',
+    cancelButtonName: 'Диалог создания тест-рана - Отмена',
   };
 
   return <BaseDialog {...config} />;

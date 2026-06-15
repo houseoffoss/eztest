@@ -38,23 +38,23 @@ export function DefectFilters({
 
   // Map to FilterOption format with "All" option
   const severityOptions: FilterOption[] = [
-    { value: 'all', label: 'All Severities' },
+    { value: 'all', label: 'Все уровни серьезности' },
     ...severityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
 
   const priorityOptions: FilterOption[] = [
-    { value: 'all', label: 'All Priorities' },
+    { value: 'all', label: 'Все приоритеты' },
     ...priorityOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
 
   const statusOptions: FilterOption[] = [
-    { value: 'all', label: 'All Statuses' },
+    { value: 'all', label: 'Все статусы' },
     ...statusOptionsData.map(opt => ({ value: opt.value, label: opt.label })),
   ];
   // Build assignee options from available assignees
   const assigneeOptions: FilterOption[] = [
-    { value: 'all', label: 'All Assignees' },
-    { value: 'unassigned', label: 'Unassigned' },
+    { value: 'all', label: 'Все исполнители' },
+    { value: 'unassigned', label: 'Не назначено' },
     ...availableAssignees.map((assignee) => ({
       value: assignee.id,
       label: assignee.name,
@@ -68,7 +68,7 @@ export function DefectFilters({
           <SearchInput
             value={searchQuery}
             onChange={onSearchChange}
-            placeholder="Search defects..."
+            placeholder="Поиск дефектов..."
           />
         </div>
 
@@ -76,7 +76,7 @@ export function DefectFilters({
           <FilterDropdown
             value={severityFilter}
             onValueChange={onSeverityChange}
-            placeholder="All Severities"
+            placeholder="Все уровни серьезности"
             options={severityOptions}
           />
         </div>
@@ -85,7 +85,7 @@ export function DefectFilters({
           <FilterDropdown
             value={priorityFilter}
             onValueChange={onPriorityChange}
-            placeholder="All Priorities"
+            placeholder="Все приоритеты"
             options={priorityOptions}
           />
         </div>
@@ -94,7 +94,7 @@ export function DefectFilters({
           <FilterDropdown
             value={statusFilter}
             onValueChange={onStatusChange}
-            placeholder="All Statuses"
+            placeholder="Все статусы"
             options={statusOptions}
           />
         </div>
@@ -103,7 +103,7 @@ export function DefectFilters({
           <FilterDropdown
             value={assigneeFilter}
             onValueChange={onAssigneeChange}
-            placeholder="All Assignees"
+            placeholder="Все исполнители"
             options={assigneeOptions}
           />
         </div>

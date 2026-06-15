@@ -62,10 +62,10 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
           description: data.data.description || '',
         });
       } else {
-        setError('Failed to load project');
+        setError('Не удалось загрузить проект');
       }
     } catch {
-      setError('An error occurred while loading project');
+      setError('Произошла ошибка при загрузке проекта');
     } finally {
       setLoading(false);
     }
@@ -91,13 +91,13 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
 
       if (response.ok) {
         setProject(data.data);
-        setSuccessMessage('Project updated successfully');
+        setSuccessMessage('Проект успешно обновлен');
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        setError(data.error || 'Failed to update project');
+        setError(data.error || 'Не удалось обновить проект');
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError('Произошла ошибка. Пожалуйста, попробуйте снова.');
     } finally {
       setSaving(false);
     }
@@ -115,11 +115,11 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
         router.push('/projects?deleted=true');
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to delete project');
+        setError(data.error || 'Не удалось удалить проект');
         setDeleteDialogOpen(false);
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError('Произошла ошибка. Пожалуйста, попробуйте снова.');
       setDeleteDialogOpen(false);
     } finally {
       setDeleting(false);
@@ -127,16 +127,16 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading project settings..." />;
+    return <Loader fullScreen text="Загрузка настроек проекта..." />;
   }
 
   if (!project) {
     return (
       <Card variant="glass">
         <CardContent className="p-8 text-center">
-          <p className="text-lg text-white/70">Project not found</p>
+          <p className="text-lg text-white/70">Проект не найден</p>
           <ButtonPrimary onClick={() => router.push('/projects')} className="mt-4">
-            Back to Projects
+            Назад к проектам
           </ButtonPrimary>
         </CardContent>
       </Card>
@@ -148,15 +148,15 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       {/* General Settings */}
       <Card variant="glass">
         <CardHeader>
-          <CardTitle className="text-white">General Information</CardTitle>
+          <CardTitle className="text-white">Общая информация</CardTitle>
           <CardDescription className="text-white/70">
-            Update your project name and description
+            Обновите название и описание проекта
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Project Name *</Label>
+              <Label htmlFor="name">Название проекта *</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -164,12 +164,12 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 required
                 minLength={3}
                 maxLength={255}
-                placeholder="E-Commerce Platform"
+                placeholder="Платформа электронной коммерции"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="key">Project Key</Label>
+              <Label htmlFor="key">Ключ проекта</Label>
               <Input
                 id="key"
                 value={project.key}
@@ -177,18 +177,18 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 className="bg-white/5 border-white/10 text-white/50 cursor-not-allowed backdrop-blur-none"
               />
               <p className="text-xs text-muted-foreground">
-                Project key cannot be changed after creation
+                Ключ проекта нельзя изменить после создания
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Описание</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
-                placeholder="Brief description of the project..."
+                placeholder="Краткое описание проекта..."
               />
             </div>
 
@@ -207,7 +207,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
             <div className="flex gap-3">
               <ButtonPrimary type="submit" disabled={saving}>
                 <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Сохранение...' : 'Сохранить изменения'}
               </ButtonPrimary>
               <Button
                 type="button"
@@ -221,7 +221,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                   setSuccessMessage('');
                 }}
               >
-                Cancel
+                Отмена
               </Button>
             </div>
           </form>
@@ -231,27 +231,27 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       {/* Project Information */}
       <Card variant="glass">
         <CardHeader>
-          <CardTitle className="text-white">Project Information</CardTitle>
+          <CardTitle className="text-white">Информация о проекте</CardTitle>
           <CardDescription className="text-white/70">
-            Read-only project details
+            Сведения о проекте только для чтения
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-white/60 text-xs">Created At</Label>
+              <Label className="text-white/60 text-xs">Создан</Label>
               <p className="text-sm font-medium text-white">
                 {formatDateTime(project.createdAt)}
               </p>
             </div>
             <div>
-              <Label className="text-white/60 text-xs">Last Updated</Label>
+              <Label className="text-white/60 text-xs">Последнее обновление</Label>
               <p className="text-sm font-medium text-white">
                 {formatDateTime(project.updatedAt)}
               </p>
             </div>
             <div>
-              <Label className="text-white/60 text-xs">Project ID</Label>
+              <Label className="text-white/60 text-xs">ID проекта</Label>
               <p className="text-sm font-mono text-white/80">{project.id}</p>
             </div>
           </div>
@@ -261,17 +261,17 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       {/* Danger Zone */}
       <Card variant="glass" className="border-red-400/30">
         <CardHeader>
-          <CardTitle className="text-red-400">Danger Zone</CardTitle>
+          <CardTitle className="text-red-400">Опасная зона</CardTitle>
           <CardDescription className="text-red-300/70">
-            Irreversible and destructive actions
+            Необратимые и разрушительные действия
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between p-4 border border-red-400/20 rounded-lg bg-red-400/5">
             <div>
-              <h4 className="font-semibold text-red-300 mb-1">Delete this project</h4>
+              <h4 className="font-semibold text-red-300 mb-1">Удалить этот проект</h4>
               <p className="text-sm text-red-300/70">
-                Once you delete a project, there is no going back. All data will be permanently deleted.
+                После удаления проекта восстановить его будет невозможно. Все данные будут удалены навсегда.
               </p>
             </div>
             {canDeleteProject && (
@@ -282,7 +282,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 buttonName={`Project Settings - Delete Project Button (${project?.name})`}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Project
+                Удалить проект
               </ButtonDestructive>
             )}
           </div>
@@ -293,20 +293,20 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
+            <DialogTitle>Удаление проекта</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{project?.name}&quot;? This action cannot be undone.
+              Вы уверены, что хотите удалить &quot;{project?.name}&quot;? Это действие нельзя отменить.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-red-300">
-              <p className="font-semibold mb-2">This will permanently delete:</p>
+              <p className="font-semibold mb-2">Будет удалено навсегда:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>All test cases</li>
-                <li>All test runs</li>
-                <li>All test suites</li>
-                <li>All requirements</li>
-                <li>All project data</li>
+                <li>Все тест-кейсы</li>
+                <li>Все тест-раны</li>
+                <li>Все тест-сьюты</li>
+                <li>Все требования</li>
+                <li>Все данные проекта</li>
               </ul>
             </div>
             <div className="flex gap-3 justify-end">
@@ -317,7 +317,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 disabled={deleting}
                 data-analytics-button={`Project Settings - Delete Dialog - Cancel (${project?.name})`}
               >
-                Cancel
+                Отмена
               </Button>
               <ButtonDestructive
                 type="button"
@@ -325,7 +325,7 @@ export default function ProjectSettings({ projectId }: ProjectSettingsProps) {
                 disabled={deleting}
                 buttonName={`Project Settings - Delete Dialog - Delete Project (${project?.name})`}
               >
-                {deleting ? 'Deleting...' : 'Delete Project'}
+                {deleting ? 'Удаление...' : 'Удалить проект'}
               </ButtonDestructive>
             </div>
           </div>

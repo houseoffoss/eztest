@@ -3,8 +3,8 @@ import LoginPageComponent from '@/app/components/pages/LoginPageComponent';
 import { SITE_URL, SITE_NAME } from '@/config/seo.config';
 
 export const metadata: Metadata = {
-  title: 'Sign In',
-  description: 'Sign in to EZTest to manage your test cases, test suites, test runs, and defects. Access your self-hosted test management dashboard.',
+  title: 'Вход',
+  description: 'Войдите в EZTest, чтобы управлять тест-кейсами, тест-сьютами, тест-ранами и дефектами.',
   alternates: {
     canonical: '/auth/login',
   },
@@ -19,20 +19,20 @@ function LoginJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-      { '@type': 'ListItem', position: 2, name: 'Sign In', item: `${SITE_URL}/auth/login` },
+      { '@type': 'ListItem', position: 1, name: 'Главная', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Вход', item: `${SITE_URL}/auth/login` },
     ],
   };
 
   const webPage = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: `Sign In | ${SITE_NAME}`,
+    name: `Вход | ${SITE_NAME}`,
     url: `${SITE_URL}/auth/login`,
     description:
-      'Sign in to EZTest to manage your test cases, test suites, test runs, and defects.',
+      'Войдите в EZTest, чтобы управлять тест-кейсами, тест-сьютами, тест-ранами и дефектами.',
     isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
-    inLanguage: 'en-US',
+    inLanguage: 'ru-RU',
   };
 
   return (

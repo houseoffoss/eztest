@@ -32,7 +32,7 @@ export interface SignOutButtonProps {
   
   /**
    * Optional custom label
-   * @default 'Sign Out'
+   * @default 'Выйти'
    */
   label?: string;
 }
@@ -70,8 +70,8 @@ export function SignOutButton({
   size = 'default',
   showConfirmation = true,
   className,
-  buttonName = 'Sign Out Button',
-  label = 'Sign Out',
+  buttonName = 'Кнопка выхода',
+  label = 'Выйти',
 }: SignOutButtonProps) {
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
 
@@ -125,10 +125,10 @@ export function SignOutButton({
       </ButtonDestructive>
 
       <BaseConfirmDialog
-        title="Sign Out"
-        description="Are you sure you want to sign out? You will need to log in again to access your account."
-        submitLabel="Sign Out"
-        cancelLabel="Cancel"
+        title="Выход из аккаунта"
+        description="Вы уверены, что хотите выйти? Для продолжения работы потребуется войти снова."
+        submitLabel="Выйти"
+        cancelLabel="Отмена"
         triggerOpen={signOutDialogOpen}
         onOpenChange={setSignOutDialogOpen}
         onSubmit={handleSignOut}

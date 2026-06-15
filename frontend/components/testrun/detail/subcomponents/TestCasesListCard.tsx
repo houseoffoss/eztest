@@ -82,7 +82,7 @@ export function TestCasesListCard({
   const columns: ColumnDef<ResultRow>[] = [
     {
       key: 'tcId',
-      label: 'Test Case ID',
+      label: 'ID тест-кейса',
       className: 'min-w-[80px]',
       render: (_, row: ResultRow) => (
         <p className="text-xs font-mono text-white/70 truncate">{row.testCase.tcId || '-'}</p>
@@ -90,7 +90,7 @@ export function TestCasesListCard({
     },
     {
       key: 'testCase',
-      label: 'Test Case',
+      label: 'Тест-кейс',
       className: 'min-w-0 max-w-xs whitespace-normal',
       render: (_, row: ResultRow) => (
         <div className="min-w-0 max-w-xs overflow-hidden">
@@ -105,7 +105,7 @@ export function TestCasesListCard({
     },
     {
       key: 'priority',
-      label: 'Priority',
+      label: 'Приоритет',
       render: (_, row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.testCase.priority, priorityOptions);
         const priorityLabel = !loadingPriority && priorityOptions.length > 0
@@ -124,7 +124,7 @@ export function TestCasesListCard({
     },
     {
       key: 'status',
-      label: 'Status',
+      label: 'Статус',
       render: (_, row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
         const label = !loadingStatus && statusOptions.length > 0
@@ -146,7 +146,7 @@ export function TestCasesListCard({
     },
     {
       key: 'executedBy',
-      label: 'Executed By',
+      label: 'Выполнил',
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
           {row.executedBy?.name || '-'}
@@ -155,7 +155,7 @@ export function TestCasesListCard({
     },
     {
       key: 'executedAt',
-      label: 'Date',
+      label: 'Дата',
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
           {row.executedAt
@@ -166,7 +166,7 @@ export function TestCasesListCard({
     },
     {
       key: 'id',
-      label: 'Actions',
+      label: 'Действия',
       render: (_, row: ResultRow) => (
         <div className="flex items-center gap-2 justify-end">
           {(testRunStatus === 'IN_PROGRESS' || forceShowDefectActions) && (
@@ -179,7 +179,7 @@ export function TestCasesListCard({
                   className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                   buttonName={`Test Cases List Card - ${row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'} (${row.testCase.title || row.testCase.id})`}
                 >
-                  {row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'}
+                  {row.status && row.status !== 'SKIPPED' ? 'Обновить' : 'Выполнить'}
                 </Button>
               )}
               {row.status === 'FAILED' && canCreateDefect && (
@@ -196,7 +196,7 @@ export function TestCasesListCard({
                       className="flex items-center gap-2"
                       buttonName={`Test Cases List Card - Defect Actions (${row.testCase.title || row.testCase.id})`}
                     >
-                      Defect
+                      Дефект
                       <ChevronDown className="w-3 h-3" />
                     </ButtonSecondary>
                   </DropdownMenuTrigger>
@@ -209,7 +209,7 @@ export function TestCasesListCard({
                         }}
                       >
                         <Bug className="w-4 h-4 mr-2" />
-                        Create Defect
+                        Создать дефект
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem
@@ -219,7 +219,7 @@ export function TestCasesListCard({
                       }}
                     >
                       <ListChecks className="w-4 h-4 mr-2" />
-                      Choose Defect
+                      Выбрать дефект
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -245,7 +245,7 @@ export function TestCasesListCard({
 
   return (
     <DetailCard
-      title={`Test Cases (${results?.length || 0})`}
+      title={`Тест-кейсы (${results?.length || 0})`}
       contentClassName=""
       headerAction={
         results && results.length > 0 && canCreate ? (
@@ -257,7 +257,7 @@ export function TestCasesListCard({
               disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Test Suites
+              Добавить тест-сьюты
             </Button>
             <Button
               variant="glass"
@@ -266,7 +266,7 @@ export function TestCasesListCard({
               disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Test Cases
+              Добавить тест-кейсы
             </Button>
           </div>
         ) : undefined
@@ -275,7 +275,7 @@ export function TestCasesListCard({
       {!results || results.length === 0 ? (
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-400 mb-4">No test cases in this test run</p>
+          <p className="text-gray-400 mb-4">В этом тест-ране нет тест-кейсов</p>
           {canCreate && (
             <div className="flex gap-2 justify-center flex-wrap">
               <ButtonPrimary
@@ -284,7 +284,7 @@ export function TestCasesListCard({
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Test Cases
+                Добавить тест-кейсы
               </ButtonPrimary>
               <Button
                 variant="glass"
@@ -293,7 +293,7 @@ export function TestCasesListCard({
                 disabled={testRunStatus === 'COMPLETED' || testRunStatus === 'CANCELLED'}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Test Suites
+                Добавить тест-сьюты
               </Button>
             </div>
           )}
@@ -304,7 +304,7 @@ export function TestCasesListCard({
           data={tableData}
           rowClassName="cursor-pointer hover:bg-accent/20"
           onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
-          emptyMessage="No test cases in this run"
+          emptyMessage="В этом запуске нет тест-кейсов"
         />
       )}
     </DetailCard>

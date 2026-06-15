@@ -19,17 +19,17 @@ export function DeleteTestRunDialog({
   onConfirm,
 }: DeleteTestRunDialogProps) {
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Test Run',
-    description: `Are you sure you want to delete "${testRun?.name}"? This will also delete all test results. This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'Удаление тест-рана',
+    description: `Вы уверены, что хотите удалить "${testRun?.name}"? Также будут удалены все результаты тестов. Это действие нельзя отменить.`,
+    submitLabel: 'Удалить',
+    cancelLabel: 'Отмена',
     triggerOpen,
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
-    dialogName: 'Delete Test Run Dialog',
-    submitButtonName: 'Delete Test Run Dialog - Delete',
-    cancelButtonName: 'Delete Test Run Dialog - Cancel',
+    dialogName: 'Диалог удаления тест-рана',
+    submitButtonName: 'Диалог удаления тест-рана - Удалить',
+    cancelButtonName: 'Диалог удаления тест-рана - Отмена',
   };
 
   return <BaseConfirmDialog {...config} />;

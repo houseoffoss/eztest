@@ -13,8 +13,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Project Name',
-      placeholder: 'My Awesome Project',
+      label: 'Название проекта',
+      placeholder: 'Мой отличный проект',
       type: 'text',
       required: true,
       minLength: 3,
@@ -22,7 +22,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     },
     {
       name: 'key',
-      label: 'Project Key',
+      label: 'Ключ проекта',
       placeholder: 'ECOM',
       type: 'text',
       required: true,
@@ -33,8 +33,8 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     },
     {
       name: 'description',
-      label: 'Description',
-      placeholder: 'Brief description of the project...',
+      label: 'Описание',
+      placeholder: 'Краткое описание проекта...',
       type: 'textarea',
       rows: 3,
       maxLength: 250,
@@ -57,7 +57,7 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to create project');
+      throw new Error(data.message || data.error || 'Не удалось создать проект');
     }
 
     // Ensure the project has the required structure
@@ -71,11 +71,11 @@ export const CreateProjectDialog = ({ onProjectCreated, triggerOpen, onOpenChang
   };
 
   const config: BaseDialogConfig<Project> = {
-    title: 'Create New Project',
-    description: 'Set up a new project to organize your test cases and test runs.',
+    title: 'Создать новый проект',
+    description: 'Создайте новый проект для организации тест-кейсов и тест-ранов.',
     fields,
-    submitLabel: 'Create Project',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Создать проект',
+    cancelLabel: 'Отмена',
     triggerOpen,
     onOpenChange,
     onSubmit: handleSubmit,

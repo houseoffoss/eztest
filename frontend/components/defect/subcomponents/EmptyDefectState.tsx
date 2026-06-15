@@ -13,13 +13,13 @@ export function EmptyDefectState({ hasFilters, onCreateClick, canCreate = true }
   return (
     <EmptyStateCard
       icon={Bug}
-      title="No defects found"
+      title="Дефекты не найдены"
       description={hasFilters
-        ? 'Try adjusting your filters'
-        : 'Get started by creating your first defect'}
-      actionLabel={!hasFilters && canCreate ? 'Create Defect' : undefined}
+        ? 'Попробуйте изменить фильтры'
+        : 'Начните с создания первого дефекта'}
+      actionLabel={!hasFilters && canCreate ? 'Создать дефект' : undefined}
       onAction={!hasFilters && canCreate ? onCreateClick : undefined}
-      actionButtonName="Defect List - Create Defect (Empty State)"
+      actionButtonName="Список дефектов - Создать дефект (пустое состояние)"
     />
   );
 }

@@ -84,15 +84,15 @@ export default function DefectList({ projectId }: DefectListProps) {
     if (canImport) {
       actions.push({
         type: 'dropdown' as const,
-        label: 'Migration',
+        label: 'Миграция',
         items: [
           {
-            label: 'Import Defects',
+            label: 'Импорт дефектов',
             icon: Import,
             onClick: () => setImportDialogOpen(true),
           },
           {
-            label: 'Export Defects',
+            label: 'Экспорт дефектов',
             icon: Upload,
             onClick: () => setExportDialogOpen(true),
           },
@@ -104,11 +104,11 @@ export default function DefectList({ projectId }: DefectListProps) {
     if (canCreateDefect) {
       actions.push({
         type: 'action' as const,
-        label: 'New Defect',
+        label: 'Новый дефект',
         icon: Plus,
         onClick: () => setCreateDialogOpen(true),
         variant: 'primary' as const,
-        buttonName: 'Defect List - New Defect',
+        buttonName: 'Список дефектов - Новый дефект',
       });
     }
 
@@ -164,7 +164,7 @@ export default function DefectList({ projectId }: DefectListProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Defects - ${project.name} | EZTest`;
+      document.title = `Дефекты - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -395,8 +395,8 @@ export default function DefectList({ projectId }: DefectListProps) {
 
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: `${selectedDefects.size} defect(s) deleted successfully`,
+        title: 'Успешно',
+        message: `${selectedDefects.size} дефект(ов) успешно удалено`,
       });
       setTimeout(() => setAlert(null), 5000);
       
@@ -405,8 +405,8 @@ export default function DefectList({ projectId }: DefectListProps) {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Failed to delete some defects',
+        title: 'Ошибка',
+        message: 'Не удалось удалить часть дефектов',
       });
       setTimeout(() => setAlert(null), 5000);
     }
@@ -421,8 +421,8 @@ export default function DefectList({ projectId }: DefectListProps) {
       if (response.ok) {
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: 'Defect deleted successfully',
+          title: 'Успешно',
+          message: 'Дефект успешно удален',
         });
         setTimeout(() => setAlert(null), 5000);
         fetchDefects();
@@ -432,8 +432,8 @@ export default function DefectList({ projectId }: DefectListProps) {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Failed to delete defect',
+        title: 'Ошибка',
+        message: 'Не удалось удалить дефект',
       });
       setTimeout(() => setAlert(null), 5000);
     } finally {
@@ -445,8 +445,8 @@ export default function DefectList({ projectId }: DefectListProps) {
     // This would open a dialog to select new status
     setAlert({
       type: 'success',
-      title: 'Coming Soon',
-      message: 'Bulk status change feature is under development',
+      title: 'Скоро',
+      message: 'Массовое изменение статуса в разработке',
     });
     setTimeout(() => setAlert(null), 3000);
   };
@@ -455,15 +455,15 @@ export default function DefectList({ projectId }: DefectListProps) {
     // This would open a dialog to select assignee
     setAlert({
       type: 'success',
-      title: 'Coming Soon',
-      message: 'Bulk assign feature is under development',
+      title: 'Скоро',
+      message: 'Массовое назначение в разработке',
     });
     setTimeout(() => setAlert(null), 3000);
   };
 
 
   if (loading || permissionsLoading) {
-    return <Loader fullScreen text="Loading defects..." />;
+    return <Loader fullScreen text="Загрузка дефектов..." />;
   }
 
   return (
@@ -477,9 +477,9 @@ export default function DefectList({ projectId }: DefectListProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
-              { label: project?.name || 'Loading...', href: `/projects/${projectId}` },
-              { label: 'Defects', href: `/projects/${projectId}/defects` }
+              { label: 'Проекты', href: '/projects' },
+              { label: project?.name || 'Загрузка...', href: `/projects/${projectId}` },
+              { label: 'Дефекты', href: `/projects/${projectId}/defects` }
             ]}
           />
         }
@@ -497,7 +497,7 @@ export default function DefectList({ projectId }: DefectListProps) {
                     {project.key}
                   </Badge>
                 )}
-                <h1 className="text-2xl font-bold text-white">Defects</h1>
+                <h1 className="text-2xl font-bold text-white">Дефекты</h1>
               </div>
               {project && (
                 <p className="text-white/70 text-sm">{project.name}</p>
@@ -508,15 +508,15 @@ export default function DefectList({ projectId }: DefectListProps) {
             {selectedDefects.size > 0 && (
               <div className="flex items-center gap-3 flex-shrink-0">
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                  {selectedDefects.size} selected
+                  {selectedDefects.size} выбрано
                 </Badge>
                 {canDeleteDefect && (
                   <ButtonSecondary 
                     onClick={handleBulkDelete}
-                    buttonName="Defect List - Bulk Delete"
+                    buttonName="Список дефектов - Массовое удаление"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    Удалить
                   </ButtonSecondary>
                 )}
               </div>
@@ -545,7 +545,7 @@ export default function DefectList({ projectId }: DefectListProps) {
 
           {/* Total Count */}
           <div className="text-sm text-white/60">
-            Showing {filteredDefects.length} of {defects.length} defect{defects.length !== 1 ? 's' : ''}
+            Показано {filteredDefects.length} из {defects.length} дефект{defects.length !== 1 ? 'ов' : ''}
           </div>
         </div>
       </div>
@@ -602,10 +602,10 @@ export default function DefectList({ projectId }: DefectListProps) {
       {/* Create Defect Dialog */}
       {/* Bulk Delete Confirmation Dialog */}
       <BaseConfirmDialog
-        title="Delete Defects"
-        description={`Are you sure you want to delete ${selectedDefects.size} defect(s)? This action cannot be undone.`}
-        submitLabel="Delete"
-        cancelLabel="Cancel"
+        title="Удаление дефектов"
+        description={`Вы уверены, что хотите удалить ${selectedDefects.size} дефект(ов)? Это действие нельзя отменить.`}
+        submitLabel="Удалить"
+        cancelLabel="Отмена"
         triggerOpen={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onSubmit={handleConfirmBulkDelete}
@@ -614,10 +614,10 @@ export default function DefectList({ projectId }: DefectListProps) {
 
       {/* Single Delete Confirmation Dialog */}
       <BaseConfirmDialog
-        title="Delete Defect"
-        description={defectToDelete ? `Are you sure you want to delete defect "${defectToDelete.title}"? This action cannot be undone.` : ''}
-        submitLabel="Delete"
-        cancelLabel="Cancel"
+        title="Удаление дефекта"
+        description={defectToDelete ? `Вы уверены, что хотите удалить дефект "${defectToDelete.title}"? Это действие нельзя отменить.` : ''}
+        submitLabel="Удалить"
+        cancelLabel="Отмена"
         triggerOpen={singleDeleteConfirmOpen}
         onOpenChange={setSingleDeleteConfirmOpen}
         onSubmit={handleConfirmSingleDelete}
@@ -632,8 +632,8 @@ export default function DefectList({ projectId }: DefectListProps) {
           setCreateDialogOpen(false);
           setAlert({
             type: 'success',
-            title: 'Success',
-            message: `Defect ${defect.defectId} created successfully`,
+            title: 'Успешно',
+            message: `Дефект ${defect.defectId} успешно создан`,
           });
           setTimeout(() => setAlert(null), 5000);
           fetchDefects();
@@ -644,11 +644,11 @@ export default function DefectList({ projectId }: DefectListProps) {
       <FileImportDialog
         open={importDialogOpen}
         onOpenChange={setImportDialogOpen}
-        title="Import Defects"
-        description="Upload a CSV or Excel file to import multiple defects at once."
+        title="Импорт дефектов"
+        description="Загрузите CSV или Excel файл для массового импорта дефектов."
         importEndpoint={`/api/projects/${projectId}/defects/import`}
         templateEndpoint={`/api/projects/${projectId}/defects/import/template`}
-        itemName="defects"
+        itemName="дефекты"
         onImportComplete={() => {
           fetchDefects();
           setImportDialogOpen(false);
@@ -659,8 +659,8 @@ export default function DefectList({ projectId }: DefectListProps) {
       <FileExportDialog
         open={exportDialogOpen}
         onOpenChange={setExportDialogOpen}
-        title="Export Defects"
-        description="Choose a format to export your defects."
+        title="Экспорт дефектов"
+        description="Выберите формат для экспорта дефектов."
         exportOptions={{
           projectId,
           endpoint: `/api/projects/${projectId}/defects/export`,
@@ -671,7 +671,7 @@ export default function DefectList({ projectId }: DefectListProps) {
             assignedToId: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : undefined,
           },
         }}
-        itemName="defects"
+        itemName="дефекты"
       />
     </>
   );
