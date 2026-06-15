@@ -37,7 +37,6 @@ export function PageHeaderWithBadge({
             {badge}
           </Badge>
         )}
-        <h1 className={cn('text-2xl font-bold text-white', titleClassName)}>
         <h1 className={cn('text-2xl font-bold text-foreground', titleClassName)}>
           {title}
         </h1>
