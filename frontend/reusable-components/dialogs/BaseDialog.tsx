@@ -68,8 +68,8 @@ export const BaseDialog = <T = unknown,>({
   title,
   description,
   fields,
-  submitLabel = 'Submit',
-  cancelLabel = 'Cancel',
+  submitLabel = 'Сохранить',
+  cancelLabel = 'Отмена',
   triggerOpen = false,
   onOpenChange,
   onSubmit,
@@ -100,7 +100,7 @@ export const BaseDialog = <T = unknown,>({
     // For select fields, don't trim the value as it's a pre-defined option
     const isEmpty = field.type === 'select' ? !value : !value.trim();
     if (field.required && isEmpty) {
-      return `${field.label} is required`;
+      return `Поле "${field.label}" обязательно`;
     }
 
     // Skip other validations if field is empty and not required
@@ -113,29 +113,29 @@ export const BaseDialog = <T = unknown,>({
     if (field.type === 'email') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
-        return 'Please enter a valid email address';
+        return 'Введите корректный email';
       }
     }
 
     // Min/Max length validation
     if (field.minLength && value.trim().length < field.minLength) {
-      return `${field.label} must be at least ${field.minLength} characters`;
+      return `Поле "${field.label}" должно содержать минимум ${field.minLength} символов`;
     }
     if (field.maxLength && value.trim().length > field.maxLength) {
-      return `${field.label} must be less than ${field.maxLength} characters`;
+      return `Поле "${field.label}" должно содержать не более ${field.maxLength} символов`;
     }
 
     // Number validation
     if (field.type === 'number') {
       const numValue = Number(value);
       if (isNaN(numValue)) {
-        return `${field.label} must be a valid number`;
+        return `Поле "${field.label}" должно быть числом`;
       }
       if (field.min !== undefined && numValue < field.min) {
-        return `${field.label} must be at least ${field.min}`;
+        return `Поле "${field.label}" должно быть не меньше ${field.min}`;
       }
       if (field.max !== undefined && numValue > field.max) {
-        return `${field.label} must be at most ${field.max}`;
+        return `Поле "${field.label}" должно быть не больше ${field.max}`;
       }
     }
 
@@ -143,11 +143,11 @@ export const BaseDialog = <T = unknown,>({
     if (field.type === 'date' && value) {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(value)) {
-        return 'Date must be in YYYY-MM-DD format';
+        return 'Дата должна быть в формате ГГГГ-ММ-ДД';
       }
       const date = new Date(value);
       if (isNaN(date.getTime())) {
-        return 'Please enter a valid date';
+        return 'Введите корректную дату';
       }
     }
 
@@ -155,7 +155,7 @@ export const BaseDialog = <T = unknown,>({
     if (field.pattern && value) {
       const regex = new RegExp(field.pattern);
       if (!regex.test(value)) {
-        return `${field.label} format is invalid`;
+        return `Некорректный формат поля "${field.label}"`;
       }
     }
 
@@ -273,8 +273,8 @@ export const BaseDialog = <T = unknown,>({
     if (!validateAllFields()) {
       setAlert({
         type: 'error',
-        title: 'Validation Error',
-        message: 'Please fix the validation errors before submitting',
+        title: 'Ошибка валидации',
+        message: 'Исправьте ошибки в форме перед отправкой',
       });
       return;
     }
@@ -300,11 +300,11 @@ export const BaseDialog = <T = unknown,>({
         onSuccess(result);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка. Попробуйте еще раз.';
       
       setAlert({
         type: 'error',
-        title: 'Submission Failed',
+        title: 'Не удалось сохранить',
         message: errorMessage,
       });
       setError(errorMessage);
@@ -352,7 +352,7 @@ export const BaseDialog = <T = unknown,>({
           key={field.name}
           {...commonProps}
           rows={field.rows || 3}
-          className={`bg-[#0f0f12] border-[#2a2a2e] ${upperCaseClass} ${errorBorderClass}`}
+          className={`bg-background border-border ${upperCaseClass} ${errorBorderClass}`}
         />
       );
     }
@@ -403,7 +403,7 @@ export const BaseDialog = <T = unknown,>({
             return newErrors;
           });
         }}>
-          <SelectTrigger className={`bg-[#0f0f12] border-[#2a2a2e] ${errorBorderClass}`}>
+          <SelectTrigger className={`bg-background border-border ${errorBorderClass}`}>
             <SelectValue placeholder={field.placeholder} />
           </SelectTrigger>
           <SelectContent variant="glass">
@@ -422,7 +422,7 @@ export const BaseDialog = <T = unknown,>({
         key={field.name}
         type={field.type === 'date' ? 'date' : field.type || 'text'}
         {...commonProps}
-        className={`bg-[#0f0f12] border-[#2a2a2e] ${upperCaseClass} ${errorBorderClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
+        className={`bg-background border-border ${upperCaseClass} ${errorBorderClass} ${field.type === 'number' ? '[&::-webkit-outer-spin-button]:[appearance:none] [&::-webkit-inner-spin-button]:[appearance:none] [&]:[-moz-appearance:textfield]' : ''}`}
       />
     );
   };
@@ -466,7 +466,7 @@ export const BaseDialog = <T = unknown,>({
                     ) : (
                       field.type === 'text' && field.minLength && (
                         <p className="text-xs text-muted-foreground">
-                          {field.minLength}-{field.maxLength || '∞'} characters
+                          {field.minLength}-{field.maxLength || '∞'} символов
                         </p>
                       )
                     )}
@@ -479,7 +479,7 @@ export const BaseDialog = <T = unknown,>({
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-border/60 bg-background/80 px-6 py-4 flex gap-3 justify-end">
           <Button
             type="button"
             variant="glass"
@@ -496,7 +496,7 @@ export const BaseDialog = <T = unknown,>({
             className="cursor-pointer"
             buttonName={submitButtonName || `${title} - ${submitLabel}`}
           >
-            {loading ? 'Loading...' : submitLabel}
+            {loading ? 'Сохранение...' : submitLabel}
           </ButtonPrimary>
         </div>
       </DialogContent>

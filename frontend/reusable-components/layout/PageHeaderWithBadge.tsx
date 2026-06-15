@@ -38,11 +38,12 @@ export function PageHeaderWithBadge({
           </Badge>
         )}
         <h1 className={cn('text-2xl font-bold text-white', titleClassName)}>
+        <h1 className={cn('text-2xl font-bold text-foreground', titleClassName)}>
           {title}
         </h1>
       </div>
       {description && (
-        <p className={cn('text-white/70 text-sm mb-2', descriptionClassName)}>
+        <p className={cn('text-muted-foreground text-sm mb-2', descriptionClassName)}>
           {description}
         </p>
       )}

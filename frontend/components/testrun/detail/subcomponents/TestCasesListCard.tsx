@@ -496,26 +496,28 @@ export function TestCasesListCard({
           )}
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={tableData}
-          rowClassName="cursor-pointer hover:bg-accent/20"
-          onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
-          emptyMessage="В этом запуске нет тест-кейсов"
-        />
-
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={tableData.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            itemsPerPageOptions={PAGE_SIZE_OPTIONS}
-            showItemsPerPage={true}
+        <>
+          <DataTable
+            columns={columns}
+            data={tableData}
+            rowClassName="cursor-pointer hover:bg-accent/20"
+            onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
+            emptyMessage="В этом запуске нет тест-кейсов"
           />
-        </div>
+
+          <div className="mt-6">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={tableData.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={PAGE_SIZE_OPTIONS}
+              showItemsPerPage={true}
+            />
+          </div>
+        </>
       )}
 
       <Dialog open={bulkExecuteOpen} onOpenChange={setBulkExecuteOpen}>

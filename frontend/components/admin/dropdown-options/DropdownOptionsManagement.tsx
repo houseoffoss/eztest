@@ -68,7 +68,7 @@ export default function DropdownOptionsManagement() {
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading dropdown options..." />;
+    return <Loader fullScreen text="Загрузка опций выпадающих списков..." />;
   }
 
   return (
@@ -81,7 +81,7 @@ export default function DropdownOptionsManagement() {
           <Breadcrumbs 
             items={[
               { label: 'Admin', href: '/admin' }, 
-              { label: 'Dropdown Options', href: '/admin/dropdown-options' }
+              { label: 'Опции выпадающих списков', href: '/admin/dropdown-options' }
             ]}
           />
         }
@@ -92,16 +92,16 @@ export default function DropdownOptionsManagement() {
       <div className="px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <PageHeaderWithBadge
-            title="Dropdown Options Management"
-            description="Manage dropdown options for various entities across the application"
+            title="Управление выпадающими списками"
+            description="Настройка значений выпадающих списков для разных сущностей приложения"
             className="mb-6"
           />
 
           {/* Dropdown Options Table */}
           {Object.keys(groupedOptions).length === 0 ? (
-            <div className="text-center py-12 text-white/60 bg-white/5 rounded-lg border border-white/10">
-              <p>No dropdown options found.</p>
-              <p className="text-sm mt-2">Run the seed script to populate dropdown options.</p>
+            <div className="text-center py-12 text-muted-foreground bg-background/70 rounded-lg border border-border/60 shadow-sm">
+              <p>Опции выпадающих списков не найдены.</p>
+              <p className="text-sm mt-2">Запустите seed-скрипт, чтобы заполнить начальные значения.</p>
             </div>
           ) : (
             <DropdownOptionsTable

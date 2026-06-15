@@ -5,8 +5,8 @@ import { authOptions } from '@/lib/auth';
 import DropdownOptionsManagement from '@/frontend/components/admin/dropdown-options/DropdownOptionsManagement';
 
 export const metadata: Metadata = {
-  title: 'Dropdown Options Management',
-  description: 'Manage dropdown options for various entities',
+  title: 'Опции выпадающих списков',
+  description: 'Управление значениями выпадающих списков для разных сущностей',
 };
 
 export default async function DropdownOptionsPage() {

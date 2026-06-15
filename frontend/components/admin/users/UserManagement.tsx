@@ -50,8 +50,8 @@ export default function UserManagement() {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Load Users',
-        message: 'Could not load users list.',
+        title: 'Не удалось загрузить пользователей',
+        message: 'Не удалось загрузить список пользователей.',
       });
     } finally {
       setLoading(false);
@@ -68,8 +68,8 @@ export default function UserManagement() {
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Load Roles',
-        message: 'Could not load available roles.',
+        title: 'Не удалось загрузить роли',
+        message: 'Не удалось загрузить доступные роли.',
       });
     }
   };
@@ -90,8 +90,8 @@ export default function UserManagement() {
     fetchUsers();
     setAlert({
       type: 'success',
-      title: 'User Added',
-      message: `User "${data.data.name}" has been added successfully.`,
+      title: 'Пользователь добавлен',
+      message: `Пользователь "${data.data.name}" успешно добавлен.`,
     });
   };
 
@@ -110,13 +110,13 @@ export default function UserManagement() {
       throw new Error(data.error);
     }
 
-    const userName = data.data?.name || selectedUser.name || 'User';
+    const userName = data.data?.name || selectedUser.name || 'Пользователь';
     
     fetchUsers();
     setAlert({
       type: 'success',
-      title: 'User Updated',
-      message: `User "${userName}" has been updated successfully.`,
+      title: 'Пользователь обновлен',
+      message: `Пользователь "${userName}" успешно обновлен.`,
     });
   };
 
@@ -135,15 +135,15 @@ export default function UserManagement() {
         fetchUsers();
         setAlert({
           type: 'success',
-          title: 'User Deleted',
-          message: `User "${userName}" has been deleted successfully.`,
+          title: 'Пользователь удален',
+          message: `Пользователь "${userName}" успешно удален.`,
         });
       }
     } catch {
       setAlert({
         type: 'error',
-        title: 'Failed to Delete User',
-        message: 'Could not delete the user.',
+        title: 'Не удалось удалить пользователя',
+        message: 'Не удалось удалить пользователя.',
       });
     }
   };
@@ -151,7 +151,7 @@ export default function UserManagement() {
 
   // Build role filter options from roles
   const roleFilterOptions: FilterOption[] = [
-    { value: 'all', label: 'All Roles' },
+    { value: 'all', label: 'Все роли' },
     ...roles.map((role) => ({
       value: role.id,
       label: role.name,
@@ -173,7 +173,7 @@ export default function UserManagement() {
     return [
       {
         type: 'action' as const,
-        label: 'Add User',
+        label: 'Добавить пользователя',
         icon: UserPlus,
         onClick: () => setAddDialogOpen(true),
         variant: 'primary' as const,
@@ -195,8 +195,8 @@ export default function UserManagement() {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Admin', href: '/admin' },
-              { label: 'Users', href: '/admin/users' },
+              { label: 'Админка', href: '/admin' },
+              { label: 'Пользователи', href: '/admin/users' },
             ]}
           />
         }
@@ -208,8 +208,8 @@ export default function UserManagement() {
         <HeaderWithFilters
           header={
             <PageHeaderWithBadge
-              title="User Management"
-              description="Manage application users and assign roles"
+              title="Пользователи"
+              description="Управление пользователями приложения и назначением ролей"
             />
           }
           filters={
@@ -218,14 +218,14 @@ export default function UserManagement() {
                 <SearchInput
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="Search users..."
+                  placeholder="Поиск пользователей..."
                 />
               </div>
               <div>
                 <FilterDropdown
                   value={roleFilter}
                   onValueChange={setRoleFilter}
-                  placeholder="Role"
+                  placeholder="Роль"
                   options={roleFilterOptions}
                 />
               </div>
@@ -238,7 +238,7 @@ export default function UserManagement() {
       <div className="px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <Loader fullScreen={false} text="Loading users..." />
+            <Loader fullScreen={false} text="Загрузка пользователей..." />
           ) : (
             <MembersList
               members={filteredUsers.map((user) => ({
@@ -252,10 +252,10 @@ export default function UserManagement() {
                 },
                 createdAt: user.createdAt,
               }))}
-              title={`All Users (${filteredUsers.length})`}
-              description="Application users and their assigned roles"
-              emptyTitle="No users found"
-              emptyDescription={searchQuery ? 'Try a different search term' : 'Add your first user to get started'}
+              title={`Все пользователи (${filteredUsers.length})`}
+              description="Пользователи приложения и назначенные им роли"
+              emptyTitle="Пользователи не найдены"
+              emptyDescription={searchQuery ? 'Попробуйте изменить поисковый запрос' : 'Добавьте первого пользователя, чтобы начать работу'}
               emptyIcon={Users}
               onEdit={(userId) => {
                 const user = filteredUsers.find((u) => u.id === userId);

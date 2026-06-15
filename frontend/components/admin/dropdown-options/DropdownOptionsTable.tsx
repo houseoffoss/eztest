@@ -91,11 +91,11 @@ export function DropdownOptionsTable({
   const columns: ColumnDef<DropdownField>[] = [
     {
       key: 'field',
-      label: 'FIELD NAME',
+      label: 'ПОЛЕ',
       width: '200px',
       render: (row) => (
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-white">
+          <p className="text-sm font-medium text-foreground">
             {formatFieldName(row.field)}
           </p>
         </div>
@@ -103,7 +103,7 @@ export function DropdownOptionsTable({
     },
     {
       key: 'options',
-      label: 'OPTIONS',
+      label: 'ЗНАЧЕНИЯ',
       render: (row) => (
         <div className="flex flex-wrap gap-2 py-1">
           {row.options
@@ -145,14 +145,14 @@ export function DropdownOptionsTable({
               }
             })}
           {row.options.filter((opt) => opt.isActive).length === 0 && (
-            <span className="text-sm text-white/40">No active options</span>
+            <span className="text-sm text-muted-foreground">Нет активных значений</span>
           )}
         </div>
       ),
     },
     {
       key: 'count',
-      label: 'COUNT',
+      label: 'КОЛ-ВО',
       width: '80px',
       align: 'center',
       render: (row) => (
@@ -176,7 +176,7 @@ export function DropdownOptionsTable({
   const actions: ActionConfig<DropdownField> = {
     items: [
       {
-        label: 'Edit Options',
+        label: 'Редактировать',
         icon: Edit2,
         onClick: (row) => onEdit(row.entity, row.field, row.options),
         variant: 'default',
@@ -192,7 +192,7 @@ export function DropdownOptionsTable({
       grouped={true}
       groupConfig={groupConfig}
       actions={actions}
-      emptyMessage="No dropdown options found. Run the seed script to populate dropdown options."
+      emptyMessage="Опции выпадающих списков не найдены. Запустите seed-скрипт для заполнения значений."
       gridTemplateColumns="200px 1fr 80px 50px"
     />
   );

@@ -25,21 +25,21 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   const fields: BaseDialogField[] = [
     {
       name: 'name',
-      label: 'Full Name',
+      label: 'Полное имя',
       type: 'text',
       required: true,
       defaultValue: user?.name || '',
     },
     {
       name: 'email',
-      label: 'Email Address',
+      label: 'Email',
       type: 'email',
       required: true,
       defaultValue: user?.email || '',
     },
     {
       name: 'roleId',
-      label: 'Application Role',
+      label: 'Роль в приложении',
       type: 'select',
       required: true,
       defaultValue: user?.role.id || '',
@@ -50,22 +50,22 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
     },
     {
       name: 'phone',
-      label: 'Phone',
-      placeholder: 'Optional',
+      label: 'Телефон',
+      placeholder: 'Необязательно',
       type: 'text',
       defaultValue: user?.phone || '',
     },
     {
       name: 'location',
-      label: 'Location',
-      placeholder: 'Optional',
+      label: 'Локация',
+      placeholder: 'Необязательно',
       type: 'text',
       defaultValue: user?.location || '',
     },
     {
       name: 'bio',
-      label: 'Bio',
-      placeholder: 'Optional',
+      label: 'О себе',
+      placeholder: 'Необязательно',
       type: 'textarea',
       rows: 3,
       cols: 2,
@@ -106,10 +106,11 @@ export function EditUserDialog({ open, user, roles, onOpenChange, onUpdate }: Ed
   return (
     <BaseDialog
       key={key}
-      title="Edit User"
-      description="Update user information and role"
+      title="Редактировать пользователя"
+      description="Обновление данных пользователя и его роли"
       fields={fields}
-      submitLabel="Update User"
+      submitLabel="Сохранить изменения"
+      cancelLabel="Отмена"
       triggerOpen={open}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}

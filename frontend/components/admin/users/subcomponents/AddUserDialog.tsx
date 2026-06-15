@@ -62,10 +62,11 @@ export function AddUserDialog({ open, roles, onOpenChange, onAdd }: AddUserDialo
 
   return (
     <BaseDialog
-      title="Add New User"
-      description="Create a new user account with application-level role"
+      title="Добавить пользователя"
+      description="Создание новой учетной записи с ролью на уровне приложения"
       fields={fields}
-      submitLabel="Add User"
+      submitLabel="Добавить пользователя"
+      cancelLabel="Отмена"
       triggerOpen={open}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}

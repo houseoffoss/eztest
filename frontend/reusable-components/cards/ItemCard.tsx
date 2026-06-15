@@ -64,12 +64,12 @@ export const ItemCard = ({
               {badges && <div className="flex items-center gap-2 mb-1">{badges}</div>}
               <div className="overflow-hidden">
                 <CardTitle 
-                  className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2 break-words text-white"
+                  className="text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2 break-words text-foreground"
                   style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                 >
                   {title}
                 </CardTitle>
-                <CardDescription className={descriptionClassName || "line-clamp-1 text-sm text-white/60 min-h-5"}>
+                <CardDescription className={descriptionClassName || "line-clamp-1 text-sm text-muted-foreground min-h-5"}>
                   {description || ''}
                 </CardDescription>
               </div>
@@ -80,7 +80,7 @@ export const ItemCard = ({
 
         <CardContent className="py-2.5 px-3.5 flex-1 flex flex-col">
           <div className="flex-1">{content}</div>
-          {footer && <div className="flex items-center justify-between pt-2 border-t border-white/10 mt-auto">{footer}</div>}
+          {footer && <div className="flex items-center justify-between pt-2 border-t border-border/60 mt-auto">{footer}</div>}
         </CardContent>
         </Card>
       </div>

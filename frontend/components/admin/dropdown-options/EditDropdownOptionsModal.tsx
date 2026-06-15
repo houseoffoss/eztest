@@ -51,7 +51,7 @@ export default function EditDropdownOptionsModal({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Failed to create option');
+        throw new Error(data.message || 'Не удалось создать значение');
       }
     }
 
@@ -80,7 +80,7 @@ export default function EditDropdownOptionsModal({
 
         if (!response.ok) {
           const data = await response.json();
-          throw new Error(data.message || 'Failed to update option');
+          throw new Error(data.message || 'Не удалось обновить значение');
         }
       }
     }
@@ -95,7 +95,7 @@ export default function EditDropdownOptionsModal({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Failed to update order');
+        throw new Error(data.message || 'Не удалось обновить порядок');
       }
     }
   };
@@ -118,8 +118,8 @@ export default function EditDropdownOptionsModal({
 
   return (
     <DropdownOptionsEditor
-      title={`Edit ${formatEntityName(entity)} - ${formatFieldName(field)}`}
-      description="Manage dropdown values and order"
+      title={`Редактирование: ${formatEntityName(entity)} - ${formatFieldName(field)}`}
+      description="Управление значениями выпадающего списка и их порядком"
       entity={entity}
       field={field}
       options={options}

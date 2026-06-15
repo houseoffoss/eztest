@@ -11,17 +11,17 @@ interface DeleteUserDialogProps {
 
 export function DeleteUserDialog({ open, userName, onOpenChange, onConfirm }: DeleteUserDialogProps) {
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete User',
-    description: `Are you sure you want to delete "${userName}"? This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'Удалить пользователя',
+    description: `Вы уверены, что хотите удалить пользователя "${userName}"? Это действие нельзя отменить.`,
+    submitLabel: 'Удалить',
+    cancelLabel: 'Отмена',
     triggerOpen: open,
     onOpenChange,
     onSubmit: onConfirm,
     destructive: true,
-    dialogName: 'Delete User Dialog',
-    submitButtonName: 'Delete User Dialog - Delete',
-    cancelButtonName: 'Delete User Dialog - Cancel',
+    dialogName: 'Диалог удаления пользователя',
+    submitButtonName: 'Диалог удаления пользователя - Удалить',
+    cancelButtonName: 'Диалог удаления пользователя - Отмена',
   };
 
   return <BaseConfirmDialog {...config} />;

@@ -27,8 +27,8 @@ export const BaseConfirmDialog = ({
   title,
   description,
   content,
-  submitLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  submitLabel = 'Подтвердить',
+  cancelLabel = 'Отмена',
   triggerOpen = false,
   onOpenChange,
   onSubmit,
@@ -67,7 +67,7 @@ export const BaseConfirmDialog = ({
         onSuccess();
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка. Попробуйте еще раз.';
       setError(errorMessage);
     } finally {
       setLoading(false);

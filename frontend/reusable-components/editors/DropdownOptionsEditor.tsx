@@ -212,13 +212,13 @@ export function DropdownOptionsEditor({
     const activeOptions = formOptions.filter((opt) => opt.isActive);
     
     if (activeOptions.length === 0) {
-      setError('At least one option must be active');
+      setError('Хотя бы одно значение должно оставаться активным');
       return;
     }
 
     for (const opt of activeOptions) {
       if (!opt.value.trim() || !opt.label.trim()) {
-        setError('All active options must have both value and label');
+        setError('У всех активных значений должны быть заполнены значение и подпись');
         return;
       }
     }
@@ -258,8 +258,8 @@ export function DropdownOptionsEditor({
 
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: 'Dropdown options saved successfully',
+        title: 'Сохранено',
+        message: 'Значения выпадающего списка успешно сохранены',
       });
 
       if (onSuccess) {
@@ -274,8 +274,8 @@ export function DropdownOptionsEditor({
     } catch (err) {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: err instanceof Error ? err.message : 'Failed to save options',
+        title: 'Ошибка',
+        message: err instanceof Error ? err.message : 'Не удалось сохранить значения',
       });
     } finally {
       setLoading(false);
@@ -294,7 +294,7 @@ export function DropdownOptionsEditor({
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6">
           <div className="pt-6 pb-6">
             <DialogHeader className="mb-6">
-              <DialogTitle>{title || `Edit ${formatEntityName(entity)} - ${formatFieldName(field)}`}</DialogTitle>
+              <DialogTitle>{title || `Редактирование: ${formatEntityName(entity)} - ${formatFieldName(field)}`}</DialogTitle>
               {description && (
                 <DialogDescription className="mt-2">{description}</DialogDescription>
               )}
@@ -306,8 +306,8 @@ export function DropdownOptionsEditor({
                   key={option.id || `new-${index}`}
                   className={`p-4 rounded-lg border ${
                     option.isActive
-                      ? 'bg-white/5 border-white/10'
-                      : 'bg-white/5 border-white/10 opacity-50'
+                      ? 'bg-background/70 border-border/60'
+                      : 'bg-background/60 border-border/50 opacity-50'
                   }`}
                 >
                   {option.isEditing ? (
@@ -315,25 +315,25 @@ export function DropdownOptionsEditor({
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-white/60 mb-1 block">Value *</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">Значение *</label>
                           <Input
                             value={option.value}
                             onChange={(e) => handleUpdateOption(index, { value: e.target.value })}
-                            placeholder="VALUE"
-                            className="bg-[#0f0f12] border-[#2a2a2e] text-sm"
+                            placeholder="ЗНАЧЕНИЕ"
+                            className="bg-background border-border text-sm"
                             disabled={!option.isNew}
                           />
                           {!option.isNew && (
-                            <p className="text-xs text-white/40 mt-1">Value cannot be changed after creation</p>
+                            <p className="text-xs text-muted-foreground mt-1">Значение нельзя изменить после создания</p>
                           )}
                         </div>
                         <div>
-                          <label className="text-xs text-white/60 mb-1 block">Label *</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">Подпись *</label>
                           <Input
                             value={option.label}
                             onChange={(e) => handleUpdateOption(index, { label: e.target.value })}
-                            placeholder="Display Label"
-                            className="bg-[#0f0f12] border-[#2a2a2e] text-sm"
+                            placeholder="Отображаемая подпись"
+                            className="bg-background border-border text-sm"
                           />
                         </div>
                       </div>
@@ -346,7 +346,7 @@ export function DropdownOptionsEditor({
                           className="cursor-pointer"
                         >
                           <X className="w-4 h-4 mr-1" />
-                          Cancel
+                          Отмена
                         </Button>
                         <ButtonPrimary
                           size="sm"
@@ -354,7 +354,7 @@ export function DropdownOptionsEditor({
                           disabled={loading}
                         >
                           <Check className="w-4 h-4 mr-1" />
-                          Done
+                          Готово
                         </ButtonPrimary>
                       </div>
                     </div>
@@ -364,10 +364,10 @@ export function DropdownOptionsEditor({
                       <div className="flex items-center gap-3 flex-1">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-white">{option.label}</span>
-                            <span className="text-xs text-white/40 font-mono">{option.value}</span>
+                            <span className="text-sm font-medium text-foreground">{option.label}</span>
+                            <span className="text-xs text-muted-foreground font-mono">{option.value}</span>
                             {!option.isActive && (
-                              <span className="text-xs text-white/40">(Inactive)</span>
+                              <span className="text-xs text-muted-foreground">(Неактивно)</span>
                             )}
                           </div>
                         </div>
@@ -378,8 +378,8 @@ export function DropdownOptionsEditor({
                           size="icon"
                           onClick={() => handleMoveUp(index)}
                           disabled={index === 0 || loading || editingId !== null}
-                          className="rounded-full border border-white/30 text-white hover:text-white/80 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                          title="Move up"
+                          className="rounded-full border border-border text-foreground hover:text-foreground hover:bg-accent/40 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title="Переместить вверх"
                         >
                           <ChevronUp className="w-4 h-4" />
                         </Button>
@@ -388,8 +388,8 @@ export function DropdownOptionsEditor({
                           size="icon"
                           onClick={() => handleMoveDown(index)}
                           disabled={index === formOptions.length - 1 || loading || editingId !== null}
-                          className="rounded-full border border-white/30 text-white hover:text-white/80 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                          title="Move down"
+                          className="rounded-full border border-border text-foreground hover:text-foreground hover:bg-accent/40 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title="Переместить вниз"
                         >
                           <ChevronDown className="w-4 h-4" />
                         </Button>
@@ -399,7 +399,7 @@ export function DropdownOptionsEditor({
                           onClick={() => handleEditClick(index)}
                           disabled={loading || editingId !== null}
                           className="rounded-full border border-blue-400/30 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                          title="Edit"
+                          title="Редактировать"
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
@@ -410,7 +410,7 @@ export function DropdownOptionsEditor({
                             onClick={() => handleRemoveOption(index)}
                             disabled={loading || editingId !== null}
                             className="rounded-full border border-red-400/30 text-red-400 hover:text-red-300 hover:bg-red-400/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                            title="Remove"
+                            title="Удалить"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -421,7 +421,7 @@ export function DropdownOptionsEditor({
                             onClick={() => handleRestoreOption(index)}
                             disabled={loading || editingId !== null}
                             className="rounded-full border border-green-400/30 text-green-400 hover:text-green-300 hover:bg-green-400/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                            title="Restore"
+                            title="Восстановить"
                           >
                             <Check className="w-4 h-4" />
                           </Button>
@@ -440,14 +440,14 @@ export function DropdownOptionsEditor({
               disabled={loading || editingId !== null}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Option
+              Добавить значение
             </Button>
 
             <InlineError message={error} />
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-t border-white/10 bg-[#0f0f12] px-6 py-4 flex gap-3 justify-end">
+        <div className="flex-shrink-0 border-t border-border/60 bg-background/80 px-6 py-4 flex gap-3 justify-end">
           <Button 
             type="button"
             variant="glass" 
@@ -455,7 +455,7 @@ export function DropdownOptionsEditor({
             disabled={loading}
             className="cursor-pointer"
           >
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary 
             type="button"
@@ -464,7 +464,7 @@ export function DropdownOptionsEditor({
             className="cursor-pointer"
           >
             <Save className="w-4 h-4 mr-2" />
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? 'Сохранение...' : 'Сохранить изменения'}
           </ButtonPrimary>
         </div>
       </DialogContent>

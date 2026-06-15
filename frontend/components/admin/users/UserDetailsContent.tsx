@@ -74,7 +74,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading user details..." />;
+    return <Loader fullScreen text="Загрузка данных пользователя..." />;
   }
 
   if (!user) {
@@ -92,7 +92,7 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
       case 'VIEWER':
         return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
       default:
-        return 'bg-white/10 text-white border-white/20';
+        return 'bg-muted text-foreground border-border';
     }
   };
 
@@ -105,8 +105,8 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Admin', href: '/admin' },
-              { label: 'Users', href: '/admin/users' },
+              { label: 'Админка', href: '/admin' },
+              { label: 'Пользователи', href: '/admin/users' },
               { label: user.name, href: `/admin/users/${user.id}` },
             ]}
           />
@@ -122,14 +122,14 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
             background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
           }}
         >
-          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: 'var(--item-card-bg)' }}>
             <Card
               variant="glass"
               className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
             >
               <CardHeader>
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>User account overview</CardDescription>
+                <CardTitle>Профиль</CardTitle>
+                <CardDescription>Обзор учетной записи пользователя</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -143,25 +143,25 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
                   {/* Info */}
                   <div className="flex-1 text-center md:text-left">
                     <div className="mb-4">
-                      <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
+                      <h1 className="text-4xl font-bold text-foreground mb-2">{user.name}</h1>
                       <Badge variant="outline" className={`border ${getRoleBadgeColor(user.role.name)} cursor-default`}>
                         <Briefcase className="w-3 h-3 mr-1" />
                         {user.role.name}
                       </Badge>
                     </div>
 
-                    <div className="space-y-2 text-sm text-white/70">
+                    <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         <span>{user.email}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>Joined {formatDateTime(user.createdAt)}</span>
+                        <span>Присоединился: {formatDateTime(user.createdAt)}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
-                        <span>{user._count.createdProjects} projects created</span>
+                        <span>Создано проектов: {user._count.createdProjects}</span>
                       </div>
                     </div>
                   </div>
@@ -175,40 +175,40 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* User Information */}
           <DetailCard
-            title="User Information"
-            description="Basic user details"
+            title="Информация о пользователе"
+            description="Основные данные пользователя"
             contentClassName="space-y-4"
             headerClassName=""
           >
             <div className="space-y-4">
               <div>
-                <label className="text-xs uppercase tracking-wide text-muted-foreground">Name</label>
-                <p className="text-white font-medium mt-1">{user.name}</p>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">Имя</label>
+                <p className="text-foreground font-medium mt-1">{user.name}</p>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wide text-muted-foreground">Email</label>
-                <p className="text-white font-medium mt-1">{user.email}</p>
+                <p className="text-foreground font-medium mt-1">{user.email}</p>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-wide text-muted-foreground">Role</label>
-                <p className="text-white font-medium mt-1">{user.role.name}</p>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">Роль</label>
+                <p className="text-foreground font-medium mt-1">{user.role.name}</p>
               </div>
               {user.phone && (
                 <div>
-                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Phone</label>
-                  <p className="text-white font-medium mt-1">{user.phone}</p>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Телефон</label>
+                  <p className="text-foreground font-medium mt-1">{user.phone}</p>
                 </div>
               )}
               {user.location && (
                 <div>
-                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Location</label>
-                  <p className="text-white font-medium mt-1">{user.location}</p>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Локация</label>
+                  <p className="text-foreground font-medium mt-1">{user.location}</p>
                 </div>
               )}
               {user.bio && (
                 <div>
-                  <label className="text-xs uppercase tracking-wide text-muted-foreground">Bio</label>
-                  <p className="text-white font-medium mt-1">{user.bio}</p>
+                  <label className="text-xs uppercase tracking-wide text-muted-foreground">О себе</label>
+                  <p className="text-foreground font-medium mt-1">{user.bio}</p>
                 </div>
               )}
             </div>
@@ -216,23 +216,23 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
 
           {/* Statistics */}
           <DetailCard
-            title="Statistics"
-            description="User activity metrics"
+            title="Статистика"
+            description="Метрики активности пользователя"
             contentClassName="space-y-4"
             headerClassName=""
           >
             <div className="space-y-4">
               <div>
-                <label className="text-xs uppercase tracking-wide text-muted-foreground">Projects Created</label>
-                <p className="text-white font-medium mt-1 text-2xl">{user._count.createdProjects}</p>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">Создано проектов</label>
+                <p className="text-foreground font-medium mt-1 text-2xl">{user._count.createdProjects}</p>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-wide text-muted-foreground">Member Since</label>
-                <p className="text-white font-medium mt-1">{formatDateTime(user.createdAt)}</p>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">С нами с</label>
+                <p className="text-foreground font-medium mt-1">{formatDateTime(user.createdAt)}</p>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-wide text-muted-foreground">Last Updated</label>
-                <p className="text-white font-medium mt-1">{formatDateTime(user.updatedAt)}</p>
+                <label className="text-xs uppercase tracking-wide text-muted-foreground">Последнее обновление</label>
+                <p className="text-foreground font-medium mt-1">{formatDateTime(user.updatedAt)}</p>
               </div>
             </div>
           </DetailCard>
@@ -245,19 +245,19 @@ export default function UserDetailsContent({ userId }: UserDetailsContentProps) 
             background: 'conic-gradient(from 45deg, rgba(255, 255, 255, 0.1) 0deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0.1) 180deg, rgba(255, 255, 255, 0.4) 270deg, rgba(255, 255, 255, 0.1) 360deg)',
           }}
         >
-          <div className="relative rounded-3xl h-full" style={{ backgroundColor: '#050608' }}>
+          <div className="relative rounded-3xl h-full" style={{ backgroundColor: 'var(--item-card-bg)' }}>
             <Card
               variant="glass"
               className="!border-0 !rounded-3xl !bg-transparent before:!bg-none !overflow-visible transition-all flex flex-col h-full"
             >
               <CardHeader>
-                <CardTitle>About</CardTitle>
+                <CardTitle>О разделе</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} EZTest Admin</p>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="hidden sm:inline">User Details</span>
+                    <span className="hidden sm:inline">Детали пользователя</span>
                     <span className="text-primary">v0.1.0</span>
                   </div>
                 </div>

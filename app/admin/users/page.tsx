@@ -5,8 +5,8 @@ import { authOptions } from '@/lib/auth';
 import UserManagement from '@/frontend/components/admin/users/UserManagement';
 
 export const metadata: Metadata = {
-  title: 'User Management',
-  description: 'Manage application users and roles',
+  title: 'Пользователи',
+  description: 'Управление пользователями приложения и ролями',
 };
 
 export default async function UserManagementPage() {
