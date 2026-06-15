@@ -31,39 +31,39 @@ export function generatePasswordResetEmail(
   resetLink: string,
   userName: string
 ): { subject: string; html: string; text: string } {
-  const subject = 'Reset Your EZTest Password';
+  const subject = 'Сброс пароля EZTest';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Password Reset Request</h2>
-      <p>Hi ${userName},</p>
-      <p>We received a request to reset your password. Click the link below to reset it:</p>
+      <h2>Запрос на сброс пароля</h2>
+      <p>Здравствуйте, ${userName}.</p>
+      <p>Мы получили запрос на сброс вашего пароля. Нажмите ссылку ниже, чтобы установить новый пароль:</p>
       <p style="text-align: center; margin: 30px 0;">
         <a href="${resetLink}" style="background-color: #033977; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; display: inline-block;">
-          Reset Password
+          Сбросить пароль
         </a>
       </p>
-      <p>Or copy and paste this link in your browser:</p>
+      <p>Или скопируйте и вставьте эту ссылку в браузер:</p>
       <p style="word-break: break-all; color: #666;">${resetLink}</p>
       <p style="color: #999; font-size: 12px;">
-        This link will expire in 1 hour. If you didn't request a password reset, please ignore this email.
+        Ссылка действует 1 час. Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
       </p>
       <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-      <p style="color: #999; font-size: 12px;">EZTest - Self-hosted Test Management Platform</p>
+      <p style="color: #999; font-size: 12px;">EZTest - Self-hosted платформа управления тестированием</p>
     </div>
   `;
 
   const text = `
-Password Reset Request
+Запрос на сброс пароля
 
-Hi ${userName},
+Здравствуйте, ${userName}.
 
-We received a request to reset your password. Click the link below to reset it:
+Мы получили запрос на сброс вашего пароля. Перейдите по ссылке ниже, чтобы установить новый пароль:
 
 ${resetLink}
 
-This link will expire in 1 hour. If you didn't request a password reset, please ignore this email.
+Ссылка действует 1 час. Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
 
-EZTest - Self-hosted Test Management Platform
+EZTest - Self-hosted платформа управления тестированием
   `;
 
   return { subject, html, text };

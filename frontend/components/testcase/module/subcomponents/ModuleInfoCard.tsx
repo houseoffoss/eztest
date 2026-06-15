@@ -12,24 +12,24 @@ interface ModuleInfoCardProps {
 
 export function ModuleInfoCard({ module, testCaseCount }: ModuleInfoCardProps) {
   return (
-    <DetailCard title="Information" contentClassName="space-y-3">
+    <DetailCard title="Информация" contentClassName="space-y-3">
       <div>
-        <h4 className="text-sm font-medium text-white/60 mb-1">Order</h4>
+        <h4 className="text-sm font-medium text-white/60 mb-1">Порядок</h4>
         <p className="text-white/90 text-sm">{module.order ?? 0}</p>
       </div>
 
       <StatisticsSection
         statistics={[
-          { label: 'Test Cases', value: testCaseCount },
+          { label: 'Тест-кейсы', value: testCaseCount },
         ]}
       />
 
       {module.createdAt && (
-        <DateInfoSection label="Created" date={module.createdAt} />
+        <DateInfoSection label="Создан" date={module.createdAt} />
       )}
 
       {module.updatedAt && (
-        <DateInfoSection label="Last Updated" date={module.updatedAt} />
+        <DateInfoSection label="Последнее обновление" date={module.updatedAt} />
       )}
     </DetailCard>
   );

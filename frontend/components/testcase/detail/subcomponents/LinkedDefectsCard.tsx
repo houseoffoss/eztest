@@ -68,12 +68,12 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
   return (
     <>
       <DetailCard 
-        title="Linked Defects"
+        title="Связанные дефекты"
         headerAction={
           <div className="flex items-center gap-3">
             {defects.length > 0 && (
               <span className="text-sm text-white/60 bg-white/10 px-3 py-1 rounded-full">
-                {defects.length} {defects.length === 1 ? 'Defect' : 'Defects'}
+                {defects.length} {defects.length === 1 ? 'дефект' : 'дефектов'}
               </span>
             )}
             {canLinkDefect && (
@@ -83,7 +83,7 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
                 className="flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Link Defect
+                Связать дефект
               </ButtonPrimary>
             )}
           </div>
@@ -94,10 +94,10 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
           <div className="text-center py-8">
             <Bug className="w-12 h-12 text-white/20 mx-auto mb-3" />
             <p className="text-white/60 text-sm">
-              No defects linked to this test case yet
+              К этому тест-кейсу пока не привязаны дефекты
             </p>
             <p className="text-white/40 text-xs mt-1">
-              Defects will appear here when they are linked to this test case
+              Дефекты появятся здесь после привязки к этому тест-кейсу
             </p>
           </div>
         ) : (
@@ -107,10 +107,10 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
               className="grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10 rounded-t-md"
               style={{ gridTemplateColumns: 'auto 1fr 120px 120px' }}
             >
-              <div>Defect ID</div>
-              <div>Title</div>
-              <div>Severity</div>
-              <div className="text-right">Status</div>
+              <div>ID дефекта</div>
+              <div>Заголовок</div>
+              <div>Серьезность</div>
+              <div className="text-right">Статус</div>
             </div>
 
             {/* Data Rows */}

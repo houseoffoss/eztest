@@ -19,15 +19,15 @@ export function ModuleDetailsCard({
   onFormChange,
 }: ModuleDetailsCardProps) {
   return (
-    <DetailCard title="Details" contentClassName="space-y-4">
+    <DetailCard title="Детали" contentClassName="space-y-4">
       {isEditing ? (
         <div className="space-y-2">
-          <Label>Description</Label>
+          <Label>Описание</Label>
           <Textarea
             variant="glass"
             value={formData.description}
             onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
-            placeholder="Enter description"
+            placeholder="Введите описание"
             rows={3}
             maxLength={250}
             className="w-full"
@@ -38,7 +38,7 @@ export function ModuleDetailsCard({
           {module.description && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Description
+                Описание
               </h4>
               <p className="text-white/90 whitespace-pre-wrap break-words">
                 {module.description}
@@ -48,9 +48,9 @@ export function ModuleDetailsCard({
           {!module.description && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Description
+                Описание
               </h4>
-              <p className="text-white/40 italic">No description provided</p>
+              <p className="text-white/40 italic">Описание отсутствует</p>
             </div>
           )}
         </>

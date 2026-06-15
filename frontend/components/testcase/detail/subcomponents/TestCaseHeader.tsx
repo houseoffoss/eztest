@@ -81,13 +81,13 @@ export function TestCaseHeader({
       maxLength={200}
       badges={[
         { 
-          label: 'Priority', 
+          label: 'Приоритет', 
           value: priorityLabel, 
           className: priorityBadgeProps.className,
           style: priorityBadgeProps.style 
         },
         { 
-          label: 'Status', 
+          label: 'Статус', 
           value: statusLabel, 
           className: statusBadgeProps.className,
           style: statusBadgeProps.style 
@@ -95,14 +95,14 @@ export function TestCaseHeader({
       ]}
       actions={[
         { 
-          label: 'Edit', 
+          label: 'Редактировать', 
           icon: Edit, 
           onClick: onEdit, 
           show: canUpdate,
           buttonName: 'TestCase Detail - Edit',
         },
         { 
-          label: 'Delete', 
+          label: 'Удалить', 
           icon: Trash2, 
           onClick: onDelete, 
           variant: 'destructive', 

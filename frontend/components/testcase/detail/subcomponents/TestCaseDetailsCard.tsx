@@ -64,7 +64,7 @@ export function TestCaseDetailsCard({
   const handleDeletedAttachments = onDeletedAttachments || (() => {});
 
   return (
-    <DetailCard title="Details" contentClassName="space-y-4">
+    <DetailCard title="Детали" contentClassName="space-y-4">
       {isEditing ? (
         <div className="space-y-4">
           {/* Title */}
@@ -77,7 +77,7 @@ export function TestCaseDetailsCard({
               variant="glass"
               value={formData.title}
               onChange={(e) => handleFieldChange('title', e.target.value)}
-              placeholder="Enter test case title"
+              placeholder="Введите название тест-кейса"
               maxLength={200}
             />
             {errors.title && <p className="text-xs text-red-400">{errors.title}</p>}
@@ -86,7 +86,7 @@ export function TestCaseDetailsCard({
           {/* Priority and Status */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority">Приоритет</Label>
               <Select
                 value={formData.priority}
                 onValueChange={(value) => handleFieldChange('priority', value)}
@@ -96,7 +96,7 @@ export function TestCaseDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingPriority ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>Загрузка...</SelectItem>
                   ) : (
                     priorityOptions.map((opt) => (
                       <SelectItem 
@@ -112,7 +112,7 @@ export function TestCaseDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">Статус</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) => handleFieldChange('status', value)}
@@ -122,7 +122,7 @@ export function TestCaseDetailsCard({
                 </SelectTrigger>
                 <SelectContent variant="glass">
                   {loadingStatus ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                    <SelectItem value="loading" disabled>Загрузка...</SelectItem>
                   ) : (
                     statusOptions.map((opt) => (
                       <SelectItem 
@@ -140,7 +140,7 @@ export function TestCaseDetailsCard({
 
           {/* Module */}
           <div className="space-y-2">
-            <Label htmlFor="moduleId">Module</Label>
+            <Label htmlFor="moduleId">Модуль</Label>
             <Select
               value={formData.moduleId || 'none'}
               onValueChange={(value) => handleFieldChange('moduleId', value === 'none' ? null : value)}
@@ -149,7 +149,7 @@ export function TestCaseDetailsCard({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent variant="glass">
-                <SelectItem value="none">None (No Module)</SelectItem>
+                <SelectItem value="none">Нет (без модуля)</SelectItem>
                 {modules?.map((module) => (
                   <SelectItem key={module.id} value={module.id}>
                     {module.name}
@@ -161,27 +161,27 @@ export function TestCaseDetailsCard({
 
           {/* Estimated Time */}
           <div className="space-y-2 pt-6 mt-6 border-t border-white/10">
-            <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
+            <Label htmlFor="estimatedTime">Оценочное время (минуты)</Label>
             <Input
               id="estimatedTime"
               variant="glass"
               type="number"
               value={formData.estimatedTime}
               onChange={(e) => handleFieldChange('estimatedTime', e.target.value)}
-              placeholder="Enter estimated time"
+              placeholder="Введите оценочное время"
               className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Описание</Label>
             <Textarea
               id="description"
               variant="glass"
               value={formData.description}
               onChange={(e) => handleFieldChange('description', e.target.value)}
-              placeholder="Enter test case description"
+              placeholder="Введите описание тест-кейса"
               rows={3}
               maxLength={250}
             />
@@ -190,13 +190,13 @@ export function TestCaseDetailsCard({
 
           {/* Preconditions */}
           <div className="space-y-2">
-            <Label htmlFor="preconditions">Preconditions</Label>
+            <Label htmlFor="preconditions">Предусловия</Label>
             <Textarea
               id="preconditions"
               variant="glass"
               value={formData.preconditions}
               onChange={(e) => handleFieldChange('preconditions', e.target.value)}
-              placeholder="Enter preconditions"
+              placeholder="Введите предусловия"
               rows={3}
               maxLength={250}
             />
@@ -204,13 +204,13 @@ export function TestCaseDetailsCard({
 
           {/* Postconditions */}
           <div className="space-y-2">
-            <Label htmlFor="postconditions">Postconditions</Label>
+            <Label htmlFor="postconditions">Постусловия</Label>
             <Textarea
               id="postconditions"
               variant="glass"
               value={formData.postconditions}
               onChange={(e) => handleFieldChange('postconditions', e.target.value)}
-              placeholder="Enter postconditions"
+              placeholder="Введите постусловия"
               rows={3}
               maxLength={250}
             />
@@ -218,13 +218,13 @@ export function TestCaseDetailsCard({
 
           {/* Test Data */}
           <div className="space-y-2">
-            <Label htmlFor="testData">Test Data</Label>
+            <Label htmlFor="testData">Тестовые данные</Label>
             <Textarea
               id="testData"
               variant="glass"
               value={formData.testData}
               onChange={(e) => handleFieldChange('testData', e.target.value)}
-              placeholder="Enter test data or input values"
+              placeholder="Введите тестовые данные или входные значения"
               rows={3}
               maxLength={500}
             />
@@ -234,7 +234,7 @@ export function TestCaseDetailsCard({
           {/* Common Attachments (Description, Preconditions, Postconditions) */}
           <div className="pt-2">
             <DetailCard
-              title="Attachments"
+              title="Вложения"
               contentClassName="space-y-3"
               headerAction={
                 <button
@@ -259,14 +259,14 @@ export function TestCaseDetailsCard({
                       )}
                       {att.id.startsWith('pending-') && (
                         <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 shrink-0">
-                          Pending
+                          Ожидает
                         </span>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-white/40 py-2">No attachments yet</p>
+                <p className="text-sm text-white/40 py-2">Вложений пока нет</p>
               )}
               <FileUploadModal
                 isOpen={attachmentModalOpen}
@@ -277,7 +277,7 @@ export function TestCaseDetailsCard({
                 fieldName="attachment"
                 entityType="testcase"
                 projectId={projectId}
-                title="Test Case Attachments"
+                title="Вложения тест-кейса"
               />
             </DetailCard>
           </div>
@@ -287,7 +287,7 @@ export function TestCaseDetailsCard({
           {testCase.module && (
             <div>
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Module
+                Модуль
               </h4>
               <p className="text-white/90">{testCase.module.name}</p>
             </div>
@@ -296,7 +296,7 @@ export function TestCaseDetailsCard({
           {testCase.description && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Description
+                Описание
               </h4>
               <p className="text-white/90 break-words whitespace-pre-wrap">{testCase.description}</p>
             </div>
@@ -305,11 +305,11 @@ export function TestCaseDetailsCard({
           {testCase.estimatedTime && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-1">
-                Estimated Time
+                Оценочное время
               </h4>
               <div className="flex items-center gap-2 text-white/90">
                 <Clock className="w-4 h-4" />
-                <span>{testCase.estimatedTime} minutes</span>
+                <span>{testCase.estimatedTime} минут</span>
               </div>
             </div>
           )}
@@ -317,7 +317,7 @@ export function TestCaseDetailsCard({
           {testCase.preconditions && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Preconditions
+                Предусловия
               </h4>
               <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.preconditions}
@@ -328,7 +328,7 @@ export function TestCaseDetailsCard({
           {testCase.postconditions && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Postconditions
+                Постусловия
               </h4>
               <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.postconditions}
@@ -339,7 +339,7 @@ export function TestCaseDetailsCard({
           {testCase.testData && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Test Data
+                Тестовые данные
               </h4>
               <p className="text-white/90 whitespace-pre-wrap break-words">
                 {testCase.testData}
@@ -350,7 +350,7 @@ export function TestCaseDetailsCard({
           {commonAttachments.length > 0 && (
             <div className="border-t border-white/10 pt-6">
               <h4 className="text-sm font-medium text-white/60 mb-2">
-                Attachments
+                Вложения
               </h4>
               <AttachmentDisplay attachments={commonAttachments} />
             </div>

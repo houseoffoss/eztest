@@ -19,10 +19,10 @@ export function DeleteTestCaseDialog({
   if (!testCase) return null;
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Test Case',
-    description: `Are you sure you want to delete "${testCase.title}"? This action cannot be undone.`,
-    submitLabel: 'Delete',
-    cancelLabel: 'Cancel',
+    title: 'Удалить тест-кейс',
+    description: `Вы уверены, что хотите удалить «${testCase.title}»? Это действие нельзя отменить.`,
+    submitLabel: 'Удалить',
+    cancelLabel: 'Отмена',
     triggerOpen: open,
     onOpenChange,
     onSubmit: onConfirm,

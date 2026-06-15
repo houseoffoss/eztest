@@ -23,6 +23,19 @@ export function AddTestCaseDialog({
   moduleId,
   onTestCasesAdded,
 }: AddTestCaseDialogProps) {
+  const priorityLabelMap: Record<string, string> = {
+    CRITICAL: 'Критический',
+    HIGH: 'Высокий',
+    MEDIUM: 'Средний',
+    LOW: 'Низкий',
+  };
+
+  const statusLabelMap: Record<string, string> = {
+    ACTIVE: 'Активный',
+    DRAFT: 'Черновик',
+    DEPRECATED: 'Устаревший',
+  };
+
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [selectedTestCases, setSelectedTestCases] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -121,11 +134,11 @@ export function AddTestCaseDialog({
             }
           })
         );
-        alert('Failed to add some test cases. Please try again.');
+        alert('Не удалось добавить некоторые тест-кейсы. Попробуйте снова.');
       }
     } catch (error) {
       console.error('Error adding test cases to module:', error);
-      alert('Failed to add test cases. Please try again.');
+      alert('Не удалось добавить тест-кейсы. Попробуйте снова.');
     } finally {
       setSubmitting(false);
     }
@@ -134,24 +147,24 @@ export function AddTestCaseDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
-        <DialogTitle>Add Test Cases to Module</DialogTitle>
+        <DialogTitle>Добавить тест-кейсы в модуль</DialogTitle>
         <DialogDescription>
-          Select unassigned test cases to add to this module. Test cases can only belong to one module.
+          Выберите тест-кейсы без модуля, которые нужно добавить в этот модуль. Тест-кейс может принадлежать только одному модулю.
         </DialogDescription>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center py-12">
-            <Loader fullScreen={false} text="Loading test cases..." />
+            <Loader fullScreen={false} text="Загрузка тест-кейсов..." />
           </div>
         ) : testCases.length === 0 ? (
           <div className="flex-1 flex items-center justify-center py-12">
             <div className="text-center">
-              <p className="text-white/60 mb-2">No available test cases</p>
+              <p className="text-white/60 mb-2">Нет доступных тест-кейсов</p>
               <p className="text-white/40 text-sm">
-                All test cases are already assigned to modules or no unassigned test cases exist
+                Все тест-кейсы уже привязаны к модулям или отсутствуют непривязанные тест-кейсы
               </p>
               <p className="text-white/40 text-xs mt-2">
-                Note: A test case can only belong to one module at a time
+                Примечание: тест-кейс может принадлежать только одному модулю
               </p>
             </div>
           </div>
@@ -164,11 +177,11 @@ export function AddTestCaseDialog({
                   onCheckedChange={handleSelectAll}
                 />
                 <span className="text-white/80 text-sm font-medium">
-                  Select All ({testCases.length} test cases)
+                  Выбрать все ({testCases.length} тест-кейсов)
                 </span>
               </div>
               <span className="text-white/60 text-sm">
-                {selectedTestCases.size} selected
+                Выбрано: {selectedTestCases.size}
               </span>
             </div>
 
@@ -201,14 +214,14 @@ export function AddTestCaseDialog({
                         testCase.priority === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-blue-500/20 text-blue-400'
                       }`}>
-                        {testCase.priority}
+                        {priorityLabelMap[testCase.priority] || testCase.priority}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded ${
                         testCase.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' :
                         testCase.status === 'DRAFT' ? 'bg-gray-500/20 text-gray-400' :
                         'bg-orange-500/20 text-orange-400'
                       }`}>
-                        {testCase.status}
+                        {statusLabelMap[testCase.status] || testCase.status}
                       </span>
                     </div>
                   </div>
@@ -224,13 +237,13 @@ export function AddTestCaseDialog({
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary
             onClick={handleSubmit}
             disabled={submitting || selectedTestCases.size === 0}
           >
-            {submitting ? 'Adding...' : `Add ${selectedTestCases.size} Test Case${selectedTestCases.size !== 1 ? 's' : ''}`}
+            {submitting ? 'Добавление...' : `Добавить ${selectedTestCases.size} ${selectedTestCases.size !== 1 ? 'тест-кейсов' : 'тест-кейс'}`}
           </ButtonPrimary>
         </div>
       </DialogContent>

@@ -14,27 +14,27 @@ export function ModuleStatisticsCard({ testCases }: ModuleStatisticsCardProps) {
   const totalRuns = testCases.reduce((sum, tc) => sum + (tc._count?.results || 0), 0);
 
   return (
-    <DetailCard title="Statistics" contentClassName="space-y-3">
+    <DetailCard title="Статистика" contentClassName="space-y-3">
       <div>
-        <h4 className="text-sm font-medium text-white/60 mb-1">Status Breakdown</h4>
+        <h4 className="text-sm font-medium text-white/60 mb-1">Распределение по статусам</h4>
         <div className="space-y-1 text-sm">
           <div className="flex justify-between text-white/90">
-            <span>Active</span>
+            <span>Активные</span>
             <span className="font-medium text-green-400">{activeCount}</span>
           </div>
           <div className="flex justify-between text-white/90">
-            <span>Draft</span>
+            <span>Черновики</span>
             <span className="font-medium text-yellow-400">{draftCount}</span>
           </div>
           <div className="flex justify-between text-white/90">
-            <span>Deprecated</span>
+            <span>Устаревшие</span>
             <span className="font-medium text-red-400">{deprecatedCount}</span>
           </div>
         </div>
       </div>
 
       <div className="border-t border-white/10 pt-3">
-        <h4 className="text-sm font-medium text-white/60 mb-1">Total Runs</h4>
+        <h4 className="text-sm font-medium text-white/60 mb-1">Всего прогонов</h4>
         <p className="text-white/90 text-lg font-semibold">{totalRuns}</p>
       </div>
     </DetailCard>

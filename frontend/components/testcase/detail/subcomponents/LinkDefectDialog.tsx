@@ -50,7 +50,7 @@ export function LinkDefectDialog({
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to fetch defects: ${response.statusText}`);
+        throw new Error(errorData.error || `Не удалось загрузить дефекты: ${response.statusText}`);
       }
       
       const data = await response.json();
@@ -73,17 +73,17 @@ export function LinkDefectDialog({
         setError('Invalid response format from server');
         setAlert({
           type: 'error',
-          title: 'Error Loading Defects',
-          message: 'Invalid response format from server',
+          title: 'Ошибка загрузки дефектов',
+          message: 'Некорректный формат ответа сервера',
         });
       }
     } catch (error) {
       console.error('Error fetching defects:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load defects. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : 'Не удалось загрузить дефекты. Попробуйте снова.';
       setError(errorMessage);
       setAlert({
         type: 'error',
-        title: 'Error Loading Defects',
+        title: 'Ошибка загрузки дефектов',
         message: errorMessage,
       });
     } finally {
@@ -99,9 +99,9 @@ export function LinkDefectDialog({
   const fields: BaseDialogField[] = [
     {
       name: 'defectId',
-      label: 'Select Defect',
+      label: 'Выберите дефект',
       type: 'select',
-      placeholder: loading ? 'Loading defects...' : error ? 'Error loading defects' : defectOptions.length === 0 ? 'No defects available' : 'Choose a defect to link',
+      placeholder: loading ? 'Загрузка дефектов...' : error ? 'Ошибка загрузки дефектов' : defectOptions.length === 0 ? 'Нет доступных дефектов' : 'Выберите дефект для привязки',
       required: true,
       options: defectOptions,
       cols: 2,
@@ -109,23 +109,23 @@ export function LinkDefectDialog({
   ];
 
   const config: BaseDialogConfig = {
-    title: 'Link Defect',
+    title: 'Связать дефект',
     description: error 
       ? error 
       : loading 
-        ? 'Loading available defects...' 
+        ? 'Загрузка доступных дефектов...' 
         : defectOptions.length === 0
-          ? 'No defects available in this project. Create defects first before linking them to test cases.'
-          : 'Link a defect to this test case to track related issues.',
+          ? 'В этом проекте нет доступных дефектов. Сначала создайте дефекты, затем привяжите их к тест-кейсам.'
+          : 'Привяжите дефект к этому тест-кейсу для отслеживания связанных проблем.',
     fields,
-    submitLabel: 'Link Defect',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Связать дефект',
+    cancelLabel: 'Отмена',
     triggerOpen: open,
     onOpenChange,
     onSubmit: async (formData) => {
       // Prevent submission if loading, has error, or no defects available
       if (loading || error || defectOptions.length === 0) {
-        throw new Error('Cannot link defect: No available defects or error occurred');
+        throw new Error('Невозможно привязать дефект: нет доступных дефектов или произошла ошибка');
       }
 
       const payload = {
@@ -144,7 +144,7 @@ export function LinkDefectDialog({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to link defect');
+        throw new Error(data.error || 'Не удалось привязать дефект');
       }
 
       return data;
@@ -152,8 +152,8 @@ export function LinkDefectDialog({
     onSuccess: () => {
       setAlert({
         type: 'success',
-        title: 'Defect Linked',
-        message: 'The defect has been successfully linked to this test case',
+        title: 'Дефект привязан',
+        message: 'Дефект успешно привязан к этому тест-кейсу',
       });
       onDefectLinked();
     },

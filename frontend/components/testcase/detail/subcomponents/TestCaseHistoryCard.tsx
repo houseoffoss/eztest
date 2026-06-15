@@ -116,19 +116,19 @@ export function TestCaseHistoryCard({ projectId, testCaseId }: TestCaseHistoryCa
   };
 
   return (
-    <DetailCard title="Execution History" contentClassName="">
+    <DetailCard title="История выполнения" contentClassName="">
       {loading ? (
         <div className="py-8 flex justify-center">
-          <Loader fullScreen={false} text="Loading history..." />
+          <Loader fullScreen={false} text="Загрузка истории..." />
         </div>
       ) : history.length === 0 ? (
         <div className="text-center py-8">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-white/60 text-sm">
-            No execution history yet
+            История выполнения пока отсутствует
           </p>
           <p className="text-white/40 text-xs mt-1">
-            This test case hasn&apos;t been executed in any test run
+            Этот тест-кейс еще не выполнялся ни в одном тестовом прогоне
           </p>
         </div>
       ) : (
@@ -138,11 +138,11 @@ export function TestCaseHistoryCard({ projectId, testCaseId }: TestCaseHistoryCa
             className="grid gap-3 px-3 py-2 text-xs font-semibold text-white/60 border-b border-white/10 rounded-t-md"
             style={{ gridTemplateColumns: '80px 180px 140px 180px 80px' }}
           >
-            <div>Status</div>
-            <div>Test Run</div>
-            <div>Executed By</div>
-            <div>Date</div>
-            <div className="text-right">Duration</div>
+            <div>Статус</div>
+            <div>Тестовый прогон</div>
+            <div>Исполнил</div>
+            <div>Дата</div>
+            <div className="text-right">Длительность</div>
           </div>
 
           {/* Data Rows */}
@@ -158,19 +158,19 @@ export function TestCaseHistoryCard({ projectId, testCaseId }: TestCaseHistoryCa
             >
               <div className="flex items-center gap-2">
                 {getStatusIcon(row.status)}
+                {(() => {
+                  const statusLabel = statusOptions.find((opt) => opt.value === row.status)?.label || row.status;
+                  const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
+                  return (
                 <Badge
                   variant="outline"
-                  className={`text-xs ${(() => {
-                    const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
-                    return badgeProps.className;
-                  })()}`}
-                  style={(() => {
-                    const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
-                    return badgeProps.style;
-                  })()}
+                  className={`text-xs ${badgeProps.className}`}
+                  style={badgeProps.style}
                 >
-                  {row.status}
+                  {statusLabel}
                 </Badge>
+                  );
+                })()}
               </div>
               <div className="min-w-0">
                 <p className="text-sm text-white/90 font-medium truncate block">{row.testRun.name}</p>

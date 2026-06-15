@@ -22,39 +22,39 @@ export function DeleteModuleDialog({
     <div className="space-y-3">
       <div className="glass-panel p-4 rounded-lg">
         <p className="text-sm text-white/80 mb-2">
-          <span className="font-semibold">Module:</span> {module.name}
+          <span className="font-semibold">Модуль:</span> {module.name}
         </p>
         {module.description && (
           <p className="text-sm text-white/60 mb-2 break-words line-clamp-2">{module.description}</p>
         )}
         <p className="text-sm text-white/80">
-          <span className="font-semibold">Test Cases:</span> {testCaseCount}
+          <span className="font-semibold">Тест-кейсы:</span> {testCaseCount}
         </p>
       </div>
 
       {testCaseCount > 0 && (
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
           <p className="text-sm text-yellow-200">
-            <strong>Warning:</strong> This module contains {testCaseCount} test case
-            {testCaseCount !== 1 ? 's' : ''}. Deleting the module will remove the module
-            association from these test cases, but the test cases themselves will not be
-            deleted.
+            <strong>Внимание:</strong> Этот модуль содержит {testCaseCount} 
+            {testCaseCount !== 1 ? 'тест-кейсов' : 'тест-кейс'}. При удалении модуля
+            связь с модулем у этих тест-кейсов будет удалена, но сами тест-кейсы
+            останутся.
           </p>
         </div>
       )}
 
       <p className="text-sm text-white/60">
-        This action cannot be undone. The module will be permanently removed from the project.
+        Это действие нельзя отменить. Модуль будет безвозвратно удален из проекта.
       </p>
     </div>
   );
 
   const config: BaseConfirmDialogConfig = {
-    title: 'Delete Module',
-    description: `Are you sure you want to delete "${module.name}"?`,
+    title: 'Удалить модуль',
+    description: `Вы уверены, что хотите удалить «${module.name}»?`,
     content,
-    submitLabel: 'Delete Module',
-    cancelLabel: 'Cancel',
+    submitLabel: 'Удалить модуль',
+    cancelLabel: 'Отмена',
     triggerOpen: open,
     onOpenChange,
     onSubmit: onConfirm,

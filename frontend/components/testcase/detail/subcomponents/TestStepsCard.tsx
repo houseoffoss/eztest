@@ -52,7 +52,7 @@ export function TestStepsCard({
 }: TestStepsCardProps) {
   return (
     <DetailCard
-      title="Test Steps"
+      title="Шаги теста"
       contentClassName="space-y-3"
       headerAction={
         isEditing ? (
@@ -63,7 +63,7 @@ export function TestStepsCard({
             disabled={addingStep}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Step
+            Добавить шаг
           </Button>
         ) : undefined
       }
@@ -71,7 +71,7 @@ export function TestStepsCard({
       <div className="space-y-3">
         {steps.length === 0 ? (
           <p className="text-white/60 text-center py-8">
-            No test steps defined yet
+            Шаги теста пока не добавлены
           </p>
         ) : (
           steps.map((step) => (
@@ -92,7 +92,7 @@ export function TestStepsCard({
                   <div className="flex-1 space-y-1">
                     <div>
                       <h5 className="text-xs font-medium text-white/60 mb-1">
-                        Action
+                        Действие
                       </h5>
                       {isEditing ? (
                         <TextareaWithAttachments
@@ -106,7 +106,7 @@ export function TestStepsCard({
                             );
                             onStepsChange(updated);
                           }}
-                          placeholder="Enter action"
+                          placeholder="Введите действие"
                           fieldName="action"
                           attachments={step.id && stepAttachments && stepAttachments[step.id] ? (stepAttachments[step.id].action || []) : []}
                           onAttachmentsChange={(attachments) => {
@@ -134,7 +134,7 @@ export function TestStepsCard({
                     </div>
                     <div>
                       <h5 className="text-xs font-medium text-white/60 mb-1">
-                        Expected Result
+                        Ожидаемый результат
                       </h5>
                       {isEditing ? (
                         <TextareaWithAttachments
@@ -148,7 +148,7 @@ export function TestStepsCard({
                             );
                             onStepsChange(updated);
                           }}
-                          placeholder="Enter expected result"
+                          placeholder="Введите ожидаемый результат"
                           fieldName="expectedResult"
                           attachments={step.id && stepAttachments && stepAttachments[step.id] ? (stepAttachments[step.id].expectedResult || []) : []}
                           onAttachmentsChange={(attachments) => {
@@ -194,14 +194,14 @@ export function TestStepsCard({
           {addingStep && (
             <div className="border border-blue-500/50 rounded-lg p-4 space-y-3 bg-blue-500/5">
               <div className="space-y-2">
-                <Label>Action</Label>
+                <Label>Действие</Label>
                 <TextareaWithAttachments
                   variant="glass"
                   value={newStep.action}
                   onChange={(value) =>
                     onNewStepChange({ ...newStep, action: value })
                   }
-                  placeholder="Enter action"
+                  placeholder="Введите действие"
                   fieldName="action"
                   attachments={newStepActionAttachments}
                   onAttachmentsChange={onNewStepActionAttachmentsChange || (() => {})}
@@ -213,14 +213,14 @@ export function TestStepsCard({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Expected Result</Label>
+                <Label>Ожидаемый результат</Label>
                 <TextareaWithAttachments
                   variant="glass"
                   value={newStep.expectedResult}
                   onChange={(value) =>
                     onNewStepChange({ ...newStep, expectedResult: value })
                   }
-                  placeholder="Enter expected result"
+                  placeholder="Введите ожидаемый результат"
                   fieldName="expectedResult"
                   attachments={newStepExpectedResultAttachments}
                   onAttachmentsChange={onNewStepExpectedResultAttachmentsChange || (() => {})}
@@ -233,7 +233,7 @@ export function TestStepsCard({
               </div>
               <div className="flex gap-2">
                 <ButtonPrimary size="sm" onClick={onAddStep} className="cursor-pointer">
-                  Add
+                  Добавить
                 </ButtonPrimary>
                 <Button
                   size="sm"
@@ -249,7 +249,7 @@ export function TestStepsCard({
                     }
                   }}
                 >
-                  Cancel
+                  Отмена
                 </Button>
               </div>
             </div>

@@ -101,8 +101,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
       } else if (response.status === 404) {
         setAlert({
           type: 'error',
-          title: 'Error',
-          message: 'Module not found',
+          title: 'Ошибка',
+          message: 'Модуль не найден',
         });
         setTimeout(() => router.push(`/projects/${projectId}/testcases`), 2000);
       }
@@ -110,8 +110,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
       console.error('Error fetching module:', error);
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Failed to load module',
+        title: 'Ошибка',
+        message: 'Не удалось загрузить модуль',
       });
     }
   };
@@ -156,15 +156,15 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         setIsEditing(false);
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: `Module "${data.data.name}" updated successfully`,
+          title: 'Успешно',
+          message: `Модуль «${data.data.name}» успешно обновлен`,
         });
         setTimeout(() => setAlert(null), 5000);
       } else {
         setAlert({
           type: 'error',
-          title: 'Error',
-          message: data.error || 'Failed to update module',
+          title: 'Ошибка',
+          message: data.error || 'Не удалось обновить модуль',
         });
         setTimeout(() => setAlert(null), 5000);
       }
@@ -172,8 +172,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
       console.error('Error updating module:', error);
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Failed to update module',
+        title: 'Ошибка',
+        message: 'Не удалось обновить модуль',
       });
       setTimeout(() => setAlert(null), 5000);
     }
@@ -186,8 +186,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
   const handleTestCaseCreated = (newTestCase: TestCase) => {
     setAlert({
       type: 'success',
-      title: 'Success',
-      message: `Test case "${newTestCase.title}" created successfully`,
+      title: 'Успешно',
+      message: `Тест-кейс «${newTestCase.title}» успешно создан`,
     });
     setTimeout(() => setAlert(null), 5000);
     fetchTestCases();
@@ -196,8 +196,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
   const handleTestCasesAdded = () => {
     setAlert({
       type: 'success',
-      title: 'Success',
-      message: 'Test cases added to module successfully',
+      title: 'Успешно',
+      message: 'Тест-кейсы успешно добавлены в модуль',
     });
     setTimeout(() => setAlert(null), 5000);
     fetchTestCases();
@@ -222,8 +222,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         setSelectedTestCase(null);
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: `Test case "${deletedTestCaseName}" deleted successfully`,
+          title: 'Успешно',
+          message: `Тест-кейс «${deletedTestCaseName}» успешно удален`,
         });
         setTimeout(() => setAlert(null), 5000);
         fetchTestCases();
@@ -231,8 +231,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Error',
-          message: data.error || 'Failed to delete test case',
+          title: 'Ошибка',
+          message: data.error || 'Не удалось удалить тест-кейс',
         });
         setTimeout(() => setAlert(null), 5000);
       }
@@ -240,8 +240,8 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
       console.error('Error deleting test case:', error);
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'Failed to delete test case',
+        title: 'Ошибка',
+        message: 'Не удалось удалить тест-кейс',
       });
       setTimeout(() => setAlert(null), 5000);
     }
@@ -258,24 +258,24 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
       setDeleteModuleDialogOpen(false);
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: `Module "${module.name}" deleted successfully`,
+        title: 'Успешно',
+        message: `Модуль «${module.name}» успешно удален`,
       });
       setTimeout(() => {
         router.push(`/projects/${projectId}/testcases`);
       }, 1000);
     } else {
       const data = await response.json();
-      throw new Error(data.error || 'Failed to delete module');
+      throw new Error(data.error || 'Не удалось удалить модуль');
     }
   };
 
   if (loading || !module) {
-    return <Loader fullScreen text="Loading module..." />;
+    return <Loader fullScreen text="Загрузка модуля..." />;
   }
 
   if (!project) {
-    return <Loader fullScreen text="Loading project..." />;
+    return <Loader fullScreen text="Загрузка проекта..." />;
   }
 
   return (
@@ -288,9 +288,9 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
+              { label: 'Проекты', href: '/projects' },
               { label: project.name, href: `/projects/${projectId}` },
-              { label: 'Test Cases', href: `/projects/${projectId}/testcases` },
+              { label: 'Тест-кейсы', href: `/projects/${projectId}/testcases` },
               { label: module.name, href: `/projects/${projectId}/modules/${module.id}` },
             ]}
           />
@@ -324,14 +324,14 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
         <ActionButtonGroup
           buttons={[
             {
-              label: 'View All Test Cases',
+              label: 'Все тест-кейсы',
               icon: TestTube2,
               onClick: () => router.push(`/projects/${projectId}/testcases`),
               variant: 'secondary',
               buttonName: 'Module Detail - View All Test Cases',
             },
             {
-              label: 'View All Test Suites',
+              label: 'Все наборы тестов',
               icon: Folder,
               onClick: () => router.push(`/projects/${projectId}/testsuites`),
               variant: 'secondary',

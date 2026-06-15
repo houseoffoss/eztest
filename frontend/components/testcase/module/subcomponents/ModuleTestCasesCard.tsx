@@ -30,12 +30,12 @@ export function ModuleTestCasesCard({
   const headerAction = canCreate && testCases.length > 0 ? (
     <ButtonPrimary size="sm" onClick={onCreateClick}>
       <Plus className="w-4 h-4 mr-2" />
-      Create
+      Создать
     </ButtonPrimary>
   ) : undefined;
 
   return (
-    <DetailCard title={`Test Cases (${testCasesCount})`} headerAction={headerAction} contentClassName="p-0">
+    <DetailCard title={`Тест-кейсы (${testCasesCount})`} headerAction={headerAction} contentClassName="p-0">
       {testCases && testCases.length > 0 ? (
         <TestCaseTable
           testCases={testCases}
@@ -48,12 +48,12 @@ export function ModuleTestCasesCard({
         <div className="text-center py-8 px-4">
           <TestTube2 className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <p className="text-white/60 mb-4">
-            No test cases in this module yet
+            В этом модуле пока нет тест-кейсов
           </p>
           {canCreate && (
             <ButtonPrimary onClick={onCreateClick} className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" />
-              Create Test Case
+              Создать тест-кейс
             </ButtonPrimary>
           )}
         </div>

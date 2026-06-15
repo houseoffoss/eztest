@@ -43,7 +43,7 @@ export function ModuleHeader({
           MODULE
         </Badge>
         <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">
-          {testCaseCount} Test Case{testCaseCount !== 1 ? 's' : ''}
+          {testCaseCount} {testCaseCount !== 1 ? 'тест-кейсов' : 'тест-кейс'}
         </Badge>
       </div>
       <DetailPageHeader
@@ -55,14 +55,14 @@ export function ModuleHeader({
         maxLength={150}
         actions={[
           { 
-            label: 'Edit', 
+            label: 'Редактировать', 
             icon: Edit, 
             onClick: onEdit, 
             show: canUpdate,
             buttonName: 'Module Detail - Edit',
           },
           { 
-            label: 'Delete', 
+            label: 'Удалить', 
             icon: Trash2, 
             onClick: onDelete, 
             variant: 'destructive', 

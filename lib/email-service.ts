@@ -312,7 +312,7 @@ export async function sendPasswordResetEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <h2 style="color: #1f2937; font-size: 20px; margin: 0 0 20px 0;">Запрос на сброс пароля</h2>
@@ -367,7 +367,7 @@ ${resetLink}
 Ссылка действует 1 час. Если вы не запрашивали сброс пароля, проигнорируйте это письмо или свяжитесь с поддержкой.
 
 ---
-EZTest - Self-hosted Test Management Platform
+EZTest - Self-hosted платформа управления тестированием
   `;
 
   return sendEmail({
@@ -449,7 +449,7 @@ export async function isEmailServiceAvailable(): Promise<boolean> {
 export async function sendDefectCreationEmail(
   data: DefectCreationEmailData
 ): Promise<boolean> {
-  const subject = `✅ Defect Created: ${data.defectTitle}`;
+  const subject = `✅ Дефект создан: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   if (data.recipients.length === 0) {
@@ -464,19 +464,19 @@ export async function sendDefectCreationEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #047857; font-size: 20px; margin: 0;">✅ Defect Successfully Created</h2>
+          <h2 style="color: #047857; font-size: 20px; margin: 0;">✅ Дефект успешно создан</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${recipient.name}</strong>,
+          Здравствуйте, <strong>${recipient.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A new defect has been created in project <strong>${data.projectName}</strong> by <strong>${data.creator.name}</strong>.
+          В проекте <strong>${data.projectName}</strong> создан новый дефект пользователем <strong>${data.creator.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -485,7 +485,7 @@ export async function sendDefectCreationEmail(
           
           <div style="margin: 15px 0; padding: 15px; background-color: white; border-radius: 6px;">
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Status</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Статус</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.status === 'NEW' ? 'background-color: #3b82f6; color: white;' :
                 data.status === 'IN_PROGRESS' ? 'background-color: #8b5cf6; color: white;' :
@@ -499,7 +499,7 @@ export async function sendDefectCreationEmail(
             </div>
 
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Severity</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Серьезность</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.severity === 'CRITICAL' ? 'background-color: #dc2626; color: white;' :
                 data.severity === 'HIGH' ? 'background-color: #ea580c; color: white;' :
@@ -511,7 +511,7 @@ export async function sendDefectCreationEmail(
             </div>
 
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Priority</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Приоритет</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.priority === 'CRITICAL' || data.priority === 'URGENT' ? 'background-color: #dc2626; color: white;' :
                 data.priority === 'HIGH' ? 'background-color: #ea580c; color: white;' :
@@ -524,15 +524,15 @@ export async function sendDefectCreationEmail(
 
             ${data.assignedTo ? `
               <div>
-                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned To</p>
+                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Назначен</p>
                 <p style="color: #4b5563; font-size: 14px; margin: 0;">
                   ${data.assignedTo.name} <span style="color: #9ca3af;">(${data.assignedTo.email})</span>
                 </p>
               </div>
             ` : `
               <div>
-                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned To</p>
-                <p style="color: #9ca3af; font-size: 14px; margin: 0; font-style: italic;">Not assigned yet</p>
+                <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Назначен</p>
+                <p style="color: #9ca3af; font-size: 14px; margin: 0; font-style: italic;">Пока не назначен</p>
               </div>
             `}
           </div>
@@ -541,7 +541,7 @@ export async function sendDefectCreationEmail(
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Defect
+              Открыть дефект
             </a>
           </div>
         </div>
@@ -549,31 +549,31 @@ export async function sendDefectCreationEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
     const text = `
-Defect Successfully Created
+Дефект успешно создан
 
-Hi ${recipient.name},
+Здравствуйте, ${recipient.name},
 
-A new defect has been created in project ${data.projectName} by ${data.creator.name}.
+В проекте ${data.projectName} пользователем ${data.creator.name}.
 
-Defect: ${data.defectKey}: ${data.defectTitle}
-${data.defectDescription ? `Description: ${data.defectDescription}` : ''}
+Дефект: ${data.defectKey}: ${data.defectTitle}
+${data.defectDescription ? `Описание: ${data.defectDescription}` : ''}
 
-Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
-Severity: ${data.severity}
-Priority: ${data.priority}
-${data.assignedTo ? `Assigned to: ${data.assignedTo.name} (${data.assignedTo.email})` : 'Assigned to: Not assigned yet'}
+Статус: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
+Серьезность: ${data.severity}
+Приоритет: ${data.priority}
+${data.assignedTo ? `Назначен: ${data.assignedTo.name} (${data.assignedTo.email})` : 'Назначен: Пока не назначен'}
 
-View defect: ${defectUrl}
+Открыть дефект: ${defectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
     `;
 
     return sendEmail({
@@ -599,7 +599,7 @@ This is an automated notification from EZTest.
 export async function sendDefectAssignmentEmail(
   data: DefectAssignmentEmailData
 ): Promise<boolean> {
-  const subject = `🐛 Defect Assigned: ${data.defectTitle}`;
+  const subject = `🐛 Назначен дефект: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   const html = `
@@ -607,19 +607,19 @@ export async function sendDefectAssignmentEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #991b1b; font-size: 20px; margin: 0;">🐛 New Defect Assignment</h2>
+          <h2 style="color: #991b1b; font-size: 20px; margin: 0;">🐛 Новое назначение дефекта</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.assignee.name}</strong>,
+          Здравствуйте, <strong>${data.assignee.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A new defect has been assigned to you in project <strong>${data.projectName}</strong> by <strong>${data.assignedBy.name}</strong>.
+          Вам назначен новый дефект в проекте <strong>${data.projectName}</strong> пользователем <strong>${data.assignedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -628,7 +628,7 @@ export async function sendDefectAssignmentEmail(
           
           <div style="margin: 15px 0; padding: 15px; background-color: white; border-radius: 6px;">
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Status</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Статус</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.status === 'NEW' ? 'background-color: #3b82f6; color: white;' :
                 data.status === 'IN_PROGRESS' ? 'background-color: #8b5cf6; color: white;' :
@@ -642,7 +642,7 @@ export async function sendDefectAssignmentEmail(
             </div>
 
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Severity</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Серьезность</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.severity === 'CRITICAL' ? 'background-color: #dc2626; color: white;' :
                 data.severity === 'HIGH' ? 'background-color: #ea580c; color: white;' :
@@ -654,7 +654,7 @@ export async function sendDefectAssignmentEmail(
             </div>
 
             <div style="margin-bottom: 12px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Priority</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Приоритет</p>
               <span style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; ${
                 data.priority === 'CRITICAL' || data.priority === 'URGENT' ? 'background-color: #dc2626; color: white;' :
                 data.priority === 'HIGH' ? 'background-color: #ea580c; color: white;' :
@@ -666,7 +666,7 @@ export async function sendDefectAssignmentEmail(
             </div>
 
             <div>
-              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Assigned By</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Назначил</p>
               <p style="color: #4b5563; font-size: 14px; margin: 0;">
                 ${data.assignedBy.name} <span style="color: #9ca3af;">(${data.assignedBy.email})</span>
               </p>
@@ -677,7 +677,7 @@ export async function sendDefectAssignmentEmail(
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Defect
+              Открыть дефект
             </a>
           </div>
         </div>
@@ -685,31 +685,31 @@ export async function sendDefectAssignmentEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-New Defect Assignment
+Новое назначение дефекта
 
-Hi ${data.assignee.name},
+Здравствуйте, ${data.assignee.name},
 
-A new defect has been assigned to you in project ${data.projectName} by ${data.assignedBy.name}.
+Вам назначен новый дефект в проекте ${data.projectName} пользователем ${data.assignedBy.name}.
 
-Defect: ${data.defectKey}: ${data.defectTitle}
-${data.defectDescription ? `Description: ${data.defectDescription}` : ''}
+Дефект: ${data.defectKey}: ${data.defectTitle}
+${data.defectDescription ? `Описание: ${data.defectDescription}` : ''}
 
-Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
-Severity: ${data.severity}
-Priority: ${data.priority}
-Assigned by: ${data.assignedBy.name} (${data.assignedBy.email})
+Статус: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status}
+Серьезность: ${data.severity}
+Приоритет: ${data.priority}
+Назначил: ${data.assignedBy.name} (${data.assignedBy.email})
 
-View defect: ${defectUrl}
+Открыть дефект: ${defectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   const assigneeSent = await sendEmail({
@@ -728,7 +728,7 @@ This is an automated notification from EZTest.
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
@@ -736,28 +736,28 @@ This is an automated notification from EZTest.
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${recipient.name}</strong>,
+          Здравствуйте, <strong>${recipient.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A defect you're watching has been assigned to <strong>${data.assignee.name}</strong> in project <strong>${data.projectName}</strong> by <strong>${data.assignedBy.name}</strong>.
+          Отслеживаемый вами дефект назначен пользователю <strong>${data.assignee.name}</strong> в проекте <strong>${data.projectName}</strong> пользователем <strong>${data.assignedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectKey}: ${data.defectTitle}</h3>
           ${data.defectDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">${data.defectDescription}</p>` : ''}
-          <p style="color: #6b7280; font-size: 14px; margin: 0;">Status: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status} | Severity: ${data.severity} | Priority: ${data.priority}</p>
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">Статус: ${data.status === 'IN_PROGRESS' ? 'IN PROGRESS' : data.status} | Серьезность: ${data.severity} | Приоритет: ${data.priority}</p>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">View Defect</a>
+          <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">Открыть дефект</a>
         </div>
 
-        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">This is an automated notification from EZTest.</p>
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">Это автоматическое уведомление от EZTest.</p>
       </div>
     </div>
   `;
-      const watcherText = `Hi ${recipient.name},\n\nA defect you're watching has been assigned to ${data.assignee.name} in project ${data.projectName}.\n\n${data.defectKey}: ${data.defectTitle}\nView: ${defectUrl}`;
+      const watcherText = `Здравствуйте, ${recipient.name},\n\nОтслеживаемый вами дефект назначен пользователю ${data.assignee.name} в проекте ${data.projectName}.\n\n${data.defectKey}: ${data.defectTitle}\nView: ${defectUrl}`;
       return sendEmail({
         to: recipient.email,
         subject,
@@ -778,7 +778,7 @@ This is an automated notification from EZTest.
 export async function sendDefectWatcherAddedEmail(
   data: DefectWatcherAddedEmailData
 ): Promise<boolean> {
-  const subject = `👁️ Added as Watcher: ${data.defectTitle}`;
+  const subject = `👁️ Добавлен как наблюдатель: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   const html = `
@@ -786,52 +786,52 @@ export async function sendDefectWatcherAddedEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #eef2ff; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #3730a3; font-size: 18px; margin: 0;">👁️ You're now watching a defect</h2>
+          <h2 style="color: #3730a3; font-size: 18px; margin: 0;">👁️ Теперь вы наблюдаете за дефектом</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.watcher.name}</strong>,
+          Здравствуйте, <strong>${data.watcher.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          You've been added as a watcher on the defect <strong>${data.defectKey}: ${data.defectTitle}</strong> in project <strong>${data.projectName}</strong> by <strong>${data.addedByUser.name}</strong>.
-          You'll receive email notifications for comments and status changes on this defect.
+          Вы добавлены наблюдателем к дефекту <strong>${data.defectKey}: ${data.defectTitle}</strong> в проекте <strong>${data.projectName}</strong> пользователем <strong>${data.addedByUser.name}</strong>.
+          Вы будете получать уведомления о комментариях и изменениях статуса этого дефекта.
         </p>
 
         <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-          <p style="color: #4b5563; font-size: 14px; margin: 0 0 4px 0;"><strong>Defect:</strong> ${data.defectKey}: ${data.defectTitle}</p>
-          <p style="color: #6b7280; font-size: 13px; margin: 0;"><strong>Project:</strong> ${data.projectName}</p>
+          <p style="color: #4b5563; font-size: 14px; margin: 0 0 4px 0;"><strong>Дефект:</strong> ${data.defectKey}: ${data.defectTitle}</p>
+          <p style="color: #6b7280; font-size: 13px; margin: 0;"><strong>Проект:</strong> ${data.projectName}</p>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
           <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-            View Defect
+            Открыть дефект
           </a>
         </div>
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest.
+          Это автоматическое уведомление от EZTest.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-You are now watching a defect.
+Теперь вы наблюдаете за этим дефектом.
 
-Defect: ${data.defectKey}: ${data.defectTitle}
-Project: ${data.projectName}
+Дефект: ${data.defectKey}: ${data.defectTitle}
+Проект: ${data.projectName}
 
-You will receive notifications for comments and status changes on this defect.
+Вы будете получать уведомления о комментариях и изменениях статуса этого дефекта.
 
-View defect: ${defectUrl}
+Открыть дефект: ${defectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -852,7 +852,7 @@ export async function sendDefectUpdateEmail(
     .map(c => `${c.field} changed from ${c.oldValue} to ${c.newValue}`)
     .join(', ');
   
-  const subject = `🔔 Defect Updated: ${data.defectTitle}`;
+  const subject = `🔔 Дефект обновлен: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   if (data.recipients.length === 0) {
@@ -938,38 +938,38 @@ export async function sendDefectUpdateEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #1e40af; font-size: 20px; margin: 0;">🔔 Defect Updated</h2>
+          <h2 style="color: #1e40af; font-size: 20px; margin: 0;">🔔 Дефект обновлен</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${recipient.name}</strong>,
+          Здравствуйте, <strong>${recipient.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          A defect has been updated in project <strong>${data.projectName}</strong> by <strong>${data.updatedBy.name}</strong>.
+          В проекте <strong>${data.projectName}</strong> был обновлен дефект пользователем <strong>${data.updatedBy.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <h3 style="color: #1f2937; margin: 0 0 10px 0; font-size: 18px;">${data.defectKey}: ${data.defectTitle}</h3>
           
           <div style="margin: 20px 0;">
-            <h4 style="color: #4b5563; margin: 0 0 10px 0; font-size: 14px;">Changes:</h4>
+            <h4 style="color: #4b5563; margin: 0 0 10px 0; font-size: 14px;">Изменения:</h4>
             ${changesHtml}
           </div>
 
           <p style="color: #4b5563; font-size: 13px; margin: 15px 0 0 0;">
-            <strong>Updated by:</strong> ${data.updatedBy.name} (${data.updatedBy.email})
+            <strong>Обновил:</strong> ${data.updatedBy.name} (${data.updatedBy.email})
           </p>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Defect
+              Открыть дефект
             </a>
           </div>
         </div>
@@ -977,7 +977,7 @@ export async function sendDefectUpdateEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
@@ -988,23 +988,23 @@ export async function sendDefectUpdateEmail(
       .join('\n');
 
     const text = `
-Defect Updated
+Дефект обновлен
 
-Hi ${recipient.name},
+Здравствуйте, ${recipient.name},
 
-A defect has been updated in project ${data.projectName} by ${data.updatedBy.name}.
+В проекте ${data.projectName} пользователем ${data.updatedBy.name}.
 
-Defect: ${data.defectKey}: ${data.defectTitle}
+Дефект: ${data.defectKey}: ${data.defectTitle}
 
-Changes:
+Изменения:
 ${changesText}
 
-Updated by: ${data.updatedBy.name} (${data.updatedBy.email})
+Обновил: ${data.updatedBy.name} (${data.updatedBy.email})
 
-View defect: ${defectUrl}
+Открыть дефект: ${defectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
     `;
 
     return sendEmail({
@@ -1030,7 +1030,7 @@ This is an automated notification from EZTest.
 export async function sendTestRunReportEmail(
   data: TestRunReportEmailData
 ): Promise<boolean> {
-  const subject = `📊 Test Run Report: ${data.testRunName}`;
+  const subject = `📊 Отчет по тест-рану: ${data.testRunName}`;
   const testRunUrl = `${data.appUrl}/projects/${data.projectId}/testruns/${data.testRunId}`;
   const passRate = data.stats.total > 0 
     ? Math.round((data.stats.passed / data.stats.total) * 100) 
@@ -1041,30 +1041,30 @@ export async function sendTestRunReportEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #1e40af; font-size: 20px; margin: 0;">📊 Test Run Report</h2>
+          <h2 style="color: #1e40af; font-size: 20px; margin: 0;">📊 Отчет по тест-рану</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.recipient.name}</strong>,
+          Здравствуйте, <strong>${data.recipient.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          Here's the test run report for <strong>${data.testRunName}</strong> in project <strong>${data.projectName}</strong>.
+          Ниже отчет по тест-рану <strong>${data.testRunName}</strong> в проекте <strong>${data.projectName}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           ${data.testRunDescription ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 0 0 15px 0;">${data.testRunDescription}</p>` : ''}
-          ${data.environment ? `<p style="color: #4b5563; font-size: 13px; margin: 0 0 15px 0;"><strong>Environment:</strong> ${data.environment}</p>` : ''}
+          ${data.environment ? `<p style="color: #4b5563; font-size: 13px; margin: 0 0 15px 0;"><strong>Окружение:</strong> ${data.environment}</p>` : ''}
           
           <div style="text-align: center; margin: 20px 0;">
             <div style="font-size: 36px; font-weight: bold; color: ${passRate >= 70 ? '#16a34a' : passRate >= 50 ? '#ca8a04' : '#dc2626'};">
               ${passRate}%
             </div>
-            <div style="font-size: 14px; color: #6b7280; margin-top: 5px;">Pass Rate</div>
+            <div style="font-size: 14px; color: #6b7280; margin-top: 5px;">Процент успешных</div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
@@ -1082,22 +1082,22 @@ export async function sendTestRunReportEmail(
             </div>
             <div style="background-color: #dbeafe; padding: 15px; border-radius: 6px; text-align: center;">
               <div style="font-size: 24px; font-weight: bold; color: #1e40af;">${data.stats.skipped}</div>
-              <div style="font-size: 12px; color: #1e40af; margin-top: 5px;">Skipped</div>
+              <div style="font-size: 12px; color: #1e40af; margin-top: 5px;">Пропущено</div>
             </div>
           </div>
 
           <p style="color: #4b5563; font-size: 13px; margin: 15px 0 0 0;">
-            <strong>Total Tests:</strong> ${data.stats.total}
+            <strong>Всего тестов:</strong> ${data.stats.total}
           </p>
           <p style="color: #4b5563; font-size: 13px; margin: 5px 0 0 0;">
-            <strong>Started by:</strong> ${data.startedBy.name} (${data.startedBy.email})
+            <strong>Запустил:</strong> ${data.startedBy.name} (${data.startedBy.email})
           </p>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${testRunUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Test Run
+              Открыть тест-ран
             </a>
           </div>
         </div>
@@ -1105,36 +1105,36 @@ export async function sendTestRunReportEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-Test Run Report
+Отчет по тест-рану
 
-Hi ${data.recipient.name},
+Здравствуйте, ${data.recipient.name},
 
-Here's the test run report for ${data.testRunName} in project ${data.projectName}.
+Ниже отчет по тест-рану ${data.testRunName} в проекте ${data.projectName}.
 
-${data.testRunDescription ? `Description: ${data.testRunDescription}` : ''}
-${data.environment ? `Environment: ${data.environment}` : ''}
+${data.testRunDescription ? `Описание: ${data.testRunDescription}` : ''}
+${data.environment ? `Окружение: ${data.environment}` : ''}
 
-Test Results:
-- Total: ${data.stats.total}
-- Passed: ${data.stats.passed}
-- Failed: ${data.stats.failed}
-- Blocked: ${data.stats.blocked}
-- Skipped: ${data.stats.skipped}
-- Pass Rate: ${passRate}%
+Результаты тестов:
+- Всего: ${data.stats.total}
+- Успешно: ${data.stats.passed}
+- Провалено: ${data.stats.failed}
+- Заблокировано: ${data.stats.blocked}
+- Пропущено: ${data.stats.skipped}
+- Процент успешных: ${passRate}%
 
-Started by: ${data.startedBy.name} (${data.startedBy.email})
+Запустил: ${data.startedBy.name} (${data.startedBy.email})
 
-View test run: ${testRunUrl}
+Открыть тест-ран: ${testRunUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1152,7 +1152,7 @@ This is an automated notification from EZTest.
 export async function sendDefectCommentEmail(
   data: DefectCommentEmailData
 ): Promise<boolean> {
-  const subject = `💬 New Comment on Defect ${data.defectKey}: ${data.defectTitle}`;
+  const subject = `💬 Новый комментарий к дефекту ${data.defectKey}: ${data.defectTitle}`;
   const defectUrl = `${data.appUrl}/projects/${data.projectId}/defects/${data.defectId}`;
 
   // Create email content for each recipient
@@ -1162,26 +1162,26 @@ export async function sendDefectCommentEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #ecf0ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">💬 New Comment Added</h2>
+          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">💬 Добавлен новый комментарий</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${recipient.name}</strong>,
+          Здравствуйте, <strong>${recipient.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          <strong>${data.commentAuthor.name}</strong> added a comment to defect <strong>${data.defectKey}</strong> in project <strong>${data.projectName}</strong>.
+          <strong>${data.commentAuthor.name}</strong> добавил(а) комментарий к дефекту <strong>${data.defectKey}</strong> в проекте <strong>${data.projectName}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
           <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 16px;">${data.defectTitle}</h3>
           
           <div style="border-left: 3px solid #3b82f6; padding: 15px; background-color: #f0f9ff; border-radius: 4px;">
-            <p style="color: #1e40af; font-size: 12px; font-weight: bold; margin: 0 0 8px 0; text-transform: uppercase;">Comment from ${data.commentAuthor.name}</p>
+            <p style="color: #1e40af; font-size: 12px; font-weight: bold; margin: 0 0 8px 0; text-transform: uppercase;">Комментарий от ${data.commentAuthor.name}</p>
             <p style="color: #1f2937; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap; word-break: break-word;">
               ${data.commentContent}
             </p>
@@ -1191,7 +1191,7 @@ export async function sendDefectCommentEmail(
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${defectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Defect & Comments
+              Открыть дефект и комментарии
             </a>
           </div>
         </div>
@@ -1199,30 +1199,30 @@ export async function sendDefectCommentEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
     const text = `
-New Comment Added
+Добавлен новый комментарий
 
-Hi ${recipient.name},
+Здравствуйте, ${recipient.name},
 
-${data.commentAuthor.name} added a comment to defect ${data.defectKey} in project ${data.projectName}.
+${data.commentAuthor.name} added a comment to defect ${data.defectKey} в проекте ${data.projectName}.
 
-Defect: ${data.defectTitle}
+Дефект: ${data.defectTitle}
 
-Comment from ${data.commentAuthor.name}:
+Комментарий от ${data.commentAuthor.name}:
 ---
 ${data.commentContent}
 ---
 
-View defect & comments: ${defectUrl}
+Открыть дефект & comments: ${defectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
     return sendEmail({
@@ -1249,7 +1249,7 @@ This is an automated notification from EZTest.
 export async function sendProjectMemberEmail(
   data: AddProjectMemberEmailData
 ): Promise<boolean> {
-  const subject = `🎉 Added to Project: ${data.projectName}`;
+  const subject = `🎉 Добавлен в проект: ${data.projectName}`;
   const projectUrl = `${data.appUrl}/projects`;
 
   const html = `
@@ -1257,38 +1257,38 @@ export async function sendProjectMemberEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #047857; font-size: 18px; margin: 0;">🎉 Welcome to the Team!</h2>
+          <h2 style="color: #047857; font-size: 18px; margin: 0;">🎉 Добро пожаловать в команду!</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.newMember.name}</strong>,
+          Здравствуйте, <strong>${data.newMember.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          You've been added to the project <strong>${data.projectName}</strong> by <strong>${data.addedByUser.name}</strong>.
+          Вы добавлены в проект <strong>${data.projectName}</strong> пользователем <strong>${data.addedByUser.name}</strong>.
         </p>
 
         <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Project Information</h3>
+          <h3 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Информация о проекте</h3>
           <ul style="color: #4b5563; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
-            <li><strong>Project:</strong> ${data.projectName}</li>
-            <li><strong>Added by:</strong> ${data.addedByUser.name} (${data.addedByUser.email})</li>
-            <li><strong>Status:</strong> You now have access to this project</li>
+            <li><strong>Проект:</strong> ${data.projectName}</li>
+            <li><strong>Добавил:</strong> ${data.addedByUser.name} (${data.addedByUser.email})</li>
+            <li><strong>Статус:</strong> У вас теперь есть доступ к этому проекту</li>
           </ul>
         </div>
 
         <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-          You can now view test cases, manage defects, and participate in test runs for this project. Your permissions are based on your system role.
+          Теперь вы можете просматривать тест-кейсы, управлять дефектами и участвовать в тест-ранах этого проекта. Доступ определяется вашей системной ролью.
         </p>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${projectUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              Go to Projects
+              Перейти к проектам
             </a>
           </div>
         </div>
@@ -1296,30 +1296,30 @@ export async function sendProjectMemberEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-Welcome to the Team!
+Добро пожаловать в команду!
 
-Hi ${data.newMember.name},
+Здравствуйте, ${data.newMember.name},
 
-You've been added to the project ${data.projectName} by ${data.addedByUser.name}.
+Вы добавлены в проект ${data.projectName} пользователем ${data.addedByUser.name}.
 
-Project Information:
-- Project: ${data.projectName}
-- Added by: ${data.addedByUser.name} (${data.addedByUser.email})
-- Status: You now have access to this project
+Информация о проекте:
+- Проект: ${data.projectName}
+- Добавил: ${data.addedByUser.name} (${data.addedByUser.email})
+- Статус: У вас теперь есть доступ к этому проекту
 
-You can now view test cases, manage defects, and participate in test runs for this project. Your permissions are based on your system role.
+Теперь вы можете просматривать тест-кейсы, управлять дефектами и участвовать в тест-ранах этого проекта. Доступ определяется вашей системной ролью.
 
-Go to Projects: ${projectUrl}
+Перейти к проектам: ${projectUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1337,7 +1337,7 @@ This is an automated notification from EZTest.
 export async function sendRemoveProjectMemberEmail(
   data: RemoveProjectMemberEmailData
 ): Promise<boolean> {
-  const subject = `🚫 Removed from Project: ${data.projectName}`;
+  const subject = `🚫 Удален из проекта: ${data.projectName}`;
   const projectsUrl = `${data.appUrl}/projects`;
 
   const html = `
@@ -1345,42 +1345,42 @@ export async function sendRemoveProjectMemberEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #991b1b; font-size: 18px; margin: 0;">🚫 Project Access Removed</h2>
+          <h2 style="color: #991b1b; font-size: 18px; margin: 0;">🚫 Доступ к проекту удален</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.removedMember.name}</strong>,
+          Здравствуйте, <strong>${data.removedMember.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          You have been removed from the project <strong>${data.projectName}</strong> by <strong>${data.removedByUser.name}</strong>.
+          Вы удалены из проекта <strong>${data.projectName}</strong> пользователем <strong>${data.removedByUser.name}</strong>.
         </p>
 
         <div style="background-color: #f3f4f6; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
           <p style="color: #1f2937; font-size: 14px; margin: 0 0 10px 0;">
-            <strong>What this means:</strong>
+            <strong>Что это значит:</strong>
           </p>
           <ul style="margin: 0; padding-left: 20px;">
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">You no longer have access to this project's test cases and defects</li>
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">You cannot view or participate in test runs for this project</li>
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">You can still access other projects you're a member of</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">У вас больше нет доступа к тест-кейсам и дефектам этого проекта</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">Вы больше не можете просматривать и участвовать в тест-ранах этого проекта</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">Вы по-прежнему можете работать с другими проектами, где вы являетесь участником</li>
           </ul>
         </div>
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #92400e; font-size: 13px; margin: 0;">
-            <strong>Questions?</strong> If you believe this was done in error, please contact <strong>${data.removedByUser.name}</strong> at <strong>${data.removedByUser.email}</strong>
+            <strong>Вопросы?</strong> Если это сделано по ошибке, свяжитесь с <strong>${data.removedByUser.name}</strong> по адресу <strong>${data.removedByUser.email}</strong>
           </p>
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${projectsUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View My Projects
+              Открыть мои проекты
             </a>
           </div>
         </div>
@@ -1388,30 +1388,30 @@ export async function sendRemoveProjectMemberEmail(
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-Project Access Removed
+Доступ к проекту удален
 
-Hi ${data.removedMember.name},
+Здравствуйте, ${data.removedMember.name},
 
-You have been removed from the project "${data.projectName}" by ${data.removedByUser.name}.
+Вы удалены из проекта "${data.projectName}" пользователем ${data.removedByUser.name}.
 
-What this means:
-- You no longer have access to this project's test cases and defects
-- You cannot view or participate in test runs for this project
-- You can still access other projects you're a member of
+Что это значит:
+- У вас больше нет доступа к тест-кейсам и дефектам этого проекта
+- Вы больше не можете просматривать и участвовать в тест-ранах этого проекта
+- Вы по-прежнему можете работать с другими проектами, где вы являетесь участником
 
-Questions? If you believe this was done in error, please contact ${data.removedByUser.name} at ${data.removedByUser.email}
+Вопросы? If you believe this was done in error, please contact ${data.removedByUser.name} по адресу ${data.removedByUser.email}
 
-View My Projects: ${projectsUrl}
+Открыть мои проекты: ${projectsUrl}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1429,71 +1429,71 @@ This is an automated notification from EZTest.
 export async function sendOtpEmail(
   data: OtpEmailData
 ): Promise<boolean> {
-  const actionType = data.type === 'login' ? 'Login' : 'Registration';
-  const subject = `🔐 Your EZTest ${actionType} OTP Code`;
+  const actionType = data.type === 'login' ? 'Вход' : 'Регистрация';
+  const subject = `🔐 OTP-код EZTest для ${actionType}`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">🔐 ${actionType} Verification</h2>
+          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">🔐 Подтверждение: ${actionType}</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          You requested a verification code for ${data.type === 'login' ? 'signing in to' : 'registering on'} your EZTest account.
+          Вы запросили код подтверждения для ${data.type === 'login' ? 'входа в' : 'регистрации в'} аккаунте EZTest.
         </p>
 
         <div style="background-color: #f3f4f6; border-radius: 8px; padding: 25px; margin: 25px 0; text-align: center;">
           <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">
-            Your OTP Code
+            Ваш OTP-код
           </p>
           <div style="font-size: 36px; font-weight: bold; color: #033977; letter-spacing: 8px; font-family: 'Courier New', monospace;">
             ${data.otp}
           </div>
           <p style="color: #ef4444; font-size: 13px; margin: 15px 0 0 0;">
-            ⏰ Valid for 10 minutes
+            ⏰ Действителен 10 минут
           </p>
         </div>
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #92400e; font-size: 13px; margin: 0;">
-            <strong>Security Notice:</strong> Never share this OTP with anyone. EZTest will never ask for your OTP via phone or email.
+            <strong>Уведомление безопасности:</strong> Никому не сообщайте этот OTP-код. EZTest никогда не запрашивает OTP по телефону или email.
           </p>
         </div>
 
         <p style="color: #6b7280; font-size: 13px; line-height: 1.6; margin: 20px 0 0 0;">
-          If you didn't request this code, please ignore this email. Your account remains secure.
+          Если вы не запрашивали этот код, проигнорируйте письмо. Ваш аккаунт остается защищенным.
         </p>
 
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-${actionType} Verification
+Подтверждение: ${actionType}
 
-You requested a verification code for ${data.type === 'login' ? 'signing in to' : 'registering on'} your EZTest account.
+Вы запросили код подтверждения для ${data.type === 'login' ? 'входа в' : 'регистрации в'} аккаунте EZTest.
 
-Your OTP Code: ${data.otp}
+Ваш OTP-код: ${data.otp}
 
-Valid for 10 minutes
+Действителен 10 минут
 
-Security Notice: Never share this OTP with anyone. EZTest will never ask for your OTP via phone or email.
+Уведомление безопасности: Никому не сообщайте этот OTP-код. EZTest никогда не запрашивает OTP по телефону или email.
 
-If you didn't request this code, please ignore this email. Your account remains secure.
+Если вы не запрашивали этот код, проигнорируйте письмо. Ваш аккаунт остается защищенным.
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1511,7 +1511,7 @@ This is an automated notification from EZTest.
 export async function sendUserInvitationEmail(
   data: InviteUserEmailData
 ): Promise<boolean> {
-  const subject = `👋 Welcome to EZTest - Your Account is Ready`;
+  const subject = `👋 Добро пожаловать в EZTest — аккаунт готов`;
   const loginUrl = `${data.appUrl}/auth/login`;
 
   const html = `
@@ -1519,90 +1519,90 @@ export async function sendUserInvitationEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #047857; font-size: 18px; margin: 0;">👋 Welcome to EZTest!</h2>
+          <h2 style="color: #047857; font-size: 18px; margin: 0;">👋 Добро пожаловать в EZTest!</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.invitedUser.name}</strong>,
+          Здравствуйте, <strong>${data.invitedUser.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          Your EZTest account has been created by <strong>${data.invitedByUser.name}</strong>. You're all set to start collaborating on test management!
+          Ваш аккаунт EZTest создан пользователем <strong>${data.invitedByUser.name}</strong>. Все готово для совместной работы в системе тест-менеджмента!
         </p>
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
           <p style="color: #92400e; font-size: 14px; margin: 0 0 10px 0;">
-            <strong>Your Login Credentials</strong>
+            <strong>Ваши данные для входа</strong>
           </p>
           <div style="background-color: white; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 13px;">
             <p style="margin: 0 0 8px 0; color: #1f2937;"><strong>Email:</strong> <span style="color: #033977;">${data.invitedUser.email}</span></p>
-            <p style="margin: 0; color: #1f2937;"><strong>Temporary Password:</strong> <span style="color: #033977;">${data.tempPassword}</span></p>
+            <p style="margin: 0; color: #1f2937;"><strong>Временный пароль:</strong> <span style="color: #033977;">${data.tempPassword}</span></p>
           </div>
           <p style="color: #92400e; font-size: 12px; margin: 10px 0 0 0;">
-            ⚠️ <strong>Important:</strong> Please change your password after your first login for security.
+            ⚠️ <strong>Важно:</strong> Пожалуйста, смените пароль после первого входа в целях безопасности.
           </p>
         </div>
 
-        <h3 style="color: #1f2937; font-size: 14px; margin: 0 0 12px 0;">Getting Started:</h3>
+        <h3 style="color: #1f2937; font-size: 14px; margin: 0 0 12px 0;">Как начать:</h3>
         <ol style="color: #4b5563; font-size: 14px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
-          <li>Click the login button below</li>
-          <li>Enter your email and temporary password</li>
-          <li>Update your password to something secure</li>
-          <li>Start exploring your projects and test cases</li>
+          <li>Нажмите кнопку входа ниже</li>
+          <li>Введите ваш email и временный пароль</li>
+          <li>Смените пароль на надежный</li>
+          <li>Начните работу с вашими проектами и тест-кейсами</li>
         </ol>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${loginUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              Login to EZTest
+              Войти в EZTest
             </a>
           </div>
         </div>
 
         <div style="background-color: #f3f4f6; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #4b5563; font-size: 13px; margin: 0;">
-            <strong>Questions?</strong> Contact <strong>${data.invitedByUser.name}</strong> at <strong>${data.invitedByUser.email}</strong>
+            <strong>Вопросы?</strong> Свяжитесь с <strong>${data.invitedByUser.name}</strong> по адресу <strong>${data.invitedByUser.email}</strong>
           </p>
         </div>
 
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-Welcome to EZTest!
+Добро пожаловать в EZTest!
 
-Hi ${data.invitedUser.name},
+Здравствуйте, ${data.invitedUser.name},
 
-Your EZTest account has been created by ${data.invitedByUser.name}. You're all set to start collaborating on test management!
+Ваш аккаунт EZTest создан пользователем ${data.invitedByUser.name}. Все готово для совместной работы в системе тест-менеджмента!
 
-Your Login Credentials:
+Ваши данные для входа:
 - Email: ${data.invitedUser.email}
-- Temporary Password: ${data.tempPassword}
+- Временный пароль: ${data.tempPassword}
 
-IMPORTANT: Please change your password after your first login for security.
+ВАЖНО: Пожалуйста, смените пароль после первого входа в целях безопасности.
 
-Getting Started:
-1. Click the login button below
-2. Enter your email and temporary password
-3. Update your password to something secure
-4. Start exploring your projects and test cases
+Как начать:
+1. Нажмите кнопку входа ниже
+2. Введите ваш email и временный пароль
+3. Смените пароль на надежный
+4. Начните работу с вашими проектами и тест-кейсами
 
-Login to EZTest: ${loginUrl}
+Войти в EZTest: ${loginUrl}
 
-Questions? Contact ${data.invitedByUser.name} at ${data.invitedByUser.email}
+Вопросы? Свяжитесь с ${data.invitedByUser.name} по адресу ${data.invitedByUser.email}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1619,7 +1619,7 @@ This is an automated notification from EZTest.
 export async function sendUserUpdateEmail(
   data: UserUpdateEmailData
 ): Promise<boolean> {
-  const subject = `🔄 Your EZTest Account Has Been Updated`;
+  const subject = `🔄 Ваш аккаунт EZTest обновлен`;
   const profileUrl = `${data.appUrl}/profile`;
 
   const changesHtml = data.changes.map(change => 
@@ -1631,24 +1631,24 @@ export async function sendUserUpdateEmail(
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">🔄 Account Update Notification</h2>
+          <h2 style="color: #1e40af; font-size: 18px; margin: 0;">🔄 Уведомление об обновлении аккаунта</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.user.name}</strong>,
+          Здравствуйте, <strong>${data.user.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          Your EZTest account has been updated by <strong>${data.updatedByUser.name}</strong> (Administrator).
+          Ваш аккаунт EZTest обновлен пользователем <strong>${data.updatedByUser.name}</strong> (администратор).
         </p>
 
         <div style="background-color: #f3f4f6; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
           <p style="color: #1f2937; font-size: 14px; margin: 0 0 10px 0;">
-            <strong>Changes Made:</strong>
+            <strong>Внесенные изменения:</strong>
           </p>
           <ul style="margin: 0; padding-left: 20px;">
             ${changesHtml}
@@ -1656,27 +1656,27 @@ export async function sendUserUpdateEmail(
         </div>
 
         <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-          You can review your updated profile information by logging into your account.
+          Вы можете проверить обновленные данные профиля, войдя в свой аккаунт.
         </p>
 
         <div style="text-align: center; margin: 30px 0;">
           <div style="display: inline-block; padding: 1px; background: linear-gradient(to right, #748ed3, #748ed3, #2c4892); border-radius: 50px;">
             <a href="${profileUrl}" style="background: linear-gradient(to bottom right, #293b64, #1e2c4e); color: white; padding: 10px 28px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 14px;">
-              View Profile
+              Открыть профиль
             </a>
           </div>
         </div>
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #92400e; font-size: 13px; margin: 0;">
-            <strong>Security Notice:</strong> If you didn't expect these changes, please contact your administrator immediately at <strong>${data.updatedByUser.email}</strong>
+            <strong>Уведомление безопасности:</strong> Если вы не ожидали этих изменений, немедленно свяжитесь с администратором по адресу <strong>${data.updatedByUser.email}</strong>
           </p>
         </div>
 
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
@@ -1685,23 +1685,23 @@ export async function sendUserUpdateEmail(
   const changesText = data.changes.map(change => `  - ${change}`).join('\n');
 
   const text = `
-Account Update Notification
+Уведомление об обновлении аккаунта
 
-Hi ${data.user.name},
+Здравствуйте, ${data.user.name},
 
-Your EZTest account has been updated by ${data.updatedByUser.name} (Administrator).
+Ваш аккаунт EZTest обновлен пользователем ${data.updatedByUser.name} (администратор).
 
-Changes Made:
+Внесенные изменения:
 ${changesText}
 
-You can review your updated profile information by logging into your account.
+Вы можете проверить обновленные данные профиля, войдя в свой аккаунт.
 
-View Profile: ${profileUrl}
+Открыть профиль: ${profileUrl}
 
-Security Notice: If you didn't expect these changes, please contact your administrator immediately at ${data.updatedByUser.email}
+Уведомление безопасности: Если вы не ожидали этих изменений, немедленно свяжитесь с администратором по адресу ${data.updatedByUser.email}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({
@@ -1718,82 +1718,82 @@ This is an automated notification from EZTest.
 export async function sendUserDeleteEmail(
   data: UserDeleteEmailData
 ): Promise<boolean> {
-  const subject = `❌ Your EZTest Account Has Been Deactivated`;
+  const subject = `❌ Ваш аккаунт EZTest деактивирован`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
       <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #033977; margin: 0; font-size: 28px;">EZTest</h1>
-          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted Test Management Platform</p>
+          <p style="color: #656c79; margin: 5px 0 0 0; font-size: 14px;">Self-hosted платформа управления тестированием</p>
         </div>
 
         <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-          <h2 style="color: #991b1b; font-size: 18px; margin: 0;">❌ Account Deactivation Notice</h2>
+          <h2 style="color: #991b1b; font-size: 18px; margin: 0;">❌ Уведомление о деактивации аккаунта</h2>
         </div>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">
-          Hi <strong>${data.user.name}</strong>,
+          Здравствуйте, <strong>${data.user.name}</strong>,
         </p>
 
         <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          Your EZTest account has been deactivated by <strong>${data.deletedByUser.name}</strong> (Administrator).
+          Ваш аккаунт EZTest деактивирован пользователем <strong>${data.deletedByUser.name}</strong> (администратор).
         </p>
 
         <div style="background-color: #f3f4f6; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
           <p style="color: #1f2937; font-size: 14px; margin: 0 0 10px 0;">
-            <strong>What this means:</strong>
+            <strong>Что это значит:</strong>
           </p>
           <ul style="margin: 0; padding-left: 20px;">
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">You will no longer have access to the EZTest platform</li>
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">Your account data has been archived</li>
-            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">You cannot log in with your credentials</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">У вас больше не будет доступа к платформе EZTest</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">Данные вашего аккаунта архивированы</li>
+            <li style="color: #4b5563; font-size: 14px; margin: 5px 0;">Вы больше не сможете войти с текущими учетными данными</li>
           </ul>
         </div>
 
         <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #92400e; font-size: 13px; margin: 0;">
-            <strong>Questions or Concerns?</strong> If you believe this is a mistake or need clarification, please contact your administrator at <strong>${data.deletedByUser.email}</strong>
+            <strong>Вопросы или сомнения?</strong> Если вы считаете, что это ошибка, свяжитесь с администратором по адресу <strong>${data.deletedByUser.email}</strong>
           </p>
         </div>
 
         <div style="background-color: #f3f4f6; padding: 15px; border-radius: 4px; margin: 20px 0;">
           <p style="color: #4b5563; font-size: 13px; margin: 0;">
-            <strong>Account Details:</strong><br>
+            <strong>Данные аккаунта:</strong><br>
             Email: <strong>${data.user.email}</strong><br>
-            Deactivated on: <strong>${new Date().toLocaleDateString()}</strong>
+            Дата деактивации: <strong>${new Date().toLocaleDateString()}</strong>
           </p>
         </div>
 
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          This is an automated notification from EZTest. Please do not reply to this email.
+          Это автоматическое уведомление от EZTest. Пожалуйста, не отвечайте на это письмо.
         </p>
       </div>
     </div>
   `;
 
   const text = `
-Account Deactivation Notice
+Уведомление о деактивации аккаунта
 
-Hi ${data.user.name},
+Здравствуйте, ${data.user.name},
 
-Your EZTest account has been deactivated by ${data.deletedByUser.name} (Administrator).
+Ваш аккаунт EZTest деактивирован пользователем ${data.deletedByUser.name} (администратор).
 
-What this means:
-  - You will no longer have access to the EZTest platform
-  - Your account data has been archived
-  - You cannot log in with your credentials
+Что это значит:
+  - У вас больше не будет доступа к платформе EZTest
+  - Данные вашего аккаунта архивированы
+  - Вы больше не сможете войти с текущими учетными данными
 
-Questions or Concerns? If you believe this is a mistake or need clarification, please contact your administrator at ${data.deletedByUser.email}
+Вопросы или сомнения? Если вы считаете, что это ошибка, свяжитесь с администратором по адресу ${data.deletedByUser.email}
 
-Account Details:
+Данные аккаунта:
 Email: ${data.user.email}
-Deactivated on: ${new Date().toLocaleDateString()}
+Дата деактивации: ${new Date().toLocaleDateString()}
 
 ---
-This is an automated notification from EZTest.
+Это автоматическое уведомление от EZTest.
   `;
 
   return sendEmail({

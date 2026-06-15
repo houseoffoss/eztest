@@ -619,8 +619,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         
         setAlert({
           type: 'success',
-          title: 'Success',
-          message: 'Test case updated successfully',
+          title: 'Успешно',
+          message: 'Тест-кейс успешно обновлен',
         });
         setTimeout(() => setAlert(null), 5000);
         
@@ -629,15 +629,15 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       } else {
         setAlert({
           type: 'error',
-          title: 'Failed to Update Test Case',
-          message: data.error || 'Failed to update test case',
+          title: 'Не удалось обновить тест-кейс',
+          message: data.error || 'Не удалось обновить тест-кейс',
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка';
       setAlert({
         type: 'error',
-        title: 'Connection Error',
+        title: 'Ошибка соединения',
         message: errorMessage,
       });
       console.error('Error updating test case:', error);
@@ -711,8 +711,8 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
     if (!newStep.action.trim() && !newStep.expectedResult.trim()) {
       setAlert({
         type: 'error',
-        title: 'Missing Required Fields',
-        message: 'Please fill in Action or Expected Result',
+        title: 'Отсутствуют обязательные поля',
+        message: 'Заполните поле «Действие» или «Ожидаемый результат»',
       });
       return;
     }
@@ -768,27 +768,27 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
       setDeleteDialogOpen(false);
       setAlert({
         type: 'success',
-        title: 'Success',
-        message: 'Test case deleted successfully',
+        title: 'Успешно',
+        message: 'Тест-кейс успешно удален',
       });
       setTimeout(() => {
         router.push(`/projects/${testCase?.project.id}/testcases`);
       }, 1500);
     } else {
       const data = await response.json();
-      throw new Error(data.error || 'Failed to delete test case');
+      throw new Error(data.error || 'Не удалось удалить тест-кейс');
     }
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading test case..." />;
+    return <Loader fullScreen text="Загрузка тест-кейса..." />;
   }
 
   if (!testCase) {
     return (
       <div className="min-h-screen p-4 md:p-6 lg:p-8">
         <div className="text-center py-12">
-          <p className="text-gray-400">Test case not found</p>
+          <p className="text-gray-400">Тест-кейс не найден</p>
         </div>
       </div>
     );
@@ -806,13 +806,13 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
+              { label: 'Проекты', href: '/projects' },
               {
                 label: testCase.project.name,
                 href: `/projects/${testCase.project.id}`,
               },
               {
-                label: 'Test Cases',
+                label: 'Тест-кейсы',
                 href: `/projects/${testCase.project.id}/testcases`,
               },
               { label: testCase.title, href: `/projects/${testCase.project.id}/testcases/${testCase.id}` },
@@ -850,20 +850,20 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
         <ActionButtonGroup
           buttons={[
             {
-              label: 'View All Test Cases',
+              label: 'Все тест-кейсы',
               icon: TestTube2,
               onClick: () => router.push(`/projects/${testCase.project.id}/testcases`),
               variant: 'secondary',
             },
             {
-              label: 'View Test Suite',
+              label: 'Открыть набор тестов',
               icon: Folder,
               onClick: () => router.push(`/projects/${testCase.project.id}/testsuites/${testCase.suite?.id}`),
               variant: 'secondary',
               show: !!testCase.suite,
             },
             {
-              label: 'View All Test Suites',
+              label: 'Все наборы тестов',
               icon: Folder,
               onClick: () => router.push(`/projects/${testCase.project.id}/testsuites`),
               variant: 'secondary',
