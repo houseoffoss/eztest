@@ -80,9 +80,9 @@ export function AddTestSuitesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader className="mb-4">
-          <DialogTitle>Add Test Suites</DialogTitle>
+          <DialogTitle>Добавить тест-сьюты</DialogTitle>
           <DialogDescription>
-            Select test suites to add their test cases to this test run
+            Выберите тест-сьюты, чтобы добавить их тест-кейсы в этот тест-ран
           </DialogDescription>
         </DialogHeader>
 
@@ -90,11 +90,11 @@ export function AddTestSuitesDialog({
           {fetchingData ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
               <div className="w-8 h-8 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-              <p className="text-white/60 text-sm">Loading test suites...</p>
+              <p className="text-white/60 text-sm">Загрузка тест-сьютов...</p>
             </div>
           ) : availableTestSuites.length === 0 ? (
             <p className="text-white/60 text-center py-8">
-              No available test suites to add
+              Нет доступных тест-сьютов для добавления
             </p>
           ) : (
             availableTestSuites.map((testSuite) => (
@@ -142,7 +142,7 @@ export function AddTestSuitesDialog({
                       </label>
 
                       <Badge variant="outline" className="text-xs shrink-0">
-                        {testSuite._count?.testCases || testSuite.testCases?.length || 0} test cases
+                        {testSuite._count?.testCases || testSuite.testCases?.length || 0} тест-кейсов
                       </Badge>
                     </div>
                   </div>
@@ -183,7 +183,7 @@ export function AddTestSuitesDialog({
                       ))
                     ) : (
                       <p className="text-xs text-white/60 text-center py-4">
-                        No test cases in this suite
+                        В этом тест-сьюте нет тест-кейсов
                       </p>
                     )}
                   </div>
@@ -195,14 +195,14 @@ export function AddTestSuitesDialog({
 
         <DialogFooter>
           <Button variant="glass" onClick={onCancel} className="cursor-pointer" disabled={loading}>
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary
             onClick={onAdd}
             disabled={selectedSuiteIds.length === 0 || loading}
             className="cursor-pointer"
           >
-            {loading ? 'Adding...' : `Add ${selectedSuiteIds.length > 0 ? `(${selectedSuiteIds.length})` : ''}`}
+            {loading ? 'Добавление...' : `Добавить ${selectedSuiteIds.length > 0 ? `(${selectedSuiteIds.length})` : ''}`}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>

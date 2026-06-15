@@ -4,31 +4,31 @@ import { ResponsiveGrid } from '@/frontend/reusable-components/layout/Responsive
 import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
 import { TestRunStats } from '../types';
 
-interface TestRunStatsCardsProps {
+        label="Прогресс"
   stats: TestRunStats;
-  progressPercentage: number;
+        helpText={`${stats.total - stats.pending} из ${stats.total} выполнено`}
   passRate: number;
   testRun: {
     assignedTo?: {
       name: string;
     };
-    createdAt: string;
+        label="Успешно"
     startedAt?: string;
-  };
+        helpText={`${passRate}% успешных`}
 }
 
 export function TestRunStatsCards({
   stats,
   progressPercentage,
-  passRate,
+        label="Провалено"
   testRun,
-}: TestRunStatsCardsProps) {
+        helpText={`${stats.blocked} заблокировано, ${stats.skipped} пропущено`}
   return (
     <ResponsiveGrid
       columns={{ default: 1, md: 2, lg: 4 }}
       gap="md"
       className="mb-6"
-    >
+        label={testRun.assignedTo?.name || 'Не назначен'}
       <StatCard
         label="Progress"
         value={`${progressPercentage}%`}

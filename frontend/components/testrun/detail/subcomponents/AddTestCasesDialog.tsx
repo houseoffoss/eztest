@@ -39,16 +39,16 @@ export function AddTestCasesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Add Test Cases</DialogTitle>
+          <DialogTitle>Добавить тест-кейсы</DialogTitle>
           <DialogDescription>
-            Select test cases to add to this test run
+            Выберите тест-кейсы, которые нужно добавить в этот тест-ран
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
           {availableTestCases.length === 0 ? (
             <p className="text-white/60 text-center py-8">
-              No available test cases to add
+              Нет доступных тест-кейсов для добавления
             </p>
           ) : (
             <div className="space-y-2">
@@ -97,13 +97,13 @@ export function AddTestCasesDialog({
 
         <DialogFooter>
           <Button variant="glass" onClick={onCancel} className="cursor-pointer">
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary
             onClick={onAdd}
             disabled={selectedCaseIds.length === 0}
           >
-            Add {selectedCaseIds.length > 0 && `(${selectedCaseIds.length})`}
+            Добавить {selectedCaseIds.length > 0 && `(${selectedCaseIds.length})`}
           </ButtonPrimary>
         </DialogFooter>
       </DialogContent>
