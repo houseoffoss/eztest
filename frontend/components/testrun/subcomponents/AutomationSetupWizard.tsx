@@ -54,7 +54,7 @@ export function AutomationSetupWizard({
       <button
         onClick={() => copyToClipboard(code, id)}
         className="absolute top-2 right-2 p-2 bg-white/10 hover:bg-white/20 rounded transition-colors"
-        title="Copy to clipboard"
+        title="Скопировать в буфер"
       >
         {copiedCode === id ? (
           <CheckCircle2 className="h-4 w-4 text-green-400" />
@@ -68,13 +68,13 @@ export function AutomationSetupWizard({
   const steps: WizardStep[] = [
     {
       id: 0,
-      title: 'Prerequisites',
-      description: 'Ensure you have the required tools and access',
+      title: 'Предварительные требования',
+      description: 'Убедитесь, что у вас есть нужные инструменты и доступы',
       content: (
         <div className="space-y-4">
           <Alert>
             <AlertDescription>
-              Before starting, make sure you have the following prerequisites:
+              Перед началом убедитесь, что у вас есть следующее:
             </AlertDescription>
           </Alert>
           <div className="space-y-3">
@@ -82,35 +82,35 @@ export function AutomationSetupWizard({
               <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-white/90">Java 8 or higher</p>
-                <p className="text-sm text-white/60 mt-1">Required for running TestNG tests</p>
+                <p className="text-sm text-white/60 mt-1">Требуется для запуска тестов на TestNG</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
               <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-white/90">Maven 3.6+</p>
-                <p className="text-sm text-white/60 mt-1">Build tool for your automation project</p>
+                <p className="text-sm text-white/60 mt-1">Инструмент сборки для проекта автоматизации</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
               <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-white/90">TestNG-based automation project</p>
-                <p className="text-sm text-white/60 mt-1">Maven-based project with TestNG framework</p>
+                <p className="font-medium text-white/90">Проект автоматизации на базе TestNG</p>
+                <p className="text-sm text-white/60 mt-1">Проект на Maven с фреймворком TestNG</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
               <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-white/90">EZTest API Token</p>
-                <p className="text-sm text-white/60 mt-1">Generate from EZTest settings → API Keys</p>
+                <p className="text-sm text-white/60 mt-1">Создайте в EZTest: Настройки → API ключи</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
               <CheckCircle2 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium text-white/90">Project ID</p>
-                <p className="text-sm text-white/60 mt-1">Your EZTest project ID: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">{projectId}</code></p>
+                <p className="text-sm text-white/60 mt-1">ID вашего проекта в EZTest: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">{projectId}</code></p>
               </div>
             </div>
           </div>
@@ -119,12 +119,12 @@ export function AutomationSetupWizard({
     },
     {
       id: 1,
-      title: 'Step 1: Add Java Files',
-      description: 'Add the required utility files to your project',
+      title: 'Шаг 1: Добавьте Java-файлы',
+      description: 'Добавьте необходимые вспомогательные файлы в проект',
       content: (
         <div className="space-y-4">
           <p className="text-sm text-white/70">
-            Add exactly <strong className="text-white/90">2 Java files</strong> to your project under:
+            Добавьте ровно <strong className="text-white/90">2 Java-файла</strong> в проект по пути:
           </p>
           <CodeBlock code="src/test/java/utils/" id="folder-path" />
           
@@ -132,13 +132,13 @@ export function AutomationSetupWizard({
             <div>
               <h4 className="font-medium text-white/90 mb-2 flex items-center gap-2">
                 <FileCode className="h-4 w-4" />
-                File 1: EZTestCreateTestRunUploader.java
+                Файл 1: EZTestCreateTestRunUploader.java
               </h4>
               <p className="text-sm text-white/60 mb-2">
-                Location: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">src/test/java/utils/EZTestCreateTestRunUploader.java</code>
+                Расположение: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">src/test/java/utils/EZTestCreateTestRunUploader.java</code>
               </p>
               <p className="text-xs text-white/50 mb-3">
-                This file handles API connection, authentication, and binary upload of XML files.
+                Этот файл отвечает за подключение к API, аутентификацию и бинарную отправку XML-файлов.
               </p>
               <CodeBlock
                 code={`package utils;
@@ -283,13 +283,13 @@ public class EZTestCreateTestRunUploader {
             <div>
               <h4 className="font-medium text-white/90 mb-2 flex items-center gap-2">
                 <FileCode className="h-4 w-4" />
-                File 2: EZTestCreateTestRunUploaderMain.java
+                Файл 2: EZTestCreateTestRunUploaderMain.java
               </h4>
               <p className="text-sm text-white/60 mb-2">
-                Location: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">src/test/java/utils/EZTestCreateTestRunUploaderMain.java</code>
+                Расположение: <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">src/test/java/utils/EZTestCreateTestRunUploaderMain.java</code>
               </p>
               <p className="text-xs text-white/50 mb-3">
-                Main class used by Maven exec-plugin to trigger the upload process.
+                Главный класс, который запускается через Maven exec-plugin для отправки результатов.
               </p>
               <CodeBlock
                 code={`package utils;
@@ -316,14 +316,14 @@ public class EZTestCreateTestRunUploaderMain {
 
           <Alert>
             <AlertDescription className="text-xs">
-              <strong>Note:</strong> You may change the package name (e.g., <code className="bg-white/10 px-1 py-0.5 rounded">com.example.utils</code>), 
-              but it must match in both Java files and in the <code className="bg-white/10 px-1 py-0.5 rounded">pom.xml</code> configuration.
+              <strong>Примечание:</strong> Вы можете изменить имя пакета (например, <code className="bg-white/10 px-1 py-0.5 rounded">com.example.utils</code>), 
+              но оно должно совпадать в обоих Java-файлах и в конфигурации <code className="bg-white/10 px-1 py-0.5 rounded">pom.xml</code>.
             </AlertDescription>
           </Alert>
 
           <div className="bg-white/5 border border-white/10 rounded-lg p-3">
             <p className="text-xs text-white/60">
-              <strong className="text-white/80">📚 Full Documentation:</strong>{' '}
+              <strong className="text-white/80">📚 Полная документация:</strong>{' '}
               <code className="bg-white/10 px-1.5 py-0.5 rounded">docs/integrations/testng-maven-integration.md</code>
             </p>
           </div>
@@ -332,12 +332,12 @@ public class EZTestCreateTestRunUploaderMain {
     },
     {
       id: 2,
-      title: 'Step 2: Add Dependencies',
-      description: 'Add required Maven dependencies to your pom.xml',
+      title: 'Шаг 2: Добавьте зависимости',
+      description: 'Добавьте необходимые Maven-зависимости в pom.xml',
       content: (
         <div className="space-y-4">
           <p className="text-sm text-white/70">
-            Add the following dependency to your <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">pom.xml</code>:
+            Добавьте следующую зависимость в <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">pom.xml</code>:
           </p>
           <CodeBlock
             code={`<dependencies>
@@ -358,12 +358,12 @@ public class EZTestCreateTestRunUploaderMain {
     },
     {
       id: 3,
-      title: 'Step 3: Configure Environment',
-      description: 'Set up environment variables for API connection',
+      title: 'Шаг 3: Настройте окружение',
+      description: 'Укажите переменные окружения для подключения к API',
       content: (
         <div className="space-y-4">
           <p className="text-sm text-white/70">
-            Create a file named <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">.env</code> in your project root:
+            Создайте файл <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs">.env</code> в корне проекта:
           </p>
           <CodeBlock
             code={`EZTEST_BASE_URL=https://api.eztest.io
@@ -376,13 +376,13 @@ EZTEST_ENVIRONMENT=QA_Staging`}
           <div className="space-y-3 mt-4">
             <Alert variant="destructive">
               <AlertDescription className="text-xs">
-                <strong>Important Rules:</strong>
+                <strong>Важные правила:</strong>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Do NOT add <code className="bg-white/10 px-1 py-0.5 rounded">/api</code> to the base URL</li>
-                  <li>Do NOT use quotes around values</li>
-                  <li>No trailing spaces in values</li>
-                  <li>Use HTTPS for production environments</li>
-                  <li>Keep <code className="bg-white/10 px-1 py-0.5 rounded">.env</code> in <code className="bg-white/10 px-1 py-0.5 rounded">.gitignore</code></li>
+                  <li>Не добавляйте <code className="bg-white/10 px-1 py-0.5 rounded">/api</code> в базовый URL</li>
+                  <li>Не используйте кавычки вокруг значений</li>
+                  <li>Не оставляйте пробелы в конце значений</li>
+                  <li>Используйте HTTPS для production-окружений</li>
+                  <li>Добавьте <code className="bg-white/10 px-1 py-0.5 rounded">.env</code> в <code className="bg-white/10 px-1 py-0.5 rounded">.gitignore</code></li>
                 </ul>
               </AlertDescription>
             </Alert>
@@ -392,13 +392,13 @@ EZTEST_ENVIRONMENT=QA_Staging`}
     },
     {
       id: 4,
-      title: 'Step 4: Update pom.xml',
-      description: 'Configure Maven plugins for automatic upload',
+      title: 'Шаг 4: Обновите pom.xml',
+      description: 'Настройте Maven-плагины для автоматической отправки',
       content: (
         <div className="space-y-4">
           <div>
             <h4 className="font-medium text-white/90 mb-2">Maven Failsafe Plugin</h4>
-            <p className="text-sm text-white/60 mb-2">Runs TestNG properly and generates XML reports.</p>
+            <p className="text-sm text-white/60 mb-2">Корректно запускает TestNG и формирует XML-отчеты.</p>
             <CodeBlock
               code={`<build>
   <plugins>
@@ -431,7 +431,7 @@ EZTEST_ENVIRONMENT=QA_Staging`}
 
           <div className="mt-6">
             <h4 className="font-medium text-white/90 mb-2">Exec Maven Plugin</h4>
-            <p className="text-sm text-white/60 mb-2">Automatically uploads results after tests complete.</p>
+            <p className="text-sm text-white/60 mb-2">Автоматически отправляет результаты после завершения тестов.</p>
             <CodeBlock
               code={`<build>
   <plugins>
@@ -467,18 +467,18 @@ EZTEST_ENVIRONMENT=QA_Staging`}
     },
     {
       id: 5,
-      title: 'Step 5: Test Case Naming',
-      description: 'Important naming convention for test methods',
+      title: 'Шаг 5: Именование тест-кейсов',
+      description: 'Важное правило именования тестовых методов',
       content: (
         <div className="space-y-4">
           <Alert variant="destructive">
             <AlertDescription>
-              <strong>VERY IMPORTANT:</strong> EZTest matches test cases using method names.
+              <strong>ОЧЕНЬ ВАЖНО:</strong> EZTest сопоставляет тест-кейсы по имени метода.
             </AlertDescription>
           </Alert>
 
           <div>
-            <h4 className="font-medium text-white/90 mb-2">✅ Correct Format</h4>
+            <h4 className="font-medium text-white/90 mb-2">✅ Правильный формат</h4>
             <CodeBlock
               code={`@Test
 public void TC_1() { 
@@ -495,7 +495,7 @@ public void TC_2() {
           </div>
 
           <div>
-            <h4 className="font-medium text-white/90 mb-2">❌ Incorrect Format</h4>
+            <h4 className="font-medium text-white/90 mb-2">❌ Неправильный формат</h4>
             <CodeBlock
               code={`// ❌ This will NOT work
 @Test(testName = "TC-1")
@@ -508,22 +508,22 @@ public void loginTest() {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <p className="text-sm text-white/70 mb-2"><strong>Key Points:</strong></p>
+            <p className="text-sm text-white/70 mb-2"><strong>Ключевые моменты:</strong></p>
             <ul className="list-disc list-inside space-y-1 text-sm text-white/60">
-              <li>Use <code className="bg-white/10 px-1 py-0.5 rounded">TC_1</code> format in code (with underscore)</li>
-              <li>EZTest maps it to <code className="bg-white/10 px-1 py-0.5 rounded">TC-1</code> (with hyphen) automatically</li>
-              <li>Method name must match test case <code className="bg-white/10 px-1 py-0.5 rounded">tcId</code> in EZTest</li>
-              <li>Case-sensitive matching</li>
+              <li>Используйте в коде формат <code className="bg-white/10 px-1 py-0.5 rounded">TC_1</code> (с подчеркиванием)</li>
+              <li>EZTest автоматически преобразует его в <code className="bg-white/10 px-1 py-0.5 rounded">TC-1</code> (с дефисом)</li>
+              <li>Имя метода должно совпадать с <code className="bg-white/10 px-1 py-0.5 rounded">tcId</code> тест-кейса в EZTest</li>
+              <li>Регистр символов имеет значение</li>
             </ul>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <p className="text-sm font-medium text-white/90 mb-2">Example Mapping:</p>
+            <p className="text-sm font-medium text-white/90 mb-2">Пример сопоставления:</p>
             <table className="w-full text-sm text-white/70">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left py-2">TestNG Method Name</th>
-                  <th className="text-left py-2">EZTest Test Case ID</th>
+                  <th className="text-left py-2">Имя метода TestNG</th>
+                  <th className="text-left py-2">ID тест-кейса в EZTest</th>
                 </tr>
               </thead>
               <tbody>
@@ -543,50 +543,50 @@ public void loginTest() {
     },
     {
       id: 6,
-      title: 'Step 6: Run Tests',
-      description: 'Execute tests and verify automatic upload',
+      title: 'Шаг 6: Запустите тесты',
+      description: 'Выполните тесты и проверьте автоматическую отправку результатов',
       content: (
         <div className="space-y-4">
           <div>
-            <h4 className="font-medium text-white/90 mb-2">Using Maven Verify (Recommended)</h4>
+            <h4 className="font-medium text-white/90 mb-2">Через Maven Verify (рекомендуется)</h4>
             <CodeBlock
               code="mvn clean verify"
               id="maven-verify"
             />
             <p className="text-sm text-white/60 mt-2">
-              This command will:
+              Эта команда:
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm text-white/60 mt-2">
-              <li>Clean previous builds</li>
-              <li>Run all tests</li>
-              <li>Generate TestNG XML reports</li>
-              <li>Automatically upload results to EZTest (verify phase)</li>
-              <li>Complete the build</li>
+              <li>Очистит предыдущие сборки</li>
+              <li>Запустит все тесты</li>
+              <li>Сгенерирует XML-отчеты TestNG</li>
+              <li>Автоматически отправит результаты в EZTest (фаза verify)</li>
+              <li>Завершит сборку</li>
             </ul>
           </div>
 
           <div className="mt-6">
-            <h4 className="font-medium text-white/90 mb-2">What Happens Automatically</h4>
+            <h4 className="font-medium text-white/90 mb-2">Что происходит автоматически</h4>
             <div className="space-y-2 text-sm text-white/60">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Tests execute using TestNG</span>
+                <span>Тесты выполняются через TestNG</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>TestNG generates XML reports (e.g., testng-results.xml)</span>
+                <span>TestNG генерирует XML-отчеты (например, testng-results.xml)</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Results are automatically uploaded to EZTest</span>
+                <span>Результаты автоматически отправляются в EZTest</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Test Run is created in EZTest with execution details</span>
+                <span>В EZTest создается Test Run с деталями выполнения</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span>Test case results are updated (PASS/FAIL/SKIPPED)</span>
+                <span>Обновляются статусы тест-кейсов (PASS/FAIL/SKIPPED)</span>
               </div>
             </div>
           </div>
@@ -595,51 +595,51 @@ public void loginTest() {
     },
     {
       id: 7,
-      title: 'Complete!',
-      description: 'Your automation setup is ready',
+      title: 'Готово!',
+      description: 'Настройка автоматизации завершена',
       content: (
         <div className="space-y-4">
           <div className="text-center py-8">
             <CheckCircle2 className="h-16 w-16 text-green-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white/90 mb-2">Setup Complete!</h3>
+            <h3 className="text-xl font-semibold text-white/90 mb-2">Настройка завершена!</h3>
             <p className="text-sm text-white/60">
-              Your automation integration is configured. Test runs will be automatically uploaded to EZTest.
+              Интеграция автоматизации настроена. Test Run будут автоматически загружаться в EZTest.
             </p>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-            <h4 className="font-medium text-white/90 mb-3">Final Checklist</h4>
+            <h4 className="font-medium text-white/90 mb-3">Финальный чеклист</h4>
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Added 2 Java files to your project</span>
+                <span className="text-white/70">Добавлены 2 Java-файла в проект</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Updated pom.xml with required plugins</span>
+                <span className="text-white/70">Обновлен pom.xml с нужными плагинами</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Added java-dotenv dependency</span>
+                <span className="text-white/70">Добавлена зависимость java-dotenv</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Created .env file with all required variables</span>
+                <span className="text-white/70">Создан .env со всеми необходимыми переменными</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Verified test case IDs match TestNG method names</span>
+                <span className="text-white/70">Проверено совпадение ID тест-кейсов с именами методов TestNG</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <span className="text-white/70">Used TC_1 naming format (with underscore)</span>
+                <span className="text-white/70">Использован формат именования TC_1 (с подчеркиванием)</span>
               </div>
             </div>
           </div>
 
           <Alert>
             <AlertDescription className="text-xs">
-              For detailed documentation and troubleshooting, see:{' '}
+              Для подробной документации и устранения проблем см.:{' '}
               <code className="bg-white/10 px-1.5 py-0.5 rounded">docs/integrations/testng-maven-integration.md</code>
             </AlertDescription>
           </Alert>
@@ -674,10 +674,10 @@ public void loginTest() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              Automation Setup Guide
+              Руководство по настройке автоматизации
             </DialogTitle>
             <DialogDescription className="mt-2">
-              Step-by-step guide to integrate TestNG automation with EZTest
+              Пошаговое руководство по интеграции автоматизации TestNG с EZTest
             </DialogDescription>
           </DialogHeader>
 
@@ -731,7 +731,7 @@ public void loginTest() {
             className="cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
+            Назад
           </Button>
           <div className="flex gap-3">
             <Button
@@ -740,7 +740,7 @@ public void loginTest() {
               onClick={handleClose}
               className="cursor-pointer"
             >
-              Close
+              Закрыть
             </Button>
             {currentStep < steps.length - 1 ? (
               <ButtonPrimary
@@ -748,7 +748,7 @@ public void loginTest() {
                 onClick={handleNext}
                 className="cursor-pointer"
               >
-                Next
+                Далее
                 <ChevronRight className="h-4 w-4 ml-2" />
               </ButtonPrimary>
             ) : (
@@ -757,7 +757,7 @@ public void loginTest() {
                 onClick={handleClose}
                 className="cursor-pointer"
               >
-                Done
+                Готово
               </ButtonPrimary>
             )}
           </div>
