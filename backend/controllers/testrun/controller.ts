@@ -217,13 +217,23 @@ export class TestRunController {
 
     const validatedData = validationResult.data;
 
+    const normalizedExecutedById =
+      validatedData.executedById === '' ? undefined : validatedData.executedById;
+
+    const normalizedAssignedToId =
+      validatedData.assignedToId !== undefined
+        ? validatedData.assignedToId
+        : validatedData.executedById === ''
+          ? null
+          : undefined;
+
     const result = await testRunService.bulkUpdateTestResults(
       testRunId,
       validatedData.testCaseIds,
       {
         status: validatedData.status,
-        executedById: validatedData.executedById ?? (validatedData.status ? userId : undefined),
-        assignedToId: validatedData.assignedToId,
+        executedById: normalizedExecutedById ?? (validatedData.status ? userId : undefined),
+        assignedToId: normalizedAssignedToId,
         duration: validatedData.duration,
         comment: validatedData.comment,
         errorMessage: validatedData.errorMessage,

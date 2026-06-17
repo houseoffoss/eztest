@@ -39,4 +39,5 @@ export interface TestRunFilters {
   searchQuery: string;
   statusFilter: string;
   environmentFilter: string;
+  assignedToFilter: string;
 }

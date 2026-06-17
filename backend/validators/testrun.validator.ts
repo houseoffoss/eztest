@@ -55,7 +55,7 @@ export const bulkUpdateTestResultsSchema = z
     duration: z.number().optional(),
     errorMessage: z.string().optional(),
     stackTrace: z.string().optional(),
-    executedById: z.string().min(1, 'Некорректный ID исполнителя').optional(),
+    executedById: z.union([z.string().min(1, 'Некорректный ID исполнителя'), z.literal('')]).optional(),
     assignedToId: z.string().min(1, 'Некорректный ID назначенного пользователя').nullable().optional(),
   })
   .refine(

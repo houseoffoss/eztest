@@ -7,16 +7,20 @@ import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 
 interface TestRunsFilterCardProps {
   filters: TestRunFilters;
+  assignedToOptions: FilterOption[];
   onSearchChange: (search: string) => void;
   onStatusFilterChange: (status: string) => void;
   onEnvironmentFilterChange: (environment: string) => void;
+  onAssignedToFilterChange: (assignedToId: string) => void;
 }
 
 export function TestRunsFilterCard({
   filters,
+  assignedToOptions,
   onSearchChange,
   onStatusFilterChange,
   onEnvironmentFilterChange,
+  onAssignedToFilterChange,
 }: TestRunsFilterCardProps) {
   // Fetch dynamic dropdown options
   const { options: statusOptionsData } = useDropdownOptions('TestRun', 'status');
@@ -34,7 +38,7 @@ export function TestRunsFilterCard({
   ];
   return (
     <div className="mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="md:col-span-2">
           <SearchInput
             value={filters.searchQuery}
@@ -58,6 +62,15 @@ export function TestRunsFilterCard({
             onValueChange={onEnvironmentFilterChange}
             placeholder="Окружение"
             options={environmentOptions}
+          />
+        </div>
+
+        <div>
+          <FilterDropdown
+            value={filters.assignedToFilter}
+            onValueChange={onAssignedToFilterChange}
+            placeholder="Назначен"
+            options={assignedToOptions}
           />
         </div>
       </div>

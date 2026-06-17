@@ -54,6 +54,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
     searchQuery: '',
     statusFilter: 'all',
     environmentFilter: 'all',
+    assignedToFilter: 'all',
   });
 
   const [alert, setAlert] = useState<FloatingAlertMessage | null>(null);
@@ -130,6 +131,13 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
       );
     }
 
+    // Assigned user filter
+    if (filters.assignedToFilter !== 'all') {
+      filtered = filtered.filter(
+        (tr) => tr.assignedTo?.id === filters.assignedToFilter
+      );
+    }
+
     setFilteredTestRuns(filtered);
     setCurrentPage(1);
   };
@@ -178,7 +186,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка';
       setAlert({
         type: 'error',
         title: 'Ошибка соединения',
@@ -217,7 +225,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               {/* Always show import/export options */}
               <DropdownMenuItem onClick={() => setUploadXMLDialogOpen(true)}>
                 <FileCode className="w-4 h-4" />
-                Upload TestNG XML
+                Загрузить TestNG XML
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
                 <Upload className="w-4 h-4" />
@@ -251,6 +259,17 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
   if (loading || permissionsLoading) {
     return <Loader fullScreen text="Загрузка тест-ранов..." />;
   }
+
+  const assignedToOptions = [
+    { value: 'all', label: 'Все' },
+    ...Array.from(
+      new Map(
+        testRuns
+          .filter((run) => run.assignedTo?.id)
+          .map((run) => [run.assignedTo!.id, run.assignedTo!.name])
+      ).entries()
+    ).map(([value, label]) => ({ value, label })),
+  ];
 
   const totalPages = Math.max(1, Math.ceil(filteredTestRuns.length / itemsPerPage));
   const paginatedTestRuns = filteredTestRuns.slice(
@@ -291,6 +310,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           filters={
             <TestRunsFilterCard
               filters={filters}
+              assignedToOptions={assignedToOptions}
               onSearchChange={(searchQuery) =>
                 setFilters({ ...filters, searchQuery })
               }
@@ -299,6 +319,9 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
               }
               onEnvironmentFilterChange={(environmentFilter) =>
                 setFilters({ ...filters, environmentFilter })
+              }
+              onAssignedToFilterChange={(assignedToFilter) =>
+                setFilters({ ...filters, assignedToFilter })
               }
             />
           }
@@ -383,6 +406,7 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
             filters: {
               status: filters.statusFilter !== 'all' ? filters.statusFilter : undefined,
               environment: filters.environmentFilter !== 'all' ? filters.environmentFilter : undefined,
+              assignedToId: filters.assignedToFilter !== 'all' ? filters.assignedToFilter : undefined,
             },
           }}
           itemName="тест-раны"
