@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { ButtonSecondary } from '@/frontend/reusable-elements/buttons/ButtonSecondary';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { Breadcrumbs } from '@/frontend/reusable-components/layout/Breadcrumbs';
@@ -37,6 +38,7 @@ interface TestRunsListProps {
 
 export default function TestRunsList({ projectId }: TestRunsListProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
 
   const [project, setProject] = useState<Project | null>(null);
@@ -268,7 +270,20 @@ export default function TestRunsList({ projectId }: TestRunsListProps) {
           .filter((run) => run.assignedTo?.id)
           .map((run) => [run.assignedTo!.id, run.assignedTo!.name])
       ).entries()
-    ).map(([value, label]) => ({ value, label })),
+    )
+      .sort(([aId, aName], [bId, bName]) => {
+        const currentUserId = session?.user?.id;
+        const aIsCurrent = !!currentUserId && aId === currentUserId;
+        const bIsCurrent = !!currentUserId && bId === currentUserId;
+
+        if (aIsCurrent && !bIsCurrent) return -1;
+        if (!aIsCurrent && bIsCurrent) return 1;
+        return aName.localeCompare(bName, 'ru');
+      })
+      .map(([value, label]) => ({
+        value,
+        label: session?.user?.id && value === session.user.id ? `${label} (Я)` : label,
+      })),
   ];
 
   const totalPages = Math.max(1, Math.ceil(filteredTestRuns.length / itemsPerPage));

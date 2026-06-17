@@ -246,7 +246,8 @@ export class TestRunController {
 
   async bulkDeleteTestResults(
     body: unknown,
-    testRunId: string
+    testRunId: string,
+    userRole: string
   ) {
     const validationResult = bulkDeleteTestResultsSchema.safeParse(body);
     if (!validationResult.success) {
@@ -258,7 +259,8 @@ export class TestRunController {
 
     const result = await testRunService.bulkDeleteTestResults(
       testRunId,
-      validationResult.data.testCaseIds
+      validationResult.data.testCaseIds,
+      userRole
     );
 
     return { data: result };

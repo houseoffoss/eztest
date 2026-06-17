@@ -53,7 +53,7 @@ export function TestRunStatsCards({
 
       <StatCard
         icon={<Circle className="w-5 h-5" />}
-        label="Not run"
+        label="Не запускался"
         value={stats.pending}
         helpText="Еще не выполнялись"
         borderColor="border-l-gray-500/30"

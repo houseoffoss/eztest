@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -106,6 +107,7 @@ export function TestCasesListCard({
   forceShowDefectActions = false,
   getResultIcon,
 }: TestCasesListCardProps) {
+  const { data: session } = useSession();
   const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<Set<string>>(new Set());
   const [bulkExecuteOpen, setBulkExecuteOpen] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
@@ -118,10 +120,29 @@ export function TestCasesListCard({
   const [submittingBulk, setSubmittingBulk] = useState(false);
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions, loading: loadingStatus } = useDropdownOptions('TestResult', 'status');
-  const { hasPermission: hasPermissionCheck } = usePermissions();
+  const { hasPermission: hasPermissionCheck, role } = usePermissions();
+  const currentUserId = session?.user?.id;
+  const membersForFilter = React.useMemo(
+    () =>
+      [...members]
+        .sort((a, b) => {
+          const aIsCurrent = !!currentUserId && a.id === currentUserId;
+          const bIsCurrent = !!currentUserId && b.id === currentUserId;
+
+          if (aIsCurrent && !bIsCurrent) return -1;
+          if (!aIsCurrent && bIsCurrent) return 1;
+          return a.name.localeCompare(b.name, 'ru');
+        })
+        .map((member) => ({
+          ...member,
+          label: currentUserId && member.id === currentUserId ? `${member.name} (Я)` : member.name,
+        })),
+    [members, currentUserId]
+  );
   
   // Check if user can create defects
   const canCreateDefect = hasPermissionCheck('defects:create');
+  const isAdmin = role === 'ADMIN';
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -146,7 +167,7 @@ export function TestCasesListCard({
 
   const getStatusLabel = (status: string) => {
     if (status === 'NOT_RUN' || status === 'SKIPPED') {
-      return 'Not run';
+      return 'Не запускался';
     }
 
     if (!loadingStatus && statusOptions.length > 0) {
@@ -480,7 +501,8 @@ export function TestCasesListCard({
                     </ButtonSecondary>
                   </>
                 )}
-                {canUpdate && testRunStatus !== 'COMPLETED' && testRunStatus !== 'CANCELLED' && (
+                {((canUpdate && testRunStatus !== 'COMPLETED' && testRunStatus !== 'CANCELLED') ||
+                  (isAdmin && testRunStatus !== 'CANCELLED')) && (
                   <ButtonSecondary size="sm" onClick={() => setBulkRemoveOpen(true)}>
                     Убрать из рана
                   </ButtonSecondary>
@@ -533,9 +555,9 @@ export function TestCasesListCard({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Все исполнители</SelectItem>
-            {members.map((member) => (
+            {membersForFilter.map((member) => (
               <SelectItem key={member.id} value={member.id}>
-                {member.name}
+                {member.label}
               </SelectItem>
             ))}
           </SelectContent>

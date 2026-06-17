@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { XMLParser } from 'fast-xml-parser';
 import dropdownOptionService from '@/backend/services/dropdown-option/dropdown-option.service';
+import { TestRunMessages } from '@/backend/constants/static_messages';
 
 /**
  * Normalize test case identifier by converting underscores to hyphens
@@ -812,7 +813,27 @@ export class TestRunService {
     });
   }
 
-  async bulkDeleteTestResults(testRunId: string, testCaseIds: string[]) {
+  async bulkDeleteTestResults(testRunId: string, testCaseIds: string[], userRole: string) {
+    const testRun = await prisma.testRun.findUnique({
+      where: { id: testRunId },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!testRun) {
+      throw new Error(TestRunMessages.TestRunNotFound);
+    }
+
+    if (testRun.status === 'CANCELLED') {
+      throw new Error('Нельзя удалять тест-кейсы из отмененного тест-рана');
+    }
+
+    if (testRun.status === 'COMPLETED' && userRole !== 'ADMIN') {
+      throw new Error('Только администратор может удалять тест-кейсы из завершенного тест-рана');
+    }
+
     const result = await prisma.testResult.deleteMany({
       where: {
         testRunId,

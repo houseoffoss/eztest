@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
   FAILED: 'Провалено',
   BLOCKED: 'Заблокировано',
   RETEST: 'Ретест',
-  NOT_RUN: 'Not run',
+  NOT_RUN: 'Не запускался',
 };
 
 const QUICK_STATUS_VALUES = ['PASSED', 'FAILED', 'BLOCKED', 'RETEST', 'NOT_RUN'] as const;
@@ -31,23 +31,23 @@ const QUICK_STATUS_VALUES = ['PASSED', 'FAILED', 'BLOCKED', 'RETEST', 'NOT_RUN']
 const STATUS_BUTTON_STYLES: Record<string, { idle: string; active: string }> = {
   PASSED: {
     idle: 'border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/15',
-    active: 'border-green-400/60 bg-green-500/20 text-green-200 shadow-[0_0_0_1px_rgba(74,222,128,0.2)]',
+    active: 'border-2 border-green-300 bg-green-500/25 text-green-100 ring-2 ring-green-300/40 shadow-[0_0_0_1px_rgba(74,222,128,0.55)]',
   },
   FAILED: {
     idle: 'border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/15',
-    active: 'border-red-400/60 bg-red-500/20 text-red-200 shadow-[0_0_0_1px_rgba(248,113,113,0.2)]',
+    active: 'border-2 border-red-300 bg-red-500/25 text-red-100 ring-2 ring-red-300/40 shadow-[0_0_0_1px_rgba(248,113,113,0.55)]',
   },
   BLOCKED: {
     idle: 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/15',
-    active: 'border-orange-400/60 bg-orange-500/20 text-orange-200 shadow-[0_0_0_1px_rgba(251,146,60,0.2)]',
+    active: 'border-2 border-orange-300 bg-orange-500/25 text-orange-100 ring-2 ring-orange-300/40 shadow-[0_0_0_1px_rgba(251,146,60,0.55)]',
   },
   RETEST: {
     idle: 'border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/15',
-    active: 'border-purple-400/60 bg-purple-500/20 text-purple-200 shadow-[0_0_0_1px_rgba(196,181,253,0.2)]',
+    active: 'border-2 border-purple-300 bg-purple-500/25 text-purple-100 ring-2 ring-purple-300/40 shadow-[0_0_0_1px_rgba(196,181,253,0.55)]',
   },
   NOT_RUN: {
     idle: 'border-slate-500/30 bg-slate-500/10 text-slate-300 hover:bg-slate-500/15',
-    active: 'border-slate-400/60 bg-slate-500/20 text-slate-100 shadow-[0_0_0_1px_rgba(203,213,225,0.2)]',
+    active: 'border-2 border-slate-300 bg-slate-500/25 text-slate-100 ring-2 ring-slate-300/40 shadow-[0_0_0_1px_rgba(203,213,225,0.55)]',
   },
 };
 

@@ -15,7 +15,7 @@ export const DELETE = hasProjectMemberAccess(
   async (request, context) => {
     const { testrunId } = await context.params;
     const body = await request.json();
-    return testRunController.bulkDeleteTestResults(body, testrunId);
+    return testRunController.bulkDeleteTestResults(body, testrunId, request.userInfo.role);
   },
   'testruns',
   'update'

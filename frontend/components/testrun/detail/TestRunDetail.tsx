@@ -774,7 +774,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     <div className="flex-1">
       {/* Navbar */}
       <Navbar
-        className={resultDialogOpen ? 'xl:pr-[37rem]' : undefined}
         brandLabel={null}
         items={[]}
         breadcrumbs={
@@ -796,7 +795,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         actions={navbarActions}
       />
 
-      <div className={`space-y-6 p-4 pt-8 transition-[padding] md:p-6 lg:p-8 ${resultDialogOpen ? 'xl:pr-[37rem]' : ''}`}>
+      <div className="space-y-6 p-4 pt-8 md:p-6 lg:p-8">
         <TestRunHeader
           testRun={testRun}
           executionTypeLabel={executionTypeLabel}
