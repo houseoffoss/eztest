@@ -14,6 +14,7 @@ interface UpdateProjectInput {
 
 interface AddMemberInput {
   userId?: string; // Optional, for backward compatibility
+  userIds?: string[];
   email?: string; // Email address of the user to add
 }
 
@@ -373,62 +374,80 @@ export class ProjectService {
    * Add member to project
    */
   async addProjectMember(projectId: string, data: AddMemberInput) {
-    // Find user by email or userId
-    let user;
-    
-    if (data.email) {
-      // Find user by email
-      user = await prisma.user.findUnique({
-        where: { email: data.email },
-      });
-      
-      if (!user) {
-        throw new Error('User with this email not found');
-      }
-    } else if (data.userId) {
-      // Find user by ID (fallback for backward compatibility)
-      user = await prisma.user.findUnique({
-        where: { id: data.userId },
-      });
-      
-      if (!user) {
-        throw new Error('User not found');
-      }
-    } else {
-      throw new Error('Either email or userId is required');
+    const candidateUserIds = new Set<string>();
+
+    if (data.userIds && data.userIds.length > 0) {
+      data.userIds.forEach((id) => candidateUserIds.add(id));
     }
 
-    // Check if member already exists
-    const existingMember = await prisma.projectMember.findUnique({
+    if (data.userId) {
+      candidateUserIds.add(data.userId);
+    }
+
+    if (data.email) {
+      const userByEmail = await prisma.user.findUnique({
+        where: { email: data.email },
+        select: { id: true },
+      });
+
+      if (!userByEmail) {
+        throw new Error('User with this email not found');
+      }
+
+      candidateUserIds.add(userByEmail.id);
+    }
+
+    if (candidateUserIds.size === 0) {
+      throw new Error('Either email, userId, or userIds is required');
+    }
+
+    const userIds = Array.from(candidateUserIds);
+    const users = await prisma.user.findMany({
       where: {
-        projectId_userId: {
-          projectId,
-          userId: user.id,
-        },
+        id: { in: userIds },
       },
+      select: { id: true },
     });
 
-    if (existingMember) {
+    if (users.length !== userIds.length) {
+      throw new Error('User not found');
+    }
+
+    const existingMembers = await prisma.projectMember.findMany({
+      where: {
+        projectId,
+        userId: { in: userIds },
+      },
+      select: { userId: true },
+    });
+
+    if (existingMembers.length > 0) {
       throw new Error('User is already a member of this project');
     }
 
-    return await prisma.projectMember.create({
-      data: {
-        projectId,
-        userId: user.id,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            role: true,
+    const createdMembers = await prisma.$transaction(
+      userIds.map((userId) =>
+        prisma.projectMember.create({
+          data: {
+            projectId,
+            userId,
           },
-        },
-      },
-    });
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                role: true,
+              },
+            },
+          },
+        })
+      )
+    );
+
+    return createdMembers;
   }
 
   /**

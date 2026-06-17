@@ -23,5 +23,5 @@ export interface Project {
 }
 
 export interface AddMemberFormData {
-  email: string;
+  userIds: string[];
 }

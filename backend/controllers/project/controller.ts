@@ -151,28 +151,35 @@ export class ProjectController {
       );
     }
 
-    const { userId: newUserId, email } = validationResult.data;
+    const { userId: newUserId, userIds, email } = validationResult.data;
     const appUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || 'http://localhost:3000';
 
     try {
-      const member = await projectService.addProjectMember(projectId, {
+      const members = await projectService.addProjectMember(projectId, {
         userId: newUserId,
+        userIds,
         email,
       });
 
-      // Send notification email to the newly added member (non-blocking, async)
-      emailService
-        .sendProjectMemberEmail({
-          projectId,
-          newMemberId: member.userId,
-          addedByUserId: request.userInfo.id,
-          appUrl,
-        })
-        .catch((error) => {
-          console.error('Failed to send project member email:', error);
+      // Send notification emails to newly added members (non-blocking, async)
+      Promise.allSettled(
+        members.map((member) =>
+          emailService.sendProjectMemberEmail({
+            projectId,
+            newMemberId: member.userId,
+            addedByUserId: request.userInfo.id,
+            appUrl,
+          })
+        )
+      ).then((results) => {
+        results.forEach((result) => {
+          if (result.status === 'rejected') {
+            console.error('Failed to send project member email:', result.reason);
+          }
         });
+      });
 
-      return { data: member, statusCode: 201 };
+      return { data: members, statusCode: 201 };
     } catch (error) {
       if (error instanceof Error && error.message === 'User is already a member of this project') {
         throw new ConflictException(ProjectMemberMessages.UserAlreadyMember);

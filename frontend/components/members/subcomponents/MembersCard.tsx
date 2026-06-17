@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import { MembersList } from '@/frontend/reusable-components/users/MembersList';
-import { Users } from 'lucide-react';
 import { ProjectMember } from '../types';
 
 interface MembersCardProps {
@@ -24,11 +23,10 @@ export function MembersCard({ members, isAdminOrManager, onRemoveMember }: Membe
         },
         createdAt: member.joinedAt,
       }))}
-      title={`Project Members (${members.length})`}
-      description="People who have access to this project"
-      emptyTitle="No members yet"
-      emptyDescription={isAdminOrManager ? 'Add project members to collaborate on this project' : 'Waiting for project manager or admin to add members'}
-      emptyIcon={Users}
+      title={`Участники проекта (${members.length})`}
+      description="Пользователи, у которых есть доступ к этому проекту"
+      emptyTitle="Участников пока нет"
+      emptyDescription={isAdminOrManager ? 'Добавьте участников, чтобы начать совместную работу' : 'Ожидается добавление участников менеджером проекта или администратором'}
       onDelete={isAdminOrManager ? onRemoveMember : undefined}
       showProjects={false}
     />

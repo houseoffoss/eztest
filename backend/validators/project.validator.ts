@@ -37,12 +37,17 @@ export const updateProjectSchema = z.object({
 export const addProjectMemberSchema = z
   .object({
     userId: z.string().min(1, "Invalid user ID format").optional(),
+    userIds: z
+      .array(z.string().min(1, "Invalid user ID format"))
+      .min(1, "At least one user ID is required")
+      .optional(),
     email: z.string().email("Invalid email format").optional(),
   })
   .refine(
-    (data: { userId?: string; email?: string }) => data.userId || data.email,
+    (data: { userId?: string; userIds?: string[]; email?: string }) =>
+      data.userId || (data.userIds && data.userIds.length > 0) || data.email,
     {
-      message: "Either userId or email is required",
+      message: "Either userId, userIds, or email is required",
       path: ["userId"],
     },
   );

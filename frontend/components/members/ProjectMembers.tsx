@@ -40,11 +40,11 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
     if (isAdminOrManager) {
       actions.push({
         type: 'action' as const,
-        label: 'Add Member',
+        label: 'Добавить участников',
         icon: Plus,
         onClick: () => setAddDialogOpen(true),
         variant: 'primary' as const,
-        buttonName: 'Project Members - Add Member',
+        buttonName: 'Участники проекта - Добавить участников',
       });
     }
 
@@ -75,7 +75,7 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
   useEffect(() => {
     if (project) {
-      document.title = `Project Members - ${project.name} | EZTest`;
+      document.title = `Участники проекта - ${project.name} | EZTest`;
     }
   }, [project]);
 
@@ -93,8 +93,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         // Project not found or no access - redirect after showing message
         setAlert({
           type: 'error',
-          title: 'Project Not Found',
-          message: 'The project you\'re looking for doesn\'t exist or has been deleted. Redirecting...',
+          title: 'Проект не найден',
+          message: 'Проект не существует или был удален. Выполняется перенаправление...',
         });
         setTimeout(() => {
           router.push('/projects');
@@ -112,17 +112,25 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
     }
   };
 
-  const handleMemberAdded = (member: unknown) => {
-    if (member) {
-      const newMember = member as ProjectMember;
-      setMembers([...members, newMember]);
-      setAddDialogOpen(false);
-      setAlert({
-        type: 'success',
-        title: 'Member Added',
-        message: `${newMember.user?.name || 'User'} has been added to the project.`,
-      });
+  const handleMembersAdded = (newMembers: unknown[]) => {
+    if (!newMembers || newMembers.length === 0) {
+      return;
     }
+
+    const parsedMembers = newMembers as ProjectMember[];
+    setMembers((prev) => [...prev, ...parsedMembers]);
+    setAddDialogOpen(false);
+
+    const successMessage =
+      parsedMembers.length === 1
+        ? `${parsedMembers[0].user?.name || 'Пользователь'} добавлен в проект.`
+        : `Добавлено участников: ${parsedMembers.length}.`;
+
+    setAlert({
+      type: 'success',
+      title: 'Доступ выдан',
+      message: successMessage,
+    });
   };
 
   const handleRemoveMember = (memberId: string, memberName: string) => {
@@ -145,8 +153,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         const data = await response.json();
         setAlert({
           type: 'error',
-          title: 'Failed to Remove Member',
-          message: data.error || 'Failed to remove member from project.',
+          title: 'Не удалось удалить участника',
+          message: data.error || 'Не удалось удалить участника из проекта.',
         });
         return;
       }
@@ -156,29 +164,29 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
       setDeleteDialogOpen(false);
       setAlert({
         type: 'success',
-        title: 'Member Removed',
-        message: `${memberToDelete.name} has been removed from the project.`,
+        title: 'Участник удален',
+        message: `${memberToDelete.name} удален из проекта.`,
       });
     } catch {
       setAlert({
         type: 'error',
-        title: 'Error',
-        message: 'An unexpected error occurred while removing the member.',
+        title: 'Ошибка',
+        message: 'Произошла непредвиденная ошибка при удалении участника.',
       });
     }
   };
 
   if (loading) {
-    return <Loader fullScreen text="Loading project members..." />;
+    return <Loader fullScreen text="Загрузка участников проекта..." />;
   }
 
   if (!project) {
     return (
       <NotFoundState
-        title="Project Not Found"
-        message="The project you're trying to access doesn't exist or has been deleted."
+        title="Проект не найден"
+        message="Проект, к которому вы пытаетесь получить доступ, не существует или был удален."
         icon={Users}
-        redirectingMessage="Redirecting to projects page..."
+        redirectingMessage="Переходим на страницу проектов..."
         showRedirecting={true}
       />
     );
@@ -194,9 +202,9 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         breadcrumbs={
           <Breadcrumbs 
             items={[
-              { label: 'Projects', href: '/projects' },
+              { label: 'Проекты', href: '/projects' },
               { label: project.name, href: `/projects/${projectId}` },
-              { label: 'Members' },
+              { label: 'Участники' },
             ]}
           />
         }
@@ -207,8 +215,8 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
         <div className="max-w-6xl mx-auto">
           <PageHeaderWithBadge
             badge={project.key}
-            title="Project Members"
-            description={`Manage project members for ${project.name}${!isAdminOrManager ? ' (Project managers and admins can manage members)' : ''}`}
+            title="Участники проекта"
+            description={`Управление доступом участников для проекта ${project.name}${!isAdminOrManager ? ' (управлять участниками могут администраторы и менеджеры проекта)' : ''}`}
             className="mb-6"
           />
 
@@ -222,9 +230,10 @@ export default function ProjectMembers({ projectId }: ProjectMembersProps) {
 
       <CreateAddMemberDialog
         projectId={projectId}
+        existingMemberUserIds={members.map((member) => member.user.id)}
         triggerOpen={addDialogOpen}
         onOpenChange={setAddDialogOpen}
-        onMemberAdded={handleMemberAdded}
+        onMembersAdded={handleMembersAdded}
       />
 
       <RemoveMemberDialog
