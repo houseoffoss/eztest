@@ -1239,7 +1239,13 @@ export class ExportService {
     finishPage();
 
     const pageStreams = pageCommands.map((commands) => commands.join('\n'));
-    return this.buildPdfFromStreams(pageStreams, usedChars);
+    try {
+      return this.buildPdfFromStreams(pageStreams, usedChars);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[ExportService] buildPdfFromStreams failed:', msg, e);
+      throw new Error(`PDF generation failed: ${msg}`);
+    }
   }
 
   private buildPdfFromStreams(pageStreams: string[], usedChars: Set<string>): Buffer {

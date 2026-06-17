@@ -117,7 +117,12 @@ export class ExportController {
       if (error instanceof ValidationException) {
         throw error;
       }
-      console.error('[ExportController] exportTestRunDetail failed:', error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error('[ExportController] exportTestRunDetail failed:', errMsg, error);
+      // In development, surface the actual error so it can be diagnosed.
+      if (process.env.NODE_ENV !== 'production') {
+        return NextResponse.json({ error: `PDF export failed: ${errMsg}`, data: null }, { status: 500 });
+      }
       throw new InternalServerException(TestRunMessages.FailedToExportTestRuns);
     }
   }
