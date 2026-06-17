@@ -17,7 +17,8 @@ type UserWithRole = Prisma.UserGetPayload<{
  * - Must be a member of the specific project
  * 
  * For ADMIN:
- * - Only needs the permission (can access any project)
+ * - If ADMIN is a member of the project: allowed to manage members
+ * - Otherwise: needs the permission (can access any project)
  * 
  * @param apiMethod - The API route handler function
  * @param module - The permission module (e.g., 'projects')
@@ -51,6 +52,10 @@ export function hasProjectMemberAccess(
       );
     }
 
+    // Get project ID from route params (await for Next.js 15)
+    const params = await context.params;
+    const { id: projectId } = params;
+
     // Check permission using module:action format
     const permissionName = `${module}:${action}`;
     const userPermissions = user.role?.permissions?.map(
@@ -58,16 +63,41 @@ export function hasProjectMemberAccess(
     ) || [];
     const hasPermission = userPermissions.includes(permissionName);
 
+    // Check project membership early so ADMIN project members can be allowed explicitly
+    const projectMembership = await prisma.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId,
+          userId: user.id
+        }
+      }
+    });
+
+    // ADMIN who is a member of this project can manage members,
+    // even if role-permission mapping is temporarily misconfigured.
+    if (user.role.name === 'ADMIN' && projectMembership) {
+      const customRequest = request as CustomRequest;
+      customRequest.userInfo = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role.name
+      } as UserInfo;
+
+      customRequest.scopeInfo = {
+        access: true,
+        scope_name: 'project'
+      } as ScopeInfo;
+
+      return apiMethod(customRequest, context);
+    }
+
     if (!hasPermission) {
       return NextResponse.json(
         { success: false, message: 'Forbidden: Insufficient permissions' },
         { status: 403 }
       );
     }
-
-    // Get project ID from route params (await for Next.js 15)
-    const params = await context.params;
-    const { id: projectId } = params;
 
     // For ADMIN, allow access to any project
     if (user.role.name === 'ADMIN') {
@@ -88,15 +118,6 @@ export function hasProjectMemberAccess(
     }
 
     // For non-admin users, check if they're a member of this project
-    const projectMembership = await prisma.projectMember.findUnique({
-      where: {
-        projectId_userId: {
-          projectId,
-          userId: user.id
-        }
-      }
-    });
-
     if (!projectMembership) {
       return NextResponse.json(
         { success: false, message: 'Forbidden: You are not a member of this project' },
