@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/frontend/reusable-elements/dialogs/Dialog';
 import { Alert, AlertDescription } from '@/frontend/reusable-elements/alerts/Alert';
-import { FileSpreadsheet, FileText, Upload, AlertCircle, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, FileText, FileType2, Upload, AlertCircle, Loader2 } from 'lucide-react';
 import { exportData, ExportOptions } from '@/frontend/lib/export-utils';
 
 export interface FileExportDialogProps {
@@ -31,13 +31,13 @@ export function FileExportDialog({
   exportOptions,
   itemName,
 }: FileExportDialogProps) {
-  const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | 'pdf' | null>(null);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleExport = async () => {
     if (!selectedFormat) {
-      setError('Please select an export format');
+      setError('Выберите формат экспорта');
       return;
     }
 
@@ -57,7 +57,7 @@ export function FileExportDialog({
         setExporting(false);
       }, 500);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Export failed';
+      const errorMsg = error instanceof Error ? error.message : 'Экспорт не удался';
       setError(errorMsg);
       setExporting(false);
     }
@@ -84,7 +84,7 @@ export function FileExportDialog({
             <div className="space-y-5">
               {/* Format Selection */}
               <div className="space-y-3">
-                <p className="text-sm font-medium text-white/90">Select Export Format</p>
+                <p className="text-sm font-medium text-white/90">Выберите формат экспорта</p>
                 
                 {/* CSV Option */}
                 <div
@@ -104,9 +104,9 @@ export function FileExportDialog({
                       }`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white/90">CSV Format</p>
+                      <p className="text-sm font-medium text-white/90">Формат CSV</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Comma-separated values file (.csv)
+                        Файл значений, разделенных запятыми (.csv)
                       </p>
                     </div>
                     {selectedFormat === 'csv' && (
@@ -135,12 +135,43 @@ export function FileExportDialog({
                       }`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white/90">Excel Format</p>
+                      <p className="text-sm font-medium text-white/90">Формат Excel</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Microsoft Excel spreadsheet (.xlsx)
+                        Таблица Microsoft Excel (.xlsx)
                       </p>
                     </div>
                     {selectedFormat === 'excel' && (
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PDF Option */}
+                <div
+                  className={`p-4 border rounded-lg cursor-pointer transition-all bg-[#0f0f12] ${
+                    selectedFormat === 'pdf'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-white/20 hover:border-white/30 hover:bg-white/5'
+                  }`}
+                  onClick={() => !exporting && setSelectedFormat('pdf')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
+                      selectedFormat === 'pdf' ? 'bg-primary/20' : 'bg-white/10'
+                    }`}>
+                      <FileType2 className={`h-5 w-5 ${
+                        selectedFormat === 'pdf' ? 'text-primary' : 'text-white/70'
+                      }`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-white/90">Формат PDF</p>
+                      <p className="text-xs text-white/50 mt-1">
+                        Красивый отчет PDF с ключевой статистикой, кейсами и дефектами (.pdf)
+                      </p>
+                    </div>
+                    {selectedFormat === 'pdf' && (
                       <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-white" />
                       </div>
@@ -170,7 +201,7 @@ export function FileExportDialog({
             className="cursor-pointer"
             buttonName={`${title} - Cancel`}
           >
-            Cancel
+            Отмена
           </Button>
           <ButtonPrimary
             type="button"
@@ -184,7 +215,7 @@ export function FileExportDialog({
             ) : (
               <Upload className="h-4 w-4 mr-2" />
             )}
-            {exporting ? 'Exporting...' : 'Export'}
+            {exporting ? 'Экспорт...' : 'Экспортировать'}
           </ButtonPrimary>
         </div>
       </DialogContent>

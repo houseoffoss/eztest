@@ -5,7 +5,7 @@
 export interface ExportOptions {
   projectId: string;
   endpoint: string;
-  format: 'csv' | 'excel';
+  format: 'csv' | 'excel' | 'pdf';
   filename?: string;
   filters?: Record<string, string | undefined>;
 }
@@ -30,13 +30,13 @@ export async function exportData(options: ExportOptions): Promise<void> {
     const response = await fetch(url);
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Export failed' }));
-      throw new Error(error.message || 'Export failed');
+      const error = await response.json().catch(() => ({ message: 'Экспорт не удался' }));
+      throw new Error(error.message || 'Экспорт не удался');
     }
 
     // Get filename from Content-Disposition header or use default
     const contentDisposition = response.headers.get('Content-Disposition');
-    let exportFilename = filename || `export-${Date.now()}.${format === 'csv' ? 'csv' : 'xlsx'}`;
+    let exportFilename = filename || `export-${Date.now()}.${format === 'csv' ? 'csv' : format === 'excel' ? 'xlsx' : 'pdf'}`;
     
     if (contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);

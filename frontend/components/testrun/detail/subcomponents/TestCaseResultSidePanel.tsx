@@ -1,6 +1,7 @@
 'use client';
 
-import { X } from 'lucide-react';
+import Link from 'next/link';
+import { ExternalLink, X } from 'lucide-react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
@@ -10,6 +11,7 @@ import { TestCase, ResultFormData } from '../types';
 interface TestCaseResultSidePanelProps {
   open: boolean;
   testCase: TestCase | null;
+  projectId?: string;
   formData: ResultFormData;
   saving?: boolean;
   onClose: () => void;
@@ -54,6 +56,7 @@ const STATUS_BUTTON_STYLES: Record<string, { idle: string; active: string }> = {
 export function TestCaseResultSidePanel({
   open,
   testCase,
+  projectId,
   formData,
   saving = false,
   onClose,
@@ -65,12 +68,31 @@ export function TestCaseResultSidePanel({
     return null;
   }
 
+  const canOpenTestCase = Boolean(projectId && testCase.id);
+
   return (
     <aside className="fixed right-0 top-0 z-[70] h-screen w-full max-w-xl border-l border-white/10 bg-[#0f0f12] shadow-2xl">
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between border-b border-white/10 p-4">
           <div className="min-w-0">
-            <p className="text-xs font-mono text-white/60">{testCase.tcId || '-'}</p>
+            {canOpenTestCase ? (
+              <Link
+                href={`/projects/${projectId}/testcases/${testCase.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-mono text-blue-300 transition-colors hover:text-blue-200 hover:underline"
+                title="Открыть тест-кейс в новой вкладке"
+                aria-label="Открыть тест-кейс в новой вкладке"
+              >
+                {testCase.tcId || '-'}
+                <ExternalLink className="h-3 w-3 opacity-80" />
+              </Link>
+            ) : (
+              <p className="text-xs font-mono text-white/60">{testCase.tcId || '-'}</p>
+            )}
+            {canOpenTestCase && (
+              <p className="mt-1 text-[11px] text-white/45">Cmd/Ctrl+Click, чтобы открыть в новой вкладке</p>
+            )}
             <h3 className="mt-1 truncate text-base font-semibold text-white/90">{testCase.title || testCase.name || 'Тест-кейс'}</h3>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>

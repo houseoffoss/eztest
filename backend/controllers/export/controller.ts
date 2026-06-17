@@ -85,16 +85,23 @@ export class ExportController {
   /**
    * Export a single test run with detailed report
    */
-  async exportTestRunDetail(testRunId: string, format: 'csv' | 'excel'): Promise<NextResponse> {
+  async exportTestRunDetail(testRunId: string, format: 'csv' | 'excel' | 'pdf'): Promise<NextResponse> {
     try {
-      if (format !== 'csv' && format !== 'excel') {
-        throw new ValidationException(TestCaseMessages.InvalidExportFormat);
+      if (format !== 'csv' && format !== 'excel' && format !== 'pdf') {
+        throw new ValidationException('Invalid export format. Use "csv", "excel", or "pdf".');
       }
 
       const buffer = await exportService.exportTestRunDetail(testRunId, format);
 
-      const filename = `test-run-report-${testRunId}-${Date.now()}.${format === 'csv' ? 'csv' : 'xlsx'}`;
-      const contentType = format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const filename = `test-run-report-${testRunId}-${Date.now()}.${
+        format === 'csv' ? 'csv' : format === 'excel' ? 'xlsx' : 'pdf'
+      }`;
+      const contentType =
+        format === 'csv'
+          ? 'text/csv'
+          : format === 'excel'
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            : 'application/pdf';
 
       // Convert buffer to Uint8Array for proper binary response
       const uint8Array = new Uint8Array(buffer);

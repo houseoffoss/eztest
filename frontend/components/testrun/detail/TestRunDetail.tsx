@@ -943,6 +943,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       <TestCaseResultSidePanel
         open={resultDialogOpen}
         testCase={selectedTestCase}
+        projectId={testRun?.project?.id}
         formData={resultForm}
         onClose={() => {
           setResultDialogOpen(false);

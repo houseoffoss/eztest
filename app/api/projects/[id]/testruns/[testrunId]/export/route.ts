@@ -10,7 +10,7 @@ export const GET = hasPermission(
   async (req: CustomRequest, context) => {
     const { testrunId } = await context.params;
     const searchParams = req.nextUrl?.searchParams || new URL(req.url).searchParams;
-    const format = (searchParams.get('format') || 'csv') as 'csv' | 'excel';
+    const format = (searchParams.get('format') || 'csv') as 'csv' | 'excel' | 'pdf';
     
     return exportController.exportTestRunDetail(testrunId, format);
   },
