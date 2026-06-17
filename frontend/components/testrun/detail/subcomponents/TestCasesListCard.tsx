@@ -1,4 +1,7 @@
-﻿import { useEffect, useState } from 'react';
+'use client';
+
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
@@ -32,7 +35,6 @@ import { TestResult, TestCase } from '../types';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { getDynamicBadgeProps } from '@/lib/badge-color-utils';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +54,12 @@ interface TestCasesListCardProps {
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
+  statusFilter: string;
+  ownerFilter: string;
+  statusSort: 'none' | 'asc' | 'desc';
+  onStatusFilterChange: (value: string) => void;
+  onOwnerFilterChange: (value: string) => void;
+  onStatusSortChange: (value: 'none' | 'asc' | 'desc') => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (items: number) => void;
   onAddTestCases: () => void;
@@ -67,7 +75,7 @@ interface ResultRow {
   testCase: TestCase;
   status: string;
   comment?: string;
-  executedBy?: { name: string };
+  executedBy?: { id?: string; name: string };
   executedAt?: string;
 }
 
@@ -83,6 +91,12 @@ export function TestCasesListCard({
   totalPages,
   totalItems,
   itemsPerPage,
+  statusFilter,
+  ownerFilter,
+  statusSort,
+  onStatusFilterChange,
+  onOwnerFilterChange,
+  onStatusSortChange,
   onPageChange,
   onItemsPerPageChange,
   onAddTestCases,
@@ -92,13 +106,14 @@ export function TestCasesListCard({
   forceShowDefectActions = false,
   getResultIcon,
 }: TestCasesListCardProps) {
-  const router = useRouter();
   const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<Set<string>>(new Set());
   const [bulkExecuteOpen, setBulkExecuteOpen] = useState(false);
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
   const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkComment, setBulkComment] = useState('');
   const [bulkExecutorId, setBulkExecutorId] = useState('current-user');
+  const [bulkAssigneeId, setBulkAssigneeId] = useState('');
   const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [submittingBulk, setSubmittingBulk] = useState(false);
   const { options: priorityOptions, loading: loadingPriority } = useDropdownOptions('TestCase', 'priority');
@@ -129,21 +144,16 @@ export function TestCasesListCard({
     fetchMembers();
   }, [projectId]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PASSED':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'FAILED':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'BLOCKED':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'SKIPPED':
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-      case 'RETEST':
-        return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-      default:
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+  const getStatusLabel = (status: string) => {
+    if (status === 'NOT_RUN' || status === 'SKIPPED') {
+      return 'Not run';
     }
+
+    if (!loadingStatus && statusOptions.length > 0) {
+      return statusOptions.find((opt) => opt.value === status)?.label || status;
+    }
+
+    return status;
   };
 
   const columns: ColumnDef<ResultRow>[] = [
@@ -217,9 +227,7 @@ export function TestCasesListCard({
       label: 'Статус',
       render: (_, row: ResultRow) => {
         const badgeProps = getDynamicBadgeProps(row.status, statusOptions);
-        const label = !loadingStatus && statusOptions.length > 0
-          ? statusOptions.find(opt => opt.value === row.status)?.label || row.status
-          : row.status;
+        const label = getStatusLabel(row.status);
         return (
           <div className="flex items-center gap-2">
             {getResultIcon(row.status)}
@@ -239,7 +247,7 @@ export function TestCasesListCard({
       label: 'Выполнил',
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
-          {row.executedBy?.name || '-'}
+          {row.status === 'NOT_RUN' || row.status === 'SKIPPED' ? '-' : row.executedBy?.name || '-'}
         </span>
       ),
     },
@@ -248,7 +256,9 @@ export function TestCasesListCard({
       label: 'Дата',
       render: (_, row: ResultRow) => (
         <span className="text-white/70 text-sm">
-          {row.executedAt
+          {(row.status === 'NOT_RUN' || row.status === 'SKIPPED')
+            ? '-'
+            : row.executedAt
             ? formatDateTime(row.executedAt)
             : '-'}
         </span>
@@ -261,17 +271,6 @@ export function TestCasesListCard({
         <div className="flex items-center gap-2 justify-end">
           {(testRunStatus === 'IN_PROGRESS' || forceShowDefectActions) && (
             <>
-              {testRunStatus === 'IN_PROGRESS' && canUpdate && (
-                <Button
-                  variant="glass"
-                  size="sm"
-                  onClick={() => onExecuteTestCase(row.testCase)}
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                  buttonName={`Test Cases List Card - ${row.status && row.status !== 'SKIPPED' ? 'Update' : 'Execute'} (${row.testCase.title || row.testCase.id})`}
-                >
-                  {row.status && row.status !== 'SKIPPED' ? 'Обновить' : 'Выполнить'}
-                </Button>
-              )}
               {row.status === 'FAILED' && canCreateDefect && (
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -416,9 +415,41 @@ export function TestCasesListCard({
     }
   };
 
+  const handleBulkAssign = async () => {
+    if (selectedTestCaseIds.size === 0 || !bulkAssigneeId) {
+      return;
+    }
+
+    try {
+      setSubmittingBulk(true);
+      const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/results/bulk`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          testCaseIds: Array.from(selectedTestCaseIds),
+          executedById: bulkAssigneeId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Не удалось назначить исполнителя');
+      }
+
+      setSelectedTestCaseIds(new Set());
+      setBulkAssignOpen(false);
+      setBulkAssigneeId('');
+      onRefresh();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Не удалось назначить исполнителя');
+    } finally {
+      setSubmittingBulk(false);
+    }
+  };
+
   return (
     <DetailCard
-      title={`Тест-кейсы (${results?.length || 0})`}
+      title={`Тест-кейсы (${totalItems})`}
       contentClassName=""
       headerAction={
         results && results.length > 0 ? (
@@ -436,9 +467,14 @@ export function TestCasesListCard({
                   {selectedTestCaseIds.size} выбрано
                 </Badge>
                 {testRunStatus === 'IN_PROGRESS' && canUpdate && (
-                  <ButtonSecondary size="sm" onClick={() => setBulkExecuteOpen(true)}>
-                    Массово выполнить
-                  </ButtonSecondary>
+                  <>
+                    <ButtonSecondary size="sm" onClick={() => setBulkAssignOpen(true)}>
+                      Назначить исполнителя
+                    </ButtonSecondary>
+                    <ButtonSecondary size="sm" onClick={() => setBulkExecuteOpen(true)}>
+                      Массово обновить статус
+                    </ButtonSecondary>
+                  </>
                 )}
                 {canUpdate && testRunStatus !== 'COMPLETED' && testRunStatus !== 'CANCELLED' && (
                   <ButtonSecondary size="sm" onClick={() => setBulkRemoveOpen(true)}>
@@ -497,11 +533,56 @@ export function TestCasesListCard({
         </div>
       ) : (
         <>
+          <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Фильтр по статусу" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                {Array.from(
+                  new Set(
+                    ['NOT_RUN', ...statusOptions.map((option) => option.value === 'SKIPPED' ? 'NOT_RUN' : option.value)]
+                  )
+                ).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {getStatusLabel(status)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={ownerFilter} onValueChange={onOwnerFilterChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Фильтр по исполнителю" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все исполнители</SelectItem>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusSort} onValueChange={(v) => onStatusSortChange(v as 'none' | 'asc' | 'desc')}>
+              <SelectTrigger>
+                <SelectValue placeholder="Сортировка по статусу" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Без сортировки</SelectItem>
+                <SelectItem value="asc">Статус: A-Z</SelectItem>
+                <SelectItem value="desc">Статус: Z-A</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <DataTable
             columns={columns}
             data={tableData}
             rowClassName="cursor-pointer hover:bg-accent/20"
-            onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
+            onRowClick={(row) => onExecuteTestCase(row.testCase)}
             emptyMessage="В этом запуске нет тест-кейсов"
           />
 
@@ -594,6 +675,44 @@ export function TestCasesListCard({
             </Button>
             <ButtonPrimary onClick={handleBulkExecute} disabled={submittingBulk || !bulkStatus}>
               Сохранить результаты
+            </ButtonPrimary>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Назначить исполнителя</DialogTitle>
+            <DialogDescription>
+              Назначение исполнителя для {selectedRows.length} тест-кейсов без изменения статуса.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-assignee">Исполнитель</Label>
+              <Select value={bulkAssigneeId} onValueChange={setBulkAssigneeId}>
+                <SelectTrigger id="bulk-assignee">
+                  <SelectValue placeholder="Выберите пользователя" />
+                </SelectTrigger>
+                <SelectContent>
+                  {members.map((member) => (
+                    <SelectItem key={member.id} value={member.id}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="glass" onClick={() => setBulkAssignOpen(false)}>
+              Отмена
+            </Button>
+            <ButtonPrimary onClick={handleBulkAssign} disabled={submittingBulk || !bulkAssigneeId}>
+              Назначить
             </ButtonPrimary>
           </DialogFooter>
         </DialogContent>

@@ -6,7 +6,7 @@ import { FloatingAlert, FloatingAlertMessage } from '@/frontend/reusable-compone
 import { TestRunHeader } from './subcomponents/TestRunHeader';
 import { TestRunStatsCards } from './subcomponents/TestRunStatsCards';
 import { TestCasesListCard } from './subcomponents/TestCasesListCard';
-import { RecordResultDialog } from './subcomponents/RecordResultDialog';
+import { TestCaseResultSidePanel } from './subcomponents/TestCaseResultSidePanel';
 import { AddTestCasesDialog } from '@/frontend/components/common/dialogs/AddTestCasesDialog';
 import { AddTestSuitesDialog } from './subcomponents/AddTestSuitesDialog';
 import { CreateDefectDialog } from '@/frontend/components/defect/subcomponents/CreateDefectDialog';
@@ -54,6 +54,9 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [totalPagesCount, setTotalPagesCount] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [resultStatusFilter, setResultStatusFilter] = useState('all');
+  const [resultOwnerFilter, setResultOwnerFilter] = useState('all');
+  const [resultStatusSort, setResultStatusSort] = useState<'none' | 'asc' | 'desc'>('none');
 
   const [resultForm, setResultForm, clearResultForm] = useFormPersistence<ResultFormData>(
     `testrun-result-${testRunId}`,
@@ -89,11 +92,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     if (canUpdateTestRun) {
       actions.push({
         type: 'action' as const,
-        label: 'Export Report',
+        label: 'Экспорт отчета',
         icon: Upload,
         onClick: () => setExportDialogOpen(true),
         variant: 'secondary' as const,
-        buttonName: 'Test Run Detail - Export Report',
+        buttonName: 'Тест-ран - Экспорт отчета',
       });
     }
 
@@ -108,7 +111,27 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   useEffect(() => {
     fetchTestRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testRunId, currentPage, itemsPerPage]);
+  }, [testRunId, currentPage, itemsPerPage, resultStatusFilter, resultOwnerFilter, resultStatusSort]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const saved = window.localStorage.getItem(`testrun-items-per-page-${testRunId}`);
+    if (saved) {
+      const parsed = Number(saved);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        setItemsPerPage(parsed);
+      }
+    }
+  }, [testRunId]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`testrun-items-per-page-${testRunId}`, String(itemsPerPage));
+    }
+  }, [itemsPerPage, testRunId]);
 
   useEffect(() => {
     if (testRun) {
@@ -129,7 +152,24 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           projectId = pathSegments[projectIndex + 1];
         }
       }
-      const query = `page=${currentPage}&limit=${itemsPerPage}`;
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(itemsPerPage),
+      });
+
+      if (resultStatusFilter !== 'all') {
+        params.set('resultStatus', resultStatusFilter);
+      }
+
+      if (resultOwnerFilter !== 'all') {
+        params.set('executedById', resultOwnerFilter);
+      }
+
+      if (resultStatusSort !== 'none') {
+        params.set('resultStatusSort', resultStatusSort);
+      }
+
+      const query = params.toString();
       const url = projectId 
         ? `/api/projects/${projectId}/testruns/${testRunId}?${query}`
         : `/api/testruns/${testRunId}`;
@@ -142,11 +182,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           setTotalItems(data.pagination.totalItems);
         }
       } else {
-        alert(data.error || 'Failed to fetch test run');
+        alert(data.error || 'Не удалось загрузить тест-ран');
       }
     } catch (error) {
       console.error('Error fetching test run:', error);
-      alert('Failed to fetch test run');
+      alert('Не удалось загрузить тест-ран');
     } finally {
       setLoading(false);
     }
@@ -172,11 +212,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       if (data.data) {
         fetchTestRun();
       } else {
-        alert(data.error || 'Failed to start test run');
+        alert(data.error || 'Не удалось запустить тест-ран');
       }
     } catch (error) {
       console.error('Error starting test run:', error);
-      alert('Failed to start test run');
+      alert('Не удалось запустить тест-ран');
     } finally {
       setActionLoading(false);
     }
@@ -210,11 +250,11 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           setSendReportDialogOpen(false);
         }
       } else {
-        alert(data.error || 'Failed to complete test run');
+        alert(data.error || 'Не удалось завершить тест-ран');
       }
     } catch (error) {
       console.error('Error completing test run:', error);
-      alert('Failed to complete test run');
+      alert('Не удалось завершить тест-ран');
     } finally {
       setActionLoading(false);
     }
@@ -249,8 +289,8 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       const hasInvalidEmails = data.data.message?.includes('Invalid email') || data.data.message?.includes('No valid email');
       setFloatingAlert({
         type: 'error',
-        title: hasInvalidEmails ? 'Invalid Email Addresses' : 'Email Report Failed',
-        message: data.data.message || data.error || 'Failed to send report. Please check recipient email addresses.',
+        title: hasInvalidEmails ? 'Некорректные email-адреса' : 'Не удалось отправить отчет',
+        message: data.data.message || data.error || 'Не удалось отправить отчет. Проверьте email-адреса получателей.',
       });
       return;
     }
@@ -263,14 +303,14 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     if (hasInvalidEmails || hasFailedSends) {
       setFloatingAlert({
         type: 'error', // Use error type to highlight the warning about invalid emails
-        title: 'Report Sent - Some Issues',
+        title: 'Отчет отправлен с предупреждениями',
         message: data.data.message, // Message will include: "Report sent successfully to X recipient(s). Invalid email addresses skipped: ..."
       });
     } else {
       // All emails sent successfully, no issues
       setFloatingAlert({
         type: 'success',
-        title: 'Report Sent Successfully',
+        title: 'Отчет успешно отправлен',
         message: data.data.message,
       });
     }
@@ -319,10 +359,37 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       const data = await response.json();
 
       if (data.data) {
+        setTestRun((prev) => {
+          if (!prev) {
+            return prev;
+          }
+
+          const updatedResults = prev.results.map((result) => {
+            if (result.testCaseId !== selectedTestCase.id) {
+              return result;
+            }
+
+            return {
+              ...result,
+              status: data.data.status,
+              comment: data.data.comment,
+              duration: data.data.duration,
+              errorMessage: data.data.errorMessage,
+              stackTrace: data.data.stackTrace,
+              executedAt: data.data.executedAt,
+              executedBy: data.data.executedBy,
+            };
+          });
+
+          return {
+            ...prev,
+            results: updatedResults,
+          };
+        });
+
         setResultDialogOpen(false);
         setSelectedTestCase(null);
         clearResultForm(); // Clear persisted form data after successful submission
-        fetchTestRun();
       } else {
         alert(data.error || 'Failed to save result');
       }
@@ -386,7 +453,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       const promises = selectedCaseIds.map(async (testCaseId) => {
         const payload = {
           testCaseId,
-          status: 'SKIPPED',
+          status: 'NOT_RUN',
         };
         
         const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}/results`, {
@@ -558,7 +625,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             testCaseId,
-            status: 'SKIPPED',
+                status: 'NOT_RUN',
           }),
         });
 
@@ -616,6 +683,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       case 'BLOCKED':
         return <AlertCircle className="w-5 h-5 text-orange-500" />;
       case 'SKIPPED':
+      case 'NOT_RUN':
         return <Circle className="w-5 h-5 text-gray-500" />;
       case 'RETEST':
         return <AlertCircle className="w-5 h-5 text-purple-500" />;
@@ -662,6 +730,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
             stats.blocked++;
             break;
           case 'SKIPPED':
+          case 'NOT_RUN':
             stats.skipped++;
             break;
         }
@@ -677,7 +746,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   const stats = calculateStats();
   // Progress = tests that have been executed (passed, failed, blocked, retest)
   // Skipped tests are NOT considered executed
-  const executed = stats.passed + stats.failed + stats.blocked;
+  const executed = stats.passed + stats.failed + stats.blocked + stats.retest;
   const progressPercentage =
     stats.total > 0 ? Math.round((executed / stats.total) * 100) : 0;
   // Pass rate = passed tests / executed tests (excluding skipped)
@@ -750,6 +819,21 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           totalPages={totalPagesCount}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          statusFilter={resultStatusFilter}
+          ownerFilter={resultOwnerFilter}
+          statusSort={resultStatusSort}
+          onStatusFilterChange={(value) => {
+            setResultStatusFilter(value);
+            setCurrentPage(1);
+          }}
+          onOwnerFilterChange={(value) => {
+            setResultOwnerFilter(value);
+            setCurrentPage(1);
+          }}
+          onStatusSortChange={(value) => {
+            setResultStatusSort(value);
+            setCurrentPage(1);
+          }}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={(items) => {
             setItemsPerPage(items);
@@ -767,24 +851,6 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           onCreateDefect={handleCreateDefect}
           forceShowDefectActions={showAutomationDefectActions}
           getResultIcon={getResultIcon}
-        />
-
-        <RecordResultDialog
-          open={resultDialogOpen}
-          testCase={selectedTestCase}
-          testCaseId={selectedTestCase?.id || ''}
-          projectId={testRun.project?.id || ''}
-          testRunEnvironment={testRun.environment}
-          formData={resultForm}
-          onOpenChange={setResultDialogOpen}
-          onFormChange={(data) => {
-            const filteredData = Object.fromEntries(
-              Object.entries(data).filter(([, value]) => value !== undefined)
-            ) as Record<string, string>;
-            setResultForm({ ...resultForm, ...filteredData } as ResultFormData);
-          }}
-          onSubmit={handleSubmitResult}
-          refreshTrigger={defectRefreshTrigger}
         />
 
         <AddTestCasesDialog
@@ -868,6 +934,24 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           />
         )}
       </div>
+
+      <TestCaseResultSidePanel
+        open={resultDialogOpen}
+        testCase={selectedTestCase}
+        formData={resultForm}
+        onClose={() => {
+          setResultDialogOpen(false);
+          setSelectedTestCase(null);
+        }}
+        onFormChange={(data) => {
+          const filteredData = Object.fromEntries(
+            Object.entries(data).filter(([, value]) => value !== undefined)
+          ) as Record<string, string>;
+          setResultForm({ ...resultForm, ...filteredData } as ResultFormData);
+        }}
+        onSave={handleSubmitResult}
+        getStatusIcon={getResultIcon}
+      />
 
       <FloatingAlert
         alert={floatingAlert}

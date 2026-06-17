@@ -40,23 +40,31 @@ export const updateTestRunSchema = z.object({
  */
 export const addTestResultSchema = z.object({
   testCaseId: z.string().min(1, 'Test case ID is required'),
-  status: z.enum(['PASSED', 'FAILED', 'BLOCKED', 'SKIPPED', 'RETEST']),
+  status: z.enum(['PASSED', 'FAILED', 'BLOCKED', 'SKIPPED', 'RETEST', 'NOT_RUN']),
   duration: z.number().optional(),
   comment: z.string().optional(),
   errorMessage: z.string().optional(),
   stackTrace: z.string().optional(),
 });
 
-export const bulkUpdateTestResultsSchema = z.object({
-  testCaseIds: z.array(z.string().min(1, 'ID тест-кейса обязателен')).min(1, 'Выберите хотя бы один тест-кейс'),
-  status: z.enum(['PASSED', 'FAILED', 'BLOCKED', 'SKIPPED', 'RETEST']),
-  comment: z.string().optional(),
-  duration: z.number().optional(),
-  errorMessage: z.string().optional(),
-  stackTrace: z.string().optional(),
-  executedById: z.string().min(1, 'Некорректный ID исполнителя').optional(),
-  assignedToId: z.string().min(1, 'Некорректный ID назначенного пользователя').nullable().optional(),
-});
+export const bulkUpdateTestResultsSchema = z
+  .object({
+    testCaseIds: z.array(z.string().min(1, 'ID тест-кейса обязателен')).min(1, 'Выберите хотя бы один тест-кейс'),
+    status: z.enum(['PASSED', 'FAILED', 'BLOCKED', 'SKIPPED', 'RETEST', 'NOT_RUN']).optional(),
+    comment: z.string().optional(),
+    duration: z.number().optional(),
+    errorMessage: z.string().optional(),
+    stackTrace: z.string().optional(),
+    executedById: z.string().min(1, 'Некорректный ID исполнителя').optional(),
+    assignedToId: z.string().min(1, 'Некорректный ID назначенного пользователя').nullable().optional(),
+  })
+  .refine(
+    (data) => data.status !== undefined || data.executedById !== undefined || data.assignedToId !== undefined,
+    {
+      message: 'Нужно передать хотя бы одно поле для обновления: status, executedById или assignedToId',
+      path: ['status'],
+    }
+  );
 
 export const bulkDeleteTestResultsSchema = z.object({
   testCaseIds: z.array(z.string().min(1, 'ID тест-кейса обязателен')).min(1, 'Выберите хотя бы один тест-кейс'),

@@ -1,12 +1,13 @@
 export interface TestResult {
   id: string;
-  status: 'PASSED' | 'FAILED' | 'BLOCKED' | 'SKIPPED' | 'RETEST';
+  status: 'PASSED' | 'FAILED' | 'BLOCKED' | 'SKIPPED' | 'RETEST' | 'NOT_RUN';
   testCaseId: string;
   testCase: TestCase;
   comment?: string;
   duration?: number;
   executedAt?: string;
   executedBy?: {
+    id?: string;
     name: string;
     email: string;
   };

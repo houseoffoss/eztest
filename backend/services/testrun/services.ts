@@ -385,75 +385,122 @@ export class TestRunService {
   /**
    * Get a single test run by ID
    */
-  async getTestRunById(testRunId: string, page = 1, limit = 50) {
+  async getTestRunById(
+    testRunId: string,
+    page = 1,
+    limit = 50,
+    filters?: {
+      resultStatus?: string;
+      executedById?: string;
+      resultStatusSort?: 'asc' | 'desc';
+    }
+  ) {
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, limit);
     const skip = (safePage - 1) * safeLimit;
 
-    return await prisma.testRun.findUnique({
-      where: { id: testRunId },
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-            key: true,
+    const resultWhere: {
+      testRunId: string;
+      status?: string | { in: string[] };
+      executedById?: string;
+    } = {
+      testRunId,
+    };
+
+    if (filters?.resultStatus) {
+      resultWhere.status =
+        filters.resultStatus === 'NOT_RUN'
+          ? { in: ['NOT_RUN', 'SKIPPED'] }
+          : filters.resultStatus;
+    }
+
+    if (filters?.executedById) {
+      resultWhere.executedById = filters.executedById;
+    }
+
+    const resultOrderBy = filters?.resultStatusSort
+      ? [{ status: filters.resultStatusSort }, { executedAt: 'desc' as const }]
+      : [{ executedAt: 'desc' as const }];
+
+    const [testRun, filteredResultsCount, paginatedResults] = await Promise.all([
+      prisma.testRun.findUnique({
+        where: { id: testRunId },
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+              key: true,
+            },
+          },
+          assignedTo: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              results: true,
+            },
           },
         },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        results: {
-          include: {
-            testCase: {
-              select: {
-                id: true,
-                tcId: true,
-                title: true,
-                description: true,
-                preconditions: true,
-                priority: true,
-                status: true,
-                steps: {
-                  select: {
-                    id: true,
-                    stepNumber: true,
-                    action: true,
-                    expectedResult: true,
-                  },
-                  orderBy: {
-                    stepNumber: 'asc',
-                  },
+      }),
+      prisma.testResult.count({ where: resultWhere }),
+      prisma.testResult.findMany({
+        where: resultWhere,
+        include: {
+          testCase: {
+            select: {
+              id: true,
+              tcId: true,
+              title: true,
+              description: true,
+              preconditions: true,
+              priority: true,
+              status: true,
+              steps: {
+                select: {
+                  id: true,
+                  stepNumber: true,
+                  action: true,
+                  expectedResult: true,
+                },
+                orderBy: {
+                  stepNumber: 'asc',
                 },
               },
             },
-            executedBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
+          },
+          executedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
             },
           },
-          orderBy: {
-            executedAt: 'desc',
-          },
-          skip,
-          take: safeLimit,
         },
-        _count: {
-          select: {
-            results: true,
-          },
-        },
+        orderBy: resultOrderBy,
+        skip,
+        take: safeLimit,
+      }),
+    ]);
+
+    if (!testRun) {
+      return null;
+    }
+
+    return {
+      ...testRun,
+      results: paginatedResults,
+      _count: {
+        ...testRun._count,
+        results: filteredResultsCount,
       },
-    });
+    };
   }
 
   /**
@@ -513,7 +560,7 @@ export class TestRunService {
         data: testCaseIds.map((testCaseId) => ({
           testRunId: testRun.id,
           testCaseId,
-          status: 'SKIPPED',
+          status: 'NOT_RUN',
           // executedById is a required User FK. Attribute placeholder results to
           // the run creator — i.e. the API key's owner for API-driven runs
           // (request.userInfo.id flows here as createdById). Updated on execution.
@@ -710,8 +757,8 @@ export class TestRunService {
     testRunId: string,
     testCaseIds: string[],
     data: {
-      status: string;
-      executedById: string;
+      status?: string;
+      executedById?: string;
       assignedToId?: string | null;
       duration?: number;
       comment?: string;
@@ -729,6 +776,26 @@ export class TestRunService {
         });
       }
 
+      const updateData: Record<string, unknown> = {};
+
+      if (data.status !== undefined) {
+        updateData.status = data.status;
+        if (data.status !== 'NOT_RUN') {
+          updateData.executedAt = new Date();
+        }
+      }
+
+      if (data.executedById !== undefined) {
+        updateData.executedById = data.executedById;
+      }
+
+      if (data.status !== undefined) {
+        updateData.duration = data.duration;
+        updateData.comment = data.comment;
+        updateData.errorMessage = data.errorMessage;
+        updateData.stackTrace = data.stackTrace;
+      }
+
       const updateResult = await tx.testResult.updateMany({
         where: {
           testRunId,
@@ -736,15 +803,7 @@ export class TestRunService {
             in: testCaseIds,
           },
         },
-        data: {
-          status: data.status,
-          executedById: data.executedById,
-          duration: data.duration,
-          comment: data.comment,
-          errorMessage: data.errorMessage,
-          stackTrace: data.stackTrace,
-          executedAt: new Date(),
-        },
+        data: updateData,
       });
 
       return {
@@ -804,6 +863,7 @@ export class TestRunService {
           stats.blocked = result._count.status;
           break;
         case 'SKIPPED':
+        case 'NOT_RUN':
           stats.skipped = result._count.status;
           break;
         case 'RETEST':

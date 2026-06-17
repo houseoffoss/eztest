@@ -39,9 +39,14 @@ export class TestRunController {
     testRunId: string,
     userId: string,
     page = 1,
-    limit = 50
+    limit = 50,
+    filters?: {
+      resultStatus?: string;
+      executedById?: string;
+      resultStatusSort?: 'asc' | 'desc';
+    }
   ) {
-    const testRun = await testRunService.getTestRunById(testRunId, page, limit);
+    const testRun = await testRunService.getTestRunById(testRunId, page, limit, filters);
 
     if (!testRun) {
       throw new ValidationException(TestRunMessages.TestRunNotFound);
@@ -217,7 +222,7 @@ export class TestRunController {
       validatedData.testCaseIds,
       {
         status: validatedData.status,
-        executedById: validatedData.executedById || userId,
+        executedById: validatedData.executedById ?? (validatedData.status ? userId : undefined),
         assignedToId: validatedData.assignedToId,
         duration: validatedData.duration,
         comment: validatedData.comment,

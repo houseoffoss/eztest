@@ -1,7 +1,7 @@
 import { formatDateTime } from '@/lib/date-utils';
 import { StatCard } from '@/frontend/reusable-components/cards/StatCard';
 import { ResponsiveGrid } from '@/frontend/reusable-components/layout/ResponsiveGrid';
-import { CheckCircle, XCircle, Calendar, Clock, User } from 'lucide-react';
+import { CheckCircle, XCircle, Circle, Calendar, Clock, User } from 'lucide-react';
 import { TestRunStats } from '../types';
 
 interface TestRunStatsCardsProps {
@@ -25,7 +25,7 @@ export function TestRunStatsCards({
 }: TestRunStatsCardsProps) {
   return (
     <ResponsiveGrid
-      columns={{ default: 1, md: 2, lg: 4 }}
+      columns={{ default: 1, md: 2, lg: 5 }}
       gap="md"
       className="mb-6"
     >
@@ -47,8 +47,16 @@ export function TestRunStatsCards({
         icon={<XCircle className="w-5 h-5" />}
         label="Провалено"
         value={stats.failed}
-        helpText={`${stats.blocked} заблокировано, ${stats.skipped} пропущено`}
+        helpText={`${stats.blocked} заблокировано`}
         borderColor="border-l-red-500/30"
+      />
+
+      <StatCard
+        icon={<Circle className="w-5 h-5" />}
+        label="Not run"
+        value={stats.pending}
+        helpText="Еще не выполнялись"
+        borderColor="border-l-gray-500/30"
       />
 
       <StatCard

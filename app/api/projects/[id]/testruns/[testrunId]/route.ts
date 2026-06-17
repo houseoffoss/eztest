@@ -7,7 +7,18 @@ export const GET = hasPermission(
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get('page') || '1');
     const limit = Number(searchParams.get('limit') || '50');
-    return testRunController.getTestRunById(testrunId, request.userInfo.id, page, limit);
+
+    const rawStatusFilter = searchParams.get('resultStatus');
+    const rawExecutedByFilter = searchParams.get('executedById');
+    const rawStatusSort = searchParams.get('resultStatusSort');
+
+    const filters = {
+      resultStatus: rawStatusFilter && rawStatusFilter !== 'all' ? rawStatusFilter : undefined,
+      executedById: rawExecutedByFilter && rawExecutedByFilter !== 'all' ? rawExecutedByFilter : undefined,
+      resultStatusSort: rawStatusSort === 'asc' || rawStatusSort === 'desc' ? rawStatusSort : undefined,
+    };
+
+    return testRunController.getTestRunById(testrunId, request.userInfo.id, page, limit, filters);
   },
   'testruns',
   'read'
