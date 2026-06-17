@@ -694,7 +694,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
 
   const calculateStats = (): TestRunStats => {
     if (!testRun)
-      return { passed: 0, failed: 0, blocked: 0, skipped: 0, pending: 0, total: 0 };
+      return { passed: 0, failed: 0, blocked: 0, skipped: 0, retest: 0, pending: 0, total: 0 };
 
     if (testRun.stats) {
       return {
@@ -702,6 +702,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         failed: testRun.stats.failed,
         blocked: testRun.stats.blocked,
         skipped: testRun.stats.skipped,
+        retest: testRun.stats.retest,
         pending: testRun.stats.skipped,
         total: testRun.stats.total,
       };
@@ -712,6 +713,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
       failed: 0,
       blocked: 0,
       skipped: 0,
+      retest: 0,
       pending: 0,
       total: testRun.results?.length || 0,
     };
@@ -732,6 +734,9 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           case 'SKIPPED':
           case 'NOT_RUN':
             stats.skipped++;
+            break;
+          case 'RETEST':
+            stats.retest++;
             break;
         }
       });

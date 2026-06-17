@@ -89,6 +89,7 @@ export interface TestRunStats {
   failed: number;
   blocked: number;
   skipped: number;
+  retest: number;
   pending: number;
   total: number;
 }
