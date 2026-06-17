@@ -117,7 +117,7 @@ export class ExportController {
       if (error instanceof ValidationException) {
         throw error;
       }
-      
+      console.error('[ExportController] exportTestRunDetail failed:', error);
       throw new InternalServerException(TestRunMessages.FailedToExportTestRuns);
     }
   }

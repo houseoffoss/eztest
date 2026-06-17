@@ -1324,29 +1324,42 @@ export class ExportService {
 
       const cmapOffset = cmapTable.offset;
       const numSubtables = fontBuffer.readUInt16BE(cmapOffset + 2);
+
+      // Scan ALL subtables and pick the best *format-4* one (BMP Unicode).
+      // Explicitly checking format avoids accidentally picking a format-12
+      // (Full Repertoire) subtable that would throw "Unsupported cmap format: 12".
       let chosenSubtableOffset: number | null = null;
+      let bestPriority = -1;
 
       for (let i = 0; i < numSubtables; i += 1) {
         const recOffset = cmapOffset + 4 + i * 8;
         const platformId = fontBuffer.readUInt16BE(recOffset);
         const encodingId = fontBuffer.readUInt16BE(recOffset + 2);
-        const subtableOffset = fontBuffer.readUInt32BE(recOffset + 4);
-        if (platformId === 3 && (encodingId === 1 || encodingId === 10)) {
-          chosenSubtableOffset = cmapOffset + subtableOffset;
-          break;
+        const subtableRel = fontBuffer.readUInt32BE(recOffset + 4);
+        const candidateOffset = cmapOffset + subtableRel;
+
+        // Only accept format 4 subtables.
+        if (fontBuffer.readUInt16BE(candidateOffset) !== 4) {
+          continue;
         }
-        if (chosenSubtableOffset === null && platformId === 0) {
-          chosenSubtableOffset = cmapOffset + subtableOffset;
+
+        // Windows BMP (3,1) is the ideal match for Latin + Cyrillic coverage.
+        let priority = 0;
+        if (platformId === 3 && encodingId === 1) {
+          priority = 2;
+        } else if (platformId === 0) {
+          priority = 1;
+        }
+
+        if (priority > bestPriority) {
+          bestPriority = priority;
+          chosenSubtableOffset = candidateOffset;
+          if (priority === 2) break; // Optimal match, no need to continue.
         }
       }
 
       if (chosenSubtableOffset === null) {
-        throw new Error('Compatible cmap subtable not found');
-      }
-
-      const cmapFormat = fontBuffer.readUInt16BE(chosenSubtableOffset);
-      if (cmapFormat !== 4) {
-        throw new Error(`Unsupported cmap format: ${cmapFormat}`);
+        throw new Error(`No format-4 cmap subtable found in font: ${baseFontName}`);
       }
 
       const segCount = fontBuffer.readUInt16BE(chosenSubtableOffset + 6) / 2;
@@ -1442,22 +1455,37 @@ export class ExportService {
 
     const catalogObj = addObject(`<< /Type /Catalog /Pages ${pagesObj} 0 R >>`);
 
-    let pdf = '%PDF-1.4\n';
+    // Build PDF as a series of Buffer chunks to avoid encoding issues with
+    // binary-like hex data embedded in the object streams.
+    const chunks: Buffer[] = [];
+    const enc = (s: string) => Buffer.from(s, 'latin1');
+    const push = (s: string) => { chunks.push(enc(s)); };
+
     const offsets: number[] = [0];
+    let bytePos = 0;
+
+    push('%PDF-1.4\n');
+    bytePos = chunks.reduce((sum, c) => sum + c.length, 0);
+
     objects.forEach((obj, idx) => {
-      offsets.push(Buffer.byteLength(pdf, 'utf-8'));
-      pdf += `${idx + 1} 0 obj\n${obj}\nendobj\n`;
+      offsets.push(bytePos);
+      const objStr = `${idx + 1} 0 obj\n${obj}\nendobj\n`;
+      push(objStr);
+      bytePos += Buffer.byteLength(objStr, 'latin1');
     });
 
-    const xrefStart = Buffer.byteLength(pdf, 'utf-8');
-    pdf += `xref\n0 ${objects.length + 1}\n`;
-    pdf += '0000000000 65535 f \n';
-    for (let i = 1; i <= objects.length; i++) {
-      pdf += `${offsets[i].toString().padStart(10, '0')} 00000 n \n`;
-    }
+    const xrefStart = bytePos;
+    const xref = [
+      `xref\n0 ${objects.length + 1}\n`,
+      '0000000000 65535 f \n',
+      ...Array.from({ length: objects.length }, (_, i) =>
+        `${offsets[i + 1].toString().padStart(10, '0')} 00000 n \n`
+      ),
+      `trailer\n<< /Size ${objects.length + 1} /Root ${catalogObj} 0 R >>\nstartxref\n${xrefStart}\n%%EOF`,
+    ].join('');
+    push(xref);
 
-    pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogObj} 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
-    return Buffer.from(pdf, 'utf-8');
+    return Buffer.concat(chunks);
   }
 
   /**
