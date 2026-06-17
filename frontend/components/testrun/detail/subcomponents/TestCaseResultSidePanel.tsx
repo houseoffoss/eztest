@@ -66,7 +66,7 @@ export function TestCaseResultSidePanel({
   }
 
   return (
-    <aside className="fixed right-0 top-0 z-40 h-screen w-full max-w-xl border-l border-white/10 bg-[#0f0f12] shadow-2xl">
+    <aside className="fixed right-0 top-0 z-[70] h-screen w-full max-w-xl border-l border-white/10 bg-[#0f0f12] shadow-2xl">
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between border-b border-white/10 p-4">
           <div className="min-w-0">

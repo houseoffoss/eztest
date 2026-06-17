@@ -468,11 +468,13 @@ export function TestCasesListCard({
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                   {selectedTestCaseIds.size} выбрано
                 </Badge>
+                {canUpdate && testRunStatus !== 'CANCELLED' && (
+                  <ButtonSecondary size="sm" onClick={() => setBulkAssignOpen(true)}>
+                    Кто будет выполнять
+                  </ButtonSecondary>
+                )}
                 {testRunStatus === 'IN_PROGRESS' && canUpdate && (
                   <>
-                    <ButtonSecondary size="sm" onClick={() => setBulkAssignOpen(true)}>
-                      Кто будет выполнять
-                    </ButtonSecondary>
                     <ButtonSecondary size="sm" onClick={() => setBulkExecuteOpen(true)}>
                       Массово обновить статус
                     </ButtonSecondary>
