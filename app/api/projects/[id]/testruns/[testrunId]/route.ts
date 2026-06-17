@@ -12,10 +12,17 @@ export const GET = hasPermission(
     const rawExecutedByFilter = searchParams.get('executedById');
     const rawStatusSort = searchParams.get('resultStatusSort');
 
-    const filters = {
+    const resultStatusSort: 'asc' | 'desc' | undefined =
+      rawStatusSort === 'asc' || rawStatusSort === 'desc' ? rawStatusSort : undefined;
+
+    const filters: {
+      resultStatus?: string;
+      executedById?: string;
+      resultStatusSort?: 'asc' | 'desc';
+    } = {
       resultStatus: rawStatusFilter && rawStatusFilter !== 'all' ? rawStatusFilter : undefined,
       executedById: rawExecutedByFilter && rawExecutedByFilter !== 'all' ? rawExecutedByFilter : undefined,
-      resultStatusSort: rawStatusSort === 'asc' || rawStatusSort === 'desc' ? rawStatusSort : undefined,
+      resultStatusSort,
     };
 
     return testRunController.getTestRunById(testrunId, request.userInfo.id, page, limit, filters);
