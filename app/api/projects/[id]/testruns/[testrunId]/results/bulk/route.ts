@@ -1,7 +1,7 @@
 import { testRunController } from '@/backend/controllers/testrun/controller';
-import { hasPermission } from '@/lib/rbac/hasPermission';
+import { hasProjectMemberAccess } from '@/lib/rbac/hasProjectMemberAccess';
 
-export const PATCH = hasPermission(
+export const PATCH = hasProjectMemberAccess(
   async (request, context) => {
     const { testrunId } = await context.params;
     const body = await request.json();
@@ -11,7 +11,7 @@ export const PATCH = hasPermission(
   'update'
 );
 
-export const DELETE = hasPermission(
+export const DELETE = hasProjectMemberAccess(
   async (request, context) => {
     const { testrunId } = await context.params;
     const body = await request.json();

@@ -28,7 +28,7 @@ interface TestRunDetailProps {
 }
 
 export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
-  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading } = usePermissions();
+  const { hasPermission: hasPermissionCheck, isLoading: permissionsLoading, role } = usePermissions();
 
   const [testRun, setTestRun] = useState<TestRun | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
   );
 
   // Check permissions for navbar
-  const canUpdateTestRun = hasPermissionCheck('testruns:update');
+  const canUpdateTestRun = hasPermissionCheck('testruns:update') || role === 'ADMIN';
   const canCreateTestRun = hasPermissionCheck('testruns:create');
   hasPermissionCheck('testruns:read');
 
@@ -774,6 +774,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     <div className="flex-1">
       {/* Navbar */}
       <Navbar
+        className={resultDialogOpen ? 'xl:pr-[37rem]' : undefined}
         brandLabel={null}
         items={[]}
         breadcrumbs={
@@ -795,7 +796,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
         actions={navbarActions}
       />
 
-      <div className="p-4 md:p-6 lg:p-8 pt-8 space-y-6">
+      <div className={`space-y-6 p-4 pt-8 transition-[padding] md:p-6 lg:p-8 ${resultDialogOpen ? 'xl:pr-[37rem]' : ''}`}>
         <TestRunHeader
           testRun={testRun}
           executionTypeLabel={executionTypeLabel}

@@ -5,14 +5,6 @@ import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Label } from '@/frontend/reusable-elements/labels/Label';
 import { Textarea } from '@/frontend/reusable-elements/textareas/Textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/frontend/reusable-elements/selects/Select';
-import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import { TestCase, ResultFormData } from '../types';
 
 interface TestCaseResultSidePanelProps {
@@ -36,6 +28,29 @@ const STATUS_LABELS: Record<string, string> = {
 
 const QUICK_STATUS_VALUES = ['PASSED', 'FAILED', 'BLOCKED', 'RETEST', 'NOT_RUN'] as const;
 
+const STATUS_BUTTON_STYLES: Record<string, { idle: string; active: string }> = {
+  PASSED: {
+    idle: 'border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/15',
+    active: 'border-green-400/60 bg-green-500/20 text-green-200 shadow-[0_0_0_1px_rgba(74,222,128,0.2)]',
+  },
+  FAILED: {
+    idle: 'border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/15',
+    active: 'border-red-400/60 bg-red-500/20 text-red-200 shadow-[0_0_0_1px_rgba(248,113,113,0.2)]',
+  },
+  BLOCKED: {
+    idle: 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/15',
+    active: 'border-orange-400/60 bg-orange-500/20 text-orange-200 shadow-[0_0_0_1px_rgba(251,146,60,0.2)]',
+  },
+  RETEST: {
+    idle: 'border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/15',
+    active: 'border-purple-400/60 bg-purple-500/20 text-purple-200 shadow-[0_0_0_1px_rgba(196,181,253,0.2)]',
+  },
+  NOT_RUN: {
+    idle: 'border-slate-500/30 bg-slate-500/10 text-slate-300 hover:bg-slate-500/15',
+    active: 'border-slate-400/60 bg-slate-500/20 text-slate-100 shadow-[0_0_0_1px_rgba(203,213,225,0.2)]',
+  },
+};
+
 export function TestCaseResultSidePanel({
   open,
   testCase,
@@ -46,8 +61,6 @@ export function TestCaseResultSidePanel({
   onSave,
   getStatusIcon,
 }: TestCaseResultSidePanelProps) {
-  const { options: statusOptions } = useDropdownOptions('TestResult', 'status');
-
   if (!open || !testCase) {
     return null;
   }
@@ -96,33 +109,15 @@ export function TestCaseResultSidePanel({
                 <Button
                   key={statusValue}
                   type="button"
-                  variant={formData.status === statusValue ? 'glass-primary' : 'glass'}
+                  variant="outline"
                   size="sm"
+                  className={formData.status === statusValue ? STATUS_BUTTON_STYLES[statusValue].active : STATUS_BUTTON_STYLES[statusValue].idle}
                   onClick={() => onFormChange({ status: statusValue })}
                 >
                   {STATUS_LABELS[statusValue] || statusValue}
                 </Button>
               ))}
             </div>
-
-            <Select
-              value={formData.status}
-              onValueChange={(value: string) => onFormChange({ status: value })}
-            >
-              <SelectTrigger id="panel-status">
-                <SelectValue placeholder="Выберите статус" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(option.value)}
-                      <span>{STATUS_LABELS[option.value] || option.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">

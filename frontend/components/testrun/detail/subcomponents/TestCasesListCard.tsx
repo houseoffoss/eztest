@@ -334,6 +334,8 @@ export function TestCasesListCard({
 
   const currentPageIds = tableData.map((row) => row.testCase.id);
   const allCurrentPageSelected = currentPageIds.length > 0 && currentPageIds.every((id) => selectedTestCaseIds.has(id));
+  const hasActiveFilters = statusFilter !== 'all' || ownerFilter !== 'all';
+  const hasAnyResultsInRun = totalItems > 0 || hasActiveFilters;
 
   const handleSelectCurrentPage = () => {
     setSelectedTestCaseIds((prev) => {
@@ -393,7 +395,6 @@ export function TestCasesListCard({
           status: bulkStatus,
           comment: bulkComment || undefined,
           executedById: executorId,
-          assignedToId: executorId ?? undefined,
         }),
       });
 
@@ -452,8 +453,8 @@ export function TestCasesListCard({
       title={`Тест-кейсы (${totalItems})`}
       contentClassName=""
       headerAction={
-        results && results.length > 0 ? (
-          <div className="flex gap-2 flex-wrap justify-end">
+        <div className="flex gap-2 flex-wrap justify-end">
+          {tableData.length > 0 && (
             <Button
               variant="glass"
               size="sm"
@@ -461,6 +462,7 @@ export function TestCasesListCard({
             >
               {allCurrentPageSelected ? 'Снять выделение страницы' : 'Выбрать страницу'}
             </Button>
+          )}
             {selectedTestCaseIds.size > 0 && (
               <>
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
@@ -469,7 +471,7 @@ export function TestCasesListCard({
                 {testRunStatus === 'IN_PROGRESS' && canUpdate && (
                   <>
                     <ButtonSecondary size="sm" onClick={() => setBulkAssignOpen(true)}>
-                      Назначить исполнителя
+                      Кто будет выполнять
                     </ButtonSecondary>
                     <ButtonSecondary size="sm" onClick={() => setBulkExecuteOpen(true)}>
                       Массово обновить статус
@@ -502,10 +504,54 @@ export function TestCasesListCard({
               Добавить тест-кейсы
             </Button>
           </div>
-        ) : undefined
       }
     >
-      {!results || results.length === 0 ? (
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Фильтр по статусу" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все статусы</SelectItem>
+            {Array.from(
+              new Set(
+                ['NOT_RUN', ...statusOptions.map((option) => option.value === 'SKIPPED' ? 'NOT_RUN' : option.value)]
+              )
+            ).map((status) => (
+              <SelectItem key={status} value={status}>
+                {getStatusLabel(status)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={ownerFilter} onValueChange={onOwnerFilterChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Фильтр по исполнителю" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все исполнители</SelectItem>
+            {members.map((member) => (
+              <SelectItem key={member.id} value={member.id}>
+                {member.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={statusSort} onValueChange={(v) => onStatusSortChange(v as 'none' | 'asc' | 'desc')}>
+          <SelectTrigger>
+            <SelectValue placeholder="Сортировка по статусу" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Без сортировки</SelectItem>
+            <SelectItem value="asc">Статус: A-Z</SelectItem>
+            <SelectItem value="desc">Статус: Z-A</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {!hasAnyResultsInRun ? (
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-400 mb-4">В этом тест-ране нет тест-кейсов</p>
@@ -531,53 +577,25 @@ export function TestCasesListCard({
             </div>
           )}
         </div>
+      ) : tableData.length === 0 ? (
+        <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-10 text-center">
+          <AlertCircle className="mx-auto mb-4 h-10 w-10 text-gray-400" />
+          <p className="mb-2 text-white/80">По выбранным фильтрам тест-кейсы не найдены</p>
+          <p className="mb-4 text-sm text-white/60">Снимите фильтры или измените сортировку, чтобы снова увидеть кейсы.</p>
+          <Button
+            variant="glass"
+            size="sm"
+            onClick={() => {
+              onStatusFilterChange('all');
+              onOwnerFilterChange('all');
+              onStatusSortChange('none');
+            }}
+          >
+            Сбросить фильтры
+          </Button>
+        </div>
       ) : (
         <>
-          <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Фильтр по статусу" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                {Array.from(
-                  new Set(
-                    ['NOT_RUN', ...statusOptions.map((option) => option.value === 'SKIPPED' ? 'NOT_RUN' : option.value)]
-                  )
-                ).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {getStatusLabel(status)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={ownerFilter} onValueChange={onOwnerFilterChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Фильтр по исполнителю" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все исполнители</SelectItem>
-                {members.map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
-                    {member.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={statusSort} onValueChange={(v) => onStatusSortChange(v as 'none' | 'asc' | 'desc')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Сортировка по статусу" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Без сортировки</SelectItem>
-                <SelectItem value="asc">Статус: A-Z</SelectItem>
-                <SelectItem value="desc">Статус: Z-A</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <DataTable
             columns={columns}
             data={tableData}
@@ -683,9 +701,9 @@ export function TestCasesListCard({
       <Dialog open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Назначить исполнителя</DialogTitle>
+            <DialogTitle>Кто будет выполнять</DialogTitle>
             <DialogDescription>
-              Назначение исполнителя для {selectedRows.length} тест-кейсов без изменения статуса.
+              Назначение исполнителя для {selectedRows.length} выбранных тест-кейсов без изменения статуса.
             </DialogDescription>
           </DialogHeader>
 
@@ -712,7 +730,7 @@ export function TestCasesListCard({
               Отмена
             </Button>
             <ButtonPrimary onClick={handleBulkAssign} disabled={submittingBulk || !bulkAssigneeId}>
-              Назначить
+              Сохранить
             </ButtonPrimary>
           </DialogFooter>
         </DialogContent>
