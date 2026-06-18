@@ -954,6 +954,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
               endpoint: `/api/projects/${testRun.project?.id}/testruns/${testRunId}/export`,
               filters: {},
             }}
+            availableFormats={['csv', 'excel', 'pdf']}
             itemName="отчет тест-рана"
           />
         )}
@@ -985,4 +986,3 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     </div>
   );
 }
-
