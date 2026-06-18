@@ -1432,8 +1432,23 @@ export class ExportService {
       return type0FontObj;
     };
 
-    const regularFontPath = path.resolve(process.cwd(), 'backend/assets/fonts/NotoSans-Regular.ttf');
-    const boldFontPath = path.resolve(process.cwd(), 'backend/assets/fonts/NotoSans-Bold.ttf');
+    const resolveFontPath = (fileName: string) => {
+      const candidates = [
+        path.resolve(process.cwd(), 'backend/assets/fonts', fileName),
+        path.resolve(process.cwd(), 'public/fonts', fileName),
+        path.resolve(process.cwd(), '.next/server/backend/assets/fonts', fileName),
+        path.resolve(process.cwd(), '.next/standalone/backend/assets/fonts', fileName),
+      ];
+
+      const found = candidates.find((candidate) => fs.existsSync(candidate));
+      if (!found) {
+        throw new Error(`Font file not found: ${fileName}. Checked: ${candidates.join(', ')}`);
+      }
+      return found;
+    };
+
+    const regularFontPath = resolveFontPath('NotoSans-Regular.ttf');
+    const boldFontPath = resolveFontPath('NotoSans-Bold.ttf');
     const toUnicodeObj = createToUnicodeCMapObject(usedChars);
 
     const fontRegularObj = createTtfFontObjects(regularFontPath, 'NotoSansRU', usedChars, toUnicodeObj);

@@ -183,7 +183,7 @@ export function TestCaseDetailsCard({
               onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="Введите описание тест-кейса"
               rows={3}
-              maxLength={250}
+              maxLength={5000}
             />
             {errors.description && <p className="text-xs text-red-400">{errors.description}</p>}
           </div>
@@ -198,7 +198,7 @@ export function TestCaseDetailsCard({
               onChange={(e) => handleFieldChange('preconditions', e.target.value)}
               placeholder="Введите предусловия"
               rows={3}
-              maxLength={250}
+              maxLength={5000}
             />
           </div>
 
@@ -212,7 +212,7 @@ export function TestCaseDetailsCard({
               onChange={(e) => handleFieldChange('postconditions', e.target.value)}
               placeholder="Введите постусловия"
               rows={3}
-              maxLength={250}
+              maxLength={5000}
             />
           </div>
 
@@ -226,7 +226,7 @@ export function TestCaseDetailsCard({
               onChange={(e) => handleFieldChange('testData', e.target.value)}
               placeholder="Введите тестовые данные или входные значения"
               rows={3}
-              maxLength={500}
+              maxLength={5000}
             />
             {errors.testData && <p className="text-xs text-red-400">{errors.testData}</p>}
           </div>

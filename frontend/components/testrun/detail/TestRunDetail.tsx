@@ -192,6 +192,24 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
     }
   };
 
+  const handleNameUpdate = async (name: string) => {
+    const projectId = testRun?.project?.id;
+    if (!projectId) return;
+    const response = await fetch(`/api/projects/${projectId}/testruns/${testRunId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const data = await response.json();
+    if (data.data) {
+      setTestRun(prev => prev ? { ...prev, name: data.data.name } : prev);
+      setFloatingAlert({ type: 'success', title: 'Успешно', message: 'Название тест-рана обновлено' });
+      setTimeout(() => setFloatingAlert(null), 4000);
+    } else {
+      setFloatingAlert({ type: 'error', title: 'Ошибка', message: data.error || 'Не удалось обновить название' });
+    }
+  };
+
   const handleStartTestRun = async () => {
     try {
       setActionLoading(true);
@@ -803,6 +821,7 @@ export default function TestRunDetail({ testRunId }: TestRunDetailProps) {
           canUpdate={canUpdateTestRun}
           onStartTestRun={handleStartTestRun}
           onCompleteTestRun={handleCompleteTestRun}
+          onNameUpdate={handleNameUpdate}
         />
 
         <TestRunStatsCards

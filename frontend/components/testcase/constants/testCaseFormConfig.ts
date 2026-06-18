@@ -65,7 +65,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       type: 'textarea',
       placeholder: 'Enter test case description',
       rows: 3,
-      maxLength: 250,
+      maxLength: 5000,
     },
     {
       name: 'preconditions',
@@ -73,7 +73,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       type: 'textarea',
       placeholder: 'Enter preconditions',
       rows: 2,
-      maxLength: 250,
+      maxLength: 5000,
     },
     {
       name: 'postconditions',
@@ -81,7 +81,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       type: 'textarea',
       placeholder: 'Enter postconditions',
       rows: 2,
-      maxLength: 250,
+      maxLength: 5000,
     },
     {
       name: 'expectedResult',
@@ -89,7 +89,7 @@ export function getTestCaseFormFields(modules: Module[] = []): FormFieldConfig[]
       type: 'textarea',
       placeholder: 'Enter the expected result',
       rows: 3,
-      maxLength: 250,
+      maxLength: 5000,
     },
   ];
 }

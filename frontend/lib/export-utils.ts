@@ -30,8 +30,16 @@ export async function exportData(options: ExportOptions): Promise<void> {
     const response = await fetch(url);
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Экспорт не удался' }));
-      throw new Error(error.message || 'Экспорт не удался');
+      const rawText = await response.text();
+      let parsedError: { message?: string; error?: string } = {};
+
+      try {
+        parsedError = JSON.parse(rawText) as { message?: string; error?: string };
+      } catch {
+        // Non-JSON error body.
+      }
+
+      throw new Error(parsedError.error || parsedError.message || rawText || 'Экспорт не удался');
     }
 
     // Get filename from Content-Disposition header or use default

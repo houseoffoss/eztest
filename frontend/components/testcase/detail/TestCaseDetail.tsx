@@ -623,9 +623,11 @@ export default function TestCaseDetail({ testCaseId }: TestCaseDetailProps) {
           message: 'Тест-кейс успешно обновлен',
         });
         setTimeout(() => setAlert(null), 5000);
-        
+
         // Reload from database to get fresh data including any backend changes
         fetchTestCase();
+        // Invalidate router cache so list pages reflect updated status
+        router.refresh();
       } else {
         setAlert({
           type: 'error',
