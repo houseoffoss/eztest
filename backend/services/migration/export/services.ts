@@ -1316,8 +1316,10 @@ export class ExportService {
       const cmapTable = tables.get('cmap');
       const headTable = tables.get('head');
       const hheaTable = tables.get('hhea');
-      if (!cmapTable || !headTable || !hheaTable) {
-        throw new Error('Font tables cmap/head/hhea were not found');
+      const hmtxTable = tables.get('hmtx');
+      const maxpTable = tables.get('maxp');
+      if (!cmapTable || !headTable || !hheaTable || !hmtxTable || !maxpTable) {
+        throw new Error('Font tables cmap/head/hhea/hmtx/maxp were not found');
       }
 
       const unitsPerEm = fontBuffer.readUInt16BE(headTable.offset + 18);
@@ -1327,6 +1329,21 @@ export class ExportService {
       const yMax = fontBuffer.readInt16BE(headTable.offset + 42);
       const ascent = fontBuffer.readInt16BE(hheaTable.offset + 4);
       const descent = fontBuffer.readInt16BE(hheaTable.offset + 6);
+
+      const numberOfHMetrics = fontBuffer.readUInt16BE(hheaTable.offset + 34);
+      const numGlyphs = fontBuffer.readUInt16BE(maxpTable.offset + 4);
+      const advanceWidths = new Array<number>(numGlyphs);
+      let lastAdvanceWidth = unitsPerEm;
+
+      for (let glyphIndex = 0; glyphIndex < numGlyphs; glyphIndex += 1) {
+        if (glyphIndex < numberOfHMetrics) {
+          const metricOffset = hmtxTable.offset + glyphIndex * 4;
+          if (metricOffset + 1 < fontBuffer.length) {
+            lastAdvanceWidth = fontBuffer.readUInt16BE(metricOffset);
+          }
+        }
+        advanceWidths[glyphIndex] = lastAdvanceWidth;
+      }
 
       const cmapOffset = cmapTable.offset;
       const numSubtables = fontBuffer.readUInt16BE(cmapOffset + 2);
@@ -1408,11 +1425,58 @@ export class ExportService {
         .filter((cp) => cp > 0 && cp <= 0xffff);
       const maxCodepoint = codepoints.length > 0 ? Math.max(...codepoints) : 0;
       const cidToGid = Buffer.alloc((maxCodepoint + 1) * 2);
+      const cidWidths = new Map<number, number>();
 
       codepoints.forEach((codepoint) => {
         const glyphId = mapCodepointToGlyph(codepoint);
         cidToGid.writeUInt16BE(glyphId, codepoint * 2);
+        if (glyphId > 0 && glyphId < advanceWidths.length) {
+          const width = Math.max(1, Math.round((advanceWidths[glyphId] / unitsPerEm) * 1000));
+          cidWidths.set(codepoint, width);
+        }
       });
+
+      const sortedCids = Array.from(cidWidths.keys()).sort((a, b) => a - b);
+      const widthEntries: string[] = [];
+      let runStart = -1;
+      let runLast = -1;
+      let runWidths: number[] = [];
+
+      const flushRun = () => {
+        if (runStart >= 0 && runWidths.length > 0) {
+          widthEntries.push(`${runStart} [${runWidths.join(' ')}]`);
+        }
+      };
+
+      sortedCids.forEach((cid) => {
+        const width = cidWidths.get(cid);
+        if (width === undefined) {
+          return;
+        }
+
+        if (runStart === -1) {
+          runStart = cid;
+          runLast = cid;
+          runWidths = [width];
+          return;
+        }
+
+        if (cid === runLast + 1) {
+          runLast = cid;
+          runWidths.push(width);
+          return;
+        }
+
+        flushRun();
+        runStart = cid;
+        runLast = cid;
+        runWidths = [width];
+      });
+      flushRun();
+
+      const defaultWidth =
+        cidWidths.size > 0 ? Math.max(1, Math.round(Array.from(cidWidths.values()).reduce((sum, width) => sum + width, 0) / cidWidths.size)) : 500;
+      const widthArray = widthEntries.length > 0 ? ` /W [${widthEntries.join(' ')}]` : '';
 
       const fontFileObj = createHexEncodedStreamObject(fontBuffer);
       const cidToGidObj = createHexEncodedStreamObject(cidToGid);
@@ -1422,7 +1486,7 @@ export class ExportService {
       );
 
       const cidFontObj = addObject(
-        `<< /Type /Font /Subtype /CIDFontType2 /BaseFont /${baseFontName} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${fontDescriptorObj} 0 R /DW ${unitsPerEm} /CIDToGIDMap ${cidToGidObj} 0 R >>`
+        `<< /Type /Font /Subtype /CIDFontType2 /BaseFont /${baseFontName} /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${fontDescriptorObj} 0 R /DW ${defaultWidth}${widthArray} /CIDToGIDMap ${cidToGidObj} 0 R >>`
       );
 
       const type0FontObj = addObject(
