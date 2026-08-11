@@ -1,5 +1,7 @@
-﻿import * as React from 'react';
-import Link from 'next/link';
+﻿'use client';
+
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
 
 export interface ColumnDef<T> {
   key: keyof T | string;
@@ -43,6 +45,8 @@ export function DataTable<T>({
   emptyMessage = 'No data available',
   rowClassName = 'cursor-pointer hover:bg-white/5',
 }: DataTableProps<T>) {
+  const router = useRouter();
+
   // Calculate grid columns - use auto for flexible sizing
   const gridColumns = columns.map(() => '1fr').join(' ');
 
@@ -95,19 +99,27 @@ export function DataTable<T>({
 
             if (rowHref) {
               return (
-                <Link
+                <div
                   key={idx}
-                  href={rowHref}
                   className={rowClass}
                   style={{ gridTemplateColumns: gridColumns }}
                   onClick={(e) => {
-                    if ((e.target as HTMLElement).closest('button, [role="button"]')) {
-                      e.preventDefault();
+                    if ((e.target as HTMLElement).closest('button, [role="button"], a')) return;
+                    if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                      window.open(rowHref, '_blank');
+                      return;
                     }
+                    router.push(rowHref);
+                  }}
+                  onAuxClick={(e) => {
+                    if (e.button !== 1) return;
+                    if ((e.target as HTMLElement).closest('button, [role="button"], a')) return;
+                    e.preventDefault();
+                    window.open(rowHref, '_blank');
                   }}
                 >
                   {cells}
-                </Link>
+                </div>
               );
             }
 

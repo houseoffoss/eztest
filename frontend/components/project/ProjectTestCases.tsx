@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
@@ -68,7 +67,6 @@ interface ProjectTestCasesProps {
 }
 
 export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
-  const router = useRouter();
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [filteredTestCases, setFilteredTestCases] = useState<TestCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -436,13 +434,14 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTestCases.map((testCase) => (
-            <Link key={testCase.id} href={`/testcases/${testCase.id}`} className="block">
+            <div key={testCase.id} className="relative">
+            <Link href={`/testcases/${testCase.id}`} className="block">
             <Card
               className="glass cursor-pointer hover:border-blue-500/50 transition-colors"
             >
               <CardHeader className="pb-2 pt-3 px-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0 pr-8">
                     <h3 className="text-lg font-semibold text-white mb-2 truncate">
                       {testCase.title}
                     </h3>
@@ -460,23 +459,6 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                         {testCase.status}
                       </Badge>
                     </div>
-                  </div>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <ActionMenu
-                      items={[
-                        {
-                          label: 'Delete',
-                          icon: Trash2,
-                          onClick: () => {
-                            setSelectedTestCase(testCase);
-                            setDeleteDialogOpen(true);
-                          },
-                          variant: 'destructive',
-                        },
-                      ]}
-                      align="end"
-                      iconSize="w-4 h-4"
-                    />
                   </div>
                 </div>
               </CardHeader>
@@ -516,6 +498,25 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
               </CardContent>
             </Card>
             </Link>
+            {/* ActionMenu positioned outside the Link — not inside <a> */}
+            <div className="absolute top-3 right-3 z-10">
+              <ActionMenu
+                items={[
+                  {
+                    label: 'Delete',
+                    icon: Trash2,
+                    onClick: () => {
+                      setSelectedTestCase(testCase);
+                      setDeleteDialogOpen(true);
+                    },
+                    variant: 'destructive',
+                  },
+                ]}
+                align="end"
+                iconSize="w-4 h-4"
+              />
+            </div>
+            </div>
           ))}
         </div>
       )}

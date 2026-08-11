@@ -190,53 +190,51 @@ export function GroupedDataTable<T = Record<string, unknown>>({
       index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
     } ${rowClassName}`;
 
-    const cells = (
-      <>
-        {columns.map((col) => (
-          <div
-            key={col.key}
-            className={`${col.className || ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
-          >
-            {col.render ? col.render(row, index) : String((row as Record<string, unknown>)[col.key] || '')}
-          </div>
-        ))}
-        {actions && (
-          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-            {actionItems.length > 0 && (
-              <ActionMenu
-                items={actionItems.map((item) => ({
-                  label: item.label,
-                  icon: item.icon as LucideIcon,
-                  onClick: () => item.onClick(row),
-                  variant: item.variant,
-                  buttonName: typeof item.buttonName === 'function'
-                    ? item.buttonName(row)
-                    : item.buttonName || item.label,
-                }))}
-                align={actions.align || 'end'}
-                iconSize={actions.iconSize || 'w-3 h-3'}
-              />
-            )}
-          </div>
-        )}
-      </>
-    );
+    // Data cells only — no ActionMenu inside; used for both Link and div variants
+    const dataCells = columns.map((col) => (
+      <div
+        key={col.key}
+        className={`${col.className || ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
+      >
+        {col.render ? col.render(row, index) : String((row as Record<string, unknown>)[col.key] || '')}
+      </div>
+    ));
+
+    // Shared ActionMenu config
+    const actionMenuItems = actionItems.map((item) => ({
+      label: item.label,
+      icon: item.icon as LucideIcon,
+      onClick: () => item.onClick(row),
+      variant: item.variant,
+      buttonName: typeof item.buttonName === 'function'
+        ? item.buttonName(row)
+        : item.buttonName || item.label,
+    }));
 
     if (rowHref) {
       return (
-        <Link
-          key={index}
-          href={rowHref}
-          className={rowClass}
-          style={{ gridTemplateColumns: getGridColumns() }}
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest('button, [role="button"]')) {
-              e.preventDefault();
-            }
-          }}
-        >
-          {cells}
-        </Link>
+        <div key={index} className="relative">
+          {/* Link contains only data cells — no buttons inside <a> */}
+          <Link
+            href={rowHref}
+            className={rowClass}
+            style={{ gridTemplateColumns: getGridColumns() }}
+          >
+            {dataCells}
+            {/* Empty placeholder preserves action column width in the grid */}
+            {actions && <div aria-hidden="true" />}
+          </Link>
+          {/* ActionMenu rendered outside the Link as an absolute sibling */}
+          {actionItems.length > 0 && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+              <ActionMenu
+                items={actionMenuItems}
+                align={actions!.align || 'end'}
+                iconSize={actions!.iconSize || 'w-3 h-3'}
+              />
+            </div>
+          )}
+        </div>
       );
     }
 
@@ -247,7 +245,18 @@ export function GroupedDataTable<T = Record<string, unknown>>({
         style={{ gridTemplateColumns: getGridColumns() }}
         onClick={() => onRowClick?.(row)}
       >
-        {cells}
+        {dataCells}
+        {actions && (
+          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+            {actionItems.length > 0 && (
+              <ActionMenu
+                items={actionMenuItems}
+                align={actions.align || 'end'}
+                iconSize={actions.iconSize || 'w-3 h-3'}
+              />
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -265,48 +274,52 @@ export function GroupedDataTable<T = Record<string, unknown>>({
       <div className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/20 rounded transition-colors overflow-hidden ${
         groupIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
       }`}>
+        {/* Toggle button — only the chevron icon; no Link inside */}
         <button
           onClick={() => toggleGroup(groupId)}
-          className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0 overflow-hidden"
+          className="flex-shrink-0 cursor-pointer"
+          aria-label={isExpanded ? `Collapse ${groupName}` : `Expand ${groupName}`}
         >
           <ChevronDown
-            className={`w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${
+            className={`w-4 h-4 text-white/60 transition-transform ${
               isExpanded ? 'rotate-180' : ''
             }`}
           />
-          <span className="min-w-0 flex-1 overflow-hidden max-w-[200px]">
-            {groupConfig?.onGroupClick ? (
-              (() => {
-                const groupHref = groupConfig.getGroupHref?.(groupId);
-                return groupHref ? (
-                  <Link
-                    href={groupHref}
-                    className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer truncate block"
-                    title={groupName}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {groupName}
-                  </Link>
-                ) : (
-                  <span
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      groupConfig.onGroupClick?.(groupId);
-                    }}
-                    className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer truncate block"
-                    title={groupName}
-                  >
-                    {groupName}
-                  </span>
-                );
-              })()
-            ) : (
+        </button>
+        {/* Group name — sibling of the toggle button, not nested inside it */}
+        <span className="min-w-0 flex-1 overflow-hidden max-w-[200px]">
+          {(() => {
+            const groupHref = groupConfig?.getGroupHref?.(groupId);
+            if (groupHref) {
+              return (
+                <Link
+                  href={groupHref}
+                  className="text-sm font-semibold text-blue-400 hover:text-blue-300 truncate block"
+                  title={groupName}
+                >
+                  {groupName}
+                </Link>
+              );
+            }
+            if (groupConfig?.onGroupClick) {
+              return (
+                <button
+                  type="button"
+                  onClick={() => groupConfig.onGroupClick?.(groupId)}
+                  className="text-sm font-semibold text-blue-400 hover:text-blue-300 cursor-pointer truncate block w-full text-left"
+                  title={groupName}
+                >
+                  {groupName}
+                </button>
+              );
+            }
+            return (
               <span className="text-sm font-semibold text-white/80 truncate block" title={groupName}>
                 {groupName}
               </span>
-            )}
-          </span>
-        </button>
+            );
+          })()}
+        </span>
         <span className="text-xs text-white/50 flex-shrink-0 whitespace-nowrap">
           ({displayCount} item{displayCount !== 1 ? 's' : ''})
         </span>
