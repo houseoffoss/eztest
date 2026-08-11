@@ -104,6 +104,15 @@ export function TestCasesListCard({
       ),
     },
     {
+      key: 'module',
+      label: 'Folder',
+      render: (_, row: ResultRow) => (
+        <span className="text-white/70 text-sm">
+          {row.testCase.module?.name || '-'}
+        </span>
+      ),
+    },
+    {
       key: 'priority',
       label: 'Priority',
       render: (_, row: ResultRow) => {
