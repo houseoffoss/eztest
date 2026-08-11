@@ -190,7 +190,7 @@ export function TestCaseHistoryCard({ projectId, testCaseId }: TestCaseHistoryCa
               </div>
               <div className="flex items-center gap-1 text-xs text-white/70 min-w-0">
                 <User className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{row.executedBy.name}</span>
+                <span className="truncate">{row.executedBy?.name ?? '-'}</span>
               </div>
               <div className="flex items-center gap-1 text-xs text-white/70">
                 <Calendar className="w-3 h-3" />

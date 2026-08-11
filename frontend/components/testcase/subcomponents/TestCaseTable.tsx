@@ -170,10 +170,10 @@ export function TestCaseTable({
           <HoverCard openDelay={200}>
             <HoverCardTrigger asChild>
               <span className="text-xs text-white/70 truncate block cursor-pointer">
-                {row.createdBy.name}
+                {row.createdBy?.name ?? '-'}
               </span>
             </HoverCardTrigger>
-            {row.createdBy.name && row.createdBy.name.length > 20 && (
+            {row.createdBy?.name && row.createdBy.name.length > 20 && (
               <HoverCardContent side="top" className="w-60">
                 <div className="space-y-1">
                   <h4 className="text-xs font-semibold text-white/60">Owner</h4>

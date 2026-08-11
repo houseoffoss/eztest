@@ -159,13 +159,13 @@ export default function UserManagement() {
   ];
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
+    const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.role.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role.id === roleFilter;
-    
+      (user.role?.name ?? '').toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole = roleFilter === 'all' || user.role?.id === roleFilter;
+
     return matchesSearch && matchesRole;
   });
 
