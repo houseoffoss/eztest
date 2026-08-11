@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import { Button } from '@/frontend/reusable-elements/buttons/Button';
 import { ButtonPrimary } from '@/frontend/reusable-elements/buttons/ButtonPrimary';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/frontend/reusable-elements/dialogs/Dialog';
@@ -59,6 +59,13 @@ export interface BaseDialogConfig<T = unknown> {
   formPersistenceKey?: string;
   /** Disable form persistence (default: false) */
   disablePersistence?: boolean;
+  /**
+   * Field names that should never be persisted in sessionStorage and should
+   * always reset to their defaultValue each time the dialog opens.
+   * Use for context-dependent fields like moduleId whose value must come from
+   * the current context (e.g. which folder the user is in), not from a prior session.
+   */
+  resetFieldsOnOpen?: string[];
   /** Button name for analytics tracking (defaults to title if not provided) */
   submitButtonName?: string;
   cancelButtonName?: string;
@@ -78,6 +85,7 @@ export const BaseDialog = <T = unknown,>({
   projectId,
   formPersistenceKey,
   disablePersistence = false,
+  resetFieldsOnOpen,
   submitButtonName,
   cancelButtonName,
 }: BaseDialogConfig<T>) => {
@@ -203,6 +211,12 @@ export const BaseDialog = <T = unknown,>({
   // Generate persistence key from title if not provided
   const persistenceKey = formPersistenceKey || `dialog-${title.toLowerCase().replace(/\s+/g, '-')}`;
 
+  // Refs so open-state effect can read latest values without stale closures
+  const fieldsRef = useRef(fields);
+  fieldsRef.current = fields;
+  const resetFieldsOnOpenRef = useRef(resetFieldsOnOpen);
+  resetFieldsOnOpenRef.current = resetFieldsOnOpen;
+
   // Use form persistence hook
   // useFormPersistence returns [formData, setFormData, clearFormData, resetFormData].
   // Only the first three are needed in this component.
@@ -212,7 +226,9 @@ export const BaseDialog = <T = unknown,>({
     {
       enabled: !disablePersistence,
       expiryMs: 60 * 60 * 1000, // 1 hour
-      excludeFields: [], // Include all fields by default
+      // Fields listed in resetFieldsOnOpen are context-dependent and must never be
+      // stored in sessionStorage — their value comes from the current page context.
+      excludeFields: resetFieldsOnOpen || [],
     }
   );
 
@@ -224,6 +240,27 @@ export const BaseDialog = <T = unknown,>({
       setOpen(true);
     }
   }, [triggerOpen]);
+
+  // When the dialog opens, reset context-dependent fields to their current defaultValue.
+  // This prevents sessionStorage from contaminating fields like moduleId when the user
+  // navigates between different modules or creates multiple test cases in different contexts.
+  const prevOpenRef = useRef(false);
+  useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      const resetFields = resetFieldsOnOpenRef.current;
+      if (resetFields?.length) {
+        setFormData((prev) => {
+          const updates: Record<string, string> = {};
+          resetFields.forEach((fieldName) => {
+            const field = fieldsRef.current.find((f) => f.name === fieldName);
+            updates[fieldName] = field?.defaultValue || '';
+          });
+          return { ...prev, ...updates };
+        });
+      }
+    }
+    prevOpenRef.current = open;
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);

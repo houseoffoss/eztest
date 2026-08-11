@@ -703,6 +703,9 @@ export function CreateTestCaseDialog({
         setNewStepExpectedResultAttachments([]);
       }
     },
+    // moduleId is context-dependent (driven by which folder the user is in).
+    // Exclude it from sessionStorage so it always reflects the current defaultModuleId prop.
+    resetFieldsOnOpen: ['moduleId'],
     submitButtonName: 'Create Test Case Dialog - Create Test Case',
     cancelButtonName: 'Create Test Case Dialog - Cancel',
   };
