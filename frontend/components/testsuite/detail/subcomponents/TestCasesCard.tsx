@@ -13,6 +13,7 @@ interface TestCasesCardProps {
   onRemoveTestCase?: (testCase: TestCase) => void;
   canAdd?: boolean;
   canDelete?: boolean;
+  projectId?: string;
 }
 
 export function TestCasesCard({
@@ -24,6 +25,7 @@ export function TestCasesCard({
   onRemoveTestCase,
   canAdd = false,
   canDelete = false,
+  projectId,
 }: TestCasesCardProps) {
   return (
     <DetailCard 
@@ -37,6 +39,7 @@ export function TestCasesCard({
           onClick={onTestCaseClick}
           onDelete={onRemoveTestCase}
           canDelete={canDelete}
+          projectId={projectId}
         />
       ) : (
         <div className="text-center py-8">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/frontend/reusable-components/layout/Navbar";
@@ -728,12 +729,12 @@ export default function AgentTestRunResults({ runId }: Props) {
         <div className="flex flex-col items-center justify-center h-96 gap-4">
           <AlertTriangle className="w-10 h-10 text-yellow-400" />
           <p className="text-white/60">Test run not found.</p>
-          <button
-            onClick={() => router.push("/agent-testing/setup")}
+          <Link
+            href="/agent-testing/setup"
             className="cursor-pointer text-sm text-blue-400 hover:underline"
           >
             Back to Setup
-          </button>
+          </Link>
         </div>
       </div>
     );
@@ -749,12 +750,12 @@ export default function AgentTestRunResults({ runId }: Props) {
         items={[]}
         breadcrumbs={
           <span className="flex items-center gap-1 text-sm text-white/50">
-            <button
-              onClick={() => router.push("/agent-testing/setup")}
+            <Link
+              href="/agent-testing/setup"
               className="cursor-pointer hover:text-white/80 transition-colors"
             >
               Agent Testing
-            </button>
+            </Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-white/90 font-medium">
               {run.configName ?? "Run Results"}
@@ -779,12 +780,12 @@ export default function AgentTestRunResults({ runId }: Props) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <button
-                  onClick={() => router.push("/agent-testing/setup")}
+                <Link
+                  href="/agent-testing/setup"
                   className="cursor-pointer p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                </button>
+                </Link>
                 <div className="p-2 rounded-lg bg-blue-500/10">
                   <Bot className="w-5 h-5 text-blue-400" />
                 </div>

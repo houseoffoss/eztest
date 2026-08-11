@@ -303,7 +303,7 @@ export function TestCasesListCard({
           columns={columns}
           data={tableData}
           rowClassName="cursor-pointer hover:bg-accent/20"
-          onRowClick={(row) => router.push(`/projects/${projectId}/testcases/${row.testCase.id}`)}
+          getRowHref={(row) => `/projects/${projectId}/testcases/${row.testCase.id}`}
           emptyMessage="No test cases in this run"
         />
       )}

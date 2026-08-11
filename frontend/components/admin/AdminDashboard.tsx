@@ -1,6 +1,5 @@
 ﻿'use client';
 
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { Navbar } from '@/frontend/reusable-components/layout/Navbar';
 import { PageHeaderWithBadge } from '@/frontend/reusable-components/layout/PageHeaderWithBadge';
@@ -9,8 +8,6 @@ import { ItemCard } from '@/frontend/reusable-components/cards/ItemCard';
 import { Users, Settings } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const router = useRouter();
-
   const navbarActions = useMemo(() => [
     {
       type: 'signout' as const,
@@ -52,7 +49,7 @@ export default function AdminDashboard() {
                 </p>
               }
               borderColor="primary"
-              onClick={() => router.push('/admin/users')}
+              href="/admin/users"
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
 
@@ -71,7 +68,7 @@ export default function AdminDashboard() {
                 </p>
               }
               borderColor="primary"
-              onClick={() => router.push('/admin/dropdown-options')}
+              href="/admin/dropdown-options"
               className="hover:shadow-xl hover:shadow-primary/10 transition-all"
             />
           </ResponsiveGrid>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/frontend/reusable-components/layout/Navbar";
@@ -442,19 +443,19 @@ export default function AgentTestCasesPage({ configId }: Props) {
         items={[]}
         breadcrumbs={
           <span className="flex items-center gap-1 text-sm text-white/50">
-            <button
-              onClick={() => router.push("/agent-testing/setup")}
+            <Link
+              href="/agent-testing/setup"
               className="cursor-pointer hover:text-white/80 transition-colors"
             >
               Agent Testing
-            </button>
+            </Link>
             <ChevronRight className="w-3 h-3" />
-            <button
-              onClick={() => router.push("/agent-testing/setup")}
+            <Link
+              href="/agent-testing/setup"
               className="cursor-pointer hover:text-white/80 transition-colors max-w-[160px] truncate"
             >
               {config.name}
-            </button>
+            </Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-white/90 font-medium">Test Cases</span>
           </span>

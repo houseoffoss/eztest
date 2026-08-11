@@ -19,6 +19,7 @@ interface TestSuiteTestCaseTableProps {
   onDelete?: (testCase: TestCase) => void;
   onClick: (testCaseId: string) => void;
   canDelete?: boolean;
+  projectId?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export function TestSuiteTestCaseTable({
   onDelete,
   onClick,
   canDelete = true,
+  projectId,
 }: TestSuiteTestCaseTableProps) {
   const { options: priorityOptions } = useDropdownOptions('TestCase', 'priority');
   const { options: statusOptions } = useDropdownOptions('TestCase', 'status');
@@ -195,7 +197,8 @@ export function TestSuiteTestCaseTable({
     <GroupedDataTable
       data={testCases}
       columns={columns}
-      onRowClick={(row) => onClick(row.id)}
+      getRowHref={projectId ? (row) => `/projects/${projectId}/testcases/${row.id}` : undefined}
+      onRowClick={!projectId ? (row) => onClick(row.id) : undefined}
       grouped={true}
       groupConfig={groupConfig}
       actions={actions}

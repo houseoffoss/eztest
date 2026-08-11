@@ -525,6 +525,7 @@ export default function TestSuiteDetail({ suiteId }: TestSuiteDetailProps) {
               onRemoveTestCase={handleRemoveTestCase}
               canAdd={canManageTestCases}
               canDelete={canManageTestCases}
+              projectId={testSuite.project.id}
             />
 
             <ChildSuitesCard

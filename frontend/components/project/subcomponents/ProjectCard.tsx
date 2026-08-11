@@ -147,7 +147,7 @@ export const ProjectCard = ({ project, onNavigate, onDelete, canUpdate = false, 
       header={header}
       content={content}
       footer={footer}
-      onClick={() => onNavigate(`/projects/${project.id}`)}
+      href={`/projects/${project.id}`}
       borderColor="primary"
     />
   );

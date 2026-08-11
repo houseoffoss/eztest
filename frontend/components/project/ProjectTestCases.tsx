@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
@@ -435,10 +436,9 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTestCases.map((testCase) => (
+            <Link key={testCase.id} href={`/testcases/${testCase.id}`} className="block">
             <Card
-              key={testCase.id}
               className="glass cursor-pointer hover:border-blue-500/50 transition-colors"
-              onClick={() => router.push(`/testcases/${testCase.id}`)}
             >
               <CardHeader className="pb-2 pt-3 px-4">
                 <div className="flex items-start justify-between gap-2">
@@ -461,21 +461,23 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                       </Badge>
                     </div>
                   </div>
-                  <ActionMenu
-                    items={[
-                      {
-                        label: 'Delete',
-                        icon: Trash2,
-                        onClick: () => {
-                          setSelectedTestCase(testCase);
-                          setDeleteDialogOpen(true);
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ActionMenu
+                      items={[
+                        {
+                          label: 'Delete',
+                          icon: Trash2,
+                          onClick: () => {
+                            setSelectedTestCase(testCase);
+                            setDeleteDialogOpen(true);
+                          },
+                          variant: 'destructive',
                         },
-                        variant: 'destructive',
-                      },
-                    ]}
-                    align="end"
-                    iconSize="w-4 h-4"
-                  />
+                      ]}
+                      align="end"
+                      iconSize="w-4 h-4"
+                    />
+                  </div>
                 </div>
               </CardHeader>
               
@@ -513,6 +515,7 @@ export default function ProjectTestCases({ projectId }: ProjectTestCasesProps) {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       )}

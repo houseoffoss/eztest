@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { TestTube2, AlertCircle } from 'lucide-react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
@@ -22,7 +22,6 @@ interface TestCaseRow {
 }
 
 export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardProps) {
-  const router = useRouter();
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
   // Ensure testCases is an array
@@ -75,15 +74,15 @@ export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardPr
 
           {/* Data Rows */}
           {tableData.map((row, rowIndex) => (
-            <div
+            <Link
               key={row.id}
+              href={`/projects/${defect.projectId}/testcases/${row.testCaseId}`}
               className={`grid gap-3 px-3 py-2.5 transition-colors items-center text-sm rounded-sm hover:bg-accent/20 cursor-pointer ${
                 rowIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
               } ${
                 rowIndex === tableData.length - 1 ? 'rounded-b-md' : ''
               }`}
               style={{ gridTemplateColumns: '100px 1fr 150px' }}
-              onClick={() => router.push(`/projects/${defect.projectId}/testcases/${row.testCaseId}`)}
             >
               <span className="text-blue-400 font-mono text-sm font-semibold">{row.tcId}</span>
               <span className="text-white/90 truncate">{row.title}</span>
@@ -101,7 +100,7 @@ export function LinkedTestCasesCard({ defect, onRefresh }: LinkedTestCasesCardPr
                   </div>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

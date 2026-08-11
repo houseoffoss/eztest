@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Bug, Plus } from 'lucide-react';
 import { DetailCard } from '@/frontend/reusable-components/cards/DetailCard';
 import { Badge } from '@/frontend/reusable-elements/badges/Badge';
@@ -27,7 +27,6 @@ interface DefectRow {
 }
 
 export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProps) {
-  const router = useRouter();
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const { options: severityOptions } = useDropdownOptions('Defect', 'severity');
   const { options: statusOptions } = useDropdownOptions('Defect', 'status');
@@ -115,15 +114,15 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
 
             {/* Data Rows */}
             {tableData.map((row, rowIndex) => (
-              <div
+              <Link
                 key={row.id}
+                href={`/projects/${testCase.project.id}/defects/${row.id}`}
                 className={`grid gap-3 px-3 py-2.5 transition-colors items-center text-sm rounded-sm hover:bg-accent/20 cursor-pointer ${
                   rowIndex % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.04] border-b border-white/10'
                 } ${
                   rowIndex === tableData.length - 1 ? 'rounded-b-md' : ''
                 }`}
                 style={{ gridTemplateColumns: 'auto 1fr 120px 120px' }}
-                onClick={() => router.push(`/projects/${testCase.project.id}/defects/${row.id}`)}
               >
                 <span className="text-red-400 font-mono text-sm font-semibold">{row.defectId}</span>
                 <span className="text-white/90 truncate">{row.title}</span>
@@ -157,7 +156,7 @@ export function LinkedDefectsCard({ testCase, onRefresh }: LinkedDefectsCardProp
                     );
                   })()}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

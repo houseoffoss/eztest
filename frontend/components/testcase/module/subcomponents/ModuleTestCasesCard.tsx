@@ -15,6 +15,7 @@ interface ModuleTestCasesCardProps {
   onDeleteClick: (testCase: TestCase) => void;
   canCreate: boolean;
   canDelete: boolean;
+  projectId?: string;
 }
 
 export function ModuleTestCasesCard({
@@ -26,6 +27,7 @@ export function ModuleTestCasesCard({
   onDeleteClick,
   canCreate,
   canDelete,
+  projectId,
 }: ModuleTestCasesCardProps) {
   const headerAction = canCreate && testCases.length > 0 ? (
     <ButtonPrimary size="sm" onClick={onCreateClick}>
@@ -43,6 +45,7 @@ export function ModuleTestCasesCard({
           onClick={onTestCaseClick}
           onDelete={onDeleteClick}
           canDelete={canDelete}
+          projectId={projectId}
         />
       ) : (
         <div className="text-center py-8 px-4">

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { StatCard } from '@/frontend/components/project/subcomponents/StatCard';
 import { cn } from '@/lib/utils';
 
@@ -10,7 +11,7 @@ export interface ClickableStatCardProps {
   value: number;
   borderColor?: string;
   hoverColor?: string;
-  onClick: () => void;
+  href: string;
   className?: string;
 }
 
@@ -20,13 +21,13 @@ export function ClickableStatCard({
   value,
   borderColor = 'border-l-primary/30',
   hoverColor = 'group-hover:bg-primary/10',
-  onClick,
+  href,
   className,
 }: ClickableStatCardProps) {
   return (
-    <div
-      onClick={onClick}
-      className={cn('cursor-pointer group transition-all', hoverColor, className)}
+    <Link
+      href={href}
+      className={cn('cursor-pointer group transition-all block', hoverColor, className)}
     >
       <StatCard
         icon={icon}
@@ -34,7 +35,7 @@ export function ClickableStatCard({
         value={value}
         borderColor={borderColor}
       />
-    </div>
+    </Link>
   );
 }
 

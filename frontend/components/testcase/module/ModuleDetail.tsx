@@ -359,6 +359,7 @@ export default function ModuleDetail({ projectId, moduleId }: ModuleDetailProps)
               onDeleteClick={handleDeleteClick}
               canCreate={canCreateTestCase}
               canDelete={canDeleteTestCase}
+              projectId={projectId}
             />
           </div>
 

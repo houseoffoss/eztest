@@ -215,6 +215,9 @@ export function TestCaseTable({
               }
             }
           : undefined,
+        getGroupHref: enableModuleLink && projectId
+          ? (groupId) => groupId !== 'no-module' ? `/projects/${projectId}/modules/${groupId}` : undefined
+          : undefined,
         emptyGroups: modules.map((moduleItem) => ({
           id: moduleItem.id,
           name: moduleItem.name,
@@ -245,7 +248,8 @@ export function TestCaseTable({
     <GroupedDataTable
       data={testCases}
       columns={columns}
-      onRowClick={(row) => onClick(row.id)}
+      getRowHref={projectId ? (row) => `/projects/${projectId}/testcases/${row.id}` : undefined}
+      onRowClick={!projectId ? (row) => onClick(row.id) : undefined}
       grouped={groupedByModule}
       groupConfig={groupConfig}
       actions={actions}
